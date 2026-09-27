@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orders · pointcast playground</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!--
+  Test bench for pointcast. Each block imitates a pattern that real apps produce,
+  so the capture code can be checked against all of them on one page:
+    - "flex p-4 bg-blue-600 hover:bg-blue-700"  -> Tailwind utilities
+    - "Toolbar_export__3xKz1"                   -> CSS modules (stable prefix + hash)
+    - "css-1a2b3c"                              -> emotion / MUI
+    - "sc-bdVaJa kUgNyR"                        -> styled-components
+    - data-v-7ba5bd90                           -> Vue scoped styles
+    - _nghost-* / _ngcontent-*                  -> Angular view encapsulation
+    - id=":r1:" / id="radix-:r2:"               -> React useId / Radix
+  None of these should appear in a generated selector.
+-->
+<header class="flex items-center justify-between px-6 py-3 bg-slate-900 text-white">
+  <strong>Acme Admin</strong>
+  <nav aria-label="Main">
+    <a href="index.html" aria-current="page">Orders</a>
+    <a href="other.html">Customers</a>
+    <a href="spa.html">SPA demo</a>
+  </nav>
+</header>
+
+<main class="mx-auto max-w-5xl p-6">
+  <section id="orders" aria-labelledby="orders-title">
+    <h1 id="orders-title" class="text-2xl font-bold tracking-tight">Orders</h1>
+
+    <div class="toolbar Toolbar_toolbar__a8Kd2 flex gap-2" data-source="src/components/Toolbar.tsx:8">
+      <button type="button" id="export-btn" class="primary Toolbar_export__3xKz1 rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+        Export
+      </button>
+      <button type="button" class="css-1a2b3c MuiButton-root MuiButton-outlined">Print</button>
+      <button type="button" id=":r1:" class="sc-bdVaJa kUgNyR">Refresh</button>
+      <button type="button" id="radix-:r2:" aria-label="More actions" aria-haspopup="menu" class="inline-flex h-8 w-8 items-center justify-center">⋯</button>
+    </div>
+
+    <table id="orders-table" class="min-w-full divide-y divide-gray-200 text-sm">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-2 text-left font-medium">Order</th>
+          <th class="px-4 py-2 text-left font-medium">Customer</th>
+          <th class="px-4 py-2 text-right font-medium">Quantity</th>
+          <th class="px-4 py-2 text-right font-medium">Total</th>
+          <th class="px-4 py-2"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <tr><td>#1001</td><td>Jane Cooper</td><td>3</td><td>$120.00</td><td><button type="button" class="delete-row text-red-600">Delete</button></td></tr>
+        <tr><td>#1002</td><td>Wade Warren</td><td>1</td><td>$45.50</td><td><button type="button" class="delete-row text-red-600">Delete</button></td></tr>
+        <tr><td>#1003</td><td>Esther Howard</td><td>12</td><td>$980.00</td><td><button type="button" class="delete-row text-red-600">Delete</button></td></tr>
+        <tr><td>#1004</td><td>Cameron Williamson</td><td>5</td><td>$210.25</td><td><button type="button" class="delete-row text-red-600">Delete</button></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section aria-label="Order notes" data-v-7ba5bd90 class="mt-8">
+    <h2 data-v-7ba5bd90>Notes</h2>
+    <p data-v-7ba5bd90>
+      Orders placed before noon ship the same day. Bulk orders above fifty units need a manual
+      review from the warehouse team, and international shipments are grouped every Thursday.
+      Drag across this paragraph to test text selection that stays inside one element.
+    </p>
+    <ul data-v-7ba5bd90>
+      <li data-v-7ba5bd90>Select from here…</li>
+      <li data-v-7ba5bd90>…across this item…</li>
+      <li data-v-7ba5bd90>…to here, to test a selection whose common container is the list.</li>
+    </ul>
+  </section>
+
+  <section _nghost-abc-c12 aria-label="Settings" class="mt-8">
+    <h2 _ngcontent-abc-c12>Settings</h2>
+    <form id="settings-form" _ngcontent-abc-c12>
+      <label for="display-name">Display name</label>
+      <input id="display-name" name="displayName" type="text" value="Jane Doe">
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password">
+
+      <label for="api-token">API token</label>
+      <input id="api-token" name="apiToken" type="text" data-sensitive>
+
+      <label for="card-number">Card number</label>
+      <input id="card-number" name="cardNumber" type="text" autocomplete="cc-number">
+
+      <label for="comment">Comment</label>
+      <textarea id="comment" name="comment">Default textarea content</textarea>
+
+      <div class="private-note" data-sensitive>
+        Private note: this block is marked data-sensitive, so neither its text nor its children may be captured.
+      </div>
+
+      <button type="submit" class="primary">Save</button>
+    </form>
+  </section>
+
+  <aside class="instructions">
+    <strong>Manual checks.</strong>
+    Privacy canary: type <code>CANARY-7391</code> into Password, API token and Card number, then click and
+    select around them while recording. The string must never appear in the exported session.
+    Destructive action: "Delete" really removes a row, so pointing at it with Alt+click must not trigger it.
+  </aside>
+</main>
+
+<div id="toast" role="status"></div>
+
+<script>
+  // Tiny fake behaviour so that "pointing without executing" can be verified.
+  const toast = document.getElementById("toast");
+  function notify(message) {
+    toast.textContent = message;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 1500);
+  }
+  document.getElementById("export-btn").addEventListener("click", () => notify("Exported 4 orders"));
+  document.querySelectorAll(".delete-row").forEach((button) => {
+    button.addEventListener("click", () => {
+      button.closest("tr").remove();
+      notify("Row deleted");
+    });
+  });
+  // Never submit: a GET submit would put the password in the URL.
+  document.getElementById("settings-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    notify("Settings saved");
+  });
+</script>
+</body>
+</html>

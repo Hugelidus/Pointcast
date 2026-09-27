@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>In-browser Whisper spike</title>
+<style>
+  :root { color-scheme: light dark; --muted: #777; --bad: #c0392b; --good: #1e8449; }
+  body { font: 14px/1.45 system-ui, sans-serif; margin: 16px; max-width: 1200px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  p.lead { margin: 0 0 12px; color: var(--muted); }
+  fieldset { border: 1px solid #8884; border-radius: 6px; margin: 0 0 12px; padding: 8px 12px; }
+  label { margin-right: 14px; white-space: nowrap; }
+  select, input, button { font: inherit; }
+  button { padding: 4px 12px; }
+  #env { font-family: ui-monospace, monospace; font-size: 12px; white-space: pre-wrap; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th, td { border-bottom: 1px solid #8883; padding: 3px 6px; text-align: right; white-space: nowrap; }
+  th:nth-child(-n+5), td:nth-child(-n+5) { text-align: left; }
+  #log { font-family: ui-monospace, monospace; font-size: 12px; white-space: pre-wrap; max-height: 220px; overflow: auto; background: #8881; padding: 6px; }
+  .bad { color: var(--bad); } .good { color: var(--good); }
+</style>
+</head>
+<body>
+<h1>In-browser Whisper spike (transformers.js + onnxruntime-web, no CDN)</h1>
+<p class="lead"><b>To measure your GPU:</b> run <code>node spikes/in-browser-whisper/server.mjs</code>, open
+  <code>http://localhost:5531/</code> in Chrome, pick Device = webgpu, keep fp32 and click Run. Then pick wasm, 4 threads, and Run again to compare on the same machine.
+  The first run downloads the model (about 290 MB for base fp32) into this page's cache.<br>
+  Transcribes the repo's fixtures with word timestamps and scores them against the SAPI ground truth, exactly like
+  <code>scripts/bench/transcribe.ts</code>. Code is served locally; model weights download from huggingface.co once and are cached by this origin.</p>
+
+<fieldset><legend>Environment</legend><div id="env">…</div></fieldset>
+
+<fieldset><legend>Run</legend>
+  <label>Model <select id="model">
+    <option>Xenova/whisper-base</option><option>Xenova/whisper-tiny</option><option>Xenova/whisper-small</option>
+  </select></label>
+  <label>Device <select id="device"><option>wasm</option><option>webgpu</option></select></label>
+  <label>dtype <select id="dtype">
+    <option value="q8">q8 (library's wasm default)</option><option value="fp32" selected>fp32 (Node CLI; recommended)</option><option value="fp16">fp16</option>
+    <option value="q4">q4</option><option value="q4f16">q4f16</option><option value="mixed">encoder fp32 + decoder q4</option>
+  </select></label>
+  <label>WASM threads <select id="threads"><option>1</option><option>2</option><option selected>4</option><option>8</option></select></label>
+  <br>
+  <label>Audio <select id="audio" multiple size="3">
+    <option selected>es-short</option><option selected>es-2min</option><option>en-short</option>
+  </select></label>
+  <label>or your own file <input type="file" id="file" accept="audio/*"></label>
+  <label>language <select id="language"><option>es</option><option>en</option></select></label>
+  <label>Runs per audio <input id="repeats" type="number" min="1" max="5" value="2" style="width:3em"></label>
+  <label><input type="checkbox" id="cold"> clear model cache first (measure a cold download)</label>
+  <br><br>
+  <button id="run">Run</button>
+  <button id="copy">Copy results as JSON</button>
+  <span id="status"></span>
+</fieldset>
+
+<table>
+  <thead><tr>
+    <th>model</th><th>device</th><th>dtype</th><th>thr</th><th>audio</th><th>run</th><th>load s</th><th>cache</th>
+    <th>transcribe s</th><th>s per audio min</th><th>word acc</th><th>start err med</th><th>p90</th><th>notes</th>
+  </tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<h2 style="font-size:14px">Log</h2>
+<div id="log"></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

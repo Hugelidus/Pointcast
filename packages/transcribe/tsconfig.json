@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // This code must run unchanged in Node (the CLI) and in a browser worker (the extension).
+    // No Node types here, so `process`, `Buffer` or a `node:` import fail this typecheck; the
+    // CLI's typecheck compiles the same files without the WebWorker lib, so web-only globals
+    // (`self`, `caches`) fail there. Together they only accept what both runtimes have.
+    "lib": ["ES2022", "WebWorker"],
+    "types": []
+  },
+  "include": ["src"]
+}

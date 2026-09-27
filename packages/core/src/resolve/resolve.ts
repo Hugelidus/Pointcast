@@ -1,0 +1,545 @@
+import { isShortValue } from "../describe";
+import { oneLine, truncate } from "../markdown";
+import type { CapturedEvent, CodeFrame, ElementInfo, ResolvedLocation, SessionFile } from "../schema";
+import { cleanPath, codeChain, NOT_APP_CODE } from "./chain";
+
+/**
+ * Resolves pointed elements to code locations: pure, with file access injected, so every route
+ * (CLI and MCP on the local repo, the extension through the dev server, GitHub) runs the same
+ * rules. The rules are Stage 0's repo lookup, which is what passed the bar
+ * (docs/eval/stage0-code-pointer-2026-09-27.md, "P-chain-repo"); keep them as they are unless an
+ * evaluation says otherwise. Silence beats a wrong location: anything ambiguous yields nothing.
+ * Two extensions (resolveElement; docs/decisions.md D9): the files defining the chain's
+ * components, only where Stage 0 found nothing (rule 4), and a short value looked up through the
+ * item it belongs to (rule 3b), which needs a field Stage 0's sessions did not have (itemLabel).
+ */
+
+/** Reads project source for the resolver. */
+export interface SourceReader {
+  /**
+   * Contents of a project-relative file ("src/lib/More.svelte", forward slashes), or undefined
+   * when it does not exist or cannot be read. The reader maps the path onto its source: a repo
+   * root, a monorepo package prefix, a dev server or GitHub URL. A throw counts as unreadable.
+   */
+  read(path: string): Promise<string | undefined>;
+}
+
+/** Where the source was read, stamped on every ResolvedLocation. */
+export type SourceVia = ResolvedLocation["via"];
+
+/**
+ * Code locations for one element, [] or exactly one, from its chain (`renderedBy`):
+ * 1. its literal, the selected text or else its visible text (then the word runs between numbers,
+ *    "Active Now" in "Active Now +573"), written as a code literal exactly once in exactly one
+ *    chain file -> "text". Found more than once: nothing, and no further step. Skipped for a short
+ *    value that capture tied to its item (itemOf): 3b looks it up through the item instead;
+ * 2. else its label, once in the chain files -> "text";
+ * 3. else its link's href (not "#…"), once across the chain files and the data modules they
+ *    import (one hop), pointing at the element's text next to it when it is there -> "data"
+ *    outside the chain (the Chats badge: `badge: '3'` in sidebar-data.ts), "text" inside.
+ * 3b. else, for a short value ("3", "+5": isShortValue) with its item's label (`itemLabel`,
+ *    "Messages"), that label as a code literal once across the same files as 3, and the value
+ *    written on exactly one line of that entry (3's window) -> that line, "data" or "text" as in
+ *    3. The label found but the value not next to it: nothing (the count may be computed).
+ * 4. when 1-3b found nothing (and no literal was written twice), 1-3b once more over the chain
+ *    files plus the files that define the chain's components (withDefinitions), and the data
+ *    modules those import. In the most common app shape the component that renders the element
+ *    imports its own data (Sidebar.tsx imports NAV_ITEMS), and Sidebar.tsx is where the element
+ *    is defined, not a chain file: React 19 and Vue frames are where each instance is USED.
+ *    Whatever 1-3 find on the chain alone stays exactly as Stage 0 found it (a location, or
+ *    silence over a duplicate): definitions are read only where Stage 0 had nothing to go on.
+ * Comments are not code: a literal in a comment is not a hit (withoutComments).
+ * Only those files and their direct imports are read: never a search of the whole project.
+ * Each location carries its `snippet` (sourceSnippet), taken from the lines already read, except
+ * for a sensitive element: its source line could hold the very text D8 keeps out of a session.
+ */
+export async function resolveElement(
+  element: ElementInfo,
+  reader: SourceReader,
+  via: SourceVia,
+  selectedText?: string,
+): Promise<ResolvedLocation[]> {
+  const cached = cachingReader(reader);
+  const chain = new Map<string, string[]>();
+  for (const file of chainFiles(element)) {
+    const source = await cached.read(file);
+    if (source !== undefined) chain.set(file, splitLines(source));
+  }
+  if (chain.size === 0) return [];
+  const text = selectedText ?? element.text;
+  const found = await lookup(element, text, chain, cached, via);
+  if (found !== undefined) return found;
+  const scope = await withDefinitions(element, chain, cached);
+  return scope.size > chain.size ? ((await lookup(element, text, scope, cached, via)) ?? []) : [];
+}
+
+/**
+ * Rules 1-3b of resolveElement over `files`: a location; [] when the literal is written more than
+ * once (silence, and no further step); undefined when nothing was found.
+ */
+async function lookup(
+  element: ElementInfo,
+  text: string,
+  files: Sources,
+  reader: SourceReader,
+  via: SourceVia,
+): Promise<ResolvedLocation[] | undefined> {
+  const at = (kind: ResolvedLocation["kind"], hit: Hit, from: Sources): ResolvedLocation[] => {
+    const snippet = element.sensitive ? undefined : sourceSnippet(from.get(hit.file) ?? [], hit.line);
+    return [{ kind, file: hit.file, line: hit.line, via, ...(snippet === undefined ? {} : { snippet }) }];
+  };
+  const code = codeOf(files);
+  const item = itemOf(element, text);
+
+  for (const phrase of item === undefined ? phrases(text) : []) {
+    const hits = hitsIn(code, literalPattern(phrase));
+    if (hits.length === 1) return at("text", hits[0], files);
+    if (hits.length > 1) return [];
+  }
+
+  if (element.label) {
+    const hits = hitsIn(code, new RegExp(escapeRegExp(element.label)));
+    if (hits.length === 1) return at("text", hits[0], files);
+  }
+
+  const href = HREF.exec(element.html)?.[1] ?? HREF.exec(element.selector)?.[1];
+  if (href === undefined && item === undefined) return undefined;
+  const pool = new Map([...files, ...(await importedData(files, reader))]);
+  const poolCode = codeOf(pool);
+  const kind = (hit: Hit): ResolvedLocation["kind"] => (files.has(hit.file) ? "text" : "data");
+
+  if (href !== undefined) {
+    const hits = hitsIn(poolCode, new RegExp(`["'\`]${escapeRegExp(href)}["'\`]`));
+    if (hits.length === 1) {
+      const hit = hits[0];
+      // In a data file the element's own text is usually a line or two away, in the same entry.
+      const near = text.trim() === "" ? [] : linesNear(poolCode, hit, literalPattern(text.trim()));
+      return at(kind(hit), { file: hit.file, line: near.length === 1 ? near[0] : hit.line }, pool);
+    }
+  }
+
+  if (item !== undefined) {
+    const hits = hitsIn(poolCode, literalPattern(item));
+    if (hits.length === 1) {
+      // Unlike an href, the label says which entry, not where the value is: no line without it.
+      const near = linesNear(poolCode, hits[0], literalPattern(text.trim(), ENTRY_END));
+      if (near.length === 1) return at(kind(hits[0]), { file: hits[0].file, line: near[0] }, pool);
+    }
+  }
+  return undefined;
+}
+
+/**
+ * The label of the item a short value belongs to (ElementInfo.itemLabel, rule 3b), when the text
+ * looked up is that short value. Without one (older sessions, a badge alone in its button) the
+ * value goes through rule 1 like any text, as in Stage 0: vuestic's «2+» is found there, written
+ * once (`<template #text> 2+</template>`), and must stay found.
+ */
+function itemOf(element: ElementInfo, text: string): string | undefined {
+  const label = typeof element.itemLabel === "string" ? oneLine(element.itemLabel) : "";
+  return label !== "" && isShortValue(text) ? label : undefined;
+}
+
+/** Lines (1-based) matching `pattern` within the entry around a hit: 3 lines either side. */
+function linesNear(code: Sources, hit: Hit, pattern: RegExp): number[] {
+  const lines = code.get(hit.file) ?? [];
+  const near: number[] = [];
+  for (let i = Math.max(0, hit.line - 4); i < Math.min(lines.length, hit.line + 3); i++) {
+    if (pattern.test(lines[i])) near.push(i + 1);
+  }
+  return near;
+}
+
+/**
+ * A copy of the session with `ElementInfo.resolved` set for every element that has a chain and
+ * whose chain files could be read, and a `snippet` on each `renderedBy` frame with a line whose
+ * file was read (not for sensitive elements, D8); nothing is mutated, and snippets need no extra read. An element keeps what it had when
+ * none of its chain files was readable (e.g. resolved earlier through another route), and loses
+ * `resolved` when the source was read and nothing unambiguous was found.
+ */
+export async function resolveSession(session: SessionFile, reader: SourceReader, via: SourceVia): Promise<SessionFile> {
+  const cached = cachingReader(reader);
+  const events = await Promise.all(
+    session.events.map(async (event): Promise<CapturedEvent> => {
+      const files = chainFiles(event.element);
+      const sources = await Promise.all(files.map((file) => cached.read(file)));
+      if (sources.every((source) => source === undefined)) return event;
+      const resolved = await resolveElement(event.element, cached, via, event.selection?.text);
+      const read = new Map<string, string[]>();
+      files.forEach((file, i) => {
+        const source = sources[i];
+        if (source !== undefined) read.set(file, splitLines(source));
+      });
+      const { resolved: _previous, ...element } = event.element;
+      if (Array.isArray(element.renderedBy) && !element.sensitive) element.renderedBy = withSnippets(element.renderedBy, read);
+      return { ...event, element: resolved.length > 0 ? { ...element, resolved } : element };
+    }),
+  );
+  return { ...session, events };
+}
+
+/** Whether the source a reader sees is the project a session was recorded on. */
+export interface ProjectMatch {
+  /**
+   * false: none of the files named by the session's chains could be read, so the session is
+   * probably from another project (or the reader's root is wrong); worth a warning. true: at
+   * least one could. undefined: the session names no files (no `renderedBy`), nothing to check.
+   */
+  matches: boolean | undefined;
+  /** Every project-relative file the session's chains name, in order of first appearance. */
+  files: string[];
+  /** The subset the reader could read. */
+  readable: string[];
+}
+
+export async function projectMatch(session: SessionFile, reader: SourceReader): Promise<ProjectMatch> {
+  const files = [...new Set(session.events.flatMap((event) => chainFiles(event.element)))];
+  const sources = await Promise.all(files.map((file) => readSource(reader, file)));
+  const readable = files.filter((_, i) => sources[i] !== undefined);
+  return { matches: files.length === 0 ? undefined : readable.length > 0, files, readable };
+}
+
+/**
+ * A reader that reads each path at most once (the same chain files recur across a session's
+ * elements) and turns a throw into "unreadable". Share one between projectMatch and
+ * resolveSession to avoid reading twice over a network.
+ */
+export function cachingReader(reader: SourceReader): SourceReader {
+  const cache = new Map<string, Promise<string | undefined>>();
+  return {
+    read(path) {
+      let source = cache.get(path);
+      if (source === undefined) {
+        source = readSource(reader, path);
+        cache.set(path, source);
+      }
+      return source;
+    },
+  };
+}
+
+/** Longest snippet kept and rendered (CodeFrame.snippet, ResolvedLocation.snippet). */
+export const MAX_SNIPPET_CHARS = 200;
+
+/** A line shorter than this says little alone ("Export", "badge: '3',"): its neighbours come with it. */
+const SHORT_LINE_CHARS = 16;
+
+/**
+ * The source at a 1-based line, as the spec quotes it: the line, whitespace-collapsed, plus the
+ * lines just before and after it (when not blank) if it is shorter than SHORT_LINE_CHARS, cut to
+ * MAX_SNIPPET_CHARS. undefined for a blank line or a line past the end.
+ */
+export function sourceSnippet(lines: readonly string[], line: number): string | undefined {
+  const own = oneLine(lines[line - 1] ?? "");
+  if (own === "") return undefined;
+  const text =
+    own.length >= SHORT_LINE_CHARS
+      ? own
+      : [lines[line - 2], own, lines[line]]
+          .map((around) => oneLine(around ?? ""))
+          .filter((around) => around !== "")
+          .join(" ");
+  return truncate(text, MAX_SNIPPET_CHARS);
+}
+
+// ------------------------------------------------------------------------------------ internals
+
+/**
+ * renderedBy with a fresh `snippet` on each frame with a line whose file was read; any other frame
+ * is kept as it was. Paths are matched the way chainFiles builds them.
+ */
+function withSnippets(frames: readonly CodeFrame[], read: ReadonlyMap<string, string[]>): CodeFrame[] {
+  return frames.map((frame) => {
+    if (typeof frame !== "object" || frame === null || typeof frame.file !== "string") return frame;
+    const path = safePath(cleanPath(frame.file));
+    const lines = path === undefined ? undefined : read.get(path);
+    if (lines === undefined) return frame;
+    const { snippet: _previous, ...rest } = frame;
+    const line = frame.line;
+    const snippet = typeof line === "number" && Number.isInteger(line) && line > 0 ? sourceSnippet(lines, line) : undefined;
+    return snippet === undefined ? rest : { ...rest, snippet };
+  });
+}
+
+interface Hit {
+  file: string;
+  line: number;
+}
+
+/** Files read for the lookup: project-relative path -> its lines, in search order. */
+type Sources = ReadonlyMap<string, string[]>;
+
+/** A non-fragment href in the element's HTML, else in its selector (a[href="/chats"] > span). */
+const HREF = /href="([^"#][^"]*)"/;
+
+/**
+ * What an import may point at: the extensions accepted when the specifier has one, and the ones
+ * tried, in order, when it has none (then as "/index.<ext>").
+ */
+interface ImportKind {
+  accept: ReadonlySet<string>;
+  probe: readonly string[];
+}
+
+/** Data modules followed by the one import hop: script and JSON, not components. */
+const DATA: ImportKind = { accept: new Set(["ts", "js", "mjs", "cjs", "json"]), probe: ["ts", "js"] };
+
+/**
+ * Files a component is defined in. ".tsx" before ".js": a Vite dev server also serves
+ * "Sidebar.js?raw" for a "Sidebar.tsx" (see importedData), under the wrong name.
+ */
+const COMPONENT_EXTENSIONS = ["tsx", "ts", "jsx", "js", "vue", "svelte"];
+const COMPONENT: ImportKind = { accept: new Set(COMPONENT_EXTENSIONS), probe: COMPONENT_EXTENSIONS };
+
+/** Unique chain files that are safe to hand to a reader, innermost first. */
+function chainFiles(element: ElementInfo): string[] {
+  return [...new Set(codeChain(element).flatMap((frame) => safePath(frame.file) ?? []))];
+}
+
+/**
+ * Only paths inside the project reach a reader: a session can come from someone else, and its
+ * renderedBy is page-controlled dev data, so "../../.ssh/id_rsa" or a URL is refused here too.
+ */
+function safePath(path: string): string | undefined {
+  const clean = path.replace(/\\/g, "/").replace(/^(\.?\/)+/, "");
+  if (clean === "" || clean.includes("\0") || /^[a-z][a-z\d+.-]*:/i.test(clean)) return undefined;
+  return clean.split("/").some((segment) => segment === "..") ? undefined : clean;
+}
+
+async function readSource(reader: SourceReader, path: string): Promise<string | undefined> {
+  try {
+    const source = await reader.read(path);
+    return typeof source === "string" ? source : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function splitLines(source: string): string[] {
+  return source.split(/\r?\n/);
+}
+
+/** The same files with their comments blanked out (withoutComments): what the lookup searches. */
+function codeOf(files: Sources): Map<string, string[]> {
+  return new Map([...files].map(([file, lines]) => [file, withoutComments(lines)]));
+}
+
+/**
+ * Where a comment starts: `<!--` anywhere; `//` and `/*` at the start of a line or after
+ * whitespace, `{` or `;`, so "https://…", "'/*'" and "src/**\/*.ts" stay code.
+ */
+const COMMENT_START = /<!--|(?<![^\s{;])\/[/*]/;
+
+/**
+ * The lines with HTML (`<!-- -->`, Vue and Svelte templates) and JS (`//`, `/* *\/`, JSX's
+ * `{/* *\/}`) comments replaced by a space, line for line, so line numbers do not move. A text
+ * quoted in a comment ("<!-- View report link -->", a JSDoc naming the "Export" button) is not
+ * where it is rendered from, and must neither be found nor make the real line look duplicated.
+ * Line-based, not a parser: a comment marker inside a string, after whitespace (`" //"`), hides
+ * the rest of that line (of the lines up to a closing marker, for `/*`) from the search.
+ */
+function withoutComments(lines: readonly string[]): string[] {
+  let end: string | undefined; // "*/" or "-->" while inside a comment that spans lines
+  return lines.map((line) => {
+    let code = "";
+    let rest = line;
+    for (;;) {
+      if (end !== undefined) {
+        const at = rest.indexOf(end);
+        if (at < 0) return code;
+        rest = ` ${rest.slice(at + end.length)}`;
+        end = undefined;
+      }
+      const start = COMMENT_START.exec(rest);
+      if (start === null) return code + rest;
+      code += rest.slice(0, start.index);
+      if (start[0] === "//") return code;
+      end = start[0] === "/*" ? "*/" : "-->";
+      rest = rest.slice(start.index + start[0].length);
+    }
+  });
+}
+
+/** Every line matching the pattern, skipping import lines, across the given files in order. */
+function hitsIn(files: Sources, pattern: RegExp): Hit[] {
+  const hits: Hit[] = [];
+  for (const [file, lines] of files) {
+    lines.forEach((line, i) => {
+      if (pattern.test(line) && !/^\s*import\b/.test(line)) hits.push({ file, line: i + 1 });
+    });
+  }
+  return hits;
+}
+
+/**
+ * The literal and its word runs between numbers and signs: "Active Now +573 +201 since last hour"
+ * -> itself, "Active Now", "since last hour". The whole text is tried first.
+ */
+function phrases(text: string): string[] {
+  const whole = text.replace(/\s+/g, " ").trim();
+  if (whole === "") return [];
+  const out = [whole];
+  for (const run of whole.split(/\s*[+$€%]?[\d.,]+[%kKM]?\s*/)) {
+    const phrase = run.trim();
+    if (phrase.length >= 2 && phrase !== whole) out.push(phrase);
+  }
+  return [...new Set(out)].filter((phrase) => phrase.length <= 80);
+}
+
+/**
+ * The text as a code literal: bounded by a quote, `>`, `=`, `:` or whitespace before and a quote,
+ * `<`, `,` or the line end after, so "Users" does not match "mapUsers". Whitespace inside matches
+ * any whitespace (JSX text wraps). `closers`: more characters that may follow it (ENTRY_END).
+ */
+function literalPattern(text: string, closers = ""): RegExp {
+  const body = escapeRegExp(text).replace(/\s+/g, "\\s+");
+  return new RegExp(`(^|[>"'\`=:]\\s*|\\s)${body}(\\s*[<"'\`,${closers}]|\\s*$)`);
+}
+
+/** A value often ends its entry, `badge: 3 }` or `[1, 3]` (rule 3b), where a text has a quote. */
+const ENTRY_END = "}\\]";
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * The data modules the given files (the chain's, then also its definitions') import directly (one
+ * hop), read through the reader.
+ *
+ * An extensionless specifier ("./Dashboard") is tried as ".ts", then ".js" (importCandidates):
+ * on a Vite dev server, a component that only exists as "Dashboard.tsx" is still served at
+ * "Dashboard.js?raw" (Vite's own resolver falls back through its extension list), so the ".js"
+ * guess "succeeds" with the exact bytes of a file already in the chain. That is an alias, not a
+ * second file, and must not be added: it would make an unambiguous href look like it hit twice
+ * (see resolve.test.ts, "does not mistake a dev server's aliased extension for a second file").
+ */
+async function importedData(chain: Sources, reader: SourceReader): Promise<Map<string, string[]>> {
+  const found = new Map<string, string[]>();
+  const knownContent = new Set([...chain.values()].map((lines) => lines.join("\n")));
+  for (const [file, lines] of chain) {
+    for (const specifier of importSpecifiers(withoutComments(lines))) {
+      for (const candidate of importCandidates(file, specifier, DATA)) {
+        if (chain.has(candidate) || found.has(candidate)) break;
+        const source = await readSource(reader, candidate);
+        if (source === undefined) continue;
+        const candidateLines = splitLines(source);
+        if (knownContent.has(candidateLines.join("\n"))) continue;
+        found.set(candidate, candidateLines);
+        knownContent.add(candidateLines.join("\n"));
+        break;
+      }
+    }
+  }
+  return found;
+}
+
+function importSpecifiers(lines: readonly string[]): string[] {
+  const specifiers: string[] = [];
+  for (const line of lines) {
+    for (const match of line.matchAll(/(?:from\s+|import\s*\(\s*|import\s+)['"]([^'"]+)['"]/g)) {
+      specifiers.push(match[1]);
+    }
+  }
+  return specifiers;
+}
+
+/**
+ * Files an import may point at, in the order to try: relative specifiers, plus the "@/" and "~/"
+ * (src/) and "$lib" (src/lib) aliases Stage 0 followed. Bare package imports are never followed.
+ * An import with an extension is followed only to a file of that kind (`kind.accept`); one
+ * without is tried with each of `kind.probe`, then as an index file ("./nav" -> "nav.ts",
+ * "nav.js", "nav/index.ts", "nav/index.js" for data).
+ */
+function importCandidates(from: string, specifier: string, kind: ImportKind): string[] {
+  let base: string | undefined;
+  if (specifier.startsWith(".")) base = joinPath(from, specifier);
+  else if (/^[@~]\//.test(specifier)) base = `src/${specifier.slice(2)}`;
+  else if (specifier === "$lib" || specifier.startsWith("$lib/")) base = `src/lib${specifier.slice(4)}`;
+  const safe = base === undefined ? undefined : safePath(base);
+  if (safe === undefined) return [];
+  const extension = /\.([a-z\d]+)$/i.exec(safe.slice(safe.lastIndexOf("/") + 1))?.[1]?.toLowerCase();
+  if (extension === undefined) return [...kind.probe.map((ext) => `${safe}.${ext}`), ...kind.probe.map((ext) => `${safe}/index.${ext}`)];
+  return kind.accept.has(extension) && !safe.endsWith(".d.ts") ? [safe] : [];
+}
+
+/**
+ * The chain's files plus the files that define its components (resolveElement, rule 4), the
+ * element's own component first: `element.component.file` when dev data gives it (Vue's `__file`,
+ * Svelte's loc, React up to 18), then, for each chain frame naming a component, the file its
+ * import in that frame's file points at (specifierOf, importCandidates), through one re-export
+ * of an index file ("$lib", "./components"). A library component (bare import) and a component
+ * not imported where it is used (declared in that same file, registered globally) add nothing.
+ * A file already in the chain is not added twice, nor one whose content is a chain file's (a dev
+ * server's alias, see importedData).
+ */
+async function withDefinitions(element: ElementInfo, chain: Sources, reader: SourceReader): Promise<Map<string, string[]>> {
+  const definitions = new Map<string, string[]>();
+  const knownContent = new Set([...chain.values()].map((lines) => lines.join("\n")));
+  const read = async (candidates: readonly string[]): Promise<[string, string[]] | undefined> => {
+    for (const candidate of candidates) {
+      const known = chain.get(candidate) ?? definitions.get(candidate);
+      if (known !== undefined) return [candidate, known];
+      const source = await readSource(reader, candidate);
+      if (source !== undefined) return [candidate, splitLines(source)];
+    }
+    return undefined;
+  };
+  const add = (definition: [string, string[]] | undefined): void => {
+    if (definition === undefined || chain.has(definition[0]) || definitions.has(definition[0])) return;
+    const content = definition[1].join("\n");
+    if (knownContent.has(content)) return;
+    knownContent.add(content);
+    definitions.set(...definition);
+  };
+
+  const own = typeof element.component?.file === "string" ? safePath(cleanPath(element.component.file)) : undefined;
+  if (own !== undefined && !NOT_APP_CODE.test(own)) add(await read([own]));
+  for (const { component: name, file } of codeChain(element)) {
+    const lines = chain.get(file);
+    const specifier = name === undefined || lines === undefined ? undefined : specifierOf(name, lines, "import");
+    if (name === undefined || specifier === undefined) continue;
+    let definition = await read(importCandidates(file, specifier, COMPONENT));
+    const reexport = definition === undefined ? undefined : specifierOf(name, definition[1], "export");
+    if (definition !== undefined && reexport !== undefined) {
+      definition = (await read(importCandidates(definition[0], reexport, COMPONENT))) ?? definition;
+    }
+    add(definition);
+  }
+  return new Map([...definitions, ...chain]);
+}
+
+/** `import A from "…"`, `import { B, C as D } from "…"`, `import A, { B } from "…"`, `export { … } from "…"`. */
+const BINDINGS = /\b(import|export)\s+(?:type\s+)?([\w$]+)?\s*,?\s*(?:\{([^}]*)\})?\s*from\s*["']([^"']+)["']/g;
+
+/**
+ * Where `name` comes from in a file: the specifier of the import (or, with "export", the
+ * re-export: `export { default as More } from './More.svelte'`) that binds that name. Else the
+ * first such statement whose file is called `name`: Vue and Svelte name a component after its
+ * file, whatever it is imported as (`import RevenueUpdates from './cards/RevenueReport.vue'`).
+ */
+function specifierOf(name: string, lines: readonly string[], statement: "import" | "export"): string | undefined {
+  let byFile: string | undefined;
+  for (const [, kind, first, braced, specifier] of withoutComments(lines).join("\n").matchAll(BINDINGS)) {
+    if (kind !== statement) continue;
+    const names = [first, ...(braced ?? "").split(",").map((binding) => binding.trim().split(/\s+as\s+/).pop())];
+    if (names.includes(name)) return specifier;
+    if (byFile === undefined && specifier.split("/").pop()?.replace(/\.[^.]+$/, "") === name) byFile = specifier;
+  }
+  return byFile;
+}
+
+/** "src/a/b.ts" + "../c" -> "src/c"; undefined when the specifier climbs out of the project. */
+function joinPath(from: string, specifier: string): string | undefined {
+  const parts = from.split("/").slice(0, -1);
+  for (const segment of specifier.split("/")) {
+    if (segment === "" || segment === ".") continue;
+    if (segment === "..") {
+      if (parts.length === 0) return undefined;
+      parts.pop();
+    } else {
+      parts.push(segment);
+    }
+  }
+  return parts.join("/");
+}

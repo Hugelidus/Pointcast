@@ -1,0 +1,171 @@
+{
+    "voice":  "Microsoft Helena Desktop",
+    "language":  "es",
+    "text":  "Bueno, unos cambios en el dashboard. Este botón quiero que ponga descargar CSV. Esta tarjeta la quitamos. Este gráfico mejor en barras. Y este numerito rojo de aquí arriba, quítalo. Por último, donde pone total earnings, que ponga ingresos totales. Listo.",
+    "words":  [
+                  {
+                      "text":  "Bueno,",
+                      "startMs":  1600
+                  },
+                  {
+                      "text":  "unos",
+                      "startMs":  2390
+                  },
+                  {
+                      "text":  "cambios",
+                      "startMs":  2660
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  3080
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  3185
+                  },
+                  {
+                      "text":  "dashboard.",
+                      "startMs":  3300
+                  },
+                  {
+                      "text":  "Este",
+                      "startMs":  5935
+                  },
+                  {
+                      "text":  "botón",
+                      "startMs":  6180
+                  },
+                  {
+                      "text":  "quiero",
+                      "startMs":  6525
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  6770
+                  },
+                  {
+                      "text":  "ponga",
+                      "startMs":  6885
+                  },
+                  {
+                      "text":  "descargar",
+                      "startMs":  7195
+                  },
+                  {
+                      "text":  "CSV.",
+                      "startMs":  7715
+                  },
+                  {
+                      "text":  "Esta",
+                      "startMs":  10825
+                  },
+                  {
+                      "text":  "tarjeta",
+                      "startMs":  11080
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  11520
+                  },
+                  {
+                      "text":  "quitamos.",
+                      "startMs":  11630
+                  },
+                  {
+                      "text":  "Este",
+                      "startMs":  14560
+                  },
+                  {
+                      "text":  "gráfico",
+                      "startMs":  14810
+                  },
+                  {
+                      "text":  "mejor",
+                      "startMs":  15240
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  15550
+                  },
+                  {
+                      "text":  "barras.",
+                      "startMs":  15675
+                  },
+                  {
+                      "text":  "Y",
+                      "startMs":  18475
+                  },
+                  {
+                      "text":  "este",
+                      "startMs":  18585
+                  },
+                  {
+                      "text":  "numerito",
+                      "startMs":  18810
+                  },
+                  {
+                      "text":  "rojo",
+                      "startMs":  19255
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  19560
+                  },
+                  {
+                      "text":  "aquí",
+                      "startMs":  19655
+                  },
+                  {
+                      "text":  "arriba,",
+                      "startMs":  19875
+                  },
+                  {
+                      "text":  "quítalo.",
+                      "startMs":  20665
+                  },
+                  {
+                      "text":  "Por",
+                      "startMs":  23485
+                  },
+                  {
+                      "text":  "último,",
+                      "startMs":  23675
+                  },
+                  {
+                      "text":  "donde",
+                      "startMs":  24475
+                  },
+                  {
+                      "text":  "pone",
+                      "startMs":  24760
+                  },
+                  {
+                      "text":  "total",
+                      "startMs":  25020
+                  },
+                  {
+                      "text":  "earnings,",
+                      "startMs":  25360
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  26255
+                  },
+                  {
+                      "text":  "ponga",
+                      "startMs":  26415
+                  },
+                  {
+                      "text":  "ingresos",
+                      "startMs":  26710
+                  },
+                  {
+                      "text":  "totales.",
+                      "startMs":  27160
+                  },
+                  {
+                      "text":  "Listo.",
+                      "startMs":  29565
+                  }
+              ]
+}

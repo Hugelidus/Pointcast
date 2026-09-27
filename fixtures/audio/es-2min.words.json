@@ -1,0 +1,1167 @@
+{
+    "voice":  "Microsoft Helena Desktop",
+    "language":  "es",
+    "text":  "Vale, empecemos por la tabla de pedidos. Esto de aqui, la columna de cantidad, me gustaria que fuera ordenable haciendo clic en la cabecera. Y esta otra columna, la de estado, deberia mostrar un color distinto segun el valor: verde para completado, amarillo para pendiente y rojo para cancelado. Ahora fijate en el boton de exportar, el que esta arriba a la derecha. Ahora mismo exporta toda la tabla, pero yo quiero que esto solo exporte las filas que esten filtradas en ese momento. Es decir, si aplico este filtro de aqui, por ejemplo por cliente, y despues pulso este boton, el export deberia respetar el filtro y no traerse todo. Vamos con el formulario de arriba. Este campo de busqueda tarda demasiado en responder, deberiamos anadir un debounce de unos trescientos milisegundos. Y este otro selector, el de rango de fechas, no deja escoger un rango que cruce de un mes a otro, eso hay que arreglarlo tambien. Bajemos ahora al pie de la tabla. Aqui abajo falta la paginacion. Ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado un buen rato. Me gustaria que esto paginara de cincuenta en cincuenta, con estos botones de siguiente y anterior aqui al lado. Una cosa mas sobre esta fila de aqui, la primera. Cuando el pedido esta cancelado, esta fila entera deberia aparecer tachada, no solo la palabra cancelado en la columna de estado. Y por ultimo, este icono de aqui, el de los tres puntos al final de cada fila, deberia abrir un menu con las opciones de ver detalle, reenviar factura y cancelar pedido, en ese orden. Creo que con esto ya tenemos suficiente para esta primera vuelta de cambios. Gracias.",
+    "words":  [
+                  {
+                      "text":  "Vale,",
+                      "startMs":  1600
+                  },
+                  {
+                      "text":  "empecemos",
+                      "startMs":  2355
+                  },
+                  {
+                      "text":  "por",
+                      "startMs":  2920
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  3090
+                  },
+                  {
+                      "text":  "tabla",
+                      "startMs":  3195
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  3525
+                  },
+                  {
+                      "text":  "pedidos.",
+                      "startMs":  3625
+                  },
+                  {
+                      "text":  "Esto",
+                      "startMs":  7220
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  7475
+                  },
+                  {
+                      "text":  "aqui,",
+                      "startMs":  7595
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  8310
+                  },
+                  {
+                      "text":  "columna",
+                      "startMs":  8455
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  8880
+                  },
+                  {
+                      "text":  "cantidad,",
+                      "startMs":  8985
+                  },
+                  {
+                      "text":  "me",
+                      "startMs":  9910
+                  },
+                  {
+                      "text":  "gustaria",
+                      "startMs":  10050
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  10520
+                  },
+                  {
+                      "text":  "fuera",
+                      "startMs":  10635
+                  },
+                  {
+                      "text":  "ordenable",
+                      "startMs":  10900
+                  },
+                  {
+                      "text":  "haciendo",
+                      "startMs":  11445
+                  },
+                  {
+                      "text":  "clic",
+                      "startMs":  11840
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  12055
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  12140
+                  },
+                  {
+                      "text":  "cabecera.",
+                      "startMs":  12245
+                  },
+                  {
+                      "text":  "Y",
+                      "startMs":  16265
+                  },
+                  {
+                      "text":  "esta",
+                      "startMs":  16375
+                  },
+                  {
+                      "text":  "otra",
+                      "startMs":  16620
+                  },
+                  {
+                      "text":  "columna,",
+                      "startMs":  16840
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  17710
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  17845
+                  },
+                  {
+                      "text":  "estado,",
+                      "startMs":  17940
+                  },
+                  {
+                      "text":  "deberia",
+                      "startMs":  18740
+                  },
+                  {
+                      "text":  "mostrar",
+                      "startMs":  19125
+                  },
+                  {
+                      "text":  "un",
+                      "startMs":  19525
+                  },
+                  {
+                      "text":  "color",
+                      "startMs":  19650
+                  },
+                  {
+                      "text":  "distinto",
+                      "startMs":  19930
+                  },
+                  {
+                      "text":  "segun",
+                      "startMs":  20415
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  20735
+                  },
+                  {
+                      "text":  "valor:",
+                      "startMs":  20845
+                  },
+                  {
+                      "text":  "verde",
+                      "startMs":  21575
+                  },
+                  {
+                      "text":  "para",
+                      "startMs":  21880
+                  },
+                  {
+                      "text":  "completado,",
+                      "startMs":  22100
+                  },
+                  {
+                      "text":  "amarillo",
+                      "startMs":  23140
+                  },
+                  {
+                      "text":  "para",
+                      "startMs":  23590
+                  },
+                  {
+                      "text":  "pendiente",
+                      "startMs":  23810
+                  },
+                  {
+                      "text":  "y",
+                      "startMs":  24335
+                  },
+                  {
+                      "text":  "rojo",
+                      "startMs":  24390
+                  },
+                  {
+                      "text":  "para",
+                      "startMs":  24695
+                  },
+                  {
+                      "text":  "cancelado.",
+                      "startMs":  24915
+                  },
+                  {
+                      "text":  "Ahora",
+                      "startMs":  29570
+                  },
+                  {
+                      "text":  "fijate",
+                      "startMs":  29840
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  30235
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  30325
+                  },
+                  {
+                      "text":  "boton",
+                      "startMs":  30430
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  30905
+                  },
+                  {
+                      "text":  "exportar,",
+                      "startMs":  30985
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  31905
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  32055
+                  },
+                  {
+                      "text":  "esta",
+                      "startMs":  32190
+                  },
+                  {
+                      "text":  "arriba",
+                      "startMs":  32390
+                  },
+                  {
+                      "text":  "a",
+                      "startMs":  32695
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  32735
+                  },
+                  {
+                      "text":  "derecha.",
+                      "startMs":  32840
+                  },
+                  {
+                      "text":  "Ahora",
+                      "startMs":  36155
+                  },
+                  {
+                      "text":  "mismo",
+                      "startMs":  36440
+                  },
+                  {
+                      "text":  "exporta",
+                      "startMs":  36730
+                  },
+                  {
+                      "text":  "toda",
+                      "startMs":  37155
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  37405
+                  },
+                  {
+                      "text":  "tabla,",
+                      "startMs":  37515
+                  },
+                  {
+                      "text":  "pero",
+                      "startMs":  38265
+                  },
+                  {
+                      "text":  "yo",
+                      "startMs":  38510
+                  },
+                  {
+                      "text":  "quiero",
+                      "startMs":  38660
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  38925
+                  },
+                  {
+                      "text":  "esto",
+                      "startMs":  39025
+                  },
+                  {
+                      "text":  "solo",
+                      "startMs":  39270
+                  },
+                  {
+                      "text":  "exporte",
+                      "startMs":  39525
+                  },
+                  {
+                      "text":  "las",
+                      "startMs":  39930
+                  },
+                  {
+                      "text":  "filas",
+                      "startMs":  40090
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  40400
+                  },
+                  {
+                      "text":  "esten",
+                      "startMs":  40540
+                  },
+                  {
+                      "text":  "filtradas",
+                      "startMs":  40825
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  41380
+                  },
+                  {
+                      "text":  "ese",
+                      "startMs":  41485
+                  },
+                  {
+                      "text":  "momento.",
+                      "startMs":  41690
+                  },
+                  {
+                      "text":  "Es",
+                      "startMs":  45865
+                  },
+                  {
+                      "text":  "decir,",
+                      "startMs":  45995
+                  },
+                  {
+                      "text":  "si",
+                      "startMs":  46755
+                  },
+                  {
+                      "text":  "aplico",
+                      "startMs":  46905
+                  },
+                  {
+                      "text":  "este",
+                      "startMs":  47300
+                  },
+                  {
+                      "text":  "filtro",
+                      "startMs":  47525
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  47885
+                  },
+                  {
+                      "text":  "aqui,",
+                      "startMs":  48010
+                  },
+                  {
+                      "text":  "por",
+                      "startMs":  48720
+                  },
+                  {
+                      "text":  "ejemplo",
+                      "startMs":  48920
+                  },
+                  {
+                      "text":  "por",
+                      "startMs":  49350
+                  },
+                  {
+                      "text":  "cliente,",
+                      "startMs":  49525
+                  },
+                  {
+                      "text":  "y",
+                      "startMs":  52220
+                  },
+                  {
+                      "text":  "despues",
+                      "startMs":  52315
+                  },
+                  {
+                      "text":  "pulso",
+                      "startMs":  52675
+                  },
+                  {
+                      "text":  "este",
+                      "startMs":  53000
+                  },
+                  {
+                      "text":  "boton,",
+                      "startMs":  53215
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  54175
+                  },
+                  {
+                      "text":  "export",
+                      "startMs":  54320
+                  },
+                  {
+                      "text":  "deberia",
+                      "startMs":  54785
+                  },
+                  {
+                      "text":  "respetar",
+                      "startMs":  55155
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  55615
+                  },
+                  {
+                      "text":  "filtro",
+                      "startMs":  55710
+                  },
+                  {
+                      "text":  "y",
+                      "startMs":  56125
+                  },
+                  {
+                      "text":  "no",
+                      "startMs":  56185
+                  },
+                  {
+                      "text":  "traerse",
+                      "startMs":  56310
+                  },
+                  {
+                      "text":  "todo.",
+                      "startMs":  56715
+                  },
+                  {
+                      "text":  "Vamos",
+                      "startMs":  61300
+                  },
+                  {
+                      "text":  "con",
+                      "startMs":  61625
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  61800
+                  },
+                  {
+                      "text":  "formulario",
+                      "startMs":  61900
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  62505
+                  },
+                  {
+                      "text":  "arriba.",
+                      "startMs":  62600
+                  },
+                  {
+                      "text":  "Este",
+                      "startMs":  65845
+                  },
+                  {
+                      "text":  "campo",
+                      "startMs":  66100
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  66400
+                  },
+                  {
+                      "text":  "busqueda",
+                      "startMs":  66500
+                  },
+                  {
+                      "text":  "tarda",
+                      "startMs":  66940
+                  },
+                  {
+                      "text":  "demasiado",
+                      "startMs":  67240
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  67735
+                  },
+                  {
+                      "text":  "responder,",
+                      "startMs":  67840
+                  },
+                  {
+                      "text":  "deberiamos",
+                      "startMs":  68795
+                  },
+                  {
+                      "text":  "anadir",
+                      "startMs":  69370
+                  },
+                  {
+                      "text":  "un",
+                      "startMs":  69715
+                  },
+                  {
+                      "text":  "debounce",
+                      "startMs":  69835
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  70290
+                  },
+                  {
+                      "text":  "unos",
+                      "startMs":  70395
+                  },
+                  {
+                      "text":  "trescientos",
+                      "startMs":  70640
+                  },
+                  {
+                      "text":  "milisegundos.",
+                      "startMs":  71230
+                  },
+                  {
+                      "text":  "Y",
+                      "startMs":  75305
+                  },
+                  {
+                      "text":  "este",
+                      "startMs":  75415
+                  },
+                  {
+                      "text":  "otro",
+                      "startMs":  75660
+                  },
+                  {
+                      "text":  "selector,",
+                      "startMs":  75875
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  76805
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  76960
+                  },
+                  {
+                      "text":  "rango",
+                      "startMs":  77050
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  77360
+                  },
+                  {
+                      "text":  "fechas,",
+                      "startMs":  77450
+                  },
+                  {
+                      "text":  "no",
+                      "startMs":  78325
+                  },
+                  {
+                      "text":  "deja",
+                      "startMs":  78470
+                  },
+                  {
+                      "text":  "escoger",
+                      "startMs":  78720
+                  },
+                  {
+                      "text":  "un",
+                      "startMs":  79140
+                  },
+                  {
+                      "text":  "rango",
+                      "startMs":  79270
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  79560
+                  },
+                  {
+                      "text":  "cruce",
+                      "startMs":  79690
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  80025
+                  },
+                  {
+                      "text":  "un",
+                      "startMs":  80125
+                  },
+                  {
+                      "text":  "mes",
+                      "startMs":  80235
+                  },
+                  {
+                      "text":  "a",
+                      "startMs":  80450
+                  },
+                  {
+                      "text":  "otro,",
+                      "startMs":  80520
+                  },
+                  {
+                      "text":  "eso",
+                      "startMs":  81240
+                  },
+                  {
+                      "text":  "hay",
+                      "startMs":  81465
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  81585
+                  },
+                  {
+                      "text":  "arreglarlo",
+                      "startMs":  81695
+                  },
+                  {
+                      "text":  "tambien.",
+                      "startMs":  82205
+                  },
+                  {
+                      "text":  "Bajemos",
+                      "startMs":  86545
+                  },
+                  {
+                      "text":  "ahora",
+                      "startMs":  87005
+                  },
+                  {
+                      "text":  "al",
+                      "startMs":  87265
+                  },
+                  {
+                      "text":  "pie",
+                      "startMs":  87365
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  87585
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  87675
+                  },
+                  {
+                      "text":  "tabla.",
+                      "startMs":  87785
+                  },
+                  {
+                      "text":  "Aqui",
+                      "startMs":  91225
+                  },
+                  {
+                      "text":  "abajo",
+                      "startMs":  91480
+                  },
+                  {
+                      "text":  "falta",
+                      "startMs":  91800
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  92125
+                  },
+                  {
+                      "text":  "paginacion.",
+                      "startMs":  92230
+                  },
+                  {
+                      "text":  "Ahora",
+                      "startMs":  93765
+                  },
+                  {
+                      "text":  "mismo",
+                      "startMs":  94050
+                  },
+                  {
+                      "text":  "se",
+                      "startMs":  94350
+                  },
+                  {
+                      "text":  "cargan",
+                      "startMs":  94495
+                  },
+                  {
+                      "text":  "todos",
+                      "startMs":  94865
+                  },
+                  {
+                      "text":  "los",
+                      "startMs":  95140
+                  },
+                  {
+                      "text":  "pedidos",
+                      "startMs":  95295
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  95695
+                  },
+                  {
+                      "text":  "golpe",
+                      "startMs":  95795
+                  },
+                  {
+                      "text":  "y",
+                      "startMs":  96130
+                  },
+                  {
+                      "text":  "con",
+                      "startMs":  96190
+                  },
+                  {
+                      "text":  "mil",
+                      "startMs":  96370
+                  },
+                  {
+                      "text":  "filas",
+                      "startMs":  96550
+                  },
+                  {
+                      "text":  "esto",
+                      "startMs":  96910
+                  },
+                  {
+                      "text":  "se",
+                      "startMs":  97150
+                  },
+                  {
+                      "text":  "queda",
+                      "startMs":  97295
+                  },
+                  {
+                      "text":  "pegado",
+                      "startMs":  97550
+                  },
+                  {
+                      "text":  "un",
+                      "startMs":  97905
+                  },
+                  {
+                      "text":  "buen",
+                      "startMs":  98030
+                  },
+                  {
+                      "text":  "rato.",
+                      "startMs":  98260
+                  },
+                  {
+                      "text":  "Me",
+                      "startMs":  102065
+                  },
+                  {
+                      "text":  "gustaria",
+                      "startMs":  102205
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  102680
+                  },
+                  {
+                      "text":  "esto",
+                      "startMs":  102805
+                  },
+                  {
+                      "text":  "paginara",
+                      "startMs":  103040
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  103530
+                  },
+                  {
+                      "text":  "cincuenta",
+                      "startMs":  103620
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  104130
+                  },
+                  {
+                      "text":  "cincuenta,",
+                      "startMs":  104220
+                  },
+                  {
+                      "text":  "con",
+                      "startMs":  105215
+                  },
+                  {
+                      "text":  "estos",
+                      "startMs":  105410
+                  },
+                  {
+                      "text":  "botones",
+                      "startMs":  105700
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  106120
+                  },
+                  {
+                      "text":  "siguiente",
+                      "startMs":  106205
+                  },
+                  {
+                      "text":  "y",
+                      "startMs":  106715
+                  },
+                  {
+                      "text":  "anterior",
+                      "startMs":  106810
+                  },
+                  {
+                      "text":  "aqui",
+                      "startMs":  107245
+                  },
+                  {
+                      "text":  "al",
+                      "startMs":  107485
+                  },
+                  {
+                      "text":  "lado.",
+                      "startMs":  107580
+                  },
+                  {
+                      "text":  "Una",
+                      "startMs":  112340
+                  },
+                  {
+                      "text":  "cosa",
+                      "startMs":  112550
+                  },
+                  {
+                      "text":  "mas",
+                      "startMs":  112835
+                  },
+                  {
+                      "text":  "sobre",
+                      "startMs":  113020
+                  },
+                  {
+                      "text":  "esta",
+                      "startMs":  113255
+                  },
+                  {
+                      "text":  "fila",
+                      "startMs":  113465
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  113740
+                  },
+                  {
+                      "text":  "aqui,",
+                      "startMs":  113855
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  114585
+                  },
+                  {
+                      "text":  "primera.",
+                      "startMs":  114720
+                  },
+                  {
+                      "text":  "Cuando",
+                      "startMs":  117825
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  118145
+                  },
+                  {
+                      "text":  "pedido",
+                      "startMs":  118220
+                  },
+                  {
+                      "text":  "esta",
+                      "startMs":  118565
+                  },
+                  {
+                      "text":  "cancelado,",
+                      "startMs":  118795
+                  },
+                  {
+                      "text":  "esta",
+                      "startMs":  119785
+                  },
+                  {
+                      "text":  "fila",
+                      "startMs":  120045
+                  },
+                  {
+                      "text":  "entera",
+                      "startMs":  120305
+                  },
+                  {
+                      "text":  "deberia",
+                      "startMs":  120645
+                  },
+                  {
+                      "text":  "aparecer",
+                      "startMs":  121015
+                  },
+                  {
+                      "text":  "tachada,",
+                      "startMs":  121495
+                  },
+                  {
+                      "text":  "no",
+                      "startMs":  122380
+                  },
+                  {
+                      "text":  "solo",
+                      "startMs":  122520
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  122785
+                  },
+                  {
+                      "text":  "palabra",
+                      "startMs":  122890
+                  },
+                  {
+                      "text":  "cancelado",
+                      "startMs":  123285
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  123805
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  123885
+                  },
+                  {
+                      "text":  "columna",
+                      "startMs":  123990
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  124420
+                  },
+                  {
+                      "text":  "estado.",
+                      "startMs":  124510
+                  },
+                  {
+                      "text":  "Y",
+                      "startMs":  128175
+                  },
+                  {
+                      "text":  "por",
+                      "startMs":  128270
+                  },
+                  {
+                      "text":  "ultimo,",
+                      "startMs":  128435
+                  },
+                  {
+                      "text":  "este",
+                      "startMs":  129280
+                  },
+                  {
+                      "text":  "icono",
+                      "startMs":  129540
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  129850
+                  },
+                  {
+                      "text":  "aqui,",
+                      "startMs":  129970
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  130690
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  130845
+                  },
+                  {
+                      "text":  "los",
+                      "startMs":  130935
+                  },
+                  {
+                      "text":  "tres",
+                      "startMs":  131105
+                  },
+                  {
+                      "text":  "puntos",
+                      "startMs":  131330
+                  },
+                  {
+                      "text":  "al",
+                      "startMs":  131735
+                  },
+                  {
+                      "text":  "final",
+                      "startMs":  131840
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  132165
+                  },
+                  {
+                      "text":  "cada",
+                      "startMs":  132270
+                  },
+                  {
+                      "text":  "fila,",
+                      "startMs":  132515
+                  },
+                  {
+                      "text":  "deberia",
+                      "startMs":  135240
+                  },
+                  {
+                      "text":  "abrir",
+                      "startMs":  135630
+                  },
+                  {
+                      "text":  "un",
+                      "startMs":  135890
+                  },
+                  {
+                      "text":  "menu",
+                      "startMs":  136000
+                  },
+                  {
+                      "text":  "con",
+                      "startMs":  136235
+                  },
+                  {
+                      "text":  "las",
+                      "startMs":  136395
+                  },
+                  {
+                      "text":  "opciones",
+                      "startMs":  136565
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  137025
+                  },
+                  {
+                      "text":  "ver",
+                      "startMs":  137115
+                  },
+                  {
+                      "text":  "detalle,",
+                      "startMs":  137280
+                  },
+                  {
+                      "text":  "reenviar",
+                      "startMs":  138155
+                  },
+                  {
+                      "text":  "factura",
+                      "startMs":  138635
+                  },
+                  {
+                      "text":  "y",
+                      "startMs":  139085
+                  },
+                  {
+                      "text":  "cancelar",
+                      "startMs":  139140
+                  },
+                  {
+                      "text":  "pedido,",
+                      "startMs":  139605
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  140450
+                  },
+                  {
+                      "text":  "ese",
+                      "startMs":  140590
+                  },
+                  {
+                      "text":  "orden.",
+                      "startMs":  140795
+                  },
+                  {
+                      "text":  "Creo",
+                      "startMs":  144825
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  145085
+                  },
+                  {
+                      "text":  "con",
+                      "startMs":  145195
+                  },
+                  {
+                      "text":  "esto",
+                      "startMs":  145370
+                  },
+                  {
+                      "text":  "ya",
+                      "startMs":  145615
+                  },
+                  {
+                      "text":  "tenemos",
+                      "startMs":  145765
+                  },
+                  {
+                      "text":  "suficiente",
+                      "startMs":  146150
+                  },
+                  {
+                      "text":  "para",
+                      "startMs":  146745
+                  },
+                  {
+                      "text":  "esta",
+                      "startMs":  146950
+                  },
+                  {
+                      "text":  "primera",
+                      "startMs":  147170
+                  },
+                  {
+                      "text":  "vuelta",
+                      "startMs":  147540
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  147875
+                  },
+                  {
+                      "text":  "cambios.",
+                      "startMs":  147975
+                  },
+                  {
+                      "text":  "Gracias.",
+                      "startMs":  150845
+                  }
+              ]
+}

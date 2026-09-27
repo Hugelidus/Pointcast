@@ -1,0 +1,27 @@
+/*
+ * Plain CSS on purpose: the Tailwind-like class names in the HTML are there only as
+ * "noise" that the selector generator must ignore, so Tailwind itself is not loaded.
+ */
+body { margin: 0; font: 15px/1.5 system-ui, sans-serif; color: #1f2937; background: #f9fafb; }
+header { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: #0f172a; color: #fff; }
+header nav a { color: #cbd5e1; margin-left: 16px; }
+header nav a[aria-current="page"] { color: #fff; font-weight: 600; }
+main { max-width: 960px; margin: 0 auto; padding: 24px; }
+section { margin-bottom: 32px; }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+th { background: #f3f4f6; }
+button { padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; cursor: pointer; }
+button.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+button svg { width: 14px; height: 14px; vertical-align: -2px; }
+.toolbar { display: flex; gap: 8px; margin: 16px 0; }
+form { display: grid; grid-template-columns: 160px 1fr; gap: 8px 12px; max-width: 560px; }
+form button { grid-column: 2; justify-self: start; }
+[data-sensitive] { border: 1px dashed #dc2626; }
+.private-note { grid-column: 1 / -1; padding: 8px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+.instructions { font-size: 13px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 16px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#toast { position: fixed; bottom: 16px; right: 16px; padding: 8px 14px; border-radius: 6px; background: #111827; color: #fff; opacity: 0; transition: opacity .2s; }
+#toast.show { opacity: 1; }

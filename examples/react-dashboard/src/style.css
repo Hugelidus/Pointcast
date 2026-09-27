@@ -1,0 +1,243 @@
+/* Plain CSS, no UI library: this is a recording target, not a design showcase. */
+
+:root {
+  color-scheme: light;
+  --border: #e2e5ea;
+  --muted: #6b7280;
+  --text: #111827;
+  --accent: #2563eb;
+  --bg: #f6f7f9;
+  --card-bg: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---------------------------------------------------------------------- sidebar */
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: #111827;
+  color: #e5e7eb;
+  padding: 16px 12px;
+}
+
+.sidebar-brand {
+  font-weight: 700;
+  font-size: 16px;
+  padding: 8px 10px 20px;
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  background: #1f2937;
+}
+
+.nav-item-active {
+  background: #1f2937;
+  font-weight: 600;
+}
+
+.badge {
+  background: var(--accent);
+  color: white;
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 12px;
+}
+
+/* ---------------------------------------------------------------------- content */
+
+.content {
+  flex: 1;
+  padding: 24px 32px;
+}
+
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.header-bar h1 {
+  font-size: 22px;
+  margin: 0;
+}
+
+.header-user {
+  color: var(--muted);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(200px, 260px));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-card,
+.chart-card,
+.panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.stat-card h3,
+.chart-card h3,
+.panel h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.stat-subtitle {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stat-value {
+  margin: 0 0 10px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.stat-link {
+  color: var(--accent);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.stat-link:hover {
+  text-decoration: underline;
+}
+
+.chart-card {
+  max-width: 420px;
+}
+
+.sales-chart {
+  width: 100%;
+  height: 120px;
+}
+
+.chart-bar {
+  fill: var(--accent);
+}
+
+.panel-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.panel-subtitle {
+  margin: -4px 0 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.btn {
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-export {
+  color: var(--text);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  margin-top: 8px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-form {
+  max-width: 360px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.field input {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 9px;
+  font-size: 13px;
+}
+
+.customer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.customer-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.customer-email {
+  color: var(--muted);
+}

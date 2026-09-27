@@ -1,0 +1,67 @@
+{
+  "startPath": "/",
+  "voice": "Microsoft Helena Desktop",
+  "language": "es",
+  "rate": 0,
+  "narration": [
+    "Vale, voy a repasar el panel.",
+    { "breakMs": 1200 },
+    "Este botón de aquí lo quiero en verde.",
+    { "breakMs": 1500 },
+    "Esta tarjeta sobra, quítala.",
+    { "breakMs": 1500 },
+    "Este gráfico preferiría verlo con líneas en vez de barras.",
+    { "breakMs": 1500 },
+    "En el menú de la izquierda, este número no hace falta, fuera.",
+    { "breakMs": 1500 },
+    "Y el texto de ventas recientes, que diga últimas ventas del mes.",
+    { "breakMs": 1000 },
+    "Nada más, gracias."
+  ],
+  "gestures": [
+    { "word": "este", "occurrence": 1, "gesture": "point", "target": "main button:has-text(\"Download\")" },
+    { "word": "esta", "occurrence": 1, "gesture": "point", "target": "[data-slot=\"card\"]:has-text(\"Active Now\")" },
+    { "word": "este", "occurrence": 2, "gesture": "point", "target": ".recharts-responsive-container" },
+    { "word": "este", "occurrence": 3, "gesture": "point", "target": "a:has-text(\"Chats\") >> text=\"3\"" },
+    { "word": "texto", "occurrence": 1, "gesture": "select", "target": "text=\"You made 265 sales this month.\"" }
+  ],
+  "changes": [
+    {
+      "id": "download-green",
+      "summary": "The Download button of the dashboard header turns green (only that button).",
+      "topic": "verde|green|download|descarg",
+      "files": ["src/features/dashboard/index.tsx"],
+      "target": "download",
+      "wrong": "components/ui/button"
+    },
+    {
+      "id": "remove-active-now",
+      "summary": "Remove the \"Active Now\" stat card (the 4th card).",
+      "topic": "tarjeta|card|quit|remov|elimin|borr|sobra|active now",
+      "files": ["src/features/dashboard/index.tsx"],
+      "target": "active now|\\+573|4th|fourth|cuarta"
+    },
+    {
+      "id": "overview-lines",
+      "summary": "The Overview bar chart becomes a line chart.",
+      "topic": "line|linea|barra|\\bbars?\\b|grafic|chart",
+      "files": ["src/features/dashboard/components/overview.tsx"],
+      "target": "overview|bar|chart|grafic"
+    },
+    {
+      "id": "chats-badge",
+      "summary": "Remove the \"3\" badge of the Chats item in the sidebar (its data, not the badge component).",
+      "topic": "numer|badge|contador|count|chats|fuera|quit|remov",
+      "files": ["src/components/layout/data/sidebar-data.ts"],
+      "target": "chats|badge",
+      "wrong": "nav-group|navbadge"
+    },
+    {
+      "id": "sales-subtitle",
+      "summary": "The Recent Sales description \"You made 265 sales this month.\" reads \"Últimas ventas del mes\".",
+      "topic": "ventas|sales|subtit|descripci|\\btexto?\\b",
+      "files": ["src/features/dashboard/index.tsx"],
+      "target": "265|you made|carddescription"
+    }
+  ]
+}

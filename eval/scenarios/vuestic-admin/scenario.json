@@ -1,0 +1,68 @@
+{
+  "startPath": "/dashboard",
+  "voice": "Microsoft Helena Desktop",
+  "language": "es",
+  "rate": 0,
+  "narration": [
+    "Bueno, unos cambios en el dashboard.",
+    { "breakMs": 1200 },
+    "Este botón quiero que ponga descargar CSV.",
+    { "breakMs": 1500 },
+    "Esta tarjeta la quitamos.",
+    { "breakMs": 1500 },
+    "Este gráfico mejor en barras.",
+    { "breakMs": 1500 },
+    "Y este numerito rojo de aquí arriba, quítalo.",
+    { "breakMs": 1500 },
+    "Por último, donde pone total earnings, que ponga ingresos totales.",
+    { "breakMs": 1000 },
+    "Listo."
+  ],
+  "gestures": [
+    { "word": "este", "occurrence": 1, "gesture": "point", "target": ".va-card:has-text(\"Revenue Report\") button:has-text(\"Export\")" },
+    { "word": "esta", "occurrence": 1, "gesture": "point", "target": ".va-card:has-text(\"Employees\")" },
+    { "word": "este", "occurrence": 2, "gesture": "point", "target": ".va-card:has-text(\"Monthly Earnings\") canvas" },
+    { "word": "este", "occurrence": 3, "gesture": "point", "target": ".notification-dropdown .va-badge__text" },
+    { "word": "total", "occurrence": 1, "gesture": "select", "target": "text=\"Total earnings\"" }
+  ],
+  "changes": [
+    {
+      "id": "revenue-export-label",
+      "summary": "The Export button of the Revenue Report card reads \"Descargar CSV\" (not the Export of Revenue by Top Regions).",
+      "topic": "csv|descarg|download|export",
+      "files": ["src/pages/admin/dashboard/cards/RevenueReport.vue"],
+      "target": "export|vabutton|button",
+      "wrong": "regionrevenue"
+    },
+    {
+      "id": "remove-employees",
+      "summary": "Remove the Employees metric card from the data section.",
+      "topic": "tarjeta|card|quit|remov|elimin|borr|employee|emplead",
+      "files": ["src/pages/admin/dashboard/DataSection.vue"],
+      "target": "employee",
+      "wrong": "datasectionitem"
+    },
+    {
+      "id": "monthly-bars",
+      "summary": "The Monthly Earnings line chart becomes a bar chart.",
+      "topic": "barra|\\bbars?\\b|grafic|chart",
+      "files": ["src/pages/admin/dashboard/cards/MonthlyEarnings.vue"],
+      "target": "line|type|vachart|chart",
+      "wrong": "revenuereportchart|yearlybreakup"
+    },
+    {
+      "id": "bell-badge",
+      "summary": "Remove the red \"2+\" badge of the notifications bell in the navbar.",
+      "topic": "numer|badge|contador|notific|campan|bell|quit|remov",
+      "files": ["src/components/navbar/components/dropdowns/NotificationDropdown.vue"],
+      "target": "badge|2\\+|notif"
+    },
+    {
+      "id": "total-earnings-label",
+      "summary": "The \"Total earnings\" label of the Revenue Report reads \"Ingresos totales\".",
+      "topic": "total earnings|ingresos",
+      "files": ["src/pages/admin/dashboard/cards/RevenueReport.vue"],
+      "target": "total earnings"
+    }
+  ]
+}

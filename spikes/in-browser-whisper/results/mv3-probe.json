@@ -1,0 +1,877 @@
+[
+  {
+    "at": "2026-09-26T22:40:15.720Z",
+    "chromium": "C:\\Users\\hugob\\AppData\\Local\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe",
+    "variants": {
+      "iso": {
+        "id": "bgcjbbdolencgnghencnpefagjjlpgma",
+        "manifest": {
+          "cross_origin_embedder_policy": {
+            "value": "require-corp"
+          },
+          "cross_origin_opener_policy": {
+            "value": "same-origin"
+          },
+          "permissions": [
+            "offscreen",
+            "unlimitedStorage"
+          ]
+        },
+        "serviceWorker": {
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "workerConstructor": "undefined",
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of script in the following Content Security Policy directive: \"script-src 'self'\".",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere"
+          },
+          "manifestName": "pcws-probe-iso"
+        },
+        "extensionTab": {
+          "href": "chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/spike/index.html?nocache=1",
+          "crossOriginIsolated": true,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/1b80cf21-d857-4bf5-b450-61586edd8231",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 3.7,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        },
+        "offscreen": {
+          "href": "chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/mv3-probe/offscreen.html?nocache=1",
+          "crossOriginIsolated": true,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/e9fb03cc-17a5-4b66-9a64-77db7c3f98e2",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 3.7,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        }
+      },
+      "plain": {
+        "id": "hjbfidlcjklaeladfpgfohmiffoheddp",
+        "manifest": {
+          "permissions": [
+            "offscreen"
+          ]
+        },
+        "serviceWorker": {
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "workerConstructor": "undefined",
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of script in the following Content Security Policy directive: \"script-src 'self'\".",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere"
+          },
+          "manifestName": "pcws-probe-plain"
+        },
+        "extensionTab": {
+          "href": "chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/spike/index.html?nocache=1",
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/a9175ff6-a0b6-478a-8d31-45c6c0c660bd",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        },
+        "offscreen": {
+          "href": "chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/mv3-probe/offscreen.html?nocache=1",
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/7ebf9ea8-ff7d-4109-8758-c7c219836133",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        }
+      },
+      "strict-csp": {
+        "id": "bbkfjbekkdjbadafibhmpikmdmnfacdf",
+        "manifest": {
+          "cross_origin_embedder_policy": {
+            "value": "require-corp"
+          },
+          "cross_origin_opener_policy": {
+            "value": "same-origin"
+          },
+          "permissions": [
+            "offscreen"
+          ],
+          "content_security_policy": {
+            "extension_pages": "script-src 'self'; object-src 'self'"
+          }
+        },
+        "serviceWorker": {
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "workerConstructor": "undefined",
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of script in the following Content Security Policy directive: \"script-src 'self'\".",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere"
+          },
+          "manifestName": "pcws-probe-strict-csp"
+        },
+        "extensionTab": {
+          "href": "chrome-extension://bbkfjbekkdjbadafibhmpikmdmnfacdf/spike/index.html?nocache=1",
+          "crossOriginIsolated": true,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://bbkfjbekkdjbadafibhmpikmdmnfacdf/05e76291-bb03-49a5-b603-b959ed21250d",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        },
+        "offscreen": {
+          "href": "chrome-extension://bbkfjbekkdjbadafibhmpikmdmnfacdf/mv3-probe/offscreen.html?nocache=1",
+          "crossOriginIsolated": true,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://bbkfjbekkdjbadafibhmpikmdmnfacdf/4fdc04cf-6f2e-46c5-af7d-4964e9073edb",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        }
+      }
+    },
+    "runs": [
+      {
+        "variant": "iso",
+        "config": {
+          "model": "Xenova/whisper-base",
+          "device": "wasm",
+          "dtype": "fp32",
+          "threads": 4,
+          "audios": [
+            "es-short",
+            "es-2min"
+          ],
+          "repeats": 1
+        },
+        "error": "Error: Error: no available backend found. ERR: [wasm] RuntimeError: Aborted(CompileError: WebAssembly.instantiate(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of script in the following Content Security Policy directive: \"script-src 'self'\".). Build with -sASSERTIONS for more info.\n    at Da (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:8583:19)\n    at async a.create (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:9045:20)\n    at async createInferenceSession (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:13449:19)\n    at async chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:24371:25\n    at async Promise.all (index 0)\n    at async constructSessions (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:24361:5)\n    at async Promise.all (index 0)\n    at async WhisperForConditionalGeneration.from_pretrained (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:26312:18)\n    at async AutoModelForSpeechSeq2Seq.from_pretrained (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:33472:14)\n    at async Promise.all (index 2)\n    at WhisperWorker.worker.onmessage (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/spike/app.js:115:43)"
+      },
+      {
+        "variant": "iso",
+        "config": {
+          "model": "Xenova/whisper-base",
+          "device": "webgpu",
+          "dtype": "fp32",
+          "audios": [
+            "es-short",
+            "es-2min"
+          ],
+          "repeats": 1
+        },
+        "error": "Error: Error: no available backend found. ERR: [webgpu] RuntimeError: Aborted(CompileError: WebAssembly.instantiate(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of script in the following Content Security Policy directive: \"script-src 'self'\".). Build with -sASSERTIONS for more info.\n    at Da (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:8583:19)\n    at async a.create (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:9045:20)\n    at async createInferenceSession (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:13449:19)\n    at async chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:24371:25\n    at async Promise.all (index 0)\n    at async constructSessions (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:24361:5)\n    at async Promise.all (index 0)\n    at async WhisperForConditionalGeneration.from_pretrained (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:26312:18)\n    at async AutoModelForSpeechSeq2Seq.from_pretrained (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/vendor/transformers/transformers.js:33472:14)\n    at async Promise.all (index 2)\n    at WhisperWorker.worker.onmessage (chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/spike/app.js:115:43)"
+      },
+      {
+        "variant": "plain",
+        "config": {
+          "model": "Xenova/whisper-base",
+          "device": "wasm",
+          "dtype": "fp32",
+          "threads": 4,
+          "audios": [
+            "es-short"
+          ],
+          "repeats": 1
+        },
+        "error": "Error: Error: no available backend found. ERR: [wasm] RuntimeError: Aborted(CompileError: WebAssembly.instantiate(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of script in the following Content Security Policy directive: \"script-src 'self'\".). Build with -sASSERTIONS for more info.\n    at Da (chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/vendor/transformers/transformers.js:8583:19)\n    at async a.create (chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/vendor/transformers/transformers.js:9045:20)\n    at async createInferenceSession (chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/vendor/transformers/transformers.js:13449:19)\n    at async chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/vendor/transformers/transformers.js:24371:25\n    at async Promise.all (index 0)\n    at async constructSessions (chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/vendor/transformers/transformers.js:24361:5)\n    at async Promise.all (index 0)\n    at async WhisperForConditionalGeneration.from_pretrained (chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/vendor/transformers/transformers.js:26312:18)\n    at async AutoModelForSpeechSeq2Seq.from_pretrained (chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/vendor/transformers/transformers.js:33472:14)\n    at async Promise.all (index 2)\n    at WhisperWorker.worker.onmessage (chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/spike/app.js:115:43)"
+      }
+    ],
+    "memory": {
+      "rendererPeakWorkingSetMB": 469,
+      "rendererPeakCommitMB": 561,
+      "gpuProcessPeakWorkingSetMB": 203,
+      "browserPeakWorkingSetMB": 192,
+      "sumOfPeaksMB": 1755,
+      "basePriorities": [
+        6
+      ],
+      "e2eChromiumProcesses": 0
+    }
+  },
+  {
+    "at": "2026-09-26T22:41:24.513Z",
+    "chromium": "C:\\Users\\hugob\\AppData\\Local\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe",
+    "variants": {
+      "iso": {
+        "id": "bgcjbbdolencgnghencnpefagjjlpgma",
+        "manifest": {
+          "cross_origin_embedder_policy": {
+            "value": "require-corp"
+          },
+          "cross_origin_opener_policy": {
+            "value": "same-origin"
+          },
+          "permissions": [
+            "offscreen",
+            "unlimitedStorage"
+          ]
+        },
+        "serviceWorker": {
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "workerConstructor": "undefined",
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of script in the following Content Security Policy directive: \"script-src 'self'\".",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere"
+          },
+          "manifestName": "pcws-probe-iso"
+        },
+        "extensionTab": {
+          "href": "chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/spike/index.html?nocache=1",
+          "crossOriginIsolated": true,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/fa766b90-98f7-48b7-882e-3e9f6478c9eb",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 3.7,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        },
+        "offscreen": {
+          "href": "chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/mv3-probe/offscreen.html?nocache=1",
+          "crossOriginIsolated": true,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://bgcjbbdolencgnghencnpefagjjlpgma/79c20ecf-c084-404b-955d-a91eb145d5d0",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 3.7,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        }
+      },
+      "iso-wasm": {
+        "id": "eheiofkmkhmdhmmgmjfamighmgpemogb",
+        "manifest": {
+          "cross_origin_embedder_policy": {
+            "value": "require-corp"
+          },
+          "cross_origin_opener_policy": {
+            "value": "same-origin"
+          },
+          "permissions": [
+            "offscreen"
+          ],
+          "content_security_policy": {
+            "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+          }
+        },
+        "serviceWorker": {
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "workerConstructor": "undefined",
+          "wasmCompile": "ok",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere"
+          },
+          "manifestName": "pcws-probe-iso-wasm"
+        },
+        "extensionTab": {
+          "href": "chrome-extension://eheiofkmkhmdhmmgmjfamighmgpemogb/spike/index.html?nocache=1",
+          "crossOriginIsolated": true,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ok",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://eheiofkmkhmdhmmgmjfamighmgpemogb/0890767f-684e-4dd3-bdec-becf03a02258",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        },
+        "offscreen": {
+          "href": "chrome-extension://eheiofkmkhmdhmmgmjfamighmgpemogb/mv3-probe/offscreen.html?nocache=1",
+          "crossOriginIsolated": true,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ok",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://eheiofkmkhmdhmmgmjfamighmgpemogb/4c752207-6844-4b1a-9a46-9b7d0f8c8106",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        }
+      },
+      "plain-wasm": {
+        "id": "eaijlajoknmlkjbfejlhefikklpmmbka",
+        "manifest": {
+          "permissions": [
+            "offscreen"
+          ],
+          "content_security_policy": {
+            "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+          }
+        },
+        "serviceWorker": {
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "workerConstructor": "undefined",
+          "wasmCompile": "ok",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere"
+          },
+          "manifestName": "pcws-probe-plain-wasm"
+        },
+        "extensionTab": {
+          "href": "chrome-extension://eaijlajoknmlkjbfejlhefikklpmmbka/spike/index.html?nocache=1",
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ok",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://eaijlajoknmlkjbfejlhefikklpmmbka/6f1baef1-85a1-42bd-a61b-bcdccef8fcc0",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        },
+        "offscreen": {
+          "href": "chrome-extension://eaijlajoknmlkjbfejlhefikklpmmbka/mv3-probe/offscreen.html?nocache=1",
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ok",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://eaijlajoknmlkjbfejlhefikklpmmbka/9cddca9f-726b-40e2-942f-551f4a1b36f1",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        }
+      },
+      "plain": {
+        "id": "hjbfidlcjklaeladfpgfohmiffoheddp",
+        "manifest": {
+          "permissions": [
+            "offscreen"
+          ]
+        },
+        "serviceWorker": {
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "workerConstructor": "undefined",
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of script in the following Content Security Policy directive: \"script-src 'self'\".",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere"
+          },
+          "manifestName": "pcws-probe-plain"
+        },
+        "extensionTab": {
+          "href": "chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/spike/index.html?nocache=1",
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/1ea784f4-8af6-4eae-bea4-56ebb0ae5a3c",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        },
+        "offscreen": {
+          "href": "chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/mv3-probe/offscreen.html?nocache=1",
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://hjbfidlcjklaeladfpgfohmiffoheddp/6b6029b1-9f58-4fbf-a75a-7245b4ab7b18",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        }
+      },
+      "strict-csp": {
+        "id": "bbkfjbekkdjbadafibhmpikmdmnfacdf",
+        "manifest": {
+          "cross_origin_embedder_policy": {
+            "value": "require-corp"
+          },
+          "cross_origin_opener_policy": {
+            "value": "same-origin"
+          },
+          "permissions": [
+            "offscreen"
+          ],
+          "content_security_policy": {
+            "extension_pages": "script-src 'self'; object-src 'self'"
+          }
+        },
+        "serviceWorker": {
+          "crossOriginIsolated": false,
+          "sharedArrayBuffer": true,
+          "workerConstructor": "undefined",
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of script in the following Content Security Policy directive: \"script-src 'self'\".",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere"
+          },
+          "manifestName": "pcws-probe-strict-csp"
+        },
+        "extensionTab": {
+          "href": "chrome-extension://bbkfjbekkdjbadafibhmpikmdmnfacdf/spike/index.html?nocache=1",
+          "crossOriginIsolated": true,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://bbkfjbekkdjbadafibhmpikmdmnfacdf/95b3aad7-edac-4a78-b473-53c020aafcc0",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        },
+        "offscreen": {
+          "href": "chrome-extension://bbkfjbekkdjbadafibhmpikmdmnfacdf/mv3-probe/offscreen.html?nocache=1",
+          "crossOriginIsolated": true,
+          "sharedArrayBuffer": true,
+          "wasmCompile": "ERROR: WebAssembly.compile(): Compiling or instantiating WebAssembly module violates the following Content Security policy directive because neither 'wasm-eval' nor 'unsafe-eval' is an allowed source of scri",
+          "wasmSharedMemory": "ok",
+          "moduleWorkerFromExtensionUrl": "module worker ran",
+          "blobWorker": "blob worker ran",
+          "blobImport": "ERROR: Failed to fetch dynamically imported module: blob:chrome-extension://bbkfjbekkdjbadafibhmpikmdmnfacdf/889fddd7-6ebe-4d9c-959f-35760947f326",
+          "cacheApiWithHttpsKey": "ok",
+          "storageEstimate": {
+            "quotaGB": 10,
+            "usageMB": 0
+          },
+          "storagePersisted": false,
+          "fetchHuggingFace": "200 cors",
+          "webgpu": {
+            "vendor": "nvidia",
+            "architecture": "ampere",
+            "isFallbackAdapter": false
+          },
+          "webgpuInDedicatedWorker": "adapter nvidia ampere"
+        }
+      }
+    },
+    "runs": [
+      {
+        "variant": "iso-wasm",
+        "config": {
+          "model": "Xenova/whisper-base",
+          "device": "wasm",
+          "dtype": "fp32",
+          "threads": 4,
+          "audios": [
+            "es-short",
+            "es-2min"
+          ],
+          "repeats": 1
+        },
+        "rows": [
+          {
+            "model": "Xenova/whisper-base",
+            "device": "wasm",
+            "dtype": "fp32",
+            "threads": 4,
+            "requestedThreads": 4,
+            "crossOriginIsolated": true,
+            "audio": "es-short",
+            "audioSeconds": 11.615,
+            "run": 1,
+            "loadSeconds": 7.359989999998361,
+            "loadFilesSeconds": 6.401434999998659,
+            "loadSessionSeconds": 0.9586499999985099,
+            "retries429": 0,
+            "cache": "cold (download)",
+            "modelMB": 291.035846,
+            "transcribeSeconds": 2.538015000000596,
+            "secondsPerAudioMinute": 13.110710288423224,
+            "words": 17,
+            "timestamps": "word",
+            "wordAccuracy": 0.9375,
+            "medianStartErrorMs": 228,
+            "p90StartErrorMs": 372,
+            "hypWords": 17,
+            "refWords": 16,
+            "esto": "esto@1975ms -> 2260ms (err 285ms) OK; esto@7528ms -> 7880ms (err 352ms) OK",
+            "firstWords": "Esto@2260 me@2420 gustaría@2820 que@3180 estuviera@3480 filtrado@4020 por@4580 cantidad.@5120"
+          },
+          {
+            "model": "Xenova/whisper-base",
+            "device": "wasm",
+            "dtype": "fp32",
+            "threads": 4,
+            "requestedThreads": 4,
+            "crossOriginIsolated": true,
+            "audio": "es-2min",
+            "audioSeconds": 152.195,
+            "run": 1,
+            "loadSeconds": 7.359989999998361,
+            "loadFilesSeconds": 6.401434999998659,
+            "loadSessionSeconds": 0.9586499999985099,
+            "retries429": 0,
+            "cache": "cold (download)",
+            "modelMB": 291.035846,
+            "transcribeSeconds": 43.236375,
+            "secondsPerAudioMinute": 17.04512303295115,
+            "words": 291,
+            "timestamps": "word",
+            "wordAccuracy": 0.9275862068965517,
+            "medianStartErrorMs": 165,
+            "p90StartErrorMs": 265,
+            "hypWords": 291,
+            "refWords": 290,
+            "firstWords": "Vale,@1880 empecemos@2540 por@3040 la@3200 tabla@3360 de@3620 pedidos.@3800 Esto@7440"
+          }
+        ]
+      },
+      {
+        "variant": "iso-wasm",
+        "config": {
+          "model": "Xenova/whisper-base",
+          "device": "webgpu",
+          "dtype": "fp32",
+          "audios": [
+            "es-short",
+            "es-2min"
+          ],
+          "repeats": 1
+        },
+        "rows": [
+          {
+            "model": "Xenova/whisper-base",
+            "device": "webgpu",
+            "dtype": "fp32",
+            "threads": "-",
+            "crossOriginIsolated": true,
+            "audio": "es-short",
+            "audioSeconds": 11.615,
+            "run": 1,
+            "loadSeconds": 5.98385000000149,
+            "loadFilesSeconds": 4.860790000002831,
+            "loadSessionSeconds": 1.1230999999977649,
+            "retries429": 0,
+            "cache": "cold (download)",
+            "modelMB": 291.035846,
+            "transcribeSeconds": 3.750364999998361,
+            "secondsPerAudioMinute": 19.373387860516715,
+            "words": 17,
+            "timestamps": "word",
+            "wordAccuracy": 0.9375,
+            "medianStartErrorMs": 228,
+            "p90StartErrorMs": 372,
+            "hypWords": 17,
+            "refWords": 16,
+            "esto": "esto@1975ms -> 2260ms (err 285ms) OK; esto@7528ms -> 7880ms (err 352ms) OK",
+            "webgpuAdapter": {
+              "vendor": "nvidia",
+              "architecture": "ampere",
+              "device": "",
+              "description": "",
+              "isFallbackAdapter": false,
+              "shaderF16": true,
+              "maxBufferSizeMB": 2048
+            },
+            "webgpuSoftware": false,
+            "firstWords": "Esto@2260 me@2420 gustaría@2820 que@3180 estuviera@3480 filtrado@4020 por@4580 cantidad.@5120"
+          },
+          {
+            "model": "Xenova/whisper-base",
+            "device": "webgpu",
+            "dtype": "fp32",
+            "threads": "-",
+            "crossOriginIsolated": true,
+            "audio": "es-2min",
+            "audioSeconds": 152.195,
+            "run": 1,
+            "loadSeconds": 5.98385000000149,
+            "loadFilesSeconds": 4.860790000002831,
+            "loadSessionSeconds": 1.1230999999977649,
+            "retries429": 0,
+            "cache": "cold (download)",
+            "modelMB": 291.035846,
+            "transcribeSeconds": 53.887329999998215,
+            "secondsPerAudioMinute": 21.244060580176043,
+            "words": 291,
+            "timestamps": "word",
+            "wordAccuracy": 0.9275862068965517,
+            "medianStartErrorMs": 165,
+            "p90StartErrorMs": 265,
+            "hypWords": 291,
+            "refWords": 290,
+            "webgpuAdapter": {
+              "vendor": "nvidia",
+              "architecture": "ampere",
+              "device": "",
+              "description": "",
+              "isFallbackAdapter": false,
+              "shaderF16": true,
+              "maxBufferSizeMB": 2048
+            },
+            "webgpuSoftware": false,
+            "firstWords": "Vale,@1880 empecemos@2540 por@3040 la@3200 tabla@3360 de@3620 pedidos.@3800 Esto@7440"
+          }
+        ]
+      },
+      {
+        "variant": "plain-wasm",
+        "config": {
+          "model": "Xenova/whisper-base",
+          "device": "wasm",
+          "dtype": "fp32",
+          "threads": 4,
+          "audios": [
+            "es-short",
+            "es-2min"
+          ],
+          "repeats": 1
+        },
+        "rows": [
+          {
+            "model": "Xenova/whisper-base",
+            "device": "wasm",
+            "dtype": "fp32",
+            "threads": 4,
+            "requestedThreads": 4,
+            "crossOriginIsolated": false,
+            "audio": "es-short",
+            "audioSeconds": 11.615,
+            "run": 1,
+            "loadSeconds": 6.8520999999977645,
+            "loadFilesSeconds": 5.98629999999702,
+            "loadSessionSeconds": 0.8658000000007451,
+            "retries429": 0,
+            "cache": "cold (download)",
+            "modelMB": 291.035846,
+            "transcribeSeconds": 2.612199999999255,
+            "secondsPerAudioMinute": 13.493930262587629,
+            "words": 17,
+            "timestamps": "word",
+            "wordAccuracy": 0.9375,
+            "medianStartErrorMs": 228,
+            "p90StartErrorMs": 372,
+            "hypWords": 17,
+            "refWords": 16,
+            "esto": "esto@1975ms -> 2260ms (err 285ms) OK; esto@7528ms -> 7880ms (err 352ms) OK",
+            "firstWords": "Esto@2260 me@2420 gustaría@2820 que@3180 estuviera@3480 filtrado@4020 por@4580 cantidad.@5120"
+          },
+          {
+            "model": "Xenova/whisper-base",
+            "device": "wasm",
+            "dtype": "fp32",
+            "threads": 4,
+            "requestedThreads": 4,
+            "crossOriginIsolated": false,
+            "audio": "es-2min",
+            "audioSeconds": 152.195,
+            "run": 1,
+            "loadSeconds": 6.8520999999977645,
+            "loadFilesSeconds": 5.98629999999702,
+            "loadSessionSeconds": 0.8658000000007451,
+            "retries429": 0,
+            "cache": "cold (download)",
+            "modelMB": 291.035846,
+            "transcribeSeconds": 45.3115,
+            "secondsPerAudioMinute": 17.863201813462993,
+            "words": 291,
+            "timestamps": "word",
+            "wordAccuracy": 0.9275862068965517,
+            "medianStartErrorMs": 165,
+            "p90StartErrorMs": 265,
+            "hypWords": 291,
+            "refWords": 290,
+            "firstWords": "Vale,@1880 empecemos@2540 por@3040 la@3200 tabla@3360 de@3620 pedidos.@3800 Esto@7440"
+          }
+        ]
+      }
+    ],
+    "memory": {
+      "rendererPeakWorkingSetMB": 2801,
+      "rendererPeakCommitMB": 3758,
+      "gpuProcessPeakWorkingSetMB": 850,
+      "browserPeakWorkingSetMB": 193,
+      "sumOfPeaksMB": 7173,
+      "basePriorities": [
+        6
+      ],
+      "e2eChromiumProcesses": 0
+    }
+  }
+]

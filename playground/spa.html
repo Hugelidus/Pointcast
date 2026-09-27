@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SPA demo · pointcast playground</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!--
+  Single-page app: navigation uses history.pushState, so the URL changes but the page
+  (and the content script) is never reloaded. Events must still carry the right URL.
+-->
+<header class="flex items-center justify-between px-6 py-3 bg-slate-900 text-white">
+  <strong>Acme Admin</strong>
+  <nav aria-label="Main">
+    <a href="index.html">Orders</a>
+    <a href="other.html">Customers</a>
+    <a href="spa.html" aria-current="page">SPA demo</a>
+  </nav>
+</header>
+
+<main class="mx-auto max-w-5xl p-6">
+  <nav aria-label="SPA views" class="toolbar flex gap-2">
+    <button type="button" data-route="/dashboard">Dashboard</button>
+    <button type="button" data-route="/reports">Reports</button>
+  </nav>
+  <div id="view" data-source="src/App.tsx:40"></div>
+</main>
+
+<script>
+  const views = {
+    "/dashboard": `
+      <section aria-label="Dashboard">
+        <h1>Dashboard</h1>
+        <div class="cards">
+          <div class="card"><h3>Revenue</h3><p>$12,430</p></div>
+          <div class="card"><h3>Orders today</h3><p>38</p></div>
+          <div class="card"><h3>Returns</h3><p>2</p></div>
+        </div>
+      </section>`,
+    "/reports": `
+      <section aria-label="Reports">
+        <h1>Reports</h1>
+        <table>
+          <thead><tr><th>Report</th><th>Period</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Sales by region</td><td>Q3</td><td>Ready</td></tr>
+            <tr><td>Stock levels</td><td>September</td><td>Generating…</td></tr>
+          </tbody>
+        </table>
+      </section>`,
+  };
+
+  // Keep routes inside the page's own path so this works no matter where it is served.
+  const base = location.pathname;
+  function currentRoute() {
+    return new URLSearchParams(location.search).get("view") || "/dashboard";
+  }
+  function render() {
+    document.getElementById("view").innerHTML = views[currentRoute()] || "<p>Not found</p>";
+  }
+  document.querySelectorAll("[data-route]").forEach((button) => {
+    button.addEventListener("click", () => {
+      history.pushState({}, "", `${base}?view=${button.dataset.route}`);
+      render();
+    });
+  });
+  window.addEventListener("popstate", render);
+  render();
+</script>
+</body>
+</html>

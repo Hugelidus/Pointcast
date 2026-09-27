@@ -1,0 +1,12 @@
+{
+  // WXT generates .wxt/tsconfig.json (run `wxt prepare`, done by postinstall and typecheck):
+  // it adds the DOM libs, path aliases and the types for `browser` and entrypoints.
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    // WXT turns this on, but the rest of the repo (tsconfig.base.json) does not. The extension
+    // compiles @pointcast/core from source, so keeping it on here would hold core to a stricter
+    // standard inside the extension than in its own package, and the typecheck would fail on
+    // core code that passes `pnpm --filter @pointcast/core typecheck`.
+    "noUncheckedIndexedAccess": false
+  }
+}

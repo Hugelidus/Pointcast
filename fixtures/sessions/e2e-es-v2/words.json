@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "engine": "local:Xenova/whisper-base",
+  "language": "es",
+  "words": [
+    {
+      "text": " Esto",
+      "start": 2260,
+      "end": 2440
+    },
+    {
+      "text": " me",
+      "start": 2440,
+      "end": 2820
+    },
+    {
+      "text": " gustaría",
+      "start": 2820,
+      "end": 3200
+    },
+    {
+      "text": " que",
+      "start": 3200,
+      "end": 3500
+    },
+    {
+      "text": " estuviera",
+      "start": 3500,
+      "end": 4040
+    },
+    {
+      "text": " filtrado",
+      "start": 4040,
+      "end": 4580
+    },
+    {
+      "text": " por",
+      "start": 4580,
+      "end": 5140
+    },
+    {
+      "text": " cantidad.",
+      "start": 5140,
+      "end": 6000
+    },
+    {
+      "text": " Y",
+      "start": 7060,
+      "end": 7380
+    },
+    {
+      "text": " además",
+      "start": 7380,
+      "end": 7900
+    },
+    {
+      "text": " esto,",
+      "start": 7900,
+      "end": 8580
+    },
+    {
+      "text": " que",
+      "start": 9020,
+      "end": 9140
+    },
+    {
+      "text": " es",
+      "start": 9140,
+      "end": 9380
+    },
+    {
+      "text": " porte",
+      "start": 9380,
+      "end": 9720
+    },
+    {
+      "text": " solo",
+      "start": 9720,
+      "end": 9940
+    },
+    {
+      "text": " lo",
+      "start": 9940,
+      "end": 10200
+    },
+    {
+      "text": " filtrado.",
+      "start": 10200,
+      "end": 11000
+    }
+  ]
+}

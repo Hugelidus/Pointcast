@@ -1,0 +1,219 @@
+{
+    "voice":  "Microsoft Helena Desktop",
+    "language":  "es",
+    "text":  "A ver, unos cambios en la portada. Este enlace que ponga ver informe completo. Esta pestaña debería salir abierta por defecto. Esta tarjeta está repetida, bórrala. Y a este icono ponle un puntito rojo cuando haya avisos nuevos. El subtítulo de sales this week, cámbialo por ventas de la semana. Eso es todo.",
+    "words":  [
+                  {
+                      "text":  "A",
+                      "startMs":  1600
+                  },
+                  {
+                      "text":  "ver,",
+                      "startMs":  1690
+                  },
+                  {
+                      "text":  "unos",
+                      "startMs":  2315
+                  },
+                  {
+                      "text":  "cambios",
+                      "startMs":  2585
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  3010
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  3100
+                  },
+                  {
+                      "text":  "portada.",
+                      "startMs":  3205
+                  },
+                  {
+                      "text":  "Este",
+                      "startMs":  5760
+                  },
+                  {
+                      "text":  "enlace",
+                      "startMs":  6005
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  6370
+                  },
+                  {
+                      "text":  "ponga",
+                      "startMs":  6490
+                  },
+                  {
+                      "text":  "ver",
+                      "startMs":  6785
+                  },
+                  {
+                      "text":  "informe",
+                      "startMs":  6950
+                  },
+                  {
+                      "text":  "completo.",
+                      "startMs":  7375
+                  },
+                  {
+                      "text":  "Esta",
+                      "startMs":  10325
+                  },
+                  {
+                      "text":  "pestaña",
+                      "startMs":  10575
+                  },
+                  {
+                      "text":  "debería",
+                      "startMs":  11030
+                  },
+                  {
+                      "text":  "salir",
+                      "startMs":  11415
+                  },
+                  {
+                      "text":  "abierta",
+                      "startMs":  11730
+                  },
+                  {
+                      "text":  "por",
+                      "startMs":  12130
+                  },
+                  {
+                      "text":  "defecto.",
+                      "startMs":  12300
+                  },
+                  {
+                      "text":  "Esta",
+                      "startMs":  15210
+                  },
+                  {
+                      "text":  "tarjeta",
+                      "startMs":  15465
+                  },
+                  {
+                      "text":  "está",
+                      "startMs":  15900
+                  },
+                  {
+                      "text":  "repetida,",
+                      "startMs":  16115
+                  },
+                  {
+                      "text":  "bórrala.",
+                      "startMs":  17080
+                  },
+                  {
+                      "text":  "Y",
+                      "startMs":  19915
+                  },
+                  {
+                      "text":  "a",
+                      "startMs":  20025
+                  },
+                  {
+                      "text":  "este",
+                      "startMs":  20080
+                  },
+                  {
+                      "text":  "icono",
+                      "startMs":  20285
+                  },
+                  {
+                      "text":  "ponle",
+                      "startMs":  20590
+                  },
+                  {
+                      "text":  "un",
+                      "startMs":  20885
+                  },
+                  {
+                      "text":  "puntito",
+                      "startMs":  21005
+                  },
+                  {
+                      "text":  "rojo",
+                      "startMs":  21440
+                  },
+                  {
+                      "text":  "cuando",
+                      "startMs":  21755
+                  },
+                  {
+                      "text":  "haya",
+                      "startMs":  22075
+                  },
+                  {
+                      "text":  "avisos",
+                      "startMs":  22265
+                  },
+                  {
+                      "text":  "nuevos.",
+                      "startMs":  22645
+                  },
+                  {
+                      "text":  "El",
+                      "startMs":  25465
+                  },
+                  {
+                      "text":  "subtítulo",
+                      "startMs":  25585
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  26135
+                  },
+                  {
+                      "text":  "sales",
+                      "startMs":  26240
+                  },
+                  {
+                      "text":  "this",
+                      "startMs":  26550
+                  },
+                  {
+                      "text":  "week,",
+                      "startMs":  26770
+                  },
+                  {
+                      "text":  "cámbialo",
+                      "startMs":  27425
+                  },
+                  {
+                      "text":  "por",
+                      "startMs":  27925
+                  },
+                  {
+                      "text":  "ventas",
+                      "startMs":  28095
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  28455
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  28540
+                  },
+                  {
+                      "text":  "semana.",
+                      "startMs":  28640
+                  },
+                  {
+                      "text":  "Eso",
+                      "startMs":  30950
+                  },
+                  {
+                      "text":  "es",
+                      "startMs":  31165
+                  },
+                  {
+                      "text":  "todo.",
+                      "startMs":  31270
+                  }
+              ]
+}

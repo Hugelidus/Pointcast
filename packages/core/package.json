@@ -1,0 +1,16 @@
+{
+  "name": "@pointcast/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pure logic shared by the pointcast extension and CLI: session schema, fusion, rendering.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

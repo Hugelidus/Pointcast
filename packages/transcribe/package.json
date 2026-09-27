@@ -1,0 +1,21 @@
+{
+  "name": "@pointcast/transcribe",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Local Whisper transcription (transformers.js) shared by the pointcast CLI (Node) and extension (browser worker).",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./segments": "./src/segments.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.3.0",
+    "@pointcast/core": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

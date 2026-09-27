@@ -1,0 +1,21 @@
+{
+  "name": "example-vue-dashboard",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Acme Store admin dashboard (Vue 3 + Vite, SFCs) — a recording target for pointcast's code pointer, see SCENARIOS.md",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5175 --strictPort",
+    "build": "vue-tsc -b && vite build",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "typescript": "^5.7.3",
+    "vite": "^8.3.1",
+    "vue-tsc": "^3.1.4"
+  }
+}

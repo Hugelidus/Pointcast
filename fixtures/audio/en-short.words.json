@@ -1,0 +1,71 @@
+{
+    "voice":  "Microsoft Zira Desktop",
+    "language":  "en",
+    "text":  "I\u0027d like this filtered by quantity, and also I\u0027d like this to only export what\u0027s filtered.",
+    "words":  [
+                  {
+                      "text":  "I\u0027d",
+                      "startMs":  1975
+                  },
+                  {
+                      "text":  "like",
+                      "startMs":  2236
+                  },
+                  {
+                      "text":  "this",
+                      "startMs":  2610
+                  },
+                  {
+                      "text":  "filtered",
+                      "startMs":  2847
+                  },
+                  {
+                      "text":  "by",
+                      "startMs":  3370
+                  },
+                  {
+                      "text":  "quantity,",
+                      "startMs":  3700
+                  },
+                  {
+                      "text":  "and",
+                      "startMs":  6083
+                  },
+                  {
+                      "text":  "also",
+                      "startMs":  6364
+                  },
+                  {
+                      "text":  "I\u0027d",
+                      "startMs":  6851
+                  },
+                  {
+                      "text":  "like",
+                      "startMs":  7083
+                  },
+                  {
+                      "text":  "this",
+                      "startMs":  7453
+                  },
+                  {
+                      "text":  "to",
+                      "startMs":  8650
+                  },
+                  {
+                      "text":  "only",
+                      "startMs":  8818
+                  },
+                  {
+                      "text":  "export",
+                      "startMs":  9168
+                  },
+                  {
+                      "text":  "what\u0027s",
+                      "startMs":  9754
+                  },
+                  {
+                      "text":  "filtered.",
+                      "startMs":  10047
+                  }
+              ]
+}

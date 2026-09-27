@@ -1,0 +1,71 @@
+{
+    "voice":  "Microsoft Helena Desktop",
+    "language":  "es",
+    "text":  "Esto me gustaría que estuviera filtrado por cantidad, y además esto que exporte solo lo filtrado.",
+    "words":  [
+                  {
+                      "text":  "Esto",
+                      "startMs":  1975
+                  },
+                  {
+                      "text":  "me",
+                      "startMs":  2292
+                  },
+                  {
+                      "text":  "gustaría",
+                      "startMs":  2448
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  3058
+                  },
+                  {
+                      "text":  "estuviera",
+                      "startMs":  3183
+                  },
+                  {
+                      "text":  "filtrado",
+                      "startMs":  3769
+                  },
+                  {
+                      "text":  "por",
+                      "startMs":  4388
+                  },
+                  {
+                      "text":  "cantidad,",
+                      "startMs":  4607
+                  },
+                  {
+                      "text":  "y",
+                      "startMs":  6897
+                  },
+                  {
+                      "text":  "además",
+                      "startMs":  7035
+                  },
+                  {
+                      "text":  "esto",
+                      "startMs":  7528
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  8818
+                  },
+                  {
+                      "text":  "exporte",
+                      "startMs":  8980
+                  },
+                  {
+                      "text":  "solo",
+                      "startMs":  9492
+                  },
+                  {
+                      "text":  "lo",
+                      "startMs":  9829
+                  },
+                  {
+                      "text":  "filtrado.",
+                      "startMs":  9954
+                  }
+              ]
+}

@@ -1,0 +1,119 @@
+import { renderAppendix } from "./appendix";
+import { deicticsForLanguage } from "./deictics";
+import { formatClock } from "./describe";
+import { fuse, type FuseOptions } from "./fuse";
+import { escapeMarkdown, inlineText } from "./markdown";
+import { renderRequests, type RequestsLayout } from "./requests";
+import type { CapturedEvent, SessionFile, WordsFile } from "./schema";
+import { renderTranscript } from "./transcript";
+
+/**
+ * - requests: numbered change requests, one per sentence, with search hints per element. The
+ *   default: in the 2026-09-27 evaluation (docs/eval/results-2026-09-27.md) agents were at least
+ *   as accurate with it as with classic, with ~27 % fewer tokens, fewer turns and less time.
+ * - classic:  header, transcript with inline markers, appendix per element (the Phase 1 spec);
+ *   kept for auditing a recording against its timeline.
+ */
+export type RenderFormat = "classic" | "requests";
+
+/**
+ * The requests format's layout for elements with code information (see RequestsLayout):
+ * "code-first" (the default, 2026-09-27) or "dom-first" (the spec Stage 0 evaluated, kept so an
+ * evaluation can compare them). Elements without code information render the same in both, and
+ * the classic format ignores it.
+ */
+export type RenderLayout = RequestsLayout;
+
+export interface RenderOptions {
+  format: RenderFormat;
+  layout: RenderLayout;
+  /**
+   * Passed to fuse(); missing fields use DEFAULT_FUSE_OPTIONS, except `deictics`, which
+   * defaults to the transcript language's list (deicticsForLanguage).
+   */
+  fuse: Partial<FuseOptions>;
+  /** Target length of one element's part of an inline marker (D5: ~80 chars). */
+  markerBudget: number;
+  /** Maximum length of each element's HTML in the appendix (D5: 300 chars). */
+  htmlBudget: number;
+  /** Maximum length of each selected text in the appendix. */
+  selectionBudget: number;
+  /** A gap between words at least this long starts a new transcript paragraph (classic) or sentence (requests). */
+  paragraphPauseMs: number;
+}
+
+export const DEFAULT_RENDER_OPTIONS: Readonly<RenderOptions> = {
+  format: "requests",
+  layout: "code-first",
+  fuse: {},
+  markerBudget: 80,
+  htmlBudget: 300,
+  selectionBudget: 300,
+  paragraphPauseMs: 2000,
+};
+
+/**
+ * The Markdown spec for a coding agent, in `options.format` (see RenderFormat). Pure and
+ * deterministic: the same session, words and options always produce the same string.
+ */
+export function renderMarkdown(
+  session: SessionFile,
+  words: WordsFile,
+  options: Partial<RenderOptions> = {},
+): string {
+  const opts: RenderOptions = { ...DEFAULT_RENDER_OPTIONS, ...options };
+  const fuseOptions = { deictics: deicticsForLanguage(words.language), ...opts.fuse };
+  const { placements } = fuse(session.events, words.words, fuseOptions);
+  if (opts.format === "requests") {
+    return `${renderRequests(session.events, words.words, placements, opts).join("\n\n")}\n`;
+  }
+
+  const eventsById = new Map<string, CapturedEvent>(session.events.map((e) => [e.id, e]));
+  // Placements come in time order; the appendix lists elements in that order too.
+  const eventsInTimeOrder = placements.flatMap((p) => eventsById.get(p.eventId) ?? []);
+
+  const blocks = [
+    ...header(session, words),
+    "## Transcript",
+    ...renderTranscript(words.words, eventsById, placements, opts),
+    "## Appendix",
+    ...renderAppendix(eventsInTimeOrder, placements, words.words, opts),
+  ];
+  return `${blocks.join("\n\n")}\n`;
+}
+
+/**
+ * Rough token count for the CLI's size report: ~4 characters per token is the usual rule of
+ * thumb for English with GPT/Claude-style tokenizers. Good enough to watch the budget, not
+ * for billing.
+ */
+export function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
+function header(session: SessionFile, words: WordsFile): string[] {
+  const count = session.events.length;
+  const language = words.language ? ` (${inlineText(words.language)})` : "";
+  return [
+    `# pointcast session ${inlineText(session.id)}`,
+    [
+      formatStartedAt(session.startedAt),
+      formatClock(session.durationMs),
+      `${count} ${count === 1 ? "event" : "events"}`,
+      `transcript: ${inlineText(words.engine)}${language}`,
+    ].join(" · "),
+    "Pointing gestures appear inline as *[time · element · source · id]*; the Appendix details each element. " +
+      'An id like "e2 ×5" means the same element was pointed at 5 times — the Appendix lists every one. ' +
+      'The time becomes a range ("00:26–00:29") when a marker\'s events span more than 1 s.',
+  ];
+}
+
+/** "2026-09-26T16:30:05.123Z" -> "2026-09-26 16:30 UTC". Anything unexpected is shown as is. */
+function formatStartedAt(iso: string): string {
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?$/.exec(
+    iso,
+  );
+  if (!match) return inlineText(iso);
+  const zone = match[3] === "Z" ? " UTC" : match[3] ? ` ${match[3]}` : "";
+  return escapeMarkdown(`${match[1]} ${match[2]}${zone}`);
+}

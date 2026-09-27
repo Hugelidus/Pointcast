@@ -1,0 +1,26 @@
+[
+  {
+    "name": "shadcn-admin",
+    "stack": "React 19 + Vite + TanStack Router + shadcn/ui",
+    "repo": "https://github.com/satnaing/shadcn-admin",
+    "commit": "e16c87f213a5ba5e45964e9b67c792105ec74d26",
+    "license": "MIT",
+    "port": 5542
+  },
+  {
+    "name": "vuestic-admin",
+    "stack": "Vue 3 + Vite + Vuestic UI",
+    "repo": "https://github.com/epicmaxco/vuestic-admin",
+    "commit": "9c5b44f3674d4c3e7ad01cc043d5331cee953c49",
+    "license": "MIT",
+    "port": 5543
+  },
+  {
+    "name": "flowbite-svelte-admin",
+    "stack": "SvelteKit 2 (Svelte 5) + Vite + Flowbite Svelte",
+    "repo": "https://github.com/themesberg/flowbite-svelte-admin-dashboard",
+    "commit": "171b17eb7e4744d042abd3710047cb9acef27b5d",
+    "license": "MIT",
+    "port": 5544
+  }
+]

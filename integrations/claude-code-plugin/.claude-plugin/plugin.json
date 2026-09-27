@@ -1,0 +1,13 @@
+{
+  "name": "pointcast",
+  "version": "0.1.0",
+  "description": "Apply a pointcast recording (what you said while pointing at your web app) as code changes: the pointcast MCP server plus a /pointcast command.",
+  "author": {
+    "name": "Hugelidus",
+    "url": "https://github.com/Hugelidus"
+  },
+  "homepage": "https://github.com/Hugelidus/pointcast",
+  "repository": "https://github.com/Hugelidus/pointcast",
+  "license": "MIT",
+  "keywords": ["pointcast", "ui", "voice", "spec", "mcp"]
+}

@@ -1,0 +1,227 @@
+{
+    "voice":  "Microsoft Helena Desktop",
+    "language":  "es",
+    "text":  "Vale, voy a repasar el panel. Este botón de aquí lo quiero en verde. Esta tarjeta sobra, quítala. Este gráfico preferiría verlo con líneas en vez de barras. En el menú de la izquierda, este número no hace falta, fuera. Y el texto de ventas recientes, que diga últimas ventas del mes. Nada más, gracias.",
+    "words":  [
+                  {
+                      "text":  "Vale,",
+                      "startMs":  1600
+                  },
+                  {
+                      "text":  "voy",
+                      "startMs":  2355
+                  },
+                  {
+                      "text":  "a",
+                      "startMs":  2575
+                  },
+                  {
+                      "text":  "repasar",
+                      "startMs":  2635
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  3090
+                  },
+                  {
+                      "text":  "panel.",
+                      "startMs":  3185
+                  },
+                  {
+                      "text":  "Este",
+                      "startMs":  5600
+                  },
+                  {
+                      "text":  "botón",
+                      "startMs":  5845
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  6180
+                  },
+                  {
+                      "text":  "aquí",
+                      "startMs":  6265
+                  },
+                  {
+                      "text":  "lo",
+                      "startMs":  6460
+                  },
+                  {
+                      "text":  "quiero",
+                      "startMs":  6575
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  6825
+                  },
+                  {
+                      "text":  "verde.",
+                      "startMs":  6935
+                  },
+                  {
+                      "text":  "Esta",
+                      "startMs":  9625
+                  },
+                  {
+                      "text":  "tarjeta",
+                      "startMs":  9880
+                  },
+                  {
+                      "text":  "sobra,",
+                      "startMs":  10325
+                  },
+                  {
+                      "text":  "quítala.",
+                      "startMs":  11125
+                  },
+                  {
+                      "text":  "Este",
+                      "startMs":  14055
+                  },
+                  {
+                      "text":  "gráfico",
+                      "startMs":  14305
+                  },
+                  {
+                      "text":  "preferiría",
+                      "startMs":  14745
+                  },
+                  {
+                      "text":  "verlo",
+                      "startMs":  15290
+                  },
+                  {
+                      "text":  "con",
+                      "startMs":  15570
+                  },
+                  {
+                      "text":  "líneas",
+                      "startMs":  15740
+                  },
+                  {
+                      "text":  "en",
+                      "startMs":  16100
+                  },
+                  {
+                      "text":  "vez",
+                      "startMs":  16215
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  16405
+                  },
+                  {
+                      "text":  "barras.",
+                      "startMs":  16505
+                  },
+                  {
+                      "text":  "En",
+                      "startMs":  19305
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  19435
+                  },
+                  {
+                      "text":  "menú",
+                      "startMs":  19540
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  19790
+                  },
+                  {
+                      "text":  "la",
+                      "startMs":  19880
+                  },
+                  {
+                      "text":  "izquierda,",
+                      "startMs":  19975
+                  },
+                  {
+                      "text":  "este",
+                      "startMs":  20885
+                  },
+                  {
+                      "text":  "número",
+                      "startMs":  21150
+                  },
+                  {
+                      "text":  "no",
+                      "startMs":  21480
+                  },
+                  {
+                      "text":  "hace",
+                      "startMs":  21605
+                  },
+                  {
+                      "text":  "falta,",
+                      "startMs":  21815
+                  },
+                  {
+                      "text":  "fuera.",
+                      "startMs":  22650
+                  },
+                  {
+                      "text":  "Y",
+                      "startMs":  25405
+                  },
+                  {
+                      "text":  "el",
+                      "startMs":  25510
+                  },
+                  {
+                      "text":  "texto",
+                      "startMs":  25625
+                  },
+                  {
+                      "text":  "de",
+                      "startMs":  25990
+                  },
+                  {
+                      "text":  "ventas",
+                      "startMs":  26090
+                  },
+                  {
+                      "text":  "recientes,",
+                      "startMs":  26450
+                  },
+                  {
+                      "text":  "que",
+                      "startMs":  27455
+                  },
+                  {
+                      "text":  "diga",
+                      "startMs":  27615
+                  },
+                  {
+                      "text":  "últimas",
+                      "startMs":  27835
+                  },
+                  {
+                      "text":  "ventas",
+                      "startMs":  28260
+                  },
+                  {
+                      "text":  "del",
+                      "startMs":  28600
+                  },
+                  {
+                      "text":  "mes.",
+                      "startMs":  28745
+                  },
+                  {
+                      "text":  "Nada",
+                      "startMs":  30920
+                  },
+                  {
+                      "text":  "más,",
+                      "startMs":  31190
+                  },
+                  {
+                      "text":  "gracias.",
+                      "startMs":  31865
+                  }
+              ]
+}

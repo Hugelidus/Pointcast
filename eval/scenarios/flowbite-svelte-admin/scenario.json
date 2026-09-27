@@ -1,0 +1,69 @@
+{
+  "startPath": "/",
+  "voice": "Microsoft Helena Desktop",
+  "language": "es",
+  "rate": 0,
+  "narration": [
+    "A ver, unos cambios en la portada.",
+    { "breakMs": 1200 },
+    "Este enlace que ponga ver informe completo.",
+    { "breakMs": 1500 },
+    "Esta pestaña debería salir abierta por defecto.",
+    { "breakMs": 1500 },
+    "Esta tarjeta está repetida, bórrala.",
+    { "breakMs": 1500 },
+    "Y a este icono ponle un puntito rojo cuando haya avisos nuevos.",
+    { "breakMs": 1500 },
+    "El subtítulo de sales this week, cámbialo por ventas de la semana.",
+    { "breakMs": 1000 },
+    "Eso es todo."
+  ],
+  "gestures": [
+    { "word": "este", "occurrence": 1, "gesture": "point", "target": "a:has-text(\"Sales Report\") >> nth=0" },
+    { "word": "esta", "occurrence": 1, "gesture": "point", "target": "[role=tab]:has-text(\"Top customers\")" },
+    { "word": "esta", "occurrence": 2, "gesture": "point", "target": "div.items-center:has(:text-is(\"4,420\")) >> nth=1 >> h5" },
+    { "word": "este", "occurrence": 2, "gesture": "point", "target": "nav button:has(svg) >> nth=0" },
+    { "word": "subtitulo", "occurrence": 1, "gesture": "select", "target": "text=\"Sales this week\"" }
+  ],
+  "changes": [
+    {
+      "id": "sales-report-link",
+      "summary": "The \"Sales Report\" link of the sales chart card reads \"Ver informe completo\" (not \"Full Report\", not the shared More component).",
+      "topic": "enlace|link|informe|report",
+      "files": ["src/lib/ChartWidget.svelte"],
+      "target": "sales report|more|chartwidget",
+      "wrong": "more\\.svelte|stats|full report|read more"
+    },
+    {
+      "id": "customers-tab-open",
+      "summary": "The \"Top customers\" tab of Statistics this month is the one open by default.",
+      "topic": "pestan|\\btabs?\\b|abiert|default|defecto",
+      "files": ["src/lib/Stats.svelte"],
+      "target": "customer|tabitem|second|segund"
+    },
+    {
+      "id": "remove-duplicate-users",
+      "summary": "Remove the second \"Users\" card (horizontal bars), the duplicate of the first.",
+      "topic": "tarjeta|card|repetid|duplica|borr|remov|elimin|quit",
+      "files": ["src/routes/utils/dashboard/Dashboard.svelte"],
+      "target": "horizontal|second|segund|third|tercer|2nd|3rd|last|ultim",
+      "lines": [133, 152],
+      "wrong": "first users|primer"
+    },
+    {
+      "id": "bell-dot",
+      "summary": "The notifications bell in the navbar shows a red dot when there are new notifications.",
+      "topic": "punt|\\bdot\\b|notif|aviso|icon|campan|bell",
+      "files": ["src/lib/NotificationList.svelte", "src/routes/(sidebar)/Navbar.svelte"],
+      "target": "bell|notification|toolbarbutton",
+      "wrong": "appsmenu|darkmode"
+    },
+    {
+      "id": "sales-subtitle",
+      "summary": "The \"Sales this week\" subtitle reads \"Ventas de la semana\" (the prop passed by the dashboard).",
+      "topic": "subtit|sales this week|ventas de la semana",
+      "files": ["src/routes/utils/dashboard/Dashboard.svelte"],
+      "target": "sales this week|subtitle|chartwidget"
+    }
+  ]
+}

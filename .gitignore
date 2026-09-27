@@ -1,0 +1,31 @@
+node_modules/
+dist/
+coverage/
+*.log
+
+# WXT build output and generated types
+.output/
+.wxt/
+
+# Local recording sessions (audio + events) — may contain your voice and app data.
+# Anchored to the repo root so the synthetic test sessions in fixtures/sessions/ stay tracked.
+/sessions/
+/recordings/
+
+.env
+.env.*
+# Not a secret: the e2e build's local model host (packages/extension/src/build-env.ts).
+!packages/extension/.env.e2e
+
+# Local Claude Code session config
+.claude/
+.DS_Store
+Thumbs.db
+
+# Playwright e2e output
+test-results/
+playwright-report/
+
+# Evaluation: cloned apps and run outputs (eval/README.md)
+eval/.apps/
+eval/.runs/

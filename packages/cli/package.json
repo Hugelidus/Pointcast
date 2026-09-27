@@ -1,0 +1,63 @@
+{
+  "name": "pointcast",
+  "version": "0.1.0",
+  "description": "Turn a pointcast recording (your voice + the elements you pointed at) into a Markdown spec for coding agents, or serve it over MCP.",
+  "license": "MIT",
+  "author": "Hugelidus (https://github.com/Hugelidus)",
+  "homepage": "https://github.com/Hugelidus/pointcast#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hugelidus/pointcast.git",
+    "directory": "packages/cli"
+  },
+  "bugs": "https://github.com/Hugelidus/pointcast/issues",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "claude-code",
+    "coding-agent",
+    "voice",
+    "whisper",
+    "ui",
+    "spec"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "type": "module",
+  "bin": {
+    "pointcast": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run src",
+    "test:slow": "vitest run src/process/run.slow.test.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.1",
+    "zod": "^4.6.5"
+  },
+  "peerDependencies": {
+    "@huggingface/transformers": "^4.3.0"
+  },
+  "peerDependenciesMeta": {
+    "@huggingface/transformers": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@huggingface/transformers": "^4.3.0",
+    "@pointcast/core": "workspace:^",
+    "@pointcast/transcribe": "workspace:^",
+    "@types/node": "^22",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

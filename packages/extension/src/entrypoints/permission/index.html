@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="light dark">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>pointcast · microphone access</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main>
+    <h1>pointcast needs your microphone</h1>
+    <p>
+      pointcast records what you say while you point at elements of your app, so a coding agent
+      can tell what "this" and "here" mean. The recording is saved to your Downloads folder and
+      transcribed on your own machine; it is never uploaded by the extension.
+    </p>
+    <p>
+      Chrome only lets an extension ask for the microphone from a visible page like this one.
+      You grant it once; after that, recording starts straight from the toolbar button.
+    </p>
+    <button id="allow" type="button">Allow microphone</button>
+    <p id="result" class="result" role="status" hidden></p>
+  </main>
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

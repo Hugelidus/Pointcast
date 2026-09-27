@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 2,
+  "id": "2026-09-26_20-29-01",
+  "startedAt": "2026-09-26T18:29:01.845Z",
+  "t0": 1790447341845,
+  "durationMs": 11880,
+  "recorder": {
+    "extensionVersion": "0.1.0",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+  },
+  "events": [
+    {
+      "id": "e1",
+      "gesture": "select",
+      "tStart": 1981,
+      "tEnd": 2017,
+      "url": "http://127.0.0.1:5511/index.html",
+      "element": {
+        "tag": "th",
+        "text": "Quantity",
+        "selector": "th:nth-of-type(3)",
+        "selectorUnique": true,
+        "path": "main › section#orders › table#orders-table › thead › tr › th[3]",
+        "html": "<th>Quantity</th>"
+      },
+      "selection": {
+        "text": "Quantity"
+      }
+    },
+    {
+      "id": "e2",
+      "gesture": "point",
+      "tStart": 7539,
+      "tEnd": 7539,
+      "url": "http://127.0.0.1:5511/index.html",
+      "element": {
+        "tag": "button",
+        "text": "Export",
+        "selector": "#export-btn",
+        "selectorUnique": true,
+        "path": "main › section#orders › button#export-btn",
+        "html": "<button type=\"button\" id=\"export-btn\" class=\"primary Toolbar_export__3xKz1\"><svg/> Export</button>",
+        "source": {
+          "file": "src/components/Toolbar.tsx",
+          "line": 8,
+          "attribute": "data-source",
+          "distance": 1
+        }
+      }
+    },
+    {
+      "id": "e3",
+      "gesture": "click",
+      "tStart": 8414,
+      "tEnd": 8414,
+      "url": "http://127.0.0.1:5511/index.html",
+      "element": {
+        "tag": "button",
+        "text": "Delete",
+        "selector": "tr:nth-of-type(1) > td:nth-of-type(5) > button.delete-row",
+        "selectorUnique": true,
+        "path": "main › section#orders › table#orders-table › tbody › tr[1] › td[5] › button",
+        "html": "<button type=\"button\" class=\"delete-row\">Delete</button>"
+      }
+    },
+    {
+      "id": "e4",
+      "gesture": "point",
+      "tStart": 8455,
+      "tEnd": 8455,
+      "url": "http://127.0.0.1:5511/index.html",
+      "element": {
+        "tag": "button",
+        "text": "Delete",
+        "selector": "tr:nth-of-type(1) > td:nth-of-type(5) > button.delete-row",
+        "selectorUnique": true,
+        "path": "main › section#orders › table#orders-table › tbody › tr[1] › td[5] › button",
+        "html": "<button type=\"button\" class=\"delete-row\">Delete</button>"
+      }
+    },
+    {
+      "id": "e5",
+      "gesture": "point",
+      "tStart": 8709,
+      "tEnd": 8709,
+      "url": "http://127.0.0.1:5511/index.html",
+      "element": {
+        "tag": "a",
+        "text": "Customers",
+        "selector": "a[href=\"other.html\"]",
+        "selectorUnique": true,
+        "path": "header › nav«Main» › a[2]",
+        "html": "<a href=\"other.html\">Customers</a>"
+      }
+    },
+    {
+      "id": "e6",
+      "gesture": "click",
+      "tStart": 9254,
+      "tEnd": 9254,
+      "url": "http://127.0.0.1:5511/index.html",
+      "element": {
+        "tag": "a",
+        "text": "Customers",
+        "selector": "a[href=\"other.html\"]",
+        "selectorUnique": true,
+        "path": "header › nav«Main» › a[2]",
+        "html": "<a href=\"other.html\">Customers</a>"
+      }
+    },
+    {
+      "id": "e7",
+      "gesture": "click",
+      "tStart": 9346,
+      "tEnd": 9346,
+      "url": "http://127.0.0.1:5511/other.html",
+      "element": {
+        "tag": "button",
+        "text": "View orders",
+        "selector": "article:nth-of-type(1) > button",
+        "selectorUnique": true,
+        "path": "main › section#customers › article[1] › button",
+        "html": "<button type=\"button\">View orders</button>",
+        "source": {
+          "file": "src/pages/Customers.tsx",
+          "line": 21,
+          "attribute": "data-source",
+          "distance": 2
+        }
+      }
+    },
+    {
+      "id": "e8",
+      "gesture": "click",
+      "tStart": 9375,
+      "tEnd": 9375,
+      "url": "http://127.0.0.1:5511/other.html",
+      "element": {
+        "tag": "a",
+        "text": "SPA demo",
+        "selector": "a[href=\"spa.html\"]",
+        "selectorUnique": true,
+        "path": "header › nav«Main» › a[3]",
+        "html": "<a href=\"spa.html\">SPA demo</a>"
+      }
+    },
+    {
+      "id": "e9",
+      "gesture": "click",
+      "tStart": 9454,
+      "tEnd": 9454,
+      "url": "http://127.0.0.1:5511/spa.html",
+      "element": {
+        "tag": "button",
+        "text": "Reports",
+        "selector": "button:nth-of-type(2)",
+        "selectorUnique": true,
+        "path": "main › nav«SPA views» › button[2]",
+        "html": "<button type=\"button\">Reports</button>"
+      }
+    },
+    {
+      "id": "e10",
+      "gesture": "point",
+      "tStart": 9491,
+      "tEnd": 9491,
+      "url": "http://127.0.0.1:5511/spa.html?view=/reports",
+      "element": {
+        "tag": "th",
+        "text": "Status",
+        "selector": "th:nth-of-type(3)",
+        "selectorUnique": true,
+        "path": "main › div#view › section«Reports» › table › thead › tr › th[3]",
+        "html": "<th>Status</th>",
+        "source": {
+          "file": "src/App.tsx",
+          "line": 40,
+          "attribute": "data-source",
+          "distance": 5
+        }
+      }
+    }
+  ]
+}

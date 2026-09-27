@@ -1,0 +1,218 @@
+{
+  "date": "2026-09-26",
+  "machine": "12th Gen Intel(R) Core(TM) i9-12900K, 24 logical cores",
+  "rows": [
+    {
+      "model": "Xenova/whisper-tiny",
+      "audio": "es-2min",
+      "threads": "4",
+      "loadSeconds": 0.8033085999999999,
+      "transcribeSeconds": 17.9390757,
+      "wordAccuracy": 0.8724137931034482,
+      "medianStartErrorMs": 280,
+      "p90StartErrorMs": 390,
+      "notes": "within the 60 s budget"
+    },
+    {
+      "model": "Xenova/whisper-tiny",
+      "audio": "en-short",
+      "threads": "4",
+      "loadSeconds": 0.8033085999999999,
+      "transcribeSeconds": 0.9851219999999994,
+      "wordAccuracy": 0.4375,
+      "medianStartErrorMs": 476,
+      "p90StartErrorMs": 647
+    },
+    {
+      "model": "Xenova/whisper-tiny",
+      "audio": "es-short(esto-check)",
+      "threads": "4",
+      "loadSeconds": 0.8033085999999999,
+      "transcribeSeconds": null,
+      "wordAccuracy": null,
+      "medianStartErrorMs": null,
+      "p90StartErrorMs": null,
+      "notes": "esto@1975ms -> 2360ms (err 385ms) OK; esto@7528ms -> 8120ms (err 592ms) OK"
+    },
+    {
+      "model": "Xenova/whisper-tiny",
+      "audio": "es-2min",
+      "threads": "8",
+      "loadSeconds": 0.7946074000000007,
+      "transcribeSeconds": 15.947021100000002,
+      "wordAccuracy": 0.8724137931034482,
+      "medianStartErrorMs": 280,
+      "p90StartErrorMs": 390,
+      "notes": "within the 60 s budget"
+    },
+    {
+      "model": "Xenova/whisper-tiny",
+      "audio": "en-short",
+      "threads": "8",
+      "loadSeconds": 0.7946074000000007,
+      "transcribeSeconds": 1.0490296000000017,
+      "wordAccuracy": 0.4375,
+      "medianStartErrorMs": 476,
+      "p90StartErrorMs": 647
+    },
+    {
+      "model": "Xenova/whisper-base",
+      "audio": "es-2min",
+      "threads": "4",
+      "loadSeconds": 1.3989614999999975,
+      "transcribeSeconds": 24.104423500000003,
+      "wordAccuracy": 0.9275862068965517,
+      "medianStartErrorMs": 165,
+      "p90StartErrorMs": 265,
+      "notes": "within the 60 s budget"
+    },
+    {
+      "model": "Xenova/whisper-base",
+      "audio": "en-short",
+      "threads": "4",
+      "loadSeconds": 1.3989614999999975,
+      "transcribeSeconds": 1.2977658000000083,
+      "wordAccuracy": 0.6875,
+      "medianStartErrorMs": 284,
+      "p90StartErrorMs": 372
+    },
+    {
+      "model": "Xenova/whisper-base",
+      "audio": "es-short(esto-check)",
+      "threads": "4",
+      "loadSeconds": 1.3989614999999975,
+      "transcribeSeconds": null,
+      "wordAccuracy": null,
+      "medianStartErrorMs": null,
+      "p90StartErrorMs": null,
+      "notes": "esto@1975ms -> 2260ms (err 285ms) OK; esto@7528ms -> 7880ms (err 352ms) OK"
+    },
+    {
+      "model": "Xenova/whisper-base",
+      "audio": "es-2min",
+      "threads": "8",
+      "loadSeconds": 1.174553,
+      "transcribeSeconds": 21.61400360000001,
+      "wordAccuracy": 0.9275862068965517,
+      "medianStartErrorMs": 165,
+      "p90StartErrorMs": 265,
+      "notes": "within the 60 s budget"
+    },
+    {
+      "model": "Xenova/whisper-base",
+      "audio": "en-short",
+      "threads": "8",
+      "loadSeconds": 1.174553,
+      "transcribeSeconds": 1.335243499999997,
+      "wordAccuracy": 0.6875,
+      "medianStartErrorMs": 284,
+      "p90StartErrorMs": 372
+    },
+    {
+      "model": "Xenova/whisper-small",
+      "audio": "es-2min",
+      "threads": "4",
+      "loadSeconds": 3.130354899999991,
+      "transcribeSeconds": 65.63091750000001,
+      "wordAccuracy": 0.9551724137931035,
+      "medianStartErrorMs": 160,
+      "p90StartErrorMs": 245,
+      "notes": "OVER the 60 s budget"
+    },
+    {
+      "model": "Xenova/whisper-small",
+      "audio": "en-short",
+      "threads": "4",
+      "loadSeconds": 3.130354899999991,
+      "transcribeSeconds": 2.4187102999999768,
+      "wordAccuracy": 0.5,
+      "medianStartErrorMs": 287,
+      "p90StartErrorMs": 452
+    },
+    {
+      "model": "Xenova/whisper-small",
+      "audio": "es-short(esto-check)",
+      "threads": "4",
+      "loadSeconds": 3.130354899999991,
+      "transcribeSeconds": null,
+      "wordAccuracy": null,
+      "medianStartErrorMs": null,
+      "p90StartErrorMs": null,
+      "notes": "esto@1975ms -> 2240ms (err 265ms) OK; esto@7528ms -> 7860ms (err 332ms) OK"
+    },
+    {
+      "model": "Xenova/whisper-small",
+      "audio": "es-2min",
+      "threads": "8",
+      "loadSeconds": 2.7038867000000026,
+      "transcribeSeconds": 57.920011200000005,
+      "wordAccuracy": 0.9551724137931035,
+      "medianStartErrorMs": 160,
+      "p90StartErrorMs": 245,
+      "notes": "within the 60 s budget"
+    },
+    {
+      "model": "Xenova/whisper-small",
+      "audio": "en-short",
+      "threads": "8",
+      "loadSeconds": 2.7038867000000026,
+      "transcribeSeconds": 2.371688900000008,
+      "wordAccuracy": 0.5,
+      "medianStartErrorMs": 287,
+      "p90StartErrorMs": 452
+    },
+    {
+      "model": "onnx-community/whisper-large-v3-turbo_timestamped",
+      "audio": "es-2min",
+      "threads": "4",
+      "loadSeconds": 11.364753400000016,
+      "transcribeSeconds": 121.95066819999998,
+      "wordAccuracy": 0.9620689655172414,
+      "medianStartErrorMs": 170,
+      "p90StartErrorMs": 275,
+      "notes": "OVER the 60 s budget"
+    },
+    {
+      "model": "onnx-community/whisper-large-v3-turbo_timestamped",
+      "audio": "en-short",
+      "threads": "4",
+      "loadSeconds": 11.364753400000016,
+      "transcribeSeconds": 8.105849400000006,
+      "wordAccuracy": 0.8125,
+      "medianStartErrorMs": 307,
+      "p90StartErrorMs": 520
+    },
+    {
+      "model": "onnx-community/whisper-large-v3-turbo_timestamped",
+      "audio": "es-short(esto-check)",
+      "threads": "4",
+      "loadSeconds": 11.364753400000016,
+      "transcribeSeconds": null,
+      "wordAccuracy": null,
+      "medianStartErrorMs": null,
+      "p90StartErrorMs": null,
+      "notes": "esto@1975ms -> 2260ms (err 285ms) OK; esto@7528ms -> 7880ms (err 352ms) OK"
+    },
+    {
+      "model": "onnx-community/whisper-large-v3-turbo_timestamped",
+      "audio": "es-2min",
+      "threads": "8",
+      "loadSeconds": 5.175058699999994,
+      "transcribeSeconds": 93.7570012,
+      "wordAccuracy": 0.9620689655172414,
+      "medianStartErrorMs": 170,
+      "p90StartErrorMs": 275,
+      "notes": "OVER the 60 s budget"
+    },
+    {
+      "model": "onnx-community/whisper-large-v3-turbo_timestamped",
+      "audio": "en-short",
+      "threads": "8",
+      "loadSeconds": 5.175058699999994,
+      "transcribeSeconds": 6.6948707000000285,
+      "wordAccuracy": 0.8125,
+      "medianStartErrorMs": 307,
+      "p90StartErrorMs": 520
+    }
+  ]
+}

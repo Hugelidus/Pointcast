@@ -1,0 +1,111 @@
+:root {
+  --bg: #ffffff;
+  --fg: #202124;
+  --muted: #5f6368;
+  --border: #dadce0;
+  --rec: #d93025;
+  --rec-fg: #ffffff;
+  --stop: #202124;
+  --stop-fg: #ffffff;
+  --error: #b3261e;
+  --ok: #188038;
+  --warning: #b06000;
+  --processing: #e37400;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #202124;
+    --fg: #e8eaed;
+    --muted: #9aa0a6;
+    --border: #3c4043;
+    --stop: #e8eaed;
+    --stop-fg: #202124;
+    --error: #f28b82;
+    --ok: #81c995;
+    --warning: #fdd663;
+    --processing: #fdd663;
+  }
+}
+
+* { box-sizing: border-box; }
+/* The hidden attribute must win over the display rules below (.progress, .result are grids). */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  width: 260px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.4 system-ui, sans-serif;
+}
+
+main { display: grid; gap: 12px; padding: 14px; }
+
+header { display: flex; align-items: center; justify-content: space-between; }
+.brand { display: inline-flex; align-items: center; gap: 6px; }
+/* The 32 px icon drawn at 16 CSS px stays sharp on high-density screens. */
+.brand img { display: block; }
+
+.status { font-size: 12px; color: var(--muted); }
+.status[data-status="recording"] { color: var(--rec); font-weight: 600; }
+.status[data-status="processing"], .status[data-status="stopping"] { color: var(--processing); font-weight: 600; }
+
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+.stats div { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
+.stats dt { font-size: 11px; color: var(--muted); }
+.stats dd { margin: 0; font-size: 20px; font-variant-numeric: tabular-nums; }
+
+button {
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+button.record { background: var(--rec); color: var(--rec-fg); }
+button.stop { background: var(--stop); color: var(--stop-fg); }
+button:disabled { opacity: 0.5; cursor: default; }
+
+.message { margin: 0; font-size: 12px; word-break: break-word; }
+.message.error { color: var(--error); }
+
+.hint { margin: 0; font-size: 11px; color: var(--muted); }
+
+/* The last captured element: "Last: button «Export» · Alt+click". */
+.last-event { margin: 0; font-size: 12px; overflow-wrap: anywhere; }
+
+/* Whether the active tab is captured: a dot in the tone's color, then the text. */
+.tab-status { margin: 0; font-size: 12px; display: flex; gap: 6px; align-items: baseline; }
+.tab-status::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.tab-status[data-tone="muted"] { color: var(--muted); }
+.tab-status[data-tone="ok"] { color: var(--ok); }
+.tab-status[data-tone="warning"] { color: var(--warning); }
+.tab-status[data-tone="error"] { color: var(--error); font-weight: 600; }
+
+/* After Stop: the estimate while processing, then the result buttons. */
+.progress { display: grid; gap: 6px; }
+.progress-text { margin: 0; font-size: 12px; font-weight: 600; }
+.bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+.fill { height: 100%; width: 0; background: var(--processing); }
+.result { display: grid; gap: 6px; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+button.secondary { padding: 6px; font-weight: 500; font-size: 12px; background: transparent; color: var(--fg); border: 1px solid var(--border); }
+
+/* "Enable on example.com" / "Remove example.com" for a remote site in the active tab. */
+.site { display: grid; gap: 6px; }
+
+.settings { font-size: 12px; }
+.settings summary { cursor: pointer; color: var(--muted); }
+.settings label { display: grid; gap: 4px; margin-top: 8px; }
+.settings label.check { display: flex; gap: 6px; align-items: center; }
+.settings select { font: inherit; padding: 3px; }

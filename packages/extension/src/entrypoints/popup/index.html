@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="light dark">
+  <title>pointcast</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <strong class="brand"><img src="/icon/32.png" alt="" width="16" height="16">pointcast</strong>
+      <span id="status" class="status" data-status="idle">Idle</span>
+    </header>
+    <dl class="stats">
+      <div><dt>Time</dt><dd id="elapsed">00:00</dd></div>
+      <div><dt>Events</dt><dd id="events">0</dd></div>
+    </dl>
+    <p id="last-event" class="last-event" role="status" hidden></p>
+    <p id="tab-status" class="tab-status" data-tone="muted" role="status">Checking this tab…</p>
+    <section id="site" class="site" hidden>
+      <button id="site-toggle" type="button" class="secondary"></button>
+      <p id="site-note" class="hint"></p>
+    </section>
+    <button id="toggle" type="button" class="record">Record</button>
+    <button id="undo" type="button" class="secondary" hidden>Undo last gesture</button>
+    <section id="progress" class="progress" hidden>
+      <p id="progress-text" class="progress-text" role="status"></p>
+      <div class="bar"><div id="progress-fill" class="fill"></div></div>
+      <p id="progress-detail" class="hint"></p>
+    </section>
+    <p id="message" class="message" role="status" hidden></p>
+    <div id="result" class="result" hidden>
+      <p id="result-timing" class="hint" hidden></p>
+      <p id="result-code" class="hint" hidden></p>
+      <div class="actions">
+        <button id="copy-again" type="button" class="secondary">Copy again</button>
+        <button id="show-folder" type="button" class="secondary">Show in folder</button>
+      </div>
+    </div>
+    <p class="hint">Only Alt+click and text selection are recorded; plain clicks are not. Stop copies the Markdown for your agent.</p>
+    <p id="shortcut" class="hint" hidden></p>
+    <p id="undo-shortcut" class="hint" hidden></p>
+    <details class="settings">
+      <summary>Settings</summary>
+      <label>Language
+        <select id="language"></select>
+      </label>
+      <label class="check"><input id="keep-audio" type="checkbox"> Keep audio (saves audio.wav)</label>
+      <label class="check"><input id="notify" type="checkbox"> Notify when done</label>
+    </details>
+  </main>
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

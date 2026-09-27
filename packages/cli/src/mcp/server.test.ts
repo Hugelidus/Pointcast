@@ -1,0 +1,49 @@
+import { cpSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { createServer } from "./server";
+import { connectClient } from "./test-transport";
+
+const FIXTURE = join(__dirname, "../../../../fixtures/sessions/e2e-es-v2");
+
+/**
+ * The one "smoke test beyond a plain unit test" the task asked for: it goes through the SDK's own
+ * client (test-transport.ts), request/response framing and zod input validation, not just the
+ * tool functions.
+ */
+describe("pointcast mcp server (smoke test)", () => {
+  let base: string;
+
+  beforeEach(() => {
+    base = mkdtempSync(join(tmpdir(), "pointcast-mcp-server-"));
+    mkdirSync(join(base, "2026-01-01_09-00-00"));
+    cpSync(FIXTURE, join(base, "2026-01-02_09-00-00"), { recursive: true });
+  });
+  afterEach(() => {
+    rmSync(base, { recursive: true, force: true });
+  });
+
+  it("lists the 3 tools and can call each of them end-to-end over the wire protocol", async () => {
+    const server = createServer({ dirFlag: base, repoRoot: base });
+    const client = await connectClient(server);
+
+    const { tools } = await client.listTools();
+    expect(tools.map((t) => t.name).sort()).toEqual(["get_element", "get_session", "list_sessions"]);
+
+    const listed = await client.callTool({ name: "list_sessions", arguments: {} });
+    expect(JSON.stringify(listed.content)).toContain("2026-09-26_20-29-01");
+
+    const session = await client.callTool({ name: "get_session", arguments: { id: "latest" } });
+    expect(JSON.stringify(session.content)).toContain("Quantity");
+
+    const element = await client.callTool({ name: "get_element", arguments: { id: "latest", eventId: "e1" } });
+    expect(JSON.stringify(element.content)).toContain("Quantity");
+
+    const missing = await client.callTool({ name: "get_element", arguments: { id: "latest", eventId: "nope" } });
+    expect(missing.isError).toBe(true);
+
+    await client.close();
+    await server.close();
+  });
+});

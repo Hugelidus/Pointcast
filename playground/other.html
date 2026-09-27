@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customers · pointcast playground</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!--
+  Second page of a classic multi-page app: following a link here is a full page load,
+  which destroys and re-injects the content script. Recording must survive it.
+-->
+<header class="flex items-center justify-between px-6 py-3 bg-slate-900 text-white">
+  <strong>Acme Admin</strong>
+  <nav aria-label="Main">
+    <a href="index.html">Orders</a>
+    <a href="other.html" aria-current="page">Customers</a>
+    <a href="spa.html">SPA demo</a>
+  </nav>
+</header>
+
+<main class="mx-auto max-w-5xl p-6">
+  <section id="customers" aria-labelledby="customers-title">
+    <h1 id="customers-title" class="text-2xl font-bold">Customers</h1>
+    <div class="cards grid grid-cols-3 gap-4" data-source="src/pages/Customers.tsx:21">
+      <article class="card rounded-lg border p-4" data-customer-id="c_01">
+        <h3>Jane Cooper</h3>
+        <p>jane.cooper@example.com</p>
+        <button type="button">View orders</button>
+      </article>
+      <article class="card rounded-lg border p-4" data-customer-id="c_02">
+        <h3>Wade Warren</h3>
+        <p>wade.warren@example.com</p>
+        <button type="button">View orders</button>
+      </article>
+      <article class="card rounded-lg border p-4" data-customer-id="c_03">
+        <h3>Esther Howard</h3>
+        <p>esther.howard@example.com</p>
+        <button type="button">View orders</button>
+      </article>
+    </div>
+  </section>
+</main>
+</body>
+</html>

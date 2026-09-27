@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Tests import the committed session fixtures as JSON; core itself stays free of Node types.
+    "resolveJsonModule": true
+  },
+  "include": ["src"]
+}

@@ -48,7 +48,7 @@ describe("searchHints", () => {
   it("drops utility classes capture did not know yet, keeping semantic ones (pass 2)", () => {
     expect(searchHints(el({ html: '<button class="transition-all">Download</button>' }))).toEqual([]);
     expect(searchHints(el({ html: '<a href="/users" class="ring-sidebar-ring nav-link">Users</a>' }))).toEqual(["href `/users`", "class `nav-link`"]);
-    expect(searchHints(el({ html: '<div class="map-layer flex p-4">x</div>' }))).toEqual(["class `map-layer`"]);
+    expect(searchHints(el({ html: '<div class="orders-map flex p-4">x</div>' }))).toEqual(["class `orders-map`"]);
   });
 
   it("skips generated ids and takes the id from the path when the HTML was redacted", () => {

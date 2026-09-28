@@ -1214,91 +1214,91 @@ describe("resolver pass 2 (D9 note 2026-09-28)", () => {
     expect(codeChain({ ...p, component: { framework: "vue", name: "Dashboard", file: INDEX } })).toEqual([]);
   });
 
-  /** A private React 19 + Vite app's shape (item A): the nav link's label in TopNav, a page-title switch in AppShell. */
-  const SHELL: Record<string, string> = {
-    "src/features/shell/AppShell.tsx": [
-      'import { TopNav } from "./TopNav";',
+  /** A private React 19 + Vite app's shape (item A): the nav link's label in MainNav, a page-title switch in Shell. */
+  const NAV_APP: Record<string, string> = {
+    "src/layout/Shell.tsx": [
+      'import { MainNav } from "./MainNav";',
       "function titleOf(path: string) {",
       "  switch (path) {",
-      '    case "hoy": return "Hoy";',
-      '    case "progreso": return "Progreso";',
+      '    case "home": return "Home";',
+      '    case "reports": return "Reports";',
       "  }",
       "}",
-      "export function AppShell() {",
-      "  return <><TopNav /><h1>{titleOf(path)}</h1></>;",
+      "export function Shell() {",
+      "  return <><MainNav /><h1>{titleOf(path)}</h1></>;",
       "}",
     ].join("\n"),
-    "src/features/shell/TopNav.tsx": [
+    "src/layout/MainNav.tsx": [
       "const ITEMS = [",
-      '  { path: "/hoy", label: "Hoy" },',
-      '  { path: "/progreso", label: "Progreso" },',
+      '  { path: "/home", label: "Home" },',
+      '  { path: "/reports", label: "Reports" },',
       "];",
-      "export function TopNav() {",
+      "export function MainNav() {",
       "  return <nav>{ITEMS.map((item) => <a key={item.path} href={item.path}>{item.label}</a>)}</nav>;",
       "}",
     ].join("\n"),
   };
-  const progreso = el("a", "Progreso", [{ component: "TopNav", file: "src/features/shell/AppShell.tsx" }], {
-    html: "<a>Progreso</a>",
-    component: { framework: "react", name: "TopNav" },
+  const reportsLink = el("a", "Reports", [{ component: "MainNav", file: "src/layout/Shell.tsx" }], {
+    html: "<a>Reports</a>",
+    component: { framework: "react", name: "MainNav" },
   });
 
   it("item A: a literal once in the usage file but also in the component's own definition is silence, not the usage's line", async () => {
-    // Before pass 2: `text at: AppShell.tsx:5`, the page-title switch. Wrong.
-    expect(await resolveElement(progreso, memoryReader(SHELL), "repo")).toEqual([]);
+    // Before pass 2: `text at: Shell.tsx:5`, the page-title switch. Wrong.
+    expect(await resolveElement(reportsLink, memoryReader(NAV_APP), "repo")).toEqual([]);
     // With the link's href, written once, next to the label: the nav item's own line (rule 3's tie-break).
-    const withHref = { ...progreso, html: '<a href="/progreso">Progreso</a>' };
-    expect(await resolveElement(withHref, memoryReader(SHELL), "repo")).toMatchObject([{ kind: "text", file: "src/features/shell/TopNav.tsx", line: 3 }]);
+    const withHref = { ...reportsLink, html: '<a href="/reports">Reports</a>' };
+    expect(await resolveElement(withHref, memoryReader(NAV_APP), "repo")).toMatchObject([{ kind: "text", file: "src/layout/MainNav.tsx", line: 3 }]);
     // The href twice (a second nav): silence again.
-    const twoNavs = { ...SHELL, "src/features/shell/AppShell.tsx": `${SHELL["src/features/shell/AppShell.tsx"]}\nconst links = ["/progreso"];` };
+    const twoNavs = { ...NAV_APP, "src/layout/Shell.tsx": `${NAV_APP["src/layout/Shell.tsx"]}\nconst links = ["/reports"];` };
     expect(await resolveElement(withHref, memoryReader(twoNavs), "repo")).toEqual([]);
     // In a nav data module the definition imports: the same.
     const withData = {
-      ...SHELL,
-      "src/features/shell/TopNav.tsx": 'import { ITEMS } from "./nav";\nexport function TopNav() {\n  return <nav>{ITEMS.map((i) => <a href={i.path}>{i.label}</a>)}</nav>;\n}',
-      "src/features/shell/nav.ts": 'export const ITEMS = [\n  { path: "/progreso", label: "Progreso" },\n];',
+      ...NAV_APP,
+      "src/layout/MainNav.tsx": 'import { ITEMS } from "./nav";\nexport function MainNav() {\n  return <nav>{ITEMS.map((i) => <a href={i.path}>{i.label}</a>)}</nav>;\n}',
+      "src/layout/nav.ts": 'export const ITEMS = [\n  { path: "/reports", label: "Reports" },\n];',
     };
-    expect(await resolveElement(progreso, memoryReader(withData), "repo")).toEqual([]);
+    expect(await resolveElement(reportsLink, memoryReader(withData), "repo")).toEqual([]);
     // Without the title switch, the definition's line is found (rule 4, as before).
-    const noSwitch = { ...SHELL, "src/features/shell/AppShell.tsx": SHELL["src/features/shell/AppShell.tsx"].replace('return "Progreso"', 'return "Avance"') };
-    expect(await resolveElement(progreso, memoryReader(noSwitch), "repo")).toMatchObject([{ file: "src/features/shell/TopNav.tsx", line: 3 }]);
+    const noSwitch = { ...NAV_APP, "src/layout/Shell.tsx": NAV_APP["src/layout/Shell.tsx"].replace('return "Reports"', 'return "Summary"') };
+    expect(await resolveElement(reportsLink, memoryReader(noSwitch), "repo")).toMatchObject([{ file: "src/layout/MainNav.tsx", line: 3 }]);
   });
 
   it("item A: the same for Vue, whose frames are also where each instance is used", async () => {
     const vue = {
-      "src/layouts/AppShell.vue":
-        '<script setup>\nimport TopNav from "./TopNav.vue";\nconst title = computed(() => (route.name === "progreso" ? "Progreso" : "Hoy"));\n</script>\n<template><TopNav /><h1>{{ title }}</h1></template>',
-      "src/layouts/TopNav.vue":
-        '<script setup>\nconst items = [{ path: "/progreso", label: "Progreso" }];\n</script>\n<template><a v-for="i in items" :href="i.path">{{ i.label }}</a></template>',
+      "src/layout/Shell.vue":
+        '<script setup>\nimport MainNav from "./MainNav.vue";\nconst title = computed(() => (route.name === "reports" ? "Reports" : "Home"));\n</script>\n<template><MainNav /><h1>{{ title }}</h1></template>',
+      "src/layout/MainNav.vue":
+        '<script setup>\nconst items = [{ path: "/reports", label: "Reports" }];\n</script>\n<template><a v-for="i in items" :href="i.path">{{ i.label }}</a></template>',
     };
-    const link = el("a", "Progreso", [{ component: "TopNav", file: "src/layouts/AppShell.vue" }], {
-      component: { framework: "vue", name: "TopNav", file: "src/layouts/TopNav.vue" },
+    const link = el("a", "Reports", [{ component: "MainNav", file: "src/layout/Shell.vue" }], {
+      component: { framework: "vue", name: "MainNav", file: "src/layout/MainNav.vue" },
     });
     expect(await resolveElement(link, memoryReader(vue), "repo")).toEqual([]);
   });
 
   it("item B: class at for an element with no text, on its own tag only, once", async () => {
-    const MAP = "src/features/map/MapView.tsx";
+    const MAP = "src/features/orders/OrdersMap.tsx";
     const files: Record<string, string> = {
-      "src/features/map/index.tsx": 'import { MapView } from "./MapView";\nexport function MapPage() {\n  return <MapView />;\n}',
-      [MAP]: 'export function MapView() {\n  return (\n    <div\n      className="map-layer absolute inset-0"\n      ref={ref}\n    />\n  );\n}',
+      "src/features/orders/index.tsx": 'import { OrdersMap } from "./OrdersMap";\nexport function OrdersPage() {\n  return <OrdersMap />;\n}',
+      [MAP]: 'export function OrdersMap() {\n  return (\n    <div\n      className="orders-map absolute inset-0"\n      ref={ref}\n    />\n  );\n}',
     };
-    const layer = el("div", "", [{ component: "MapView", file: "src/features/map/index.tsx" }], {
-      html: '<div class="map-layer absolute inset-0"></div>',
-      component: { framework: "react", name: "MapView" },
+    const layer = el("div", "", [{ component: "OrdersMap", file: "src/features/orders/index.tsx" }], {
+      html: '<div class="orders-map absolute inset-0"></div>',
+      component: { framework: "react", name: "OrdersMap" },
     });
     expect(await resolveElement(layer, memoryReader(files), "repo")).toEqual([
-      { kind: "class", file: MAP, line: 4, via: "repo", snippet: 'className="map-layer absolute inset-0"' },
+      { kind: "class", file: MAP, line: 4, via: "repo", snippet: 'className="orders-map absolute inset-0"' },
     ]);
     // Written twice: silent. Only utilities: nothing to look up. On a component, not the element's own tag: silent.
-    expect(await resolveElement(layer, memoryReader({ ...files, [MAP]: `${files[MAP]}\nconst other = <div className="map-layer" />;` }), "repo")).toEqual([]);
+    expect(await resolveElement(layer, memoryReader({ ...files, [MAP]: `${files[MAP]}\nconst other = <div className="orders-map" />;` }), "repo")).toEqual([]);
     expect(await resolveElement({ ...layer, html: '<div class="absolute inset-0"></div>' }, memoryReader(files), "repo")).toEqual([]);
-    const wrapper = { ...files, [MAP]: 'export function MapView() {\n  return <Layer className="map-layer" />;\n}' };
+    const wrapper = { ...files, [MAP]: 'export function OrdersMap() {\n  return <Layer className="orders-map" />;\n}' };
     expect(await resolveElement(layer, memoryReader(wrapper), "repo")).toEqual([]);
     // An id, the same way.
-    const byId = { ...files, [MAP]: 'export function MapView() {\n  return <div id="route-map" />;\n}' };
-    expect(await resolveElement({ ...layer, html: '<div id="route-map"></div>' }, memoryReader(byId), "repo")).toMatchObject([{ kind: "id", file: MAP, line: 2 }]);
+    const byId = { ...files, [MAP]: 'export function OrdersMap() {\n  return <div id="orders-map-canvas" />;\n}' };
+    expect(await resolveElement({ ...layer, html: '<div id="orders-map-canvas"></div>' }, memoryReader(byId), "repo")).toMatchObject([{ kind: "id", file: MAP, line: 2 }]);
     // An element with text of its own never gets one.
-    expect(await resolveElement({ ...layer, text: "Mapa" }, memoryReader(files), "repo")).toEqual([]);
+    expect(await resolveElement({ ...layer, text: "Map" }, memoryReader(files), "repo")).toEqual([]);
   });
 });

@@ -576,10 +576,10 @@ describe("resolver pass 2 rendering (D9 note 2026-09-28)", () => {
 
   it("item B: names a class or id location as such", () => {
     const layer = el("div", "", {
-      renderedBy: [{ component: "MapView", file: "src/features/map/index.tsx" }],
-      resolved: [{ kind: "class", file: "src/features/map/MapView.tsx", line: 4, via: "repo", snippet: 'className="map-layer"' }],
+      renderedBy: [{ component: "OrdersMap", file: "src/features/orders/index.tsx" }],
+      resolved: [{ kind: "class", file: "src/features/orders/OrdersMap.tsx", line: 4, via: "repo", snippet: 'className="orders-map"' }],
     });
-    expect(codeFirstLines(layer)).toContain('class at: `src/features/map/MapView.tsx:4` — `className="map-layer"`');
-    expect(codePointerLines({ ...layer, resolved: [{ ...layer.resolved![0], kind: "id" }] })).toContain("id at: `src/features/map/MapView.tsx:4`");
+    expect(codeFirstLines(layer)).toContain('class at: `src/features/orders/OrdersMap.tsx:4` — `className="orders-map"`');
+    expect(codePointerLines({ ...layer, resolved: [{ ...layer.resolved![0], kind: "id" }] })).toContain("id at: `src/features/orders/OrdersMap.tsx:4`");
   });
 });

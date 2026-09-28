@@ -128,8 +128,8 @@ interface LookupTrace {
  * Rule 1 checked across the element's own definitions (D9 note 2026-09-28, pass 2). A literal
  * written once in the chain's files can also be written in the file that defines the element's
  * component, or in the data that file imports: a page-title switch in the layout
- * (`case "progreso": return "Progreso";`) and the nav item's label in the nav component
- * (`{ path: "/progreso", label: "Progreso" }`). React 19 and Vue frames name where each instance
+ * (`case "reports": return "Reports";`) and the nav item's label in the nav component
+ * (`{ path: "/reports", label: "Reports" }`). React 19 and Vue frames name where each instance
  * is used, so the definition is often no chain file, and the chain's one hit was the wrong one.
  * So the literal is counted again over the chain's files, the files defining its components
  * (withDefinitions) and the data modules those import (one hop): still once -> the location;
@@ -162,8 +162,8 @@ async function acrossDefinitions(
 /**
  * Rule 3 as a tie-break for acrossDefinitions: the element's link href (not "#…") written once
  * across the same files, with the literal on exactly one line of that entry (3's window) -> that
- * line (`{ path: "/progreso", label: "Progreso" }` for the «Progreso» link, not the page-title
- * switch's `return "Progreso"`). Else undefined.
+ * line (`{ path: "/reports", label: "Reports" }` for the «Reports» link, not the page-title
+ * switch's `return "Reports"`). Else undefined.
  */
 function hrefEntry(element: ElementInfo, code: Sources, literal: RegExp): Hit | undefined {
   const href = HREF.exec(element.html)?.[1] ?? HREF.exec(element.selector)?.[1];
@@ -177,7 +177,7 @@ function hrefEntry(element: ElementInfo, code: Sources, literal: RegExp): Hit | 
 /**
  * `class at:` / `id at:` (D9 note 2026-09-28, pass 2): an element with no text of its own (a map
  * layer, a container, an icon button) has nothing for rules 1-5 to look up, but often a class or
- * id chosen for it (`className="map-layer"`). Each of the element's own distinctive classes
+ * id chosen for it (`className="orders-map"`). Each of the element's own distinctive classes
  * (not a utility, not hashed, not a generic word: distinctiveClasses) and its id (not generated)
  * is looked up in the chain's files and the files defining its components, as a class token in a
  * class attribute or class helper call, or as an `id` value. Candidates written exactly once
@@ -187,7 +187,7 @@ function classOrId(element: ElementInfo, files: Sources, via: SourceVia): Resolv
   const attributes = rootAttributes(element.html);
   const code = codeOf(files);
   const found: { kind: "class" | "id"; hit: Hit }[] = [];
-  // Only on the element's own tag (`<div className="map-layer"`): a class a wrapper sets on
+  // Only on the element's own tag (`<div className="orders-map"`): a class a wrapper sets on
   // whatever it renders (`<component :is="chart" class="va-chart" />`) names the wrapper's line,
   // shared by every instance, not this element.
   const onOwnTag = (hit: Hit, pattern: RegExp): boolean => {

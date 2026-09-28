@@ -162,7 +162,7 @@ export interface ResolvedLocation {
    * appears exactly once in this file of the chain, or (when the chain's files have nothing) in
    * the file defining one of its components; "data": the literal lives in a data file imported by
    * one of those files, outside the component files searched. Since 2026-09-28, for an element
-   * with no text of its own: "class", one of its distinctive classes (`className="map-layer"`)
+   * with no text of its own: "class", one of its distinctive classes (`className="orders-map"`)
    * written once in those component files, or "id", its id written once there.
    */
   kind: "text" | "data" | "class" | "id";

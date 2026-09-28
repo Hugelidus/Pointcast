@@ -52,6 +52,25 @@ describe("describeElement on the playground", () => {
     expect(describeElement(q("#display-name"))).toMatchObject({ text: "", label: "Display name" });
   });
 
+  it("separates the texts of siblings that layout sets apart", () => {
+    document.body.innerHTML = '<a id="messages" style="display: flex"><span>Messages</span><span>3</span></a>';
+    expect(describeElement(document.getElementById("messages") as Element).text).toBe("Messages 3");
+
+    document.body.innerHTML = '<a id="grid" style="display: grid"><span>Sem 2</span><span>26 oct</span></a>';
+    expect(describeElement(document.getElementById("grid") as Element).text).toBe("Sem 2 26 oct");
+
+    document.body.innerHTML = '<a id="chip"><span>Messages</span><span style="display: inline-block">3</span></a>';
+    expect(describeElement(document.getElementById("chip") as Element).text).toBe("Messages 3");
+  });
+
+  it("keeps the texts of inline siblings in a line of text together", () => {
+    document.body.innerHTML = '<p id="price"><span>$</span><span>45</span></p>';
+    expect(describeElement(document.getElementById("price") as Element).text).toBe("$45");
+
+    document.body.innerHTML = '<p id="word"><b>Hel</b><i>lo</i></p>';
+    expect(describeElement(document.getElementById("word") as Element).text).toBe("Hello");
+  });
+
   it("names landmarks without generated ids", () => {
     expect(describeElement(q('[aria-label="More actions"]')).path).toBe("main › section#orders › button«More actions»");
     expect(readablePath(q("#orders-table tbody tr:nth-child(3) button"))).toBe(

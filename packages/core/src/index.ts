@@ -4,6 +4,7 @@ export * from "./handoff";
 export { projectRelativePath } from "./paths";
 export { isLibraryPath } from "./resolve/chain";
 export { isShortValue } from "./describe";
+export { isUtilityClass } from "./utility-classes";
 export { cleanNote, isTypedSession, TYPED_SESSION_WORDS } from "./notes";
 export { attachErrors, errorsAround, parseCapturedErrorDraft, parseCapturedErrors } from "./page-errors";
 export {

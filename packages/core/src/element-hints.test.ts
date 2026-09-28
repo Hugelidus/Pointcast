@@ -45,6 +45,12 @@ describe("searchHints", () => {
     ]);
   });
 
+  it("drops utility classes capture did not know yet, keeping semantic ones (pass 2)", () => {
+    expect(searchHints(el({ html: '<button class="transition-all">Download</button>' }))).toEqual([]);
+    expect(searchHints(el({ html: '<a href="/users" class="ring-sidebar-ring nav-link">Users</a>' }))).toEqual(["href `/users`", "class `nav-link`"]);
+    expect(searchHints(el({ html: '<div class="orders-map flex p-4">x</div>' }))).toEqual(["class `orders-map`"]);
+  });
+
   it("skips generated ids and takes the id from the path when the HTML was redacted", () => {
     expect(searchHints(el({ html: '<button id=":r1:">x</button>' }))).toEqual([]);
     expect(searchHints(el({ path: "main › form › input#password", html: "" }))).toEqual([
@@ -119,6 +125,20 @@ describe("stylesLine", () => {
     );
     expect(stylesLine({ margin: "0px" })).toBeUndefined();
     expect(stylesLine(undefined)).toBeUndefined();
+  });
+
+  it("rounds fractional pixels and keeps colors exactly (D9 note 2026-09-28, pass 2)", () => {
+    const styles = {
+      color: "oklch(0.129 0.042 264.695)",
+      "background-color": "oklab(0.208 -0.00310889 -0.0418848)",
+      padding: "8.5px 16px",
+      width: "596.844px",
+      height: "16px",
+      "line-height": "1.5",
+    };
+    expect(stylesLine(styles)).toBe(
+      "`color: oklch(0.129 0.042 264.695); background-color: oklab(0.208 -0.00310889 -0.0418848); padding: 9px 16px; width: 597px; height: 16px; line-height: 1.5`",
+    );
   });
 });
 

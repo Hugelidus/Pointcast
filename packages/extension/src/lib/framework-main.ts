@@ -141,6 +141,11 @@ function readReact(el: Element, mapping: Mapping): ComponentInfo | undefined {
   if (source === undefined) {
     const mapped = readMappedReact(hostFiber, { ...mapping, root: rootFinder(hostFiber) });
     if (mapped !== undefined) return mapped;
+    // React 19 on Vite (D9 note 2026-09-28, pass 2): the element's own JSX call site names the
+    // app file it is written in, and its owner the component that wrote it.
+    const own = ownJsxFile(hostFiber);
+    const owner = ownerName(asObject(hostFiber._debugOwner));
+    if (own !== undefined && owner !== undefined) return { framework: "react", name: owner, file: own };
   }
   let fiber: Loose = asObject(hostFiber.return);
   for (let depth = 0; fiber !== undefined && depth < 50; depth++) {
@@ -176,8 +181,11 @@ interface Mapping {
   maps?: (url: string) => SourceMap | null | undefined;
   /** The project root (react-stack.ts projectRootOf), found once per request when first needed. */
   root: () => string | undefined;
-  /** Set when a chain ended at a call site that could not be mapped (not at its outermost owner). */
-  state?: { stopped: boolean };
+  /**
+   * `stopped`: a chain ended at a call site that could not be mapped (not at its outermost owner).
+   * `libraryPlaced`: it ended at the element's own component, placed by library code (reactFrames).
+   */
+  state?: { stopped: boolean; libraryPlaced?: boolean };
 }
 
 /** Thrown while reading a chain that needs a source map not fetched yet (`url`). */
@@ -406,6 +414,22 @@ function stackFile(debugStack: unknown): string | undefined {
 }
 
 /**
+ * React 19 without `_debugSource` or mapped stacks (Vite): the app file an element's own JSX is
+ * written in, from its `_debugStack` by React's own call-site rule (reactCallSite: the frame right
+ * after the JSX runtime's). Undefined when that frame is library code (an element a library
+ * component creates, Radix's Slot cloning a child) or not a served file. No line: the stack's
+ * line is the transformed module's, not the source's.
+ */
+function ownJsxFile(fiber: NonNullable<Loose>): string | undefined {
+  const stack = stackOf(fiber);
+  const site = stack === undefined ? undefined : reactCallSite(stack);
+  const file = site === undefined ? undefined : fileOfUrl(site.url);
+  if (!isAppFile(file)) return undefined;
+  const relative = normalizeFile(file);
+  return relative === undefined || relative === "" ? undefined : relative;
+}
+
+/**
  * React: the owner chain (`_debugOwner`, the components whose render created each element),
  * each owner at the JSX that created it: `_debugSource` up to React 18, else `_debugStack`.
  * Under Next.js, the owners include Server Components (ReactComponentInfo, followed through
@@ -425,7 +449,16 @@ function* reactFrames(hostFiber: NonNullable<Loose>, mapping: Mapping): Generato
     }
     const mappable = mappableSite(owner, mapping);
     if (mappable === undefined) {
-      yield { component, file: stackFile(owner._debugStack ?? owner.debugStack) };
+      const file = stackFile(owner._debugStack ?? owner.debugStack);
+      // The element's own component was placed by library code (a router's `component: Dashboard`,
+      // a lazy route): its instance is written nowhere in the app. Skipped, the next app frame out
+      // (the router's `<Outlet />` in a layout) would take its place as "used at", a wrong answer.
+      // The chain ends here instead: the element's own JSX file is its code (renderedBy: []).
+      if (depth === 0 && !isAppFile(file) && ownJsxFile(hostFiber) !== undefined) {
+        if (mapping.state !== undefined) mapping.state.libraryPlaced = true;
+        return;
+      }
+      yield { component, file };
       continue;
     }
     const located = locate(mappable.site, mappable.kind, mapping);
@@ -501,6 +534,9 @@ function frameworkInfo(el: Element, base: Mapping): FrameworkInfo {
     const fiber = nearestFiber(el);
     if (fiber !== undefined && asObject(fiber._debugSource) === undefined && mappableSite(fiber, mapping) !== undefined) renderedBy = [];
   }
+  // React 19 on Vite: the element's own component was placed by library code (reactFrames), and
+  // its own JSX file is known (readReact): that file is its code, a chain of one in core.
+  if (renderedBy === undefined && mapping.state?.libraryPlaced && component?.framework === "react" && component.file !== undefined) renderedBy = [];
   return { ...(component !== undefined ? { component } : {}), ...(renderedBy !== undefined ? { renderedBy } : {}) };
 }
 

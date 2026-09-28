@@ -1,5 +1,7 @@
 import { isShortValue } from "../describe";
+import { rootAttributes } from "../element-hints";
 import { oneLine, truncate } from "../markdown";
+import { isUtilityClass } from "../utility-classes";
 import type { CapturedEvent, CodeFrame, ElementInfo, ResolvedLocation, SessionFile, ShownByLocation } from "../schema";
 import { cleanPath, codeChain, isLibraryPath } from "./chain";
 
@@ -96,15 +98,144 @@ export async function resolveElementDetails(
   if (chain.size === 0) return { resolved: [] };
   const text = selectedText ?? element.text;
   let searched: Sources = chain;
-  let resolved = await lookup(element, text, chain, cached, via);
+  const trace: LookupTrace = {};
+  let resolved = await lookup(element, text, chain, cached, via, trace);
+  let scope: Sources | undefined;
   if (resolved === undefined) {
-    const scope = await withDefinitions(element, chain, cached);
+    scope = await withDefinitions(element, chain, cached);
     searched = scope;
-    resolved = scope.size > chain.size ? await lookup(element, text, scope, cached, via) : undefined;
+    resolved = scope.size > chain.size ? await lookup(element, text, scope, cached, via, trace) : undefined;
     resolved ??= (await textInData(element, text, scope, cached, via)) ?? [];
+  }
+  if (resolved.length === 1 && trace.literal !== undefined && !codeChain(element)[0]?.template) {
+    scope ??= await withDefinitions(element, chain, cached);
+    resolved = await acrossDefinitions(element, resolved[0], trace.literal, chain, scope, cached, via);
+  }
+  if (resolved.length === 0 && text.trim() === "") {
+    scope ??= await withDefinitions(element, chain, cached);
+    resolved = classOrId(element, scope, via);
   }
   const shownBy = resolved.length === 1 ? await shownByOf(element, text, resolved[0], searched, cached, via) : undefined;
   return shownBy === undefined ? { resolved } : { resolved, shownBy };
+}
+
+/** What rule 1 matched, when a lookup returned its location: the literal's pattern. */
+interface LookupTrace {
+  literal?: RegExp;
+}
+
+/**
+ * Rule 1 checked across the element's own definitions (D9 note 2026-09-28, pass 2). A literal
+ * written once in the chain's files can also be written in the file that defines the element's
+ * component, or in the data that file imports: a page-title switch in the layout
+ * (`case "reports": return "Reports";`) and the nav item's label in the nav component
+ * (`{ path: "/reports", label: "Reports" }`). React 19 and Vue frames name where each instance
+ * is used, so the definition is often no chain file, and the chain's one hit was the wrong one.
+ * So the literal is counted again over the chain's files, the files defining its components
+ * (withDefinitions) and the data modules those import (one hop): still once -> the location;
+ * more than once -> the tie-break by the element's own tag or component (byEnclosingName), else
+ * nothing. A template chain keeps its innermost-first rule: its innermost template is where the
+ * element's markup is written, so it is never a usage site.
+ */
+async function acrossDefinitions(
+  element: ElementInfo,
+  location: ResolvedLocation,
+  pattern: RegExp,
+  chain: Sources,
+  scope: Sources,
+  reader: SourceReader,
+  via: SourceVia,
+): Promise<ResolvedLocation[]> {
+  const wide: Sources = new Map([...scope, ...(await importedData(scope, reader))]);
+  if (wide.size === chain.size) return [location];
+  const code = codeOf(wide);
+  const hits = hitsIn(code, pattern);
+  if (hits.length <= 1) return [location];
+  const hit = byEnclosingName(hits, code, pattern, element) ?? hrefEntry(element, code, pattern);
+  if (hit === undefined) return [];
+  if (hit.file === location.file && hit.line === location.line) return [location];
+  const snippet = element.sensitive ? undefined : sourceSnippet(wide.get(hit.file) ?? [], hit.line);
+  const kind: ResolvedLocation["kind"] = scope.has(hit.file) ? "text" : "data";
+  return [{ kind, file: hit.file, line: hit.line, via, ...(snippet === undefined ? {} : { snippet }) }];
+}
+
+/**
+ * Rule 3 as a tie-break for acrossDefinitions: the element's link href (not "#…") written once
+ * across the same files, with the literal on exactly one line of that entry (3's window) -> that
+ * line (`{ path: "/reports", label: "Reports" }` for the «Reports» link, not the page-title
+ * switch's `return "Reports"`). Else undefined.
+ */
+function hrefEntry(element: ElementInfo, code: Sources, literal: RegExp): Hit | undefined {
+  const href = HREF.exec(element.html)?.[1] ?? HREF.exec(element.selector)?.[1];
+  if (href === undefined) return undefined;
+  const hits = hitsIn(code, new RegExp(`["'\`]${escapeRegExp(href)}["'\`]`));
+  if (hits.length !== 1) return undefined;
+  const near = linesNear(code, hits[0], literal);
+  return near.length === 1 ? { file: hits[0].file, line: near[0] } : undefined;
+}
+
+/**
+ * `class at:` / `id at:` (D9 note 2026-09-28, pass 2): an element with no text of its own (a map
+ * layer, a container, an icon button) has nothing for rules 1-5 to look up, but often a class or
+ * id chosen for it (`className="orders-map"`). Each of the element's own distinctive classes
+ * (not a utility, not hashed, not a generic word: distinctiveClasses) and its id (not generated)
+ * is looked up in the chain's files and the files defining its components, as a class token in a
+ * class attribute or class helper call, or as an `id` value. Candidates written exactly once
+ * there count; when they all point at the same line -> that line. None, or two lines: nothing.
+ */
+function classOrId(element: ElementInfo, files: Sources, via: SourceVia): ResolvedLocation[] {
+  const attributes = rootAttributes(element.html);
+  const code = codeOf(files);
+  const found: { kind: "class" | "id"; hit: Hit }[] = [];
+  // Only on the element's own tag (`<div className="orders-map"`): a class a wrapper sets on
+  // whatever it renders (`<component :is="chart" class="va-chart" />`) names the wrapper's line,
+  // shared by every instance, not this element.
+  const onOwnTag = (hit: Hit, pattern: RegExp): boolean => {
+    const lines = code.get(hit.file) ?? [];
+    const line = lines[hit.line - 1] ?? "";
+    const at = pattern.exec(line)?.index ?? line.length;
+    const context = `${lines.slice(Math.max(0, hit.line - 6), hit.line - 1).join(" ")} ${line.slice(0, at)}`;
+    const opened = [...context.matchAll(/<([A-Za-z][\w.-]*)/g)].pop();
+    return opened !== undefined && opened[1].toLowerCase() === element.tag.toLowerCase() && !context.slice(opened.index).includes(">");
+  };
+  const id = attributes.get("id");
+  if (id !== undefined && isDistinctiveName(id) && !GENERATED_ID.test(id)) {
+    const pattern = new RegExp(`\\bid\\s*[=:]\\s*\\{?\\s*["'\`]${escapeRegExp(id)}["'\`]`);
+    const hits = hitsIn(code, pattern);
+    if (hits.length === 1 && onOwnTag(hits[0], pattern)) found.push({ kind: "id", hit: hits[0] });
+  }
+  for (const name of distinctiveClasses(attributes.get("class") ?? "")) {
+    const token = new RegExp(`(?:class|className|:class|\\bcn|\\bclsx|\\bcva|classList|\\btw)\\b[^\\n]*?["'\`\\s]${escapeRegExp(name)}(?=["'\`\\s])`);
+    const hits = hitsIn(code, token);
+    if (hits.length === 1 && onOwnTag(hits[0], token)) found.push({ kind: "class", hit: hits[0] });
+  }
+  if (found.length === 0) return [];
+  const [{ kind, hit }] = found;
+  if (found.some((other) => other.hit.file !== hit.file || other.hit.line !== hit.line)) return [];
+  const snippet = element.sensitive ? undefined : sourceSnippet(files.get(hit.file) ?? [], hit.line);
+  return [{ kind, file: hit.file, line: hit.line, via, ...(snippet === undefined ? {} : { snippet }) }];
+}
+
+/** Generated ids carry no meaning in the source (as element-hints.ts's GENERATED_ID). */
+const GENERATED_ID = /^:|[«»:]|^(radix|headlessui|mui|react-aria|rc-|ember|downshift)-|\d{4,}|^[\da-f]{8}-[\da-f]{4}-/i;
+
+/** Class names too common to say which element they are on. */
+const GENERIC_CLASSES = new Set([
+  "active", "body", "btn", "button", "card", "col", "container", "content", "disabled", "footer",
+  "header", "hidden", "icon", "inner", "item", "label", "link", "list", "main", "open", "outer",
+  "row", "selected", "show", "title", "wrapper", "root", "dark", "light", "group", "peer",
+]);
+
+/** A name worth looking up: at least 3 characters, a letter, no generic word. */
+function isDistinctiveName(name: string): boolean {
+  return name.length >= 3 && /[a-z]/i.test(name) && !GENERIC_CLASSES.has(name.toLowerCase());
+}
+
+/** The element's own classes that are neither utilities, hashed, nor generic words. */
+function distinctiveClasses(value: string): string[] {
+  return value
+    .split(/\s+/)
+    .filter((name) => name !== "" && isDistinctiveName(name) && !isUtilityClass(name) && !/\d{4,}|__[\w-]{3,}$|^(css|sc|svelte|jsx)-/.test(name) && /^[\w-]+$/.test(name));
 }
 
 /**
@@ -247,6 +378,7 @@ async function lookup(
   files: Sources,
   reader: SourceReader,
   via: SourceVia,
+  trace: LookupTrace = {},
 ): Promise<ResolvedLocation[] | undefined> {
   const at = (kind: ResolvedLocation["kind"], hit: Hit, from: Sources): ResolvedLocation[] => {
     const snippet = element.sensitive ? undefined : sourceSnippet(from.get(hit.file) ?? [], hit.line);
@@ -264,9 +396,15 @@ async function lookup(
     const pattern = literalPattern(phrase);
     let hits = first === undefined ? [] : hitsIn(first, pattern);
     if (hits.length === 0) hits = hitsIn(onScreen, pattern);
-    if (hits.length === 1) return at("text", hits[0], files);
+    if (hits.length === 1) {
+      trace.literal = pattern;
+      return at("text", hits[0], files);
+    }
     if (hits.length > 1) {
-      const tagged = byElementTag(hits, onScreen, pattern, element.tag);
+      const tagged = hits.every((hit) => isTemplateFile(hit.file))
+        ? byElementTag(hits, onScreen, pattern, element.tag)
+        : byEnclosingName(hits, onScreen, pattern, element);
+      if (tagged !== undefined) trace.literal = pattern;
       return tagged === undefined ? [] : at("text", tagged, files);
     }
   }
@@ -736,6 +874,63 @@ function byElementTag(hits: readonly Hit[], text: Sources, pattern: RegExp, tag:
     if (name === tag.toLowerCase()) matching.push(hit);
   }
   return matching.length === 1 ? matching[0] : undefined;
+}
+
+/** How many lines up the tag a literal is written in is looked for (JSX text on its own line). */
+const ENCLOSING_LOOKBACK = 12;
+
+/**
+ * Rule 1's tie-break for component files (JSX, Vue, Svelte; D9 note 2026-09-28, pass 2), the
+ * counterpart of byElementTag: of several hits of a literal, the only one written as the content
+ * of the element's own component or tag (`<CardTitle>Overview</CardTitle>` for a CardTitle, not
+ * the tab's `<TabsTrigger value='overview'>Overview</TabsTrigger>`). Each hit is either:
+ * - markup text (not right after a quote): its enclosing tag must be found, on its line or in the
+ *   lines above it (enclosingTagName), else there is no telling and the answer is undefined;
+ * - a quoted string (`title: 'Overview'`, a prop, a `case`): not the content of any tag here.
+ * Exactly one markup hit in the element's component (`element.component.name`) or tag, compared
+ * without case, wins, and quoted strings are set aside only when nothing in the files renders an
+ * expression as the content of that component or tag (`<CardTitle>{title}</CardTitle>`): such an
+ * element could be showing one of those strings. Anything else: undefined, and silence.
+ */
+function byEnclosingName(hits: readonly Hit[], text: Sources, pattern: RegExp, element: ElementInfo): Hit | undefined {
+  if (hits.some((hit) => isTemplateFile(hit.file))) return undefined;
+  const names = new Set([element.tag.toLowerCase()]);
+  const component = typeof element.component?.name === "string" ? element.component.name : "";
+  if (/^[A-Za-z][\w-]*$/.test(component)) names.add(component.toLowerCase());
+  const global = new RegExp(pattern.source, "g");
+  const matching: Hit[] = [];
+  let strings = 0;
+  for (const hit of hits) {
+    const lines = text.get(hit.file) ?? [];
+    const line = lines[hit.line - 1] ?? "";
+    const found = [...line.matchAll(global)];
+    if (found.length !== 1) return undefined;
+    const start = found[0].index + found[0][1].length;
+    const before = line.slice(0, start);
+    const quoted = /["'`]$/.test(before.trimEnd()) || (before.trim() === "" && /["'`]\s*$/.test(lines[hit.line - 2] ?? ""));
+    if (quoted) {
+      strings++;
+      continue;
+    }
+    const above = lines.slice(Math.max(0, hit.line - 1 - ENCLOSING_LOOKBACK), hit.line - 1).join(" ");
+    const context = before.trim() === "" ? `${above} ${before}` : before;
+    const name = enclosingTagName(context, context.length);
+    if (name === undefined) return undefined;
+    if (names.has(name)) matching.push(hit);
+  }
+  if (matching.length !== 1) return undefined;
+  if (strings > 0 && rendersExpressionIn(names, text)) return undefined;
+  return matching[0];
+}
+
+/** True when some file writes `<Name …>{…` (an expression as the content of that tag or component). */
+function rendersExpressionIn(names: ReadonlySet<string>, files: Sources): boolean {
+  const alternatives = [...names].map(escapeRegExp).join("|");
+  const pattern = new RegExp(`<(?:${alternatives})(?:\\s[^<>]*)?>\\s*\\{`, "i");
+  for (const lines of files.values()) {
+    if (pattern.test(lines.join("\n"))) return true;
+  }
+  return false;
 }
 
 function delimitersAsTags(line: string): string {

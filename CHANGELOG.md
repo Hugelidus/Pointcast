@@ -2,6 +2,16 @@
 
 ## 0.7.0 (unreleased)
 
+**Resolver pass 2: fewer wrong lines, more right ones** ([D9 note 2026-09-28](docs/decisions.md#d9-source-mapping))
+- Fixed: on React 19 + Vite, an element written straight in a page that a router renders (`createFileRoute(…)({ component: Dashboard })`) got the router's `<Outlet />` layout as `used at`, a wrong file, and no `text at`. Its code is now the page's own file, and the line is found (`dashboard/index.tsx:81` in shadcn-admin).
+- Fixed: a text written once in the file that uses a component, and also in that component's own file or its data (a page-title switch and the nav item's label), no longer gets the usage file's line. It is silent, or the nav entry's line when the link's href is written once.
+- React 19 on Vite: the element's own component file is recorded (the file its JSX is written in, no line), so the spec says `defined in:` for an element inside an app component, marked shared when its text is written elsewhere. Vue's component file gives the same line.
+- A text written more than once in the component files is told apart by the element's own component or tag (`<CardTitle>Overview</CardTitle>` for a card title, not the tab or the nav data), and stays silent when it cannot be told.
+- New `class at:` / `id at:` lines for elements with no text of their own: a distinctive class or id written once, on the element's own tag. Session format: `resolved[].kind` can be `"class"` or `"id"`.
+- `find:` no longer lists utility classes (`transition-all`, `ring-sidebar-ring`); `styles:` rounds pixel lengths to whole pixels. Colors stay as they are.
+- CLI and MCP server: when the app is a subfolder of the project folder (`web/` inside the repository), every path in the spec and in `get_element` is shown from the project folder (`web/src/…`), so it opens as written. Unchanged when no single subfolder holds the recording's files.
+- On shadcn-admin's six-change set: `text at` on 4 of 6 elements (was 2), no wrong line (was one wrong `used at`). Stage 0's 15 lookups are unchanged; the Vue, Svelte and Django sets only get rounded `styles:`.
+
 **Code pointer on Next.js App Router** ([D9](docs/decisions.md#d9-source-mapping), [results](docs/eval/nextjs-2026-09-28.md))
 - Fixed: on Next.js (React 19, Turbopack dev), 0.6.0 named Next's build chunks as your code (``used at: `_next/static/chunks/14ei_next_0os_t-p._.js` ``) and gave Server Components no code at all, with Next's internal `SegmentViewNode` as their component.
 - Client and Server Components now get their real chain, with lines: React 19's owner stacks are mapped through Next's own dev source maps (a chunk's `.map`, and `/__nextjs_source-map` for Server Components), in the page, right after the gesture. Only paths inside your project and line numbers leave the page. A frame that cannot be mapped ends the chain rather than letting the next one take its place. On a 13-element example app: 13/13 chains right, where 0.6.0 had 6 wrong and 7 missing.

@@ -7,6 +7,7 @@ describe("class heuristics", () => {
     "text-sm", "hover:bg-blue-700", "md:flex", "w-1/2", "top-[3px]", "min-w-full", "max-w-5xl",
     "divide-y", "divide-gray-200", "rounded-lg", "border", "sr-only", "w-8", "h-8", "gap-2",
     "grid-cols-3", "items-center", "justify-between", "tracking-tight", "font-bold", "top-0", "list-disc",
+    "transition-all", "transition-colors", "ring-sidebar-ring", "ring-offset-background",
   ])("%s is a utility", (name) => {
     expect(isUtilityClass(name)).toBe(true);
     expect(isSemanticClass(name)).toBe(false);

@@ -34,7 +34,7 @@ describe("MCP tools resolve code locations in the project (route 1)", () => {
     writeFileSync(join(sessionDir, "session.md"), "# stale spec from the extension\n");
     const result = await getSession(sessionDir, { repo: { root: repo, explicit: false } });
     expect(result.warning).toBeUndefined();
-    expect(result.markdown).toContain(`text at: \`${TOOLBAR}:4\``);
+    expect(result.markdown).toContain(`text at: \`apps/web/${TOOLBAR}:4\``);
   });
 
   it("get_session warns, and serves the spec unresolved, when the project has none of the files", async () => {
@@ -47,7 +47,7 @@ describe("MCP tools resolve code locations in the project (route 1)", () => {
   it("get_element fills element.resolved", async () => {
     const { event, warning } = await getElement(sessionDir, "e2", { repo: { root: repo, explicit: true } });
     expect(warning).toBeUndefined();
-    expect(event.element.resolved).toEqual([{ kind: "text", file: TOOLBAR, line: 4, via: "repo", snippet: EXPORT_SNIPPET }]);
+    expect(event.element.resolved).toEqual([{ kind: "text", file: `apps/web/${TOOLBAR}`, line: 4, via: "repo", snippet: EXPORT_SNIPPET }]);
   });
 
   it("over the wire: the server's project by default, a 'repo' argument when given, the warning on top", async () => {
@@ -55,13 +55,13 @@ describe("MCP tools resolve code locations in the project (route 1)", () => {
     const client = await connectClient(server);
 
     const session = textOf(await client.callTool({ name: "get_session", arguments: { id: "latest" } }));
-    expect(session).toContain(`text at: \`${TOOLBAR}:4\``);
+    expect(session).toContain(`text at: \`apps/web/${TOOLBAR}:4\``);
 
     const wrong = textOf(await client.callTool({ name: "get_session", arguments: { id: "latest", repo: otherProject } }));
     expect(wrong.split("\n")[0]).toMatch(/^> \*\*Warning:\*\*/);
 
     const element = textOf(await client.callTool({ name: "get_element", arguments: { id: "latest", eventId: "e2", repo } }));
-    expect(JSON.parse(element).element.resolved).toEqual([{ kind: "text", file: TOOLBAR, line: 4, via: "repo", snippet: EXPORT_SNIPPET }]);
+    expect(JSON.parse(element).element.resolved).toEqual([{ kind: "text", file: `apps/web/${TOOLBAR}`, line: 4, via: "repo", snippet: EXPORT_SNIPPET }]);
 
     const missing = await client.callTool({ name: "get_session", arguments: { id: "latest", repo: join(repo, "nope") } });
     expect(missing.isError).toBe(true);

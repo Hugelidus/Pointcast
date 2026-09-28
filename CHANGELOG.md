@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0 (unreleased)
+
+**`shown by:` — where a value from data is displayed** ([D9 note 2026-09-28](docs/decisions.md#d9-source-mapping))
+- When an element's text comes from a data literal (`customer: "Marco Peña"`), the spec now also says which line renders that field: `shown by: src/components/OrdersTable.tsx:38` — `<td>{order.customer}</td>`. `text at:` / `data at:` still point at the value, for changing it; `shown by:` points at the markup, for changing how it is shown (link it, format it, badge it).
+- Recognizes `{x.key}`, `{key}`, `{x?.key}` and `{@html x.key}` (React, Svelte) and `{{ x.key }}` with filters (Vue, Django, Jinja) as element content, in the component files already searched, innermost first. No key, no such rendering, or two of them: no line. Nothing else in the spec changes.
+- New optional session field `element.shownBy` ([session-format.md](docs/session-format.md#elementinfo)), also returned by the MCP `get_element` tool and linked by `pointcast issue`. The `/pointcast` skill and Gemini command say when to use the line.
+
 ## 0.6.0 (2026-09-28)
 
 Extension, CLI and integrations at 0.6.0. The CLI package now declares `mcpName` (`io.github.Hugelidus/pointcast`) for the MCP Registry.

@@ -128,7 +128,8 @@ function throwIfFailed(reader: GitHubReader): void {
 async function linkTargets(session: SessionFile, chainFiles: readonly string[], reader: GitHubReader): Promise<Map<string, string>> {
   const files = new Set(chainFiles);
   for (const event of session.events) {
-    for (const location of event.element.resolved ?? []) {
+    const shownBy = event.element.shownBy === undefined ? [] : [event.element.shownBy];
+    for (const location of [...(event.element.resolved ?? []), ...shownBy]) {
       const file = normalizeProjectPath(location.file);
       if (file !== undefined) files.add(file);
     }

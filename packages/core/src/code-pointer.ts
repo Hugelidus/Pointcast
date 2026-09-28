@@ -1,7 +1,7 @@
 import { codeSpan, escapeMarkdown, oneLine, truncate } from "./markdown";
 import { cleanPath, codeChain, type ChainFrame } from "./resolve/chain";
 import { MAX_SNIPPET_CHARS } from "./resolve/resolve";
-import type { ElementInfo, ResolvedLocation } from "./schema";
+import type { ElementInfo, ResolvedLocation, ShownByLocation } from "./schema";
 
 /**
  * The code pointer lines of one element, without list markers: the chain Stage 0 tested
@@ -10,7 +10,8 @@ import type { ElementInfo, ResolvedLocation } from "./schema";
  *   code: `<a>` inside `src/lib/More.svelte:18` ← `<More>` at `src/lib/ChartWidget.svelte:27` ← …
  *   text at: `src/lib/ChartWidget.svelte:27`
  *
- * Frames go innermost first, from the element's own instance outwards: `<Tag> at file:line`, or
+ * then `shown by: file:line` when the resolver found the line that renders the value's key
+ * (ElementInfo.shownBy). Frames go innermost first, from the element's own instance outwards: `<Tag> at file:line`, or
  * `in file` when the framework gives no line (Vue); a library component is named by its package
  * ("flowbite-svelte `<TabItem>`"), never by its node_modules path. The first frame says "inside"
  * instead of "at" when it is the element's own tag in a shared component: the resolver found the
@@ -32,6 +33,8 @@ export function codePointerLines(element: ElementInfo): string[] {
   for (const location of resolved) {
     lines.push(`${location.kind === "data" ? "data" : "text"} at: ${codeSpan(`${cleanPath(location.file)}:${location.line}`)}`);
   }
+  const shown = shownByLocation(element);
+  if (shown !== undefined) lines.push(`shown by: ${codeSpan(`${cleanPath(shown.file)}:${shown.line}`)}`);
   return lines;
 }
 
@@ -54,6 +57,8 @@ export function codePointerLines(element: ElementInfo): string[] {
  * - template (instead of used at): for a chain read from pointcast-django's markers, the
  *   innermost template, where the element's markup is written (D9 note 2026-09-28).
  * - text at / data at: the resolved locations, with their source line.
+ * - shown by: the line that renders that value's key (`<td>{order.customer}</td>` for
+ *   `customer: "Marco Peña"`), when the resolver found exactly one (ElementInfo.shownBy).
  * - within: the rest of the chain, outwards, in Stage 0's wording.
  *
  * [] without renderedBy and resolved: such elements keep the DOM-first layout.
@@ -89,6 +94,13 @@ export function codeFirstLines(element: ElementInfo): string[] {
     const tail = same ? " (same as used at)" : snippet === undefined ? "" : ` — ${snippet}`;
     lines.push(`${location.kind === "data" ? "data" : "text"} at: ${codeSpan(`${file}:${location.line}`)}${tail}`);
   }
+  const shown = shownByLocation(element);
+  if (shown !== undefined) {
+    const file = cleanPath(shown.file);
+    const same = used?.line !== undefined && used.file === file && used.line === shown.line;
+    const snippet = quote(shown.snippet);
+    lines.push(`shown by: ${codeSpan(`${file}:${shown.line}`)}${same ? " (same as used at)" : snippet === undefined ? "" : ` — ${snippet}`}`);
+  }
   const outer = chain.slice(usedIndex + 1);
   if (outer.length > 0) lines.push(`within: ${outer.map((frame) => frameText(frame, element.tag, false)).join(" ← ")}`);
   return lines;
@@ -104,6 +116,12 @@ function literalElsewhere(chain: readonly ChainFrame[], resolved: readonly Resol
 
 function resolvedLocations(element: ElementInfo): ResolvedLocation[] {
   return Array.isArray(element.resolved) ? element.resolved.filter(isLocation) : [];
+}
+
+/** `element.shownBy` when it is a usable location (a hand-edited session may hold anything). */
+function shownByLocation(element: ElementInfo): ShownByLocation | undefined {
+  const shown: unknown = element.shownBy;
+  return isLocation(shown) ? (shown as unknown as ShownByLocation) : undefined;
 }
 
 function where(frame: ChainFrame): string {

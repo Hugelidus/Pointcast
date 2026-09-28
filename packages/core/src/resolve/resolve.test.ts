@@ -2,7 +2,17 @@ import { describe, expect, it } from "vitest";
 import type { CapturedEvent, CodeFrame, ElementInfo, SessionFile } from "../schema";
 import { codeChain } from "./chain";
 import { FLOWBITE, SHADCN, memoryReader } from "./eval-fixtures";
-import { cachingReader, MAX_SNIPPET_CHARS, projectMatch, resolveElement, resolveSession, sourceSnippet } from "./resolve";
+import {
+  cachingReader,
+  MAX_SNIPPET_CHARS,
+  projectMatch,
+  propertyKey,
+  renderingsOf,
+  resolveElement,
+  resolveElementDetails,
+  resolveSession,
+  sourceSnippet,
+} from "./resolve";
 
 /** Elements as the extension recorded them in the evaluation (dev/eval/.runs/sessions), plus a chain. */
 function el(tag: string, text: string, renderedBy: CodeFrame[] | undefined, extra: Partial<ElementInfo> = {}): ElementInfo {
@@ -780,5 +790,195 @@ describe("server templates (pointcast-django's markers, D9 note 2026-09-28)", ()
       { component: "pim/list.html", host: false, file: LIST, template: true },
       { component: "base.html", host: false, file: "templates/base.html", template: true },
     ]);
+  });
+});
+
+describe("shown by: the line that renders a data literal's key (D9 note 2026-09-28)", () => {
+  const TABLE = "src/components/OrdersTable.tsx";
+  const DASH = "src/pages/Dashboard.tsx";
+  /** dev/examples' OrdersTable shape: ORDERS and the JSX that maps over it in one file, used in Dashboard.tsx. */
+  const ordersApp = (...render: string[]): Record<string, string> => ({
+    [DASH]: lines('import { OrdersTable } from "../components/OrdersTable";', "", "export function Dashboard() {", "  return <OrdersTable />;", "}"),
+    [TABLE]: lines(
+      "const ORDERS = [", // 1
+      '  { id: "A-1042", customer: "Lina Torres", total: "$128.00" },', // 2
+      '  { id: "A-1041", customer: "Marco Peña", total: "$64.50" },', // 3
+      "];", // 4
+      "", // 5
+      "export function OrdersTable() {", // 6
+      "  return (", // 7
+      "    <table>", // 8
+      ...render, // 9…
+      "    </table>",
+      "  );",
+      "}",
+    ),
+  });
+  const MAPPED = [
+    "      {ORDERS.map((order) => (", // 9
+    "        <tr key={order.id} title={order.customer}>", // 10: attributes, not content
+    "          <td>{order.id}</td>", // 11
+    "          <td>{order.customer}</td>", // 12
+    "          <td>{order.total}</td>", // 13
+    "        </tr>", // 14
+    "      ))}", // 15
+  ];
+  const MARCO = el("td", "Marco Peña", [{ component: "OrdersTable", file: DASH }, { component: "Dashboard", file: "src/App.tsx" }], {
+    component: { framework: "react", name: "OrdersTable" },
+  });
+  const MARCO_TEXT = { kind: "text", file: TABLE, line: 3, via: "repo", snippet: '{ id: "A-1041", customer: "Marco Peña", total: "$64.50" },' };
+
+  it("React, data and render in the same file: the cell of the map over ORDERS", async () => {
+    const reader = memoryReader(ordersApp(...MAPPED));
+    expect(await resolveElementDetails(MARCO, reader, "repo")).toEqual({
+      resolved: [MARCO_TEXT],
+      shownBy: { key: "customer", file: TABLE, line: 12, via: "repo", snippet: "<td>{order.customer}</td>" },
+    });
+    // resolveElement is unchanged, and shown by read nothing more.
+    const plain = memoryReader(ordersApp(...MAPPED));
+    expect(await resolveElement(MARCO, plain, "repo")).toEqual([MARCO_TEXT]);
+    expect(reader.reads).toEqual(plain.reads);
+    const total = el("td", "$128.00", MARCO.renderedBy, { component: MARCO.component, itemLabel: "A-1042" });
+    expect((await resolveElementDetails(total, memoryReader(ordersApp(...MAPPED)), "repo")).shownBy?.line).toBe(13);
+  });
+
+  it("React, data in an imported module: the badge's {item.badge}, not its {item.badge !== undefined && …}", async () => {
+    expect(await resolveElementDetails(REACT_BADGE_CAPTURED, memoryReader(REACT_APP), "dev-server")).toEqual({
+      resolved: [MESSAGES_DATA],
+      shownBy: {
+        key: "badge",
+        file: "src/components/Sidebar.tsx",
+        line: 9,
+        via: "dev-server",
+        snippet: '{item.badge !== undefined && <span className="badge">{item.badge}</span>}',
+      },
+    });
+  });
+
+  it("Vue: {{ item.badge }} in the component's template", async () => {
+    const vue = { ...REACT_BADGE_CAPTURED, renderedBy: [{ component: "Sidebar", file: "src/App.vue" }], component: { framework: "vue", name: "Sidebar", file: "src/components/Sidebar.vue" } };
+    const found = await resolveElementDetails(vue, memoryReader(VUE_APP), "dev-server");
+    expect(found.resolved).toEqual([MESSAGES_DATA]);
+    expect(found.shownBy).toMatchObject({ key: "badge", file: "src/components/Sidebar.vue", line: 12 });
+  });
+
+  it("Svelte: a link's label from a data module, rendered in the {#each}", async () => {
+    const files = {
+      "src/App.svelte": lines("<script>", '  import Nav from "./lib/Nav.svelte";', "</script>", "", "<Nav />"),
+      "src/lib/Nav.svelte": lines(
+        "<script>",
+        '  import { LINKS } from "./links";',
+        "</script>",
+        "",
+        "<nav>",
+        "  {#each LINKS as link}",
+        "    <a href={link.href}>{link.label}</a>",
+        "  {/each}",
+        "</nav>",
+      ),
+      "src/lib/links.ts": lines("export const LINKS = [", '  { href: "/reports", label: "Reports" },', '  { href: "/team", label: "Team" },', "];"),
+    };
+    const link = el("a", "Reports", [{ file: "src/lib/Nav.svelte", line: 7 }, { component: "Nav", file: "src/App.svelte", line: 5 }], {
+      html: '<a href="/reports">Reports</a>',
+      component: { framework: "svelte", name: "Nav", file: "src/lib/Nav.svelte", line: 7 },
+    });
+    const found = await resolveElementDetails(link, memoryReader(files), "repo");
+    expect(found.resolved.map(({ kind, file, line }) => `${kind} ${file}:${line}`)).toEqual(["data src/lib/links.ts:2"]);
+    expect(found.shownBy).toEqual({ key: "label", file: "src/lib/Nav.svelte", line: 7, via: "repo", snippet: "<a href={link.href}>{link.label}</a>" });
+  });
+
+  it("optional chaining, and a destructured key", async () => {
+    const optional = ordersApp("      {ORDERS.map((order) => <tr><td>{order?.customer}</td></tr>)}");
+    expect((await resolveElementDetails(MARCO, memoryReader(optional), "repo")).shownBy?.line).toBe(9);
+    const destructured = ordersApp(
+      "      {ORDERS.map(({ id, customer }) => (", // 9
+      "        <tr key={id}>", // 10
+      "          <td>{customer}</td>", // 11
+      "        </tr>", // 12
+      "      ))}", // 13
+    );
+    expect((await resolveElementDetails(MARCO, memoryReader(destructured), "repo")).shownBy?.line).toBe(11);
+  });
+
+  it("stays silent on two renderings of the key (a table and a card list), keeping the text line", async () => {
+    const twice = ordersApp(...MAPPED, "      {ORDERS.map((order) => <li key={order.id}>{order.customer}</li>)}");
+    expect(await resolveElementDetails(MARCO, memoryReader(twice), "repo")).toEqual({ resolved: [MARCO_TEXT] });
+  });
+
+  it("stays silent without a key: a value in an array, a JSX text, a prop", async () => {
+    const row = '  return <tr>{["Lina Torres", "Marco Peña"].map((name) => <td key={name}>{name}</td>)}</tr>;';
+    const array = { ...ordersApp(), [TABLE]: lines("export function OrdersTable() {", row, "}") };
+    const found = await resolveElementDetails(MARCO, memoryReader(array), "repo");
+    expect(found.resolved).toEqual([{ kind: "text", file: TABLE, line: 2, via: "repo", snippet: row.trim() }]);
+    expect(found.shownBy).toBeUndefined();
+    // Stage 0's answers carry no key: «Sales Report» is a prop (`title="Sales Report"`).
+    expect(await resolveElementDetails(SALES_REPORT, memoryReader(FLOWBITE), "repo")).toEqual({ resolved: await resolveElement(SALES_REPORT, memoryReader(FLOWBITE), "repo") });
+  });
+
+  it("stays silent when the key is rendered only in forms it does not count ({format(order.customer)})", async () => {
+    const formatted = ordersApp("      {ORDERS.map((order) => <tr><td>{format(order.customer)}</td></tr>)}");
+    expect((await resolveElementDetails(MARCO, memoryReader(formatted), "repo")).shownBy).toBeUndefined();
+  });
+
+  it("resolveSession sets shownBy, drops a stale one, and the spec renders it", async () => {
+    const out = await resolveSession(session([{ ...MARCO, shownBy: { key: "x", file: "src/old.tsx", line: 1, via: "repo" } }]), memoryReader(ordersApp(...MAPPED)), "repo");
+    expect(out.events[0].element.shownBy).toEqual({ key: "customer", file: TABLE, line: 12, via: "repo", snippet: "<td>{order.customer}</td>" });
+    const silent = await resolveSession(session([{ ...MARCO, shownBy: { key: "x", file: "src/old.tsx", line: 1, via: "repo" } }]), memoryReader(ordersApp()), "repo");
+    expect(silent.events[0].element.shownBy).toBeUndefined();
+  });
+});
+
+describe("propertyKey", () => {
+  it("names the one property whose value is the element's text", () => {
+    expect(propertyKey('  { id: "A-1041", customer: "Marco Peña", total: "$64.50" },', "Marco Peña")).toBe("customer");
+    expect(propertyKey('  "customer": "Marco Peña",', "Marco Peña")).toBe("customer");
+    expect(propertyKey("  { id: 'messages', label: 'Messages', badge: 3 },", "3")).toBe("badge");
+    expect(propertyKey("    tab2Title: 'Top customers'", "Top customers")).toBe("tab2Title");
+    expect(propertyKey("  { title: 'Active Now', value: 573 },", "Active Now +573")).toBe("title");
+  });
+
+  it("gives nothing without exactly one such property", () => {
+    expect(propertyKey("<td>Marco Peña</td>", "Marco Peña")).toBeUndefined();
+    expect(propertyKey('["Lina Torres", "Marco Peña"]', "Marco Peña")).toBeUndefined();
+    expect(propertyKey('<More title="Marco Peña" />', "Marco Peña")).toBeUndefined();
+    expect(propertyKey('ok ? "Marco Peña" : "Lina Torres"', "Lina Torres")).toBeUndefined();
+    expect(propertyKey('{ name: "Marco Peña", alias: "Marco Peña" }', "Marco Peña")).toBeUndefined();
+    expect(propertyKey("{ name: `${first} Peña` }", "Marco Peña")).toBeUndefined();
+  });
+});
+
+describe("renderingsOf", () => {
+  it("Django and Jinja templates: {{ x.key }}, with filters, never in comments or attributes", () => {
+    const django = [
+      "{# {{ order.customer }} #}", // 1
+      '<tr title="{{ order.customer }}">', // 2
+      "  <td>{{ order.customer|upper }}</td>", // 3
+      "{% comment %}{{ order.customer }}{% endcomment %}", // 4
+      "  <td>{{ order.customer_id }}</td>", // 5
+      "  <td>{{ customer }}</td>", // 6
+    ];
+    expect(renderingsOf("customer", "templates/orders/list.html", django)).toEqual([3, 6]);
+    expect(renderingsOf("customer", "templates/orders/row.jinja", ["<td>{{- row.customer | title -}}</td>"])).toEqual([1]);
+    expect(renderingsOf("customer", "templates/orders/row.html", ["<td>{customer}</td>"])).toEqual([]);
+  });
+
+  it("Vue: mustaches only, never :attr or script", () => {
+    const vue = ['<script setup>', "const { customer } = defineProps();", "</script>", '<td :title="order.customer">{{ order?.customer }}</td>'];
+    expect(renderingsOf("customer", "src/Row.vue", vue)).toEqual([4]);
+  });
+
+  it("JSX and Svelte: element content, {@html}, not attributes, shorthand props or script", () => {
+    const svelte = ["{@html item.label}", "<Row {label} />", "<p>{label}</p>", "<a href={item.label}>x</a>", "<!-- <p>{label}</p> -->"];
+    expect(renderingsOf("label", "src/Item.svelte", svelte)).toEqual([1, 3]);
+    const jsx = [
+      "const { label } = item;",
+      "use({ label });",
+      "const x = `${item.label}`;",
+      "return <li key={item.label}>",
+      "  {item.label}",
+      "</li>;",
+      "// <b>{item.label}</b>",
+    ];
+    expect(renderingsOf("label", "src/Item.tsx", jsx)).toEqual([5]);
   });
 });

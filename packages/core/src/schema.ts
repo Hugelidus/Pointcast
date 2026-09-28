@@ -116,6 +116,26 @@ export interface ElementInfo {
    * dev server or GitHub). Only unambiguous matches are listed; absent when nothing was resolved.
    */
   resolved?: ResolvedLocation[];
+  /**
+   * Since 2026-09-28. When the one `resolved` location is a data literal with a property key
+   * (`customer: "Marco Peña"`), the line of the component or template that renders that key
+   * (`<td>{order.customer}</td>`), found exactly once in the innermost searched file that renders
+   * it at all. Absent when there is no key, no rendering or more than one (D9 note 2026-09-28).
+   */
+  shownBy?: ShownByLocation;
+}
+
+/** `ElementInfo.shownBy`: the line that renders the value `resolved` points at. */
+export interface ShownByLocation {
+  /** The property key of the data literal, e.g. "customer". */
+  key: string;
+  /** Project-relative path of the component or template. */
+  file: string;
+  line: number;
+  /** Where the source was read, as in `ResolvedLocation.via`. */
+  via: "repo" | "dev-server" | "github";
+  /** The source at `line`, as in `CodeFrame.snippet`; never for a sensitive element. */
+  snippet?: string;
 }
 
 /** One app-owned component instance in `ElementInfo.renderedBy`. */

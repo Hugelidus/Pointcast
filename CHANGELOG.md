@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.5.0 (unreleased)
+## 0.5.0 (2026-09-28)
+
+Extension, CLI and integrations at 0.5.0.
 
 **Debug capture: the errors around what you point at** ([D13](docs/decisions.md#d13-debug-capture))
 - While you record, Pointcast keeps what fails on the page: uncaught errors and unhandled rejections (message, file:line, first stack lines), `console.error` and `console.warn`, and requests that fail or answer 400+ (method, path, status). When you point at something broken, the spec lists the errors from 5 s before to 3 s after, under the element: ``- network: `POST /api/export` → 500 (0.6 s before)``, ``- uncaught: `TypeError: …` at `src/OrdersTable.tsx:31` ``. Nothing is added when nothing failed.

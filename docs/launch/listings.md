@@ -20,7 +20,7 @@ One section per place: its status, the exact text, and the steps. Everything her
 
 **Where:** claude.ai/directory/manage. **Status:** submitted, in manual review. The plugin pins the CLI's exact version, which the directory requires (D11, *Pinned plugin versions*).
 
-**Steps now:** check the submission's status there. When 0.3.0 is the version under review, nothing to change: the plugin (`integrations/claude-code-plugin`) starts `pointcast@0.4.0`, and the marketplace entry is `.claude-plugin/marketplace.json`. If the reviewers ask for changes, answer in the same submission rather than submitting again.
+**Steps now:** check the submission's status there. When 0.3.0 is the version under review, nothing to change: the plugin (`integrations/claude-code-plugin`) starts `pointcast@0.5.0`, and the marketplace entry is `.claude-plugin/marketplace.json`. If the reviewers ask for changes, answer in the same submission rather than submitting again.
 
 **Reviewer note.** Keep the note you sent with the submission; its text is not in the repository, so it could not be copied here. If the form asks for one again (a resubmission, or the community form below), this is a draft to adapt, not the original:
 
@@ -28,7 +28,7 @@ One section per place: its status, the exact text, and the steps. Everything her
 Pointcast turns a recording made with its browser extension (the user's voice plus the web-page elements they Alt+clicked) into a Markdown spec, and resolves each element to its line in the user's repository.
 
 The plugin adds one MCP server and one skill:
-- MCP server: `npx -y pointcast@0.4.0 mcp` (exact version, npm package "pointcast", MIT, source in packages/cli; dependencies locked by npm-shrinkwrap.json). Three read-only tools: list_sessions, get_session, get_element. They read recordings from a local folder (<Downloads>/pointcast by default) and the user's project files; nothing is sent over the network.
+- MCP server: `npx -y pointcast@0.5.0 mcp` (exact version, npm package "pointcast", MIT, source in packages/cli; dependencies locked by npm-shrinkwrap.json). Three read-only tools: list_sessions, get_session, get_element. They read recordings from a local folder (<Downloads>/pointcast by default) and the user's project files; nothing is sent over the network.
 - Skill /pointcast: fetches the latest recording through those tools and applies the requested changes in the project.
 
 The server also listens on 127.0.0.1:20547 (never on the network) to receive recordings from the Pointcast extension: it checks Host, the extension's Origin, a custom header and the content type before reading a byte, and only writes new session folders. It can be turned off with --no-handoff or POINTCAST_HANDOFF=off. Design and threat model: docs/decisions.md#d11-handoff-to-a-running-mcp-server.
@@ -92,7 +92,7 @@ Everything, step by step: [edge-addons.md](edge-addons.md). Same store zip as Ch
 Checked on 2026-09-28 with `gh api`:
 
 - the topic `gemini-cli-extension` is set on Hugelidus/pointcast;
-- `gemini-extension.json` is at the root, version 0.3.0, starting `pointcast@0.4.0`;
+- `gemini-extension.json` is at the root, version 0.5.0, starting `pointcast@0.5.0`;
 - the latest release, v0.3.0, is published (not a draft) with 3 assets (release zip, CLI tarball, `SHA256SUMS.txt`), none named `win32.*`/`darwin.*`/`linux.*`, so `gemini extensions install` installs the source (CONTRIBUTING, Releasing step 6).
 
 **To verify by hand:** search for "pointcast" in the gallery (**Not verified** from here: the gallery page could not be opened, and its crawl may take a few days). Then, in a clean folder: `gemini extensions install https://github.com/Hugelidus/pointcast`, `gemini extensions list`, and `/pointcast` in a trusted folder.
@@ -111,7 +111,7 @@ The official registry ([modelcontextprotocol/registry](https://github.com/modelc
 - the 128 px icon from `docs/launch/store/icon-128.png` (served from `raw.githubusercontent.com`, main branch);
 - `description` is 96 characters (the schema's maximum is 100).
 
-**Version:** the draft says `0.3.1`, a placeholder for the first CLI release that carries `mcpName`. The registry checks that the npm package at that version has `mcpName` equal to the server name, and `pointcast@0.4.0` on npm has none. Set `version` and `packages[0].version` to the actual release.
+**Version:** the draft says `0.3.1`, a placeholder for the first CLI release that carries `mcpName`. The registry checks that the npm package at that version has `mcpName` equal to the server name, and `pointcast@0.5.0` on npm has none. Set `version` and `packages[0].version` to the actual release.
 
 **Steps:**
 

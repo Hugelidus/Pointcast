@@ -7,6 +7,7 @@
  *                                               service worker ◀── processing-progress / -done ──── offscreen
  *   content script ─ capture-event (draft) ───────────────────────────────────────────────────────▶ offscreen
  *   content script ─ capture-note / capture-discard (typed mode, D12) ─────────────────────────────▶ offscreen
+ *   content script ─ capture-error (debug capture, D13) ──────────────────────────────────────────▶ offscreen
  *   service worker ─ ping (one tab) ──────────▶ content script
  *   offscreen ── POST 127.0.0.1:20547 (hello, session) ──▶ pointcast MCP server (D11)
  *
@@ -22,7 +23,7 @@
  * "Receiving end does not exist": that is how the service worker detects one (D6).
  */
 import { browser } from "wxt/browser";
-import type { CapturedEventDraft, InputMode } from "@pointcast/core";
+import type { CapturedErrorDraft, CapturedEventDraft, InputMode } from "@pointcast/core";
 import type { TranscriptionProgress } from "@pointcast/transcribe";
 import type { E2eRecord } from "./e2e-record";
 import type { RecorderState } from "./recorder-state";
@@ -140,6 +141,8 @@ export type OffscreenMessage =
   | { to: "offscreen"; type: "capture-note"; id: string; note: string }
   /** Typed mode (D12): the user cancelled the note box (Esc), which removes its gesture, as Undo does. */
   | { to: "offscreen"; type: "capture-discard"; id: string }
+  /** Debug capture (D13): something failed on a captured page, already redacted. Ignored when not recording. */
+  | { to: "offscreen"; type: "capture-error"; draft: CapturedErrorDraft }
   | { to: "offscreen"; type: "recorder-undo" };
 
 /** Sent with chrome.tabs.sendMessage to the tab's top frame (sendToTab). */
@@ -206,6 +209,7 @@ interface ResponseByType {
   "capture-event": CaptureEventResult;
   "capture-note": CaptureChangeResult;
   "capture-discard": CaptureChangeResult;
+  "capture-error": CaptureChangeResult;
   "recorder-undo": RecorderUndoResult;
   ping: { alive: true };
 }

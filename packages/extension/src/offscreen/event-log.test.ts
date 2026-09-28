@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CapturedEventDraft, ElementInfo } from "@pointcast/core";
-import { EventLog } from "./event-log";
+import { EventLog, MAX_LOGGED_ERRORS } from "./event-log";
 
 const element: ElementInfo = {
   tag: "button",
@@ -14,6 +14,32 @@ const element: ElementInfo = {
 function draft(atStart: number, atEnd = atStart, extra: Partial<CapturedEventDraft> = {}): CapturedEventDraft {
   return { gesture: "click", atStart, atEnd, url: "http://localhost:5511/", element, ...extra };
 }
+
+describe("EventLog errors (D13)", () => {
+  it("keeps page errors from t0 on, relative to it, and gives each gesture those around it", () => {
+    const log = new EventLog(10_000);
+    expect(log.addError({ kind: "error", message: "before Record", at: 9_999 })).toBe(false);
+    expect(log.addError({ kind: "nonsense", message: "x", at: 12_000 })).toBe(false);
+    expect(log.addError({ kind: "network", message: "POST /api/export → 500", request: { method: "POST", url: "/api/export", status: 500 }, at: 11_000 })).toBe(true);
+    log.add(draft(12_000, 12_000, { gesture: "point" }));
+    log.add(draft(30_000, 30_000, { gesture: "point" }));
+    const [near, far] = log.session();
+    expect(near?.errors).toEqual([
+      { kind: "network", t: 1_000, message: "POST /api/export → 500", request: { method: "POST", url: "/api/export", status: 500 } },
+    ]);
+    expect(far).not.toHaveProperty("errors");
+    expect(log.errors()).toHaveLength(1);
+    expect(new EventLog(0).errors()).toBeUndefined();
+  });
+
+  it("keeps only the most recent MAX_LOGGED_ERRORS", () => {
+    const log = new EventLog(0);
+    for (let i = 0; i < MAX_LOGGED_ERRORS + 5; i++) log.addError({ kind: "console-error", message: `e${i}`, at: i });
+    log.add(draft(0, 0, { gesture: "point" }));
+    // e0..e4 are gone; the gesture at 0 still sees its window's first five that are left.
+    expect(log.session()[0]?.errors?.map((e) => e.message)).toEqual(["e5", "e6", "e7", "e8", "e9"]);
+  });
+});
 
 describe("EventLog", () => {
   it("assigns ids in arrival order and times relative to t0", () => {

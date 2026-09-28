@@ -4,6 +4,7 @@ import { formatClock } from "./describe";
 import { fuse, type FuseOptions } from "./fuse";
 import { escapeMarkdown, inlineText } from "./markdown";
 import { isTypedSession, TYPED_SESSION_WORDS } from "./notes";
+import { OTHER_ERRORS_HEADING, otherErrorLines } from "./page-errors";
 import { renderRequests, renderTypedRequests, type RequestsLayout } from "./requests";
 import type { CapturedEvent, SessionFile, WordsFile } from "./schema";
 import { renderTranscript } from "./transcript";
@@ -67,7 +68,7 @@ export function renderMarkdown(
   options: Partial<RenderOptions> = {},
 ): string {
   const opts: RenderOptions = { ...DEFAULT_RENDER_OPTIONS, ...options };
-  if (isTypedSession(session)) return `${renderTypedRequests(session.events, opts).join("\n\n")}\n`;
+  if (isTypedSession(session)) return finish(renderTypedRequests(session.events, opts), session);
   words ??= TYPED_SESSION_WORDS;
   const fuseOptions = { deictics: deicticsForLanguage(words.language), ...opts.fuse };
   const { placements } = fuse(session.events, words.words, fuseOptions);
@@ -76,7 +77,7 @@ export function renderMarkdown(
     const blocks = renderRequests(session.events, words.words, placements, opts);
     // After the title and the preamble, before the first request.
     if (note) blocks.splice(2, 0, note);
-    return `${blocks.join("\n\n")}\n`;
+    return finish(blocks, session);
   }
 
   const eventsById = new Map<string, CapturedEvent>(session.events.map((e) => [e.id, e]));
@@ -91,6 +92,19 @@ export function renderMarkdown(
     "## Appendix",
     ...renderAppendix(eventsInTimeOrder, placements, words.words, opts),
   ];
+  return finish(blocks, session);
+}
+
+/**
+ * The blocks as one document, with the session's errors that were near no gesture (D13) at the
+ * end of the appendix. A session without errors renders exactly as before.
+ */
+function finish(blocks: string[], session: SessionFile): string {
+  const others = otherErrorLines(session.errors, session.events);
+  if (others.length > 0) {
+    if (!blocks.includes("## Appendix")) blocks.push("## Appendix");
+    blocks.push([OTHER_ERRORS_HEADING, ...others].join("\n"));
+  }
   return `${blocks.join("\n\n")}\n`;
 }
 

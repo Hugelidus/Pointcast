@@ -39,6 +39,20 @@ export function assertSessionFile(value: unknown): asserts value is SessionFile 
   const events = s["events"];
   if (!Array.isArray(events)) throw new Error("events: expected an array");
   events.forEach((event, i) => assertEvent(event, i));
+  // Debug capture (D13): written only when something failed.
+  if (s["errors"] !== undefined) assertErrors(s["errors"], "errors", 50);
+}
+
+function assertErrors(value: unknown, at: string, max: number): void {
+  if (!Array.isArray(value) || value.length === 0 || value.length > max) throw new Error(`${at}: expected 1 to ${max} errors`);
+  value.forEach((item, i) => {
+    const error = object(item, `${at}[${i}]`);
+    if (!["error", "rejection", "console-error", "console-warn", "network"].includes(error["kind"] as string)) {
+      throw new Error(`${at}[${i}].kind: invalid`);
+    }
+    integer(error["t"], `${at}[${i}].t`, 0);
+    if (string(error["message"], `${at}[${i}].message`).length > 300) throw new Error(`${at}[${i}].message: longer than 300`);
+  });
 }
 
 function assertEvent(value: unknown, index: number): asserts value is CapturedEvent {
@@ -50,6 +64,7 @@ function assertEvent(value: unknown, index: number): asserts value is CapturedEv
   integer(e["tEnd"], `${at}.tEnd`, tStart);
   string(e["url"], `${at}.url`);
   assertElement(e["element"], `${at}.element`);
+  if (e["errors"] !== undefined) assertErrors(e["errors"], `${at}.errors`, 5);
   if (e["note"] !== undefined) {
     const note = string(e["note"], `${at}.note`);
     if (note === "" || note !== note.trim() || note.length > 2000) throw new Error(`${at}.note: not a cleaned note`);

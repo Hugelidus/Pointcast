@@ -237,6 +237,22 @@ describe("Recorder in typed mode (D12)", () => {
     expect(jobs[0]?.events[0]).not.toHaveProperty("note");
   });
 
+  it("hands the page errors over with the job: each event's, and the session's (D13)", async () => {
+    const { recorder, jobs } = await typedRecorder();
+    const now = Date.now();
+    const error = { kind: "console-error" as const, message: "Export failed", at: now };
+    expect(await recorder.handle({ to: "offscreen", type: "capture-error", draft: error })).toEqual({ ok: true });
+    await recorder.handle({ to: "offscreen", type: "capture-event", draft: { ...draft, atStart: now + 100, atEnd: now + 100 } });
+    await stop(recorder);
+    expect(jobs[0]?.events[0]?.errors).toEqual([{ kind: "console-error", message: "Export failed", t: expect.any(Number) }]);
+    expect(jobs[0]?.errors).toHaveLength(1);
+    // Without errors, the job has none: session.json stays as before.
+    const plain = await typedRecorder();
+    await stop(plain.recorder);
+    expect(plain.jobs[0]).not.toHaveProperty("errors");
+    expect(await plain.recorder.handle({ to: "offscreen", type: "capture-error", draft: error })).toEqual({ ok: false });
+  });
+
   it("ignores notes when not recording", async () => {
     const { recorder } = newRecorder();
     expect(await recorder.handle({ to: "offscreen", type: "capture-note", id: "e1", note: "x" })).toEqual({ ok: false });

@@ -1,4 +1,11 @@
-import { renderMarkdown, unreliableTimes, type CapturedEvent, type SessionFile, type WordsFile } from "@pointcast/core";
+import {
+  renderMarkdown,
+  unreliableTimes,
+  type CapturedError,
+  type CapturedEvent,
+  type SessionFile,
+  type WordsFile,
+} from "@pointcast/core";
 import type { ProcessingOptions, ProcessingResult } from "../messages";
 import { explainTranscriptionFailure } from "../processing/failure";
 import { languageName } from "../processing/settings";
@@ -22,6 +29,8 @@ export interface ProcessingJob {
   sessionId: string;
   t0: number;
   events: readonly CapturedEvent[];
+  /** Debug capture (D13): SessionFile.errors; each event already carries its own. */
+  errors?: readonly CapturedError[];
   extensionVersion: string;
   userAgent: string;
   audio:
@@ -71,6 +80,7 @@ export async function processSession(job: ProcessingJob, deps: ProcessorDeps): P
       t0: job.t0,
       durationMs,
       events,
+      ...(job.errors ? { errors: job.errors } : {}),
       extensionVersion: job.extensionVersion,
       userAgent: job.userAgent,
       withAudio,
@@ -181,6 +191,7 @@ async function processTyped(
       t0: job.t0,
       durationMs,
       events,
+      ...(job.errors ? { errors: job.errors } : {}),
       extensionVersion: job.extensionVersion,
       userAgent: job.userAgent,
       withAudio: false,

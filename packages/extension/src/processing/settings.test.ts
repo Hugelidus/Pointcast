@@ -9,6 +9,7 @@ describe("settings", () => {
       notify: true,
       handoff: true,
       inputMode: "voice",
+      captureErrors: true,
     });
     expect(chosenLanguage(DEFAULT_SETTINGS)).toBeUndefined();
   });
@@ -20,6 +21,7 @@ describe("settings", () => {
       notify: false,
       handoff: false,
       inputMode: "voice",
+      captureErrors: true,
     });
     expect(parseSettings({ language: "klingon" }).language).toBe("auto");
     expect(chosenLanguage({ ...DEFAULT_SETTINGS, language: "es" })).toBe("es");
@@ -35,6 +37,12 @@ describe("settings", () => {
     expect(parseSettings({ inputMode: "voice" }).inputMode).toBe("voice");
     expect(parseSettings({ language: "es", keepAudio: true, notify: false, handoff: false }).inputMode).toBe("voice");
     expect(parseSettings({ inputMode: "keyboard" }).inputMode).toBe("voice");
+  });
+
+  it("captures page errors unless it was turned off: settings saved before 0.5.0 have no such field (D13)", () => {
+    expect(parseSettings({ captureErrors: false }).captureErrors).toBe(false);
+    expect(parseSettings({ language: "es", keepAudio: true, notify: false, handoff: false }).captureErrors).toBe(true);
+    expect(parseSettings({ captureErrors: "no" }).captureErrors).toBe(true);
   });
 
   it("names the languages for the picker", () => {

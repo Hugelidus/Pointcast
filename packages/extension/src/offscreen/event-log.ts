@@ -1,4 +1,18 @@
-import { cleanNote, type CapturedEvent, type CapturedEventDraft } from "@pointcast/core";
+import {
+  attachErrors,
+  cleanNote,
+  parseCapturedErrorDraft,
+  type CapturedError,
+  type CapturedEvent,
+  type CapturedEventDraft,
+} from "@pointcast/core";
+
+/**
+ * Errors kept while recording (D13). More than the session keeps (SESSION_ERRORS_MAX): each
+ * gesture picks its own from all of these at Stop, so an early gesture keeps its errors even when
+ * later ones fill the session's list.
+ */
+export const MAX_LOGGED_ERRORS = 200;
 
 /**
  * Turns drafts from content scripts into session events: ids in arrival order, and times
@@ -13,6 +27,7 @@ import { cleanNote, type CapturedEvent, type CapturedEventDraft } from "@pointca
 export class EventLog {
   readonly #t0: number;
   readonly #events: CapturedEvent[] = [];
+  readonly #errors: CapturedError[] = [];
   #nextId = 1;
 
   constructor(t0: number) {
@@ -71,9 +86,32 @@ export class EventLog {
     return this.#events;
   }
 
-  /** The events for the session, renumbered e1..eN without gaps as docs/session-format.md expects. */
+  /**
+   * Debug capture (D13): something failed on a captured page. Checked and bounded again (the
+   * content script built it from page input); one from before t0 is dropped. Only the most
+   * recent MAX_LOGGED_ERRORS are kept, so an error loop cannot grow the log without end.
+   */
+  addError(draft: unknown): boolean {
+    const parsed = parseCapturedErrorDraft(draft);
+    if (parsed === undefined || parsed.at < this.#t0) return false;
+    const { at, ...fields } = parsed;
+    this.#errors.push({ ...fields, t: this.#relative(at) });
+    if (this.#errors.length > MAX_LOGGED_ERRORS) this.#errors.splice(0, this.#errors.length - MAX_LOGGED_ERRORS);
+    return true;
+  }
+
+  /**
+   * The events for the session, renumbered e1..eN without gaps as docs/session-format.md expects,
+   * each with the errors around it (D13).
+   */
   session(): CapturedEvent[] {
-    return this.#events.map((event, i) => ({ ...event, id: `e${i + 1}` }));
+    const events = this.#events.map((event, i) => ({ ...event, id: `e${i + 1}` }));
+    return attachErrors(events, this.#errors).events;
+  }
+
+  /** SessionFile.errors (D13): the most recent errors, in time order; undefined when there were none. */
+  errors(): CapturedError[] | undefined {
+    return attachErrors([], this.#errors).errors;
   }
 
   /**

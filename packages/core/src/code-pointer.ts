@@ -1,5 +1,5 @@
 import { codeSpan, escapeMarkdown, oneLine, truncate } from "./markdown";
-import { cleanPath, codeChain, type ChainFrame } from "./resolve/chain";
+import { cleanPath, codeChain, isLibraryPath, type ChainFrame } from "./resolve/chain";
 import { MAX_SNIPPET_CHARS } from "./resolve/resolve";
 import type { ElementInfo, ResolvedLocation, ShownByLocation } from "./schema";
 
@@ -31,7 +31,7 @@ export function codePointerLines(element: ElementInfo): string[] {
   }
   // cleanPath (D8, as for component and source paths): a hand-edited session still renders safely.
   for (const location of resolved) {
-    lines.push(`${location.kind === "data" ? "data" : "text"} at: ${codeSpan(`${cleanPath(location.file)}:${location.line}`)}`);
+    lines.push(`${locationLabel(location.kind)} at: ${codeSpan(`${cleanPath(location.file)}:${location.line}`)}`);
   }
   const shown = shownByLocation(element);
   if (shown !== undefined) lines.push(`shown by: ${codeSpan(`${cleanPath(shown.file)}:${shown.line}`)}`);
@@ -88,13 +88,19 @@ export function codeFirstLines(element: ElementInfo): string[] {
     lines.push(`defined in: ${codeSpan(definition.file)}${shared ? " (shared — do not change it unless asked)" : ""}`);
   } else if (used?.pkg !== undefined) {
     lines.push(`defined in: package ${codeSpan(used.pkg)}`);
+  } else {
+    const file = componentDefinition(element, used);
+    if (file !== undefined) {
+      const elsewhere = resolved.length > 0 && resolved.every((location) => cleanPath(location.file) !== file);
+      lines.push(`defined in: ${codeSpan(file)}${elsewhere ? " (shared — do not change it unless asked)" : ""}`);
+    }
   }
   for (const location of resolved) {
     const file = cleanPath(location.file);
     const same = used?.line !== undefined && used.file === file && used.line === location.line;
     const snippet = quote(location.snippet);
     const tail = same ? " (same as used at)" : snippet === undefined ? "" : ` — ${snippet}`;
-    lines.push(`${location.kind === "data" ? "data" : "text"} at: ${codeSpan(`${file}:${location.line}`)}${tail}`);
+    lines.push(`${locationLabel(location.kind)} at: ${codeSpan(`${file}:${location.line}`)}${tail}`);
   }
   const shown = shownByLocation(element);
   if (shown !== undefined) {
@@ -114,6 +120,28 @@ export function codeFirstLines(element: ElementInfo): string[] {
  */
 function literalElsewhere(chain: readonly ChainFrame[], resolved: readonly ResolvedLocation[]): boolean {
   return chain.length > 1 && resolved.length > 0 && resolved.every((location) => cleanPath(location.file) !== chain[0].file);
+}
+
+/**
+ * The file defining the `used at` component, from the element's own component (D9 note
+ * 2026-09-28, pass 2): when `element.component` names that same component and gives its app file
+ * (Vue's `__file`, the file of a React 19 element's own JSX), the definition is known even when no
+ * chain frame is written in it. Vue's instances are frames where they are used, so «+$39.00»-like
+ * elements (the same text twice in one component) still say which component file draws them.
+ * Undefined for a library file, a template, or another component's file.
+ */
+function componentDefinition(element: ElementInfo, used: ChainFrame | undefined): string | undefined {
+  const own = element.component;
+  if (used === undefined || used.host || used.template || used.component === undefined) return undefined;
+  if (typeof own !== "object" || own === null || own.name !== used.component || own.framework === "django") return undefined;
+  if (typeof own.file !== "string" || own.file === "" || isLibraryPath(own.file)) return undefined;
+  const file = cleanPath(own.file);
+  return file === "" || file === used.file ? undefined : file;
+}
+
+/** "text", "data", "class", "id": the line's name (`class at:`); anything else reads as "text". */
+function locationLabel(kind: unknown): string {
+  return kind === "data" || kind === "class" || kind === "id" ? kind : "text";
 }
 
 function resolvedLocations(element: ElementInfo): ResolvedLocation[] {

@@ -80,6 +80,33 @@ export function createRepoReader(root: string, options: { maxFiles?: number } = 
   };
 }
 
+/**
+ * The folder, relative to `root` and ending in "/", that a session's paths are relative to when
+ * that is not `root` itself (D9 note 2026-09-28, pass 2): the dev server served an app in a
+ * subfolder of the repository the agent works in ("atlas/" in a repo whose Vite app is
+ * `atlas/`), so `src/…` in the spec does not exist from the agent's folder. Found by matching
+ * all the session's paths at once: the one folder under which every path that exists anywhere
+ * exists. "" when they all exist at `root` (or none exists anywhere), and undefined when no
+ * single folder holds them all, or several do (two apps with the same files): then the paths
+ * stay as they are. Reads the same bounded file list as the reader's suffix lookup.
+ */
+export async function appFolderOf(root: string, files: readonly string[], options: { maxFiles?: number } = {}): Promise<string | undefined> {
+  const wanted = [...new Set(files.flatMap((file) => normalizeProjectPath(file) ?? []))];
+  if (wanted.length === 0) return "";
+  const atRoot = await Promise.all(wanted.map((file) => isFile(path.join(root, file))));
+  if (atRoot.every(Boolean)) return "";
+  if (atRoot.some(Boolean)) return undefined;
+  const listed = await listFiles(root, options.maxFiles ?? MAX_SCANNED_FILES);
+  let candidates: Set<string> | undefined;
+  for (const file of wanted) {
+    const folders = new Set(listed.filter((found) => found.endsWith(`/${file}`)).map((found) => found.slice(0, -file.length)));
+    if (folders.size === 0) continue;
+    candidates = candidates === undefined ? folders : new Set([...candidates].filter((folder) => folders.has(folder)));
+  }
+  if (candidates === undefined) return "";
+  return candidates.size === 1 ? [...candidates][0] : undefined;
+}
+
 async function isFile(filePath: string): Promise<boolean> {
   return stat(filePath).then(
     (s) => s.isFile(),

@@ -5,7 +5,7 @@ import { CliError } from "../errors";
 import { readSessionFile } from "../process/session-file";
 import { runProcess } from "../process/run";
 import { describeResolution, resolveWithRepo } from "./local";
-import { EXPORT_SNIPPET, projectWith, sessionWithChain, SOURCES, TOOLBAR } from "./test-support";
+import { APP, EXPORT_SNIPPET, projectWith, sessionWithChain, SOURCES, TOOLBAR } from "./test-support";
 
 describe("route 1: resolving against a local project", () => {
   const scratch: string[] = [];
@@ -20,9 +20,35 @@ describe("route 1: resolving against a local project", () => {
       const result = await resolveWithRepo(session, keep(projectWith(SOURCES, prefix)), { explicit: true });
       expect(result.status).toBe("resolved");
       const e2 = result.session.events.find((e) => e.id === "e2")!;
-      expect(e2.element.resolved).toEqual([{ kind: "text", file: TOOLBAR, line: 4, via: "repo", snippet: EXPORT_SNIPPET }]);
+      // Paths are shown from the folder the agent works in (pass 2): `apps/web/src/…` opens as written.
+      expect(e2.element.resolved).toEqual([{ kind: "text", file: `${prefix}${TOOLBAR}`, line: 4, via: "repo", snippet: EXPORT_SNIPPET }]);
       expect(describeResolution(result, { explicit: true })).toMatch(/^code locations: 1 found in /);
     }
+  });
+
+  it("shows every path from the repository root when the app is one subfolder of it (pass 2)", async () => {
+    const session = await readSessionFile(keep(sessionWithChain()));
+    const root = keep(projectWith({ ...SOURCES, "README.md": "repo" }, "atlas/"));
+    const result = await resolveWithRepo(session, root, { explicit: true });
+    const e2 = result.session.events.find((e) => e.id === "e2")!;
+    expect(e2.element.renderedBy?.map((frame) => frame.file)).toEqual([`atlas/${TOOLBAR}`, `atlas/${APP}`]);
+    expect(e2.element.resolved?.[0]?.file).toBe(`atlas/${TOOLBAR}`);
+    // The recording itself is not changed.
+    expect(session.events.find((e) => e.id === "e2")!.element.renderedBy?.[0]?.file).toBe(TOOLBAR);
+  });
+
+  it("picks the app by all the session's paths in a monorepo, and changes nothing when two apps match (pass 2)", async () => {
+    const session = await readSessionFile(keep(sessionWithChain()));
+    // Both apps have App.tsx; only apps/web has the Toolbar: apps/web.
+    const two = keep(projectWith({ [`apps/web/${TOOLBAR}`]: SOURCES[TOOLBAR], [`apps/web/${APP}`]: SOURCES[APP], [`apps/admin/${APP}`]: SOURCES[APP] }));
+    const picked = await resolveWithRepo(session, two, { explicit: true });
+    expect(picked.session.events.find((e) => e.id === "e2")!.element.resolved?.[0]?.file).toBe(`apps/web/${TOOLBAR}`);
+    // Both have both files: no folder can be told, the paths stay as recorded (and nothing resolves).
+    const same = keep(projectWith({ ...Object.fromEntries(Object.entries(SOURCES).flatMap(([file, text]) => [[`apps/web/${file}`, text], [`apps/admin/${file}`, text]])) }));
+    const ambiguous = await resolveWithRepo(session, same, { explicit: true });
+    const e2 = ambiguous.session.events.find((e) => e.id === "e2")!;
+    expect(e2.element.renderedBy?.map((frame) => frame.file)).toEqual([TOOLBAR, APP]);
+    expect(e2.element.resolved).toBeUndefined();
   });
 
   it("reports a project that has none of the recording's files", async () => {
@@ -61,7 +87,7 @@ describe("route 1: resolving against a local project", () => {
       repo: { root: keep(projectWith(SOURCES, "apps/web/")), explicit: true },
     });
     expect(result.resolution?.status).toBe("resolved");
-    expect(result.markdown).toContain(`text at: \`${TOOLBAR}:4\``);
+    expect(result.markdown).toContain(`text at: \`apps/web/${TOOLBAR}:4\``);
     expect(await readSessionFile(sessionDir)).toEqual(before);
   });
 });

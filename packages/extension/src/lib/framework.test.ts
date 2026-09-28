@@ -3,7 +3,7 @@ import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 import { COMPONENT_ATTRIBUTE, parseComponentInfo, parseFrameworkInfo, parseRenderedBy, requestFrameworkInfo } from "./component-bridge";
 import { describeElement } from "./describe";
-import { installComponentBridge, readComponent, readRenderedBy } from "./framework-main";
+import { installComponentBridge, readComponent, readFrameworkInfo, readRenderedBy } from "./framework-main";
 
 /**
  * jsdom has one JS world, so the MAIN-world bridge and the isolated-world caller share it here;
@@ -367,6 +367,71 @@ describe("renderedBy (the app components that rendered the element)", () => {
     ]);
     // A full chain stops the walk: owners past it never format their stack.
     expect(outerReads).toBe(0);
+  });
+
+  // Resolver pass 2 (D9 note 2026-09-28): the stacks below are shadcn-admin's, as a headless probe
+  // read them (React 19.2, Vite, TanStack Router).
+  const LIB = "http://localhost:5173/node_modules/.vite/deps";
+  function routed(): { outlet: object; dashboard: object } {
+    const layout = { type: function AuthenticatedLayout() {}, _debugOwner: null, _debugStack: debugStack(`${LIB}/@tanstack_react-router.js?v=1:4832:23`) };
+    const outlet = {
+      type: function OutletImpl() {},
+      _debugOwner: layout,
+      _debugStack: debugStack("http://localhost:5173/src/components/layout/authenticated-layout.tsx:37:43"),
+    };
+    // The page is created by the router (`createFileRoute(…)({ component: Dashboard })`): library code.
+    const dashboard = { type: function Dashboard() {}, _debugOwner: outlet, _debugStack: debugStack(`${LIB}/@tanstack_react-router.js?v=1:4832:23`) };
+    return { outlet, dashboard };
+  }
+
+  it("React 19 on Vite: the element's own JSX file and its owner are its component (no line)", () => {
+    const doc = page("<div>+$39.00</div>");
+    const { dashboard } = routed();
+    const sales = { type: function RecentSales() {}, _debugOwner: dashboard, _debugStack: debugStack("http://localhost:5173/src/features/dashboard/index.tsx:426:82") };
+    setProp(el(doc, "div"), "__reactFiber$x", {
+      type: "div",
+      _debugOwner: sales,
+      _debugStack: debugStack("http://localhost:5173/src/features/dashboard/components/recent-sales.tsx:112:32"),
+      return: { type: "div", return: { type: function RecentSales() {}, return: null } },
+    });
+    expect(readComponent(el(doc, "div"))).toEqual({ framework: "react", name: "RecentSales", file: "src/features/dashboard/components/recent-sales.tsx" });
+    expect(readFrameworkInfo(el(doc, "div")).renderedBy).toEqual([
+      { component: "RecentSales", file: "src/features/dashboard/index.tsx" },
+      { component: "OutletImpl", file: "src/components/layout/authenticated-layout.tsx" },
+    ]);
+  });
+
+  // «+20.1% from last month»: a <p> written straight in Dashboard, inside <CardContent>. Before,
+  // Dashboard's frame (placed by the router) was skipped and the router's <Outlet /> in
+  // authenticated-layout.tsx became "used at": a wrong file.
+  it("React 19 on Vite: an element written in a component the router placed ends its chain there", () => {
+    const doc = page("<p>+20.1% from last month</p>");
+    const { dashboard } = routed();
+    setProp(el(doc, "p"), "__reactFiber$x", {
+      type: "p",
+      _debugOwner: dashboard,
+      _debugStack: debugStack("http://localhost:5173/src/features/dashboard/index.tsx:172:33"),
+      return: { type: function CardContent() {}, return: null },
+    });
+    const info = readFrameworkInfo(el(doc, "p"));
+    expect(info.component).toEqual({ framework: "react", name: "Dashboard", file: "src/features/dashboard/index.tsx" });
+    expect(info.renderedBy).toEqual([]);
+  });
+
+  it("React 19 on Vite: an element a library creates keeps the older rules (nearest name, no file)", () => {
+    const doc = page('<a href="/users">Users</a>');
+    const menuLink = { type: function SidebarMenuLink() {}, _debugOwner: null, _debugStack: debugStack("http://localhost:5173/src/components/layout/nav-group.tsx:76:29") };
+    const slotClone = { type: { displayName: "Slot.SlotClone" }, _debugOwner: menuLink, _debugStack: debugStack(`${LIB}/@radix-ui_react-slot.js?v=1:38:53`) };
+    setProp(el(doc, "a"), "__reactFiber$x", {
+      type: "a",
+      _debugOwner: slotClone,
+      _debugStack: debugStack(`${LIB}/index.dev-o1cGkvSU.js?v=1:4398:23`),
+      return: { type: { displayName: "Slot.SlotClone" }, return: null },
+    });
+    const info = readFrameworkInfo(el(doc, "a"));
+    expect(info.component).toEqual({ framework: "react", name: "Slot.SlotClone" });
+    // The library owner's frame is skipped as before: the chain is not cut for it.
+    expect(info.renderedBy).toEqual([{ component: "SidebarMenuLink", file: "src/components/layout/nav-group.tsx" }]);
   });
 
   // The Chats badge of shadcn-admin: three owners written in the shared nav-group.tsx. They

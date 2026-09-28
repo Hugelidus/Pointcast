@@ -4,6 +4,7 @@ import { codeSpan, escapeMarkdown, oneLine } from "./markdown";
 import { projectRelativePath } from "./paths";
 import { isLibraryPath, libraryPackage } from "./resolve/chain";
 import type { ElementInfo } from "./schema";
+import { isUtilityClass } from "./utility-classes";
 
 /** Longest label worth quoting as a grep key; longer ones are prose, not identifiers. */
 const LABEL_BUDGET = 60;
@@ -100,7 +101,12 @@ export function searchHints(element: ElementInfo): string[] {
   return hints;
 }
 
-/** Classes split into plain ones and CSS modules; hashed/utility noise was dropped at capture. */
+/**
+ * Classes split into plain ones and CSS modules. Hashed and utility noise is dropped at capture;
+ * utilities are dropped here too (isUtilityClass), for classes capture did not yet know as
+ * utilities (`transition-all`, `ring-sidebar-ring` in sessions before 2026-09-28): a generic
+ * class is no grep key. Semantic classes, CSS modules, ids, hrefs and data-* stay.
+ */
 function splitClasses(value: string): {
   plain: string[];
   modules: { stable: string; component: string }[];
@@ -110,7 +116,7 @@ function splitClasses(value: string): {
   for (const name of value.split(/\s+/).filter(Boolean)) {
     const module = CSS_MODULE.exec(name);
     if (module) modules.push({ stable: `${module[1]}_${module[2]}`, component: module[1] });
-    else plain.push(name);
+    else if (!isUtilityClass(name)) plain.push(name);
   }
   return { plain, modules };
 }
@@ -118,12 +124,21 @@ function splitClasses(value: string): {
 /** Values that say nothing in a one-line style summary. */
 const EMPTY_STYLE = /^(0px|auto|normal|none)$/;
 
-/** "`color: rgb(17, 24, 39); font-size: 14px`", skipping zero/auto values; undefined when none remain. */
+/**
+ * "`color: rgb(17, 24, 39); font-size: 14px`", skipping zero/auto values; undefined when none remain.
+ * Pixel lengths are rounded to whole pixels (`596.844px` -> `597px`): the fraction is layout
+ * noise, never something to ask for. Colors are kept exactly as captured ("make it green").
+ */
 export function stylesLine(styles: Record<string, string> | undefined): string | undefined {
   const parts = Object.entries(styles ?? {})
     .filter(([, value]) => !EMPTY_STYLE.test(value.trim()))
-    .map(([property, value]) => `${property}: ${oneLine(value)}`);
+    .map(([property, value]) => `${property}: ${roundPixels(oneLine(value))}`);
   return parts.length === 0 ? undefined : codeSpan(parts.join("; "));
+}
+
+/** `596.844px` -> `597px`, `8.5px 16px` -> `9px 16px`, in any value; other units and numbers stay. */
+export function roundPixels(value: string): string {
+  return value.replace(/(-?\d*\.\d+)px(?![\w-])/g, (_match, number: string) => `${Math.round(Number(number)) || 0}px`);
 }
 
 /** Attributes whose information searchHints already gives (or that carry none). */

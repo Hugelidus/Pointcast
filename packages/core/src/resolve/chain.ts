@@ -83,8 +83,8 @@ export function codeChain(element: ElementInfo): ChainFrame[] {
     // of one, the element's own tag. Without renderedBy at all (older sessions, production
     // builds), nothing changes.
     const line = positiveInteger(own?.line);
-    return Array.isArray(element.renderedBy) && ownFile !== undefined && line !== undefined && !ownLibrary
-      ? [{ host: true, file: ownFile, line }]
+    return Array.isArray(element.renderedBy) && ownFile !== undefined && ownIsWhereWritten(own) && !ownLibrary
+      ? [{ host: true, file: ownFile, ...(line === undefined ? {} : { line }) }]
       : [];
   }
 
@@ -97,12 +97,13 @@ export function codeChain(element: ElementInfo): ChainFrame[] {
     component: typeof frame.component === "string" && frame.component !== "" ? frame.component : undefined,
     snippet: typeof frame.snippet === "string" && frame.snippet.trim() !== "" ? frame.snippet : undefined,
   }));
-  // Only a file:line is the element's own location (Svelte's loc, React's _debugSource); Vue's
-  // file-only component can be the component that renders a slot, not where the tag is written.
+  // Only a file:line is the element's own location (Svelte's loc, React's _debugSource), or a
+  // React file without a line (ownIsWhereWritten); Vue's file-only component can be the
+  // component that renders a slot, not where the tag is written.
   const ownLine = positiveInteger(own?.line);
   const startsAtInstance = raw[0].component !== undefined && raw[0].component !== element.tag;
-  if (startsAtInstance && ownFile !== undefined && ownLine !== undefined && !ownLibrary && ownFile !== raw[0].file) {
-    raw.unshift({ file: ownFile, line: ownLine, host: true });
+  if (startsAtInstance && ownFile !== undefined && ownIsWhereWritten(own) && !ownLibrary && ownFile !== raw[0].file) {
+    raw.unshift({ file: ownFile, ...(ownLine === undefined ? {} : { line: ownLine }), host: true });
   }
 
   const chain: ChainFrame[] = [];
@@ -138,6 +139,20 @@ export function codeChain(element: ElementInfo): ChainFrame[] {
     if (chain.length === MAX_CHAIN_FRAMES) break;
   }
   return chain;
+}
+
+/**
+ * True when `element.component` gives where the element's own tag is written: a file with a line
+ * (Svelte's loc, React's `_debugSource`, React 19 owner stacks mapped under Next.js), or a React
+ * file without one. React writes a file without a line only from the element's own JSX call site
+ * on its `_debugStack` (React 19 on Vite, since 2026-09-28): the file is exact, and the line there
+ * is the served module's, not the source's, so it is not kept. Vue's `__file` without a line is
+ * not: it names the component instance around the element, which for slot content is not where
+ * the tag is written.
+ */
+function ownIsWhereWritten(own: ElementInfo["component"]): boolean {
+  if (typeof own !== "object" || own === null) return false;
+  return positiveInteger(own.line) !== undefined || own.framework === "react";
 }
 
 /**

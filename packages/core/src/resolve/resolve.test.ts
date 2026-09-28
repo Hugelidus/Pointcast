@@ -633,8 +633,10 @@ describe("snippets: the source lines the resolver already read", () => {
       { component: "ChartWidget", file: DASHBOARD, line: 112, snippet: SALES_THIS_WEEK_LINE },
       { component: "Dashboard", file: PAGE, line: 14, snippet: "<Dashboard />" },
     ]);
-    // Nothing beyond the chain's own files was read for them.
-    expect(new Set(reader.reads)).toEqual(new Set(["src/lib/ChartWidget.svelte", DASHBOARD, PAGE]));
+    // The snippets come from the chain's own files. The only other reads are rule 1's check across
+    // the chain's definitions (pass 2): the imports of those files, probed by name, never a search.
+    expect(reader.reads.slice(0, 3)).toEqual(["src/lib/ChartWidget.svelte", DASHBOARD, PAGE]);
+    expect(reader.reads.slice(3).every((path) => path.startsWith("src/lib"))).toBe(true);
     // The input keeps its frames as recorded.
     expect(SALES_THIS_WEEK.renderedBy![0]).not.toHaveProperty("snippet");
   });
@@ -731,13 +733,16 @@ describe("server templates (pointcast-django's markers, D9 note 2026-09-28)", ()
     expect(await locate(el("span", "Archivado", frames(ROW, LIST)), { ...files, [ROW]: "<span>Archivado</span>\n<span>Archivado</span>\n" })).toEqual([]);
   });
 
-  it("keeps Stage 0's whole-chain search for component chains", async () => {
+  it("keeps Stage 0's whole-chain search for component chains, tie-broken by the element's tag (pass 2)", async () => {
     const files = { "src/Row.svelte": "<span>Archivado</span>", "src/List.svelte": "<option>Archivado</option>" };
     const element = el("span", "Archivado", [
       { component: "Row", file: "src/Row.svelte", line: 1 },
       { component: "List", file: "src/List.svelte", line: 1 },
     ]);
-    expect(await locate(element, files)).toEqual([]);
+    // Both files are searched at once (no innermost-first for components); the span's own tag decides.
+    expect(await locate(element, files)).toEqual(["src/Row.svelte:1"]);
+    // The same tag in both: silence, as in Stage 0.
+    expect(await locate(element, { ...files, "src/List.svelte": "<span>Archivado</span>" })).toEqual([]);
   });
 
   it("breaks a tie by the element's tag when every hit shows its tag (tag filter)", async () => {
@@ -759,9 +764,9 @@ describe("server templates (pointcast-django's markers, D9 note 2026-09-28)", ()
     expect(await locate(el("th", "Fecha", frames(LIST)), { [LIST]: "<th>Fecha</th>\n<th>Fecha</th>" })).toEqual([]);
     const split = '<button type="button"\n        class="btn">\n  Cancelar\n</button>\n<a href="/">Cancelar</a>';
     expect(await locate(el("button", "Cancelar", frames(LIST)), { [LIST]: split })).toEqual([]);
-    // Never for component files: Stage 0's silence stays.
+    // Component files have their own tie-break since pass 2 (byEnclosingName): the th's own tag.
     const svelte = { "src/A.svelte": "<th>Estado</th>\n<label>Estado</label>" };
-    expect(await locate(el("th", "Estado", [{ component: "A", file: "src/A.svelte", line: 1 }]), svelte)).toEqual([]);
+    expect(await locate(el("th", "Estado", [{ component: "A", file: "src/A.svelte", line: 1 }]), svelte)).toEqual(["src/A.svelte:1"]);
   });
 
   it("does not count scripts, attribute values or {% if %} operands as on-screen text", async () => {
@@ -901,9 +906,12 @@ describe("Next.js App Router (D9 note 2026-09-28)", () => {
       { component: "Sidebar", file: "app/layout.tsx", line: 12 },
     ]);
     expect(await resolveElement(brand, memoryReader(NEXT), "repo")).toMatchObject([{ kind: "text", file: "components/sidebar.tsx", line: 7 }]);
-    // The same text in the layout's markup would still be written twice: silence.
-    const twice = { ...NEXT, "app/layout.tsx": NEXT["app/layout.tsx"].replace("Acme Store EU", "Acme Ops") };
+    // The same text in the layout's markup, in the same tag, would still be written twice: silence.
+    const twice = { ...NEXT, "app/layout.tsx": NEXT["app/layout.tsx"].replace("<strong>Acme Store EU</strong>", "<div>Acme Ops</div>") };
     expect(await resolveElement(brand, memoryReader(twice), "repo")).toEqual([]);
+    // In another tag (pass 2's tie-break): the div's own line.
+    const strong = { ...NEXT, "app/layout.tsx": NEXT["app/layout.tsx"].replace("Acme Store EU", "Acme Ops") };
+    expect(await resolveElement(brand, memoryReader(strong), "repo")).toMatchObject([{ file: "components/sidebar.tsx", line: 7 }]);
   });
 
   it("finds data rendered by a Server Component in the data module it imports (rule 5), through tsconfig's @/", async () => {
@@ -1126,5 +1134,171 @@ describe("renderingsOf", () => {
       "// <b>{item.label}</b>",
     ];
     expect(renderingsOf("label", "src/Item.tsx", jsx)).toEqual([5]);
+  });
+});
+
+/**
+ * Resolver pass 2 (D9 note 2026-09-28): shadcn-admin's six-change set, a private React 19 + Vite
+ * app's nav link, and elements with no text. Trimmed copies of the real files, at their real
+ * line numbers where the line matters.
+ */
+describe("resolver pass 2 (D9 note 2026-09-28)", () => {
+  const INDEX = "src/features/dashboard/index.tsx";
+  const CARD = "src/components/ui/card.tsx";
+  const LAYOUT = "src/components/layout/authenticated-layout.tsx";
+  const pad = (n: number): string[] => Array.from({ length: n }, () => "");
+  /** dashboard/index.tsx with «Overview» as a tab (:48), a card title (:165) and nav data (:195), «+20.1%…» at :81. */
+  const dashboard = (cardTitle = "                  <CardTitle>Overview</CardTitle>"): Record<string, string> => ({
+    [INDEX]: [
+      "import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'",
+      ...pad(46),
+      "              <TabsTrigger value='overview'>Overview</TabsTrigger>", // 48
+      ...pad(30),
+      "                  <div className='text-2xl font-bold'>$45,231.89</div>", // 79
+      "                  <p className='text-xs text-muted-foreground'>", // 80
+      "                    +20.1% from last month", // 81
+      "                  </p>", // 82
+      ...pad(82),
+      cardTitle, // 165
+      ...pad(29),
+      "    title: 'Overview',", // 195
+    ].join("\n"),
+    [CARD]: [
+      "function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {",
+      "  return <div data-slot='card-title' className={cn('leading-none font-semibold', className)} {...props} />",
+      "}",
+    ].join("\n"),
+    [LAYOUT]: "export function AuthenticatedLayout() {\n  return <Outlet />\n}",
+  });
+  const overview = (extra: Partial<ElementInfo> = {}): ElementInfo =>
+    el("div", "Overview", [{ component: "CardTitle", file: INDEX }, { component: "OutletImpl", file: LAYOUT }], {
+      component: { framework: "react", name: "CardTitle" },
+      ...extra,
+    });
+
+  it("item 1: breaks a JSX tie by the element's own component (the CardTitle, not the tab or the nav data)", async () => {
+    expect(await resolveElement(overview(), memoryReader(dashboard()), "repo")).toEqual([
+      { kind: "text", file: INDEX, line: 165, via: "repo", snippet: "<CardTitle>Overview</CardTitle>" },
+    ]);
+    // As the new capture records it, with the element's own file (card.tsx) first: the same line.
+    const recorded = overview({ component: { framework: "react", name: "CardTitle", file: CARD } });
+    expect(await resolveElement(recorded, memoryReader(dashboard()), "repo")).toMatchObject([{ file: INDEX, line: 165 }]);
+  });
+
+  it("item 1: silent when the tie cannot be told apart", async () => {
+    // Two card titles with that text.
+    const two = dashboard();
+    two[INDEX] = two[INDEX].replace("<TabsTrigger value='overview'>Overview</TabsTrigger>", "<CardTitle>Overview</CardTitle>");
+    expect(await resolveElement(overview(), memoryReader(two), "repo")).toEqual([]);
+    // A card title that renders an expression could be showing the nav data's 'Overview'.
+    const dynamic = dashboard();
+    dynamic[INDEX] = `${dynamic[INDEX]}\n<CardTitle>{item.title}</CardTitle>`;
+    expect(await resolveElement(overview(), memoryReader(dynamic), "repo")).toEqual([]);
+    // A tag this reader cannot parse (an arrow in an attribute): no telling.
+    const arrow = dashboard("                  <CardTitle onClick={() => go()}>Overview</CardTitle>");
+    expect(await resolveElement(overview(), memoryReader(arrow), "repo")).toEqual([]);
+  });
+
+  it("item 1: reads the tag of JSX text on its own line", async () => {
+    const multiline = dashboard("                  <CardTitle className='text-sm'>\n                    Overview\n                  </CardTitle>");
+    expect(await resolveElement(overview(), memoryReader(multiline), "repo")).toMatchObject([{ file: INDEX, line: 166 }]);
+  });
+
+  it("item 2: a <p> written in a router-placed page is found in the page's file (renderedBy: [])", async () => {
+    const p = el("p", "+20.1% from last month", [], { component: { framework: "react", name: "Dashboard", file: INDEX } });
+    expect(codeChain(p)).toEqual([{ host: true, file: INDEX }]);
+    expect(await resolveElement(p, memoryReader(dashboard()), "repo")).toEqual([
+      { kind: "text", file: INDEX, line: 81, via: "repo", snippet: "+20.1% from last month" },
+    ]);
+    // Vue's file-only component is not where the tag is written (slot content): no chain from it.
+    expect(codeChain({ ...p, component: { framework: "vue", name: "Dashboard", file: INDEX } })).toEqual([]);
+  });
+
+  /** A private React 19 + Vite app's shape (item A): the nav link's label in TopNav, a page-title switch in AppShell. */
+  const SHELL: Record<string, string> = {
+    "src/features/shell/AppShell.tsx": [
+      'import { TopNav } from "./TopNav";',
+      "function titleOf(path: string) {",
+      "  switch (path) {",
+      '    case "hoy": return "Hoy";',
+      '    case "progreso": return "Progreso";',
+      "  }",
+      "}",
+      "export function AppShell() {",
+      "  return <><TopNav /><h1>{titleOf(path)}</h1></>;",
+      "}",
+    ].join("\n"),
+    "src/features/shell/TopNav.tsx": [
+      "const ITEMS = [",
+      '  { path: "/hoy", label: "Hoy" },',
+      '  { path: "/progreso", label: "Progreso" },',
+      "];",
+      "export function TopNav() {",
+      "  return <nav>{ITEMS.map((item) => <a key={item.path} href={item.path}>{item.label}</a>)}</nav>;",
+      "}",
+    ].join("\n"),
+  };
+  const progreso = el("a", "Progreso", [{ component: "TopNav", file: "src/features/shell/AppShell.tsx" }], {
+    html: "<a>Progreso</a>",
+    component: { framework: "react", name: "TopNav" },
+  });
+
+  it("item A: a literal once in the usage file but also in the component's own definition is silence, not the usage's line", async () => {
+    // Before pass 2: `text at: AppShell.tsx:5`, the page-title switch. Wrong.
+    expect(await resolveElement(progreso, memoryReader(SHELL), "repo")).toEqual([]);
+    // With the link's href, written once, next to the label: the nav item's own line (rule 3's tie-break).
+    const withHref = { ...progreso, html: '<a href="/progreso">Progreso</a>' };
+    expect(await resolveElement(withHref, memoryReader(SHELL), "repo")).toMatchObject([{ kind: "text", file: "src/features/shell/TopNav.tsx", line: 3 }]);
+    // The href twice (a second nav): silence again.
+    const twoNavs = { ...SHELL, "src/features/shell/AppShell.tsx": `${SHELL["src/features/shell/AppShell.tsx"]}\nconst links = ["/progreso"];` };
+    expect(await resolveElement(withHref, memoryReader(twoNavs), "repo")).toEqual([]);
+    // In a nav data module the definition imports: the same.
+    const withData = {
+      ...SHELL,
+      "src/features/shell/TopNav.tsx": 'import { ITEMS } from "./nav";\nexport function TopNav() {\n  return <nav>{ITEMS.map((i) => <a href={i.path}>{i.label}</a>)}</nav>;\n}',
+      "src/features/shell/nav.ts": 'export const ITEMS = [\n  { path: "/progreso", label: "Progreso" },\n];',
+    };
+    expect(await resolveElement(progreso, memoryReader(withData), "repo")).toEqual([]);
+    // Without the title switch, the definition's line is found (rule 4, as before).
+    const noSwitch = { ...SHELL, "src/features/shell/AppShell.tsx": SHELL["src/features/shell/AppShell.tsx"].replace('return "Progreso"', 'return "Avance"') };
+    expect(await resolveElement(progreso, memoryReader(noSwitch), "repo")).toMatchObject([{ file: "src/features/shell/TopNav.tsx", line: 3 }]);
+  });
+
+  it("item A: the same for Vue, whose frames are also where each instance is used", async () => {
+    const vue = {
+      "src/layouts/AppShell.vue":
+        '<script setup>\nimport TopNav from "./TopNav.vue";\nconst title = computed(() => (route.name === "progreso" ? "Progreso" : "Hoy"));\n</script>\n<template><TopNav /><h1>{{ title }}</h1></template>',
+      "src/layouts/TopNav.vue":
+        '<script setup>\nconst items = [{ path: "/progreso", label: "Progreso" }];\n</script>\n<template><a v-for="i in items" :href="i.path">{{ i.label }}</a></template>',
+    };
+    const link = el("a", "Progreso", [{ component: "TopNav", file: "src/layouts/AppShell.vue" }], {
+      component: { framework: "vue", name: "TopNav", file: "src/layouts/TopNav.vue" },
+    });
+    expect(await resolveElement(link, memoryReader(vue), "repo")).toEqual([]);
+  });
+
+  it("item B: class at for an element with no text, on its own tag only, once", async () => {
+    const MAP = "src/features/map/MapView.tsx";
+    const files: Record<string, string> = {
+      "src/features/map/index.tsx": 'import { MapView } from "./MapView";\nexport function MapPage() {\n  return <MapView />;\n}',
+      [MAP]: 'export function MapView() {\n  return (\n    <div\n      className="map-layer absolute inset-0"\n      ref={ref}\n    />\n  );\n}',
+    };
+    const layer = el("div", "", [{ component: "MapView", file: "src/features/map/index.tsx" }], {
+      html: '<div class="map-layer absolute inset-0"></div>',
+      component: { framework: "react", name: "MapView" },
+    });
+    expect(await resolveElement(layer, memoryReader(files), "repo")).toEqual([
+      { kind: "class", file: MAP, line: 4, via: "repo", snippet: 'className="map-layer absolute inset-0"' },
+    ]);
+    // Written twice: silent. Only utilities: nothing to look up. On a component, not the element's own tag: silent.
+    expect(await resolveElement(layer, memoryReader({ ...files, [MAP]: `${files[MAP]}\nconst other = <div className="map-layer" />;` }), "repo")).toEqual([]);
+    expect(await resolveElement({ ...layer, html: '<div class="absolute inset-0"></div>' }, memoryReader(files), "repo")).toEqual([]);
+    const wrapper = { ...files, [MAP]: 'export function MapView() {\n  return <Layer className="map-layer" />;\n}' };
+    expect(await resolveElement(layer, memoryReader(wrapper), "repo")).toEqual([]);
+    // An id, the same way.
+    const byId = { ...files, [MAP]: 'export function MapView() {\n  return <div id="route-map" />;\n}' };
+    expect(await resolveElement({ ...layer, html: '<div id="route-map"></div>' }, memoryReader(byId), "repo")).toMatchObject([{ kind: "id", file: MAP, line: 2 }]);
+    // An element with text of its own never gets one.
+    expect(await resolveElement({ ...layer, text: "Mapa" }, memoryReader(files), "repo")).toEqual([]);
   });
 });

@@ -525,3 +525,61 @@ describe("shown by (D9 note 2026-09-28)", () => {
     expect(codePointerLines(broken).some((line) => line.startsWith("shown by"))).toBe(false);
   });
 });
+
+describe("resolver pass 2 rendering (D9 note 2026-09-28)", () => {
+  const INDEX = "src/features/dashboard/index.tsx";
+  const SALES = "src/features/dashboard/components/recent-sales.tsx";
+  const LAYOUT = "src/components/layout/authenticated-layout.tsx";
+
+  it("item 4: a React 19 element's own JSX file is the definition of the instance it is used in", () => {
+    // «+$39.00», written twice in recent-sales.tsx: no text line, but the file that draws it.
+    const amount = el("div", "+$39.00", {
+      component: { framework: "react", name: "RecentSales", file: SALES },
+      renderedBy: [{ component: "RecentSales", file: INDEX }, { component: "OutletImpl", file: LAYOUT }],
+    });
+    expect(codeFirstLines(amount)).toEqual([
+      `used at: \`${INDEX}\` — \`<RecentSales>\``,
+      `defined in: \`${SALES}\``,
+      `within: \`<OutletImpl>\` in \`${LAYOUT}\``,
+    ]);
+    expect(codePointerLines(amount)).toEqual([
+      `code: \`<div>\` in \`${SALES}\` ← \`<RecentSales>\` in \`${INDEX}\` ← \`<OutletImpl>\` in \`${LAYOUT}\``,
+    ]);
+  });
+
+  it("item 4: Vue's component file names the definition of the same component, marked shared on evidence", () => {
+    const employees = el("p", "Employees", {
+      component: { framework: "vue", name: "DataSectionItem", file: "src/pages/admin/dashboard/DataSectionItem.vue" },
+      renderedBy: [{ component: "DataSectionItem", file: "src/pages/admin/dashboard/DataSection.vue" }],
+      resolved: [{ kind: "text", file: "src/pages/admin/dashboard/DataSection.vue", line: 61, via: "repo" }],
+    });
+    expect(codeFirstLines(employees)).toEqual([
+      "used at: `src/pages/admin/dashboard/DataSection.vue` — `<DataSectionItem>`",
+      "defined in: `src/pages/admin/dashboard/DataSectionItem.vue` (shared — do not change it unless asked)",
+      "text at: `src/pages/admin/dashboard/DataSection.vue:61`",
+    ]);
+    // Another component's file, a library file or no file: no such line.
+    const other = { ...employees, component: { framework: "vue", name: "VaCard", file: "src/components/VaCard.vue" } };
+    expect(codeFirstLines(other).some((line) => line.startsWith("defined in"))).toBe(false);
+    const library = { ...employees, component: { framework: "vue", name: "DataSectionItem", file: "node_modules/x/DataSectionItem.vue" } };
+    expect(codeFirstLines(library).some((line) => line.startsWith("defined in: `"))).toBe(false);
+  });
+
+  it("item 2: an element written in a router-placed page is used where it is written", () => {
+    const p = el("p", "+20.1% from last month", {
+      component: { framework: "react", name: "Dashboard", file: INDEX },
+      renderedBy: [],
+      resolved: [{ kind: "text", file: INDEX, line: 81, via: "repo", snippet: "+20.1% from last month" }],
+    });
+    expect(codeFirstLines(p)).toEqual([`used at: \`${INDEX}\``, `text at: \`${INDEX}:81\` — \`+20.1% from last month\``]);
+  });
+
+  it("item B: names a class or id location as such", () => {
+    const layer = el("div", "", {
+      renderedBy: [{ component: "MapView", file: "src/features/map/index.tsx" }],
+      resolved: [{ kind: "class", file: "src/features/map/MapView.tsx", line: 4, via: "repo", snippet: 'className="map-layer"' }],
+    });
+    expect(codeFirstLines(layer)).toContain('class at: `src/features/map/MapView.tsx:4` — `className="map-layer"`');
+    expect(codePointerLines({ ...layer, resolved: [{ ...layer.resolved![0], kind: "id" }] })).toContain("id at: `src/features/map/MapView.tsx:4`");
+  });
+});

@@ -1,7 +1,8 @@
 import { stat } from "node:fs/promises";
-import { cachingReader, projectMatch, resolveSession, type SessionFile } from "@pointcast/core";
+import path from "node:path";
+import { cachingReader, isLibraryPath, projectMatch, resolveSession, type ElementInfo, type SessionFile } from "@pointcast/core";
 import { CliError } from "../errors";
-import { createRepoReader } from "./repo-reader";
+import { appFolderOf, createRepoReader, normalizeProjectPath } from "./repo-reader";
 
 /**
  * Route 1: resolve a session's code pointers against a project folder on disk, for
@@ -34,14 +35,42 @@ export async function resolveWithRepo(
   if (!isDir && options.explicit) throw new CliError(`The project folder ${root} does not exist or is not a folder.`);
 
   // One cache for both passes: projectMatch and resolveSession read the same chain files.
-  const reader = cachingReader(createRepoReader(root));
-  const match = await projectMatch(session, reader);
+  const atRoot = cachingReader(createRepoReader(root));
+  const match = await projectMatch(session, atRoot);
   if (match.matches === undefined) return { status: "no-chain", session, root };
   if (!match.matches) return { status: "mismatch", session, root, files: match.files };
 
+  // The app may be a subfolder of the folder the agent works in (appFolderOf): its paths are then
+  // read there, and shown from `root`, so every path in the spec opens as written.
+  const folder = await appFolderOf(root, match.files);
+  const reader = folder ? cachingReader(createRepoReader(path.join(root, folder))) : atRoot;
   const resolved = await resolveSession(session, reader, "repo");
   const found = resolved.events.reduce((sum, event) => sum + (event.element.resolved?.length ?? 0), 0);
-  return { status: "resolved", session: resolved, root, found };
+  return { status: "resolved", session: folder ? withFolder(resolved, folder) : resolved, root, found };
+}
+
+/**
+ * The session with every app path the spec shows prefixed by `folder` ("atlas/"): the chain's
+ * frames, the element's component and source attribute, and the resolved and shown-by lines, in
+ * `used at`, `within`, `defined in`, `text at`/`data at`, `shown by`, `find:` and get_element
+ * alike. Library paths and anything not a plain relative path are left as they are.
+ */
+export function withFolder(session: SessionFile, folder: string): SessionFile {
+  const prefix = (file: unknown): unknown => {
+    if (typeof file !== "string" || isLibraryPath(file)) return file;
+    const clean = normalizeProjectPath(file);
+    return clean === undefined ? file : `${folder}${clean}`;
+  };
+  const inElement = (element: ElementInfo): ElementInfo => {
+    const out: ElementInfo = { ...element };
+    if (Array.isArray(element.renderedBy)) out.renderedBy = element.renderedBy.map((frame) => ({ ...frame, file: prefix(frame.file) as string }));
+    if (element.component && typeof element.component === "object") out.component = { ...element.component, ...(element.component.file === undefined ? {} : { file: prefix(element.component.file) as string }) };
+    if (element.source && typeof element.source === "object") out.source = { ...element.source, file: prefix(element.source.file) as string };
+    if (Array.isArray(element.resolved)) out.resolved = element.resolved.map((location) => ({ ...location, file: prefix(location.file) as string }));
+    if (element.shownBy && typeof element.shownBy === "object") out.shownBy = { ...element.shownBy, file: prefix(element.shownBy.file) as string };
+    return out;
+  };
+  return { ...session, events: session.events.map((event) => ({ ...event, element: inElement(event.element) })) };
 }
 
 /** One stderr line for `pointcast process`: what was resolved, or why nothing was. */

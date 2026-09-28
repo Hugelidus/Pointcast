@@ -32,6 +32,11 @@
 - On macOS the popup says **⌥ Option+click** instead of Alt+click (Chrome maps Alt to Option there; the gesture is the same). `pointcast setup` and the README mention it too.
 - New e2e test (`dev/e2e/alt-click-defaults.spec.ts`): while recording, Alt/Option+click on a link, a link with `download`, a submit `<button>`, an `<input type=submit>` and links inside open and closed shadow roots only points. Nothing is followed, downloaded or submitted, and Alt+middle-click opens no tab. A control run without recording shows Chrome downloading the link, and downloading the form's response too. The typed-mode note box is checked with Alt/Option still held when it opens, and with Option+Enter.
 
+**Tighter specs: what you say without pointing stays with its request, copies of one component are one entry** ([D4 note](docs/decisions.md#d4-fusion--monotonic-alignment-of-events-to-deictic-words), [D5 note](docs/decisions.md#d5-html--capture-generously-already-sanitized-render-lean) of 2026-09-28)
+- A sentence said without pointing no longer becomes a request of its own when the times tie it to its neighbour: a follow-up said within 4 s of a request with gestures is appended to its quote ("… chips de aquí [e]. no me gustan …"), what you say within 6 s of pointing in silence becomes that pointing's quote ("[a] y hay que arreglar …"), and a short unfinished lead-in cut by a pause ("Luego en Proceso,") joins the request after it. At most one sentence per request, at most 20 words; anything else stays a request of its own. The quote keeps your words as spoken.
+- 3 or more consecutive elements of one request that are copies of one component (same code lines, card, styles and page; paths differing in one index) render as one entry: `- [c–i] 7 × «Sem 2 …», «Sem 3 …», … → code:`, the shared lines once and `in: main › ul › li[1..7]`. A line that differs (the HTML) is listed per element as `[d] html: …`. A preamble line explains the entry, only in a spec that has one.
+- `requests` format only; the classic format and the session format are unchanged. Specs without such cases are byte-identical.
+
 ## 0.6.0 (2026-09-28)
 
 Extension, CLI and integrations at 0.6.0. The CLI package now declares `mcpName` (`io.github.Hugelidus/pointcast`) for the MCP Registry.

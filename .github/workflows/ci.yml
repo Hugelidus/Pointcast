@@ -108,7 +108,7 @@ jobs:
       # The e2e suite serves Whisper to the extension from transformers.js' node_modules cache
       # (dev/playwright.config.ts): download it once per lockfile instead of on every run.
       - name: Cache the Whisper model
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: node_modules/.pnpm/@huggingface+transformers@*/node_modules/@huggingface/transformers/.cache
           key: whisper-base-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}

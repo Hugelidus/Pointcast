@@ -2,6 +2,15 @@
 
 ## 0.7.0 (unreleased)
 
+**Code pointer on Next.js App Router** ([D9](docs/decisions.md#d9-source-mapping), [results](docs/eval/nextjs-2026-09-28.md))
+- Fixed: on Next.js (React 19, Turbopack dev), 0.6.0 named Next's build chunks as your code (``used at: `_next/static/chunks/14ei_next_0os_t-p._.js` ``) and gave Server Components no code at all, with Next's internal `SegmentViewNode` as their component.
+- Client and Server Components now get their real chain, with lines: React 19's owner stacks are mapped through Next's own dev source maps (a chunk's `.map`, and `/__nextjs_source-map` for Server Components), in the page, right after the gesture. Only paths inside your project and line numbers leave the page. A frame that cannot be mapped ends the chain rather than letting the next one take its place. On a 13-element example app: 13/13 chains right, where 0.6.0 had 6 wrong and 7 missing.
+- A page's or layout's own markup (an `<h1>` written in `app/page.tsx`) gets its own line as its code: `used at: app/page.tsx:10`.
+- The resolver (CLI, MCP server) finds text a Server Component renders from a data module it imports (`customer: "Jackson Lee"` in `lib/data.ts`), follows `@/` through `tsconfig.json` when the project has no `src/`, and ignores Next's `metadata` export (it fills the page title, not the page). Each is silent when ambiguous; Stage 0's 15 lookups are unchanged.
+- Not covered: `text at:` lines in the pasted spec (Next's dev server serves no source; the MCP server and CLI read your repo), `next dev --webpack`, a custom `distDir`.
+- Session format: `renderedBy: []` means "read, and no app component above the element"; readers that ignore it are unaffected.
+- `dev/examples/next-dashboard`: the example app (Next.js 16, installed on its own, outside the workspace), with its ground truth; `dev/eval/typed/record.mjs --tasks-file dev/eval/typed/next-tasks.json` records it headlessly.
+
 **`shown by:` — where a value from data is displayed** ([D9 note 2026-09-28](docs/decisions.md#d9-source-mapping))
 - When an element's text comes from a data literal (`customer: "Marco Peña"`), the spec now also says which line renders that field: `shown by: src/components/OrdersTable.tsx:38` — `<td>{order.customer}</td>`. `text at:` / `data at:` still point at the value, for changing it; `shown by:` points at the markup, for changing how it is shown (link it, format it, badge it).
 - Recognizes `{x.key}`, `{key}`, `{x?.key}` and `{@html x.key}` (React, Svelte) and `{{ x.key }}` with filters (Vue, Django, Jinja) as element content, in the component files already searched, innermost first. No key, no such rendering, or two of them: no line. Nothing else in the spec changes.

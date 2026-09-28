@@ -9,7 +9,8 @@ import { installPageErrors } from "../lib/page-errors-main";
  * isolated world and sees neither. MAIN-world scripts have no extension API, so this script only
  * talks to the isolated one through DOM events:
  * - the component bridge (lib/component-bridge.ts) answers a synchronous request with names and
- *   file positions read on demand; it holds no state;
+ *   file positions read on demand, and an asynchronous one that also fetches the page's own
+ *   source maps (Next.js); it holds no state between requests;
  * - debug capture (lib/page-errors-main.ts, D13) hooks the page's errors, console.error/warn,
  *   fetch and XMLHttpRequest only while a recording with that setting runs, and reports what
  *   fails.

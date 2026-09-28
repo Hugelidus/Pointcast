@@ -100,10 +100,36 @@ export async function resolveElementDetails(
   if (resolved === undefined) {
     const scope = await withDefinitions(element, chain, cached);
     searched = scope;
-    resolved = scope.size > chain.size ? ((await lookup(element, text, scope, cached, via)) ?? []) : [];
+    resolved = scope.size > chain.size ? await lookup(element, text, scope, cached, via) : undefined;
+    resolved ??= (await textInData(element, text, scope, cached, via)) ?? [];
   }
   const shownBy = resolved.length === 1 ? await shownByOf(element, text, resolved[0], searched, cached, via) : undefined;
   return shownBy === undefined ? { resolved } : { resolved, shownBy };
+}
+
+/**
+ * Rule 5 (D9 note 2026-09-28, Next.js): the element's literal (rule 1's phrases), once across the
+ * data modules the searched files import (one hop, as rule 3), when rules 1-4 found nothing and
+ * no literal was written twice in the component files. A Server Component renders its data where
+ * it reads it (`{order.customer}`, `{stat.label}`), so the text is only in the data module.
+ * The component files themselves were searched already: a hit there would have been rule 1's.
+ * Written more than once across the data modules: nothing. Skipped for a short value tied to its
+ * item (rule 3b's case): a lone "3" in a data file says nothing.
+ */
+async function textInData(element: ElementInfo, text: string, files: Sources, reader: SourceReader, via: SourceVia): Promise<ResolvedLocation[] | undefined> {
+  if (itemOf(element, text) !== undefined) return undefined;
+  const data = await importedData(files, reader);
+  if (data.size === 0) return undefined;
+  const code = codeOf(data);
+  for (const phrase of phrases(text)) {
+    const hits = hitsIn(code, literalPattern(phrase));
+    if (hits.length > 1) return undefined;
+    if (hits.length === 1) {
+      const snippet = element.sensitive ? undefined : sourceSnippet(data.get(hits[0].file) ?? [], hits[0].line);
+      return [{ kind: "data", file: hits[0].file, line: hits[0].line, via, ...(snippet === undefined ? {} : { snippet }) }];
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -477,7 +503,43 @@ function codeOf(files: Sources): Map<string, string[]> {
 
 /** A file's lines as the lookup searches them: comments out, and template tags as boundaries. */
 function codeLines(file: string, lines: readonly string[]): string[] {
-  return isTemplateFile(file) ? withoutComments(asTemplateCode(lines)) : withoutComments(lines);
+  if (isTemplateFile(file)) return withoutComments(asTemplateCode(lines));
+  return NEXT_ROUTE_FILE.test(file) ? withoutNextMetadata(withoutComments(lines)) : withoutComments(lines);
+}
+
+/** Next.js App Router files that may export the page's `metadata` (D9 note 2026-09-28). */
+const NEXT_ROUTE_FILE = /(^|\/)(layout|page|template|default|not-found)\.(tsx|jsx|ts|js)$/;
+const NEXT_METADATA_START = /^\s*export\s+(const\s+metadata\b|(async\s+)?function\s+generateMetadata\b)/;
+
+/**
+ * A Next.js route file's lines with its `metadata` export (or `generateMetadata`) blanked, line
+ * for line: it fills the document head (`<title>`, `<meta>`), never the page, like a template's
+ * title block. The root layout's `title: "Acme Ops"` would otherwise make the sidebar's «Acme Ops»
+ * look written twice. The block ends where its braces balance again; brace counting, no parser.
+ */
+function withoutNextMetadata(lines: readonly string[]): string[] {
+  let inside = false;
+  let depth = 0;
+  let opened = false;
+  return lines.map((line) => {
+    if (!inside && NEXT_METADATA_START.test(line)) {
+      inside = true;
+      depth = 0;
+      opened = false;
+    }
+    if (!inside) return line;
+    for (const char of line) {
+      if (char === "{") {
+        depth++;
+        opened = true;
+      } else if (char === "}") {
+        depth--;
+      }
+    }
+    // No brace on its first line and a ";" to end it: `export const metadata = siteMetadata;`.
+    if ((opened && depth <= 0) || (!opened && /;\s*$/.test(line))) inside = false;
+    return "";
+  });
 }
 
 /**
@@ -775,19 +837,92 @@ async function importedData(chain: Sources, reader: SourceReader): Promise<Map<s
   const knownContent = new Set([...chain.values()].map((lines) => lines.join("\n")));
   for (const [file, lines] of chain) {
     for (const specifier of importSpecifiers(withoutComments(lines))) {
-      for (const candidate of importCandidates(file, specifier, DATA)) {
-        if (chain.has(candidate) || found.has(candidate)) break;
-        const source = await readSource(reader, candidate);
-        if (source === undefined) continue;
-        const candidateLines = splitLines(source);
-        if (knownContent.has(candidateLines.join("\n"))) continue;
-        found.set(candidate, candidateLines);
-        knownContent.add(candidateLines.join("\n"));
-        break;
+      const tryCandidates = async (candidates: readonly string[]): Promise<boolean> => {
+        for (const candidate of candidates) {
+          if (chain.has(candidate) || found.has(candidate)) return true;
+          const source = await readSource(reader, candidate);
+          if (source === undefined) continue;
+          const candidateLines = splitLines(source);
+          if (knownContent.has(candidateLines.join("\n"))) continue;
+          found.set(candidate, candidateLines);
+          knownContent.add(candidateLines.join("\n"));
+          return true;
+        }
+        return false;
+      };
+      if (!(await tryCandidates(importCandidates(file, specifier, DATA)))) {
+        await tryCandidates(await configuredAliasCandidates(specifier, DATA, reader));
       }
     }
   }
   return found;
+}
+
+/**
+ * `@/` and `~/` mean `src/` in Stage 0's apps (importCandidates). Next.js's default layout has no
+ * `src/`: `create-next-app` maps `@/*` to `./*` in tsconfig.json. So when the `src/` guess finds
+ * nothing, the project's own `compilerOptions.paths` (tsconfig.json, else jsconfig.json, at the
+ * project root, no `extends`) says where the alias points; without such an entry, nothing more is
+ * tried. Read only then, so apps whose `src/` files exist never read their tsconfig.
+ */
+async function configuredAliasCandidates(specifier: string, kind: ImportKind, reader: SourceReader): Promise<string[]> {
+  const alias = /^([@~])\//.exec(specifier)?.[1];
+  if (alias === undefined) return [];
+  const target = (await pathAliases(reader)).get(`${alias}/`);
+  if (target === undefined || target === "src/") return [];
+  const base = safePath(`${target}${specifier.slice(2)}`);
+  return base === undefined ? [] : candidatesFor(base, kind);
+}
+
+/** `compilerOptions.paths` entries of the form "X/*": ["Y/*"], as "X/" -> project-relative "Y/" ("" for the root). */
+async function pathAliases(reader: SourceReader): Promise<Map<string, string>> {
+  const aliases = new Map<string, string>();
+  const text = (await readSource(reader, "tsconfig.json")) ?? (await readSource(reader, "jsconfig.json"));
+  if (text === undefined) return aliases;
+  let config: unknown;
+  try {
+    config = JSON.parse(jsonc(text));
+  } catch {
+    return aliases;
+  }
+  const options = (config as { compilerOptions?: { baseUrl?: unknown; paths?: unknown } } | null)?.compilerOptions;
+  const paths = options?.paths;
+  if (typeof paths !== "object" || paths === null) return aliases;
+  const baseUrl = typeof options?.baseUrl === "string" ? options.baseUrl : ".";
+  for (const [key, targets] of Object.entries(paths as Record<string, unknown>)) {
+    const first = Array.isArray(targets) ? targets[0] : undefined;
+    if (!key.endsWith("/*") || typeof first !== "string" || !first.endsWith("/*")) continue;
+    const joined = `${baseUrl}/${first.slice(0, -1)}`.replace(/\\/g, "/").replace(/\/+/g, "/");
+    const target = joined.split("/").filter((segment) => segment !== "" && segment !== ".");
+    if (target.some((segment) => segment === "..")) continue;
+    aliases.set(key.slice(0, -1), target.length === 0 ? "" : `${target.join("/")}/`);
+  }
+  return aliases;
+}
+
+/** tsconfig's JSON with comments and trailing commas, as plain JSON (strings are left alone). */
+function jsonc(text: string): string {
+  let out = "";
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === '"') {
+      const end = /"(?:[^"\\\n]|\\.)*"/y;
+      end.lastIndex = i;
+      const string = end.exec(text);
+      if (string === null) return out + text.slice(i);
+      out += string[0];
+      i += string[0].length - 1;
+    } else if (char === "/" && text[i + 1] === "/") {
+      while (i < text.length && text[i] !== "\n") i++;
+      out += "\n";
+    } else if (char === "/" && text[i + 1] === "*") {
+      const close = text.indexOf("*/", i + 2);
+      i = close < 0 ? text.length : close + 1;
+    } else {
+      out += char;
+    }
+  }
+  return out.replace(/,(\s*[}\]])/g, "$1");
 }
 
 function importSpecifiers(lines: readonly string[]): string[] {
@@ -813,7 +948,11 @@ function importCandidates(from: string, specifier: string, kind: ImportKind): st
   else if (/^[@~]\//.test(specifier)) base = `src/${specifier.slice(2)}`;
   else if (specifier === "$lib" || specifier.startsWith("$lib/")) base = `src/lib${specifier.slice(4)}`;
   const safe = base === undefined ? undefined : safePath(base);
-  if (safe === undefined) return [];
+  return safe === undefined ? [] : candidatesFor(safe, kind);
+}
+
+/** The files a resolved, safe import base may be: itself with an accepted extension, or probed. */
+function candidatesFor(safe: string, kind: ImportKind): string[] {
   const extension = /\.([a-z\d]+)$/i.exec(safe.slice(safe.lastIndexOf("/") + 1))?.[1]?.toLowerCase();
   if (extension === undefined) return [...kind.probe.map((ext) => `${safe}.${ext}`), ...kind.probe.map((ext) => `${safe}/index.${ext}`)];
   return kind.accept.has(extension) && !safe.endsWith(".d.ts") ? [safe] : [];
@@ -855,10 +994,12 @@ async function withDefinitions(element: ElementInfo, chain: Sources, reader: Sou
     const lines = chain.get(file);
     const specifier = name === undefined || lines === undefined ? undefined : specifierOf(name, lines, "import");
     if (name === undefined || specifier === undefined) continue;
-    let definition = await read(importCandidates(file, specifier, COMPONENT));
+    const resolveImport = async (from: string, spec: string) =>
+      (await read(importCandidates(from, spec, COMPONENT))) ?? (await read(await configuredAliasCandidates(spec, COMPONENT, reader)));
+    let definition = await resolveImport(file, specifier);
     const reexport = definition === undefined ? undefined : specifierOf(name, definition[1], "export");
     if (definition !== undefined && reexport !== undefined) {
-      definition = (await read(importCandidates(definition[0], reexport, COMPONENT))) ?? definition;
+      definition = (await resolveImport(definition[0], reexport)) ?? definition;
     }
     add(definition);
   }

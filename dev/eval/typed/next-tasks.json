@@ -1,0 +1,21 @@
+{
+  "comment": "Next.js App Router check (2026-09-28): one typed recording per element of dev/examples/next-dashboard, whose SCENARIOS.md holds the ground truth (written before recording). Recorded with: node dev/eval/typed/record.mjs --tasks-file dev/eval/typed/next-tasks.json --out <dir>. Not part of the agent evaluation (run.mjs and grade.mjs read tasks.json only).",
+  "apps": {
+    "next-dashboard": { "server": "next", "dir": "dev/examples/next-dashboard", "port": 5548 }
+  },
+  "tasks": [
+    { "app": "next-dashboard", "id": "01-brand", "path": "/", "gesture": "point", "target": ".brand", "note": "Que ponga «Acme Operations»" },
+    { "app": "next-dashboard", "id": "02-workspace", "path": "/", "gesture": "point", "target": ".topbar strong", "note": "Cambia el nombre de la tienda" },
+    { "app": "next-dashboard", "id": "03-nav-orders", "path": "/", "gesture": "point", "target": "a[href=\"/orders\"]", "note": "Renómbralo a «Pedidos»" },
+    { "app": "next-dashboard", "id": "04-nav-badge", "path": "/", "gesture": "point", "target": "a[href=\"/orders\"] .badge", "note": "Debería decir 14" },
+    { "app": "next-dashboard", "id": "05-overview-h1", "path": "/", "gesture": "point", "target": "h1", "note": "Que ponga «Resumen»" },
+    { "app": "next-dashboard", "id": "06-revenue-title", "path": "/", "gesture": "point", "target": ".card-title >> nth=0", "note": "Que ponga «Ingresos»" },
+    { "app": "next-dashboard", "id": "07-revenue-value", "path": "/", "gesture": "point", "target": ".stat-value >> nth=0", "note": "Sin decimales y en euros" },
+    { "app": "next-dashboard", "id": "08-tab-month", "path": "/", "gesture": "point", "target": ".tabs-trigger >> nth=1", "note": "Que ponga «Este mes»" },
+    { "app": "next-dashboard", "id": "09-refresh", "path": "/", "gesture": "point", "target": "button:has-text(\"Refresh chart\")", "note": "Este botón en verde" },
+    { "app": "next-dashboard", "id": "10-customer", "path": "/", "gesture": "point", "target": ".customer >> nth=1", "note": "El nombre está mal, es Jackson Li" },
+    { "app": "next-dashboard", "id": "11-export", "path": "/orders", "gesture": "point", "target": "button:has-text(\"Export CSV\")", "note": "Que ponga «Exportar»" },
+    { "app": "next-dashboard", "id": "12-filter-status", "path": "/orders", "gesture": "point", "target": ".filter .muted", "note": "Quita este texto" },
+    { "app": "next-dashboard", "id": "13-email-toggle", "path": "/settings", "gesture": "point", "target": "label.toggle", "note": "Que ponga «Avisos por correo»" }
+  ]
+}

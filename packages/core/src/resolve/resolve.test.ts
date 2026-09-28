@@ -169,8 +169,11 @@ describe("resolveElement (Stage 0 rules on the eval apps)", () => {
       { kind: "data", file: "src/components/layout/data/sidebar-data.ts", line: 73, via: "github", snippet: "url: '/chats', badge: '3', icon: MessagesSquare," },
     ]);
     // Only the chain files and what they import one hop away were read: never a project search.
+    // The one other file is tsconfig.json, for the `@/` import whose `src/` file is not in the
+    // fixture (configuredAliasCandidates), which the fixture does not have either.
     expect(reader.reads).toContain("src/components/layout/data/sidebar-data.ts");
-    expect(reader.reads.every((path) => path.startsWith("src/components/") || path.startsWith("src/lib/"))).toBe(true);
+    const others = reader.reads.filter((path) => !path.startsWith("src/components/") && !path.startsWith("src/lib/"));
+    expect(new Set(others)).toEqual(new Set(["tsconfig.json", "jsconfig.json"]));
   });
 
   it("reaches the data only because same-file frames collapse before the 3-frame cap", async () => {
@@ -790,6 +793,149 @@ describe("server templates (pointcast-django's markers, D9 note 2026-09-28)", ()
       { component: "pim/list.html", host: false, file: LIST, template: true },
       { component: "base.html", host: false, file: "templates/base.html", template: true },
     ]);
+  });
+});
+
+/**
+ * dev/examples/next-dashboard, trimmed: Next.js App Router without src/, `@/*` -> `./*`, Server
+ * Components rendering data read on the server. Chains as the extension records them there.
+ */
+const NEXT: Record<string, string> = {
+  "tsconfig.json": `{
+  // create-next-app's
+  "compilerOptions": {
+    "strict": true,
+    "paths": { "@/*": ["./*"], },
+  },
+}`,
+  "app/layout.tsx": [
+    'import type { Metadata } from "next";',
+    'import { Sidebar } from "@/components/sidebar";',
+    "",
+    "export const metadata: Metadata = {",
+    '  title: "Acme Ops",',
+    "};",
+    "",
+    "export default function RootLayout({ children }: { children: React.ReactNode }) {",
+    "  return (",
+    "    <html>",
+    "      <body>",
+    "        <Sidebar />",
+    "        <strong>Acme Store EU</strong>",
+    "        {children}",
+    "      </body>",
+    "    </html>",
+    "  );",
+    "}",
+  ].join("\n"),
+  "components/sidebar.tsx": [
+    'import { NAV_ITEMS } from "@/lib/nav";',
+    'import { NavLink } from "./nav-link";',
+    "",
+    "export function Sidebar() {",
+    "  return (",
+    "    <aside>",
+    '      <div className="brand">Acme Ops</div>',
+    "      {NAV_ITEMS.map((item) => (",
+    "        <NavLink key={item.href} href={item.href} badge={item.badge}>{item.title}</NavLink>",
+    "      ))}",
+    "    </aside>",
+    "  );",
+    "}",
+  ].join("\n"),
+  "components/nav-link.tsx": ['"use client";', "export function NavLink({ href, badge, children }) {", '  return <a href={href}>{children}<span className="badge">{badge}</span></a>;', "}"].join("\n"),
+  "lib/nav.ts": ["export const NAV_ITEMS = [", '  { title: "Overview", href: "/" },', '  { title: "Orders", href: "/orders", badge: "12" },', "];"].join("\n"),
+  "app/page.tsx": [
+    'import { StatCard } from "@/components/stat-card";',
+    'import { getOrders, getStats } from "@/lib/data";',
+    "",
+    "export default async function OverviewPage() {",
+    "  const [stats, orders] = await Promise.all([getStats(), getOrders()]);",
+    "  return (",
+    "    <>",
+    "      <h1>Overview</h1>",
+    "      {stats.map((stat) => <StatCard key={stat.label} stat={stat} />)}",
+    '      {orders.map((order) => <span key={order.id} className="customer">{order.customer}</span>)}',
+    "    </>",
+    "  );",
+    "}",
+  ].join("\n"),
+  "components/stat-card.tsx": [
+    'import { formatValue, type Stat } from "@/lib/data";',
+    "export function StatCard({ stat }: { stat: Stat }) {",
+    "  return <div><h3>{stat.label}</h3><p>{formatValue(stat.value)}</p></div>;",
+    "}",
+  ].join("\n"),
+  "lib/data.ts": [
+    'const STATS = [{ label: "Revenue", value: 48210 }, { label: "Orders", value: 318 }];',
+    "const ORDERS = [",
+    '  { id: "A-1", customer: "Olivia Martin" },',
+    '  { id: "A-2", customer: "Jackson Lee" },',
+    "];",
+    "export async function getStats() { return STATS; }",
+    "export async function getOrders() { return ORDERS; }",
+    "export function formatValue(value: number) { return `$${value}`; }",
+  ].join("\n"),
+};
+
+function nextElement(tag: string, text: string, own: { name: string; file: string; line: number }, renderedBy: CodeFrame[], extra: Partial<ElementInfo> = {}): ElementInfo {
+  return el(tag, text, undefined, { component: { framework: "react", ...own }, renderedBy, ...extra });
+}
+
+describe("Next.js App Router (D9 note 2026-09-28)", () => {
+  it("makes an empty renderedBy with the element's own file:line a chain of one", () => {
+    const h1 = nextElement("h1", "Overview", { name: "OverviewPage", file: "app/page.tsx", line: 8 }, []);
+    expect(codeChain(h1)).toEqual([{ host: true, file: "app/page.tsx", line: 8 }]);
+    // Without renderedBy (older sessions), nothing changes.
+    expect(codeChain({ ...h1, renderedBy: undefined })).toEqual([]);
+    expect(codeChain({ ...h1, component: { framework: "react", name: "X", file: "node_modules/next/dist/x.js", line: 3 } })).toEqual([]);
+  });
+
+  it("finds the page's own text in the page", async () => {
+    const h1 = nextElement("h1", "Overview", { name: "OverviewPage", file: "app/page.tsx", line: 8 }, []);
+    expect(await resolveElement(h1, memoryReader(NEXT), "repo")).toEqual([{ kind: "text", file: "app/page.tsx", line: 8, via: "repo", snippet: "<h1>Overview</h1>" }]);
+  });
+
+  it("does not count the metadata title as a second «Acme Ops»", async () => {
+    const brand = nextElement("div", "Acme Ops", { name: "Sidebar", file: "components/sidebar.tsx", line: 7 }, [
+      { component: "Sidebar", file: "app/layout.tsx", line: 12 },
+    ]);
+    expect(await resolveElement(brand, memoryReader(NEXT), "repo")).toMatchObject([{ kind: "text", file: "components/sidebar.tsx", line: 7 }]);
+    // The same text in the layout's markup would still be written twice: silence.
+    const twice = { ...NEXT, "app/layout.tsx": NEXT["app/layout.tsx"].replace("Acme Store EU", "Acme Ops") };
+    expect(await resolveElement(brand, memoryReader(twice), "repo")).toEqual([]);
+  });
+
+  it("finds data rendered by a Server Component in the data module it imports (rule 5), through tsconfig's @/", async () => {
+    const customer = nextElement("span", "Jackson Lee", { name: "OverviewPage", file: "app/page.tsx", line: 10 }, []);
+    expect(await resolveElement(customer, memoryReader(NEXT), "repo")).toEqual([
+      { kind: "data", file: "lib/data.ts", line: 4, via: "repo", snippet: NEXT["lib/data.ts"].split("\n")[3].trim() },
+    ]);
+    const title = nextElement("h3", "Revenue", { name: "StatCard", file: "components/stat-card.tsx", line: 3 }, [
+      { component: "StatCard", file: "app/page.tsx", line: 9 },
+    ]);
+    expect(await resolveElement(title, memoryReader(NEXT), "repo")).toMatchObject([{ kind: "data", file: "lib/data.ts", line: 1 }]);
+  });
+
+  it("keeps rule 5 silent when the literal is written twice in the data, or is only a number", async () => {
+    // «Orders» is a nav title (lib/nav.ts) and a stat label (lib/data.ts); the layout imports the one, the page the other.
+    const twice = { ...NEXT, "lib/data.ts": NEXT["lib/data.ts"].replace('customer: "Olivia Martin"', 'customer: "Jackson Lee"') };
+    const customer = nextElement("span", "Jackson Lee", { name: "OverviewPage", file: "app/page.tsx", line: 10 }, []);
+    expect(await resolveElement(customer, memoryReader(twice), "repo")).toEqual([]);
+    const value = nextElement("span", "12", { name: "NavLink", file: "components/nav-link.tsx", line: 3 }, [{ component: "NavLink", file: "components/sidebar.tsx", line: 9 }], {
+      itemLabel: "Orders",
+      html: '<span class="badge">12</span>',
+    });
+    // Rule 3b (not 5) finds the badge, through the item's label, once the alias is followed.
+    expect(await resolveElement(value, memoryReader(NEXT), "repo")).toMatchObject([{ kind: "data", file: "lib/nav.ts", line: 3 }]);
+  });
+
+  it("follows @/ to the project root only when tsconfig says so", async () => {
+    const { ["tsconfig.json"]: _config, ...withoutConfig } = NEXT;
+    const customer = nextElement("span", "Jackson Lee", { name: "OverviewPage", file: "app/page.tsx", line: 10 }, []);
+    expect(await resolveElement(customer, memoryReader(withoutConfig), "repo")).toEqual([]);
+    const src = { ...withoutConfig, "tsconfig.json": '{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } } }' };
+    expect(await resolveElement(customer, memoryReader(src), "repo")).toEqual([]);
   });
 });
 

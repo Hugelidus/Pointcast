@@ -68,7 +68,9 @@ export function codeFirstLines(element: ElementInfo): string[] {
   const resolved = resolvedLocations(element);
   const first = chain[0];
   const shared = first !== undefined && (first.host || first.component === undefined) && literalElsewhere(chain, resolved);
-  const definition = first !== undefined && (first.host || shared) ? first : undefined;
+  // A chain of just the element's own tag (a React element written straight in a Next.js page or
+  // layout) is where it is used: there is no instance further out to send the agent to.
+  const definition = first !== undefined && chain.length > 1 && (first.host || shared) ? first : undefined;
   const usedIndex = definition === undefined ? 0 : 1;
   const used: ChainFrame | undefined = chain[usedIndex];
   // Defense in depth (D8): the resolver keeps no snippet for a sensitive element; a hand-edited session may.

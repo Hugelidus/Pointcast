@@ -35,9 +35,11 @@ export const MAX_CHAIN_FRAMES = 3;
  * Library and generated code: never a place the agent should edit. Tested on forward-slash paths:
  * node_modules, pnpm's store (".pnpm/"), Vite's and SvelteKit's generated folders, and a bundler
  * chunk named after its flattened node_modules path
- * ("_next/static/chunks/node_modules_@radix-ui_react-slot_dist_index_mjs.js").
+ * ("_next/static/chunks/node_modules_@radix-ui_react-slot_dist_index_mjs.js"), and Next.js's
+ * build output: its client chunks as the dev server serves them ("_next/static/chunks/…", whatever
+ * they are named: Turbopack names many after a hash) and its `.next/` folder (server chunks).
  */
-export const NOT_APP_CODE = /(^|\/)((node_modules|\.pnpm|\.vite|\.svelte-kit)\/|node_modules_)/;
+export const NOT_APP_CODE = /(^|\/)((node_modules|\.pnpm|\.vite|\.svelte-kit|_next|\.next)\/|node_modules_)/;
 
 /**
  * True for a library or generated file (NOT_APP_CODE). Test the path as captured, not its
@@ -63,16 +65,28 @@ export function isLibraryPath(file: string): boolean {
  *   decides where the chain ends: uncollapsed, the Chats badge chain never leaves the shared
  *   nav-group.tsx and never reaches the file that imports the sidebar data;
  * - at most MAX_CHAIN_FRAMES, after collapsing.
- * Empty without renderedBy, so older sessions render and resolve exactly as before.
+ * Empty without renderedBy, so older sessions render and resolve exactly as before. An empty
+ * renderedBy with the element's own app file:line (a Next.js page's own markup) is a chain of its
+ * host frame alone.
  */
 export function codeChain(element: ElementInfo): ChainFrame[] {
   const given = Array.isArray(element.renderedBy) ? element.renderedBy.filter(isFrame) : [];
-  if (given.length === 0) return [];
-
   const own = element.component;
   const ownFile = typeof own?.file === "string" && own.file !== "" ? cleanPath(own.file) : undefined;
   const ownLibrary = typeof own?.file === "string" && own.file !== "" && isLibraryPath(own.file);
   const ownPackage = ownLibrary ? libraryPackage(own?.file as string) : undefined;
+
+  if (given.length === 0) {
+    // D9 note 2026-09-28 (Next.js): `renderedBy: []` says the chain was read and no app component
+    // instance is above the element: its markup is written straight in a component the framework
+    // itself renders (a page or a layout). Its own file:line (element.component) is then a chain
+    // of one, the element's own tag. Without renderedBy at all (older sessions, production
+    // builds), nothing changes.
+    const line = positiveInteger(own?.line);
+    return Array.isArray(element.renderedBy) && ownFile !== undefined && line !== undefined && !ownLibrary
+      ? [{ host: true, file: ownFile, line }]
+      : [];
+  }
 
   const raw: { file: string; library?: boolean; pkg?: string; line?: number; component?: string; host?: boolean; snippet?: string }[] = given.map((frame) => ({
     file: cleanPath(frame.file),

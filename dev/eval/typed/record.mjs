@@ -2,7 +2,7 @@
 // headless Chromium, muted, the e2e build; per task: Record, one Alt+click (or text selection),
 // type the note into Pointcast's note box, Enter, Stop. No microphone, no speech model.
 //
-//   node dev/eval/typed/record.mjs --out <dir> [--apps a,b] [--tasks id,id]
+//   node dev/eval/typed/record.mjs --out <dir> [--apps a,b] [--tasks id,id] [--tasks-file <json>]
 //        [--django-dir <locallibrary checkout> --python <venv python> --django-pythonpath <dir>]
 //
 // Output per task, in <out>/sessions/<app>/<task>/<session id>/: the files the extension saved
@@ -29,6 +29,7 @@ const { values } = parseArgs({
     apps: { type: "string" },
     tasks: { type: "string" },
     extension: { type: "string" },
+    "tasks-file": { type: "string" },
     "django-dir": { type: "string", default: process.env.EVAL_DJANGO_DIR },
     python: { type: "string", default: process.env.EVAL_DJANGO_PYTHON },
     "django-pythonpath": { type: "string", default: process.env.EVAL_DJANGO_PYTHONPATH },
@@ -39,7 +40,7 @@ const OUT = path.resolve(values.out);
 const EXTENSION_DIR = values.extension ? path.resolve(values.extension) : path.join(REPO_ROOT, "packages", "extension", ".output", "chrome-mv3-e2e");
 if (!existsSync(path.join(EXTENSION_DIR, "manifest.json"))) throw new Error(`no extension build at ${EXTENSION_DIR}`);
 
-const config = JSON.parse(readFileSync(path.join(TYPED_DIR, "tasks.json"), "utf8"));
+const config = JSON.parse(readFileSync(values["tasks-file"] ? path.resolve(values["tasks-file"]) : path.join(TYPED_DIR, "tasks.json"), "utf8"));
 const wantedApps = values.apps?.split(",");
 const wantedTasks = values.tasks?.split(",");
 const tasks = config.tasks.filter((t) => (!wantedApps || wantedApps.includes(t.app)) && (!wantedTasks || wantedTasks.includes(t.id)));
@@ -48,7 +49,9 @@ const NOTE_BOX = '[data-pointcast-ui="note"]';
 for (const appName of [...new Set(tasks.map((t) => t.app))]) {
   const cleanup = [];
   try {
-    const server = config.apps[appName].server === "django" ? await startDjango(config.apps[appName]) : await startDevServer(appByName(appName));
+    const kind = config.apps[appName].server;
+    const server =
+      kind === "django" ? await startDjango(config.apps[appName]) : kind === "next" ? await startNext(config.apps[appName]) : await startDevServer(appByName(appName));
     cleanup.push(server.stop);
     const tempDir = mkdtempSync(path.join(os.tmpdir(), "pointcast-typed-eval-"));
     cleanup.push(() => rmSync(tempDir, { recursive: true, force: true }));
@@ -197,6 +200,42 @@ async function startDjango(app) {
         return false;
       }
     }, 60_000, "django runserver");
+  } catch (error) {
+    stop();
+    throw error;
+  }
+  return { url, stop };
+}
+
+/**
+ * `next dev --turbopack` of a Next.js example installed on its own (dev/examples/next-dashboard,
+ * SCENARIOS.md). Below normal priority, no browser, no telemetry.
+ */
+async function startNext(app) {
+  const dir = path.resolve(REPO_ROOT, app.dir);
+  const next = path.join(dir, "node_modules", "next", "dist", "bin", "next");
+  if (!existsSync(next)) throw new Error(`${app.dir} is not installed: run "pnpm install --ignore-workspace" there`);
+  const url = `http://127.0.0.1:${app.port}`;
+  const child = spawn(process.execPath, [next, "dev", "--turbopack", "--hostname", "127.0.0.1", "--port", String(app.port)], {
+    cwd: dir,
+    env: { ...process.env, BROWSER: "none", NEXT_TELEMETRY_DISABLED: "1" },
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true,
+  });
+  lowerPriority(child.pid);
+  let log = "";
+  child.stdout.on("data", (d) => (log += d));
+  child.stderr.on("data", (d) => (log += d));
+  const stop = () => killTree(child.pid);
+  try {
+    await waitFor(async () => {
+      if (child.exitCode !== null) throw new Error(`next dev exited:\n${log}`);
+      try {
+        return (await fetch(url)).ok;
+      } catch {
+        return false;
+      }
+    }, 120_000, "next dev");
   } catch (error) {
     stop();
     throw error;

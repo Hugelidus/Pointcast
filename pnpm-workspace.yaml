@@ -1,3 +1,5 @@
 packages:
   - "packages/*"
   - "dev/examples/*"
+  # Installed on its own (pnpm install --ignore-workspace): Next.js is large, and CI does not need it.
+  - "!dev/examples/next-dashboard"

@@ -79,7 +79,7 @@ jobs:
   #   without making every PR wait longer.
   # - workflow_dispatch: all three.
   e2e:
-    name: e2e (${{ matrix.os }}, ${{ matrix.shard }}/3)
+    name: ${{ matrix.os == 'ubuntu-latest' && format('e2e ({0}/3)', matrix.shard) || format('e2e ({0}, {1}/3)', matrix.os, matrix.shard) }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false

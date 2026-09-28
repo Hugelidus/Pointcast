@@ -50,11 +50,47 @@ export function chosenLanguage(settings: Settings): string | undefined {
   return settings.language === "auto" ? undefined : settings.language;
 }
 
-/** "Spanish" for "es", in English like the rest of the UI; the code itself when unknown. */
+/**
+ * Whisper's own English names (its tokenizer's LANGUAGES), for the codes Chrome's trimmed ICU data
+ * cannot name: the popup listed "ba" and "bo" as bare codes. "jw" is Whisper's code for Javanese,
+ * which ISO 639-1 spells "jv".
+ */
+const WHISPER_NAMES: Readonly<Record<string, string>> = {
+  af: "Afrikaans", am: "Amharic", ar: "Arabic", as: "Assamese", az: "Azerbaijani", ba: "Bashkir", be: "Belarusian",
+  bg: "Bulgarian", bn: "Bengali", bo: "Tibetan", br: "Breton", bs: "Bosnian", ca: "Catalan", cs: "Czech", cy: "Welsh",
+  da: "Danish", de: "German", el: "Greek", en: "English", es: "Spanish", et: "Estonian", eu: "Basque", fa: "Persian",
+  fi: "Finnish", fo: "Faroese", fr: "French", gl: "Galician", gu: "Gujarati", haw: "Hawaiian", ha: "Hausa",
+  he: "Hebrew", hi: "Hindi", hr: "Croatian", ht: "Haitian Creole", hu: "Hungarian", hy: "Armenian", id: "Indonesian",
+  is: "Icelandic", it: "Italian", ja: "Japanese", jw: "Javanese", ka: "Georgian", kk: "Kazakh", km: "Khmer",
+  kn: "Kannada", ko: "Korean", la: "Latin", lb: "Luxembourgish", ln: "Lingala", lo: "Lao", lt: "Lithuanian",
+  lv: "Latvian", mg: "Malagasy", mi: "Maori", mk: "Macedonian", ml: "Malayalam", mn: "Mongolian", mr: "Marathi",
+  ms: "Malay", mt: "Maltese", my: "Burmese", ne: "Nepali", nl: "Dutch", nn: "Norwegian Nynorsk", no: "Norwegian",
+  oc: "Occitan", pa: "Punjabi", pl: "Polish", ps: "Pashto", pt: "Portuguese", ro: "Romanian", ru: "Russian",
+  sa: "Sanskrit", sd: "Sindhi", si: "Sinhala", sk: "Slovak", sl: "Slovenian", sn: "Shona", so: "Somali",
+  sq: "Albanian", sr: "Serbian", su: "Sundanese", sv: "Swedish", sw: "Swahili", ta: "Tamil", te: "Telugu",
+  tg: "Tajik", th: "Thai", tk: "Turkmen", tl: "Tagalog", tr: "Turkish", tt: "Tatar", uk: "Ukrainian", ur: "Urdu",
+  uz: "Uzbek", vi: "Vietnamese", yi: "Yiddish", yo: "Yoruba", zh: "Chinese",
+};
+
+/**
+ * "Spanish" for "es", in English like the rest of the UI: the browser's name when it has one,
+ * then Whisper's, and the code itself only for a code neither knows.
+ */
 export function languageName(code: string): string {
+  return nameOrFallback(code, browserLanguageName(code));
+}
+
+/** `named` is the browser's name for `code`; exported for the test, which cannot trim Node's ICU. */
+export function nameOrFallback(code: string, named: string | undefined): string {
+  // Without data for a code, Intl.DisplayNames gives the code back rather than undefined.
+  if (named && named.toLowerCase() !== code.toLowerCase()) return named;
+  return WHISPER_NAMES[code] ?? code;
+}
+
+function browserLanguageName(code: string): string | undefined {
   try {
-    return new Intl.DisplayNames(["en"], { type: "language" }).of(code) ?? code;
+    return new Intl.DisplayNames(["en"], { type: "language" }).of(code);
   } catch {
-    return code;
+    return undefined;
   }
 }

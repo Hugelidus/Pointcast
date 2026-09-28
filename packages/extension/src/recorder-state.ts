@@ -18,6 +18,17 @@ import type { ProcessingInfo } from "./processing/progress";
 
 export type RecorderStatus = "idle" | "starting" | "recording" | "stopping" | "processing";
 
+/** What failed, so the popup and the pill can pick their words without parsing `error`. */
+export type ErrorKind =
+  /** Record found no microphone grant: the permission page was opened. */
+  | "microphone-denied"
+  /** Record failed for another reason (no microphone, the recorder did not answer…). */
+  | "start"
+  /** The session was saved, but its audio could not be transcribed. */
+  | "transcription"
+  /** Stopping or processing failed, or saving the files did. */
+  | "processing";
+
 /** How the last processing ended, for the popup's details and the in-page "copied" moment. */
 export interface LastResult {
   sessionId: string;
@@ -51,6 +62,15 @@ export interface RecorderState {
   lastSessionId?: string;
   /** Human-readable reason of the last failure, shown in the popup. */
   error?: string;
+  /** The raw text behind `error` (a library message, a URL), for the popup's folded "Details". */
+  errorDetail?: string;
+  /** What `error` is about; absent in states written before 0.2.2, so readers must not need it. */
+  errorKind?: ErrorKind;
+  /**
+   * Date.now() when Record failed. A failed start has no lastResult, so this is what lets the
+   * pill say so for ERROR_VISIBLE_MS (processing/progress.ts pillView).
+   */
+  startFailedAt?: number;
   /** Problem with a session that was still saved (e.g. audio kept only as the raw recording). */
   warning?: string;
   /** While stopping and processing: the stage and the time estimate the pill and popup show. */
@@ -116,7 +136,7 @@ export function parseState(value: unknown): RecorderState {
  */
 export function savedLocationText(sessionId: string, handedOffTo?: string): string {
   return handedOffTo !== undefined
-    ? `Saved by the pointcast MCP server to ${handedOffTo}`
+    ? `Saved by the Pointcast MCP server to ${handedOffTo}`
     : `Saved to Downloads/${SESSIONS_FOLDER}/${sessionId}/`;
 }
 

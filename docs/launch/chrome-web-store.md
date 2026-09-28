@@ -41,7 +41,7 @@ WHY POINTING HELPS
 In an evaluation on three real open-source dashboards (React, Vue, Svelte), pointing raised the share of requests where the agent found the right element from 78% to 89%, exactly where words alone are ambiguous: two "Export" buttons, identical cards, shared components. Pointing at the code then cut the tokens the agent spent finding the elements by more than half. Methods and numbers are in the repository.
 
 This is a beta: feedback and bug reports are welcome at https://github.com/Hugelidus/pointcast/issues
-The first recording downloads the speech model once (about 291 MB).
+The first recording downloads the speech model once (about 294 MB).
 ```
 
 - **Category:** Developer Tools
@@ -71,7 +71,7 @@ Records the user's voice and the elements of their own web app that they explici
 | `scripting` | Injects the capture script into tabs that were already open when the extension was installed or updated, and registers it on the sites the user enables one by one from the popup. It never runs on a site the user has not enabled. |
 | `notifications` | Tells the user when a recording has been processed and copied, if they looked away. Can be turned off in the settings. |
 | `alarms` | A safety timeout: if the browser suspends the extension while a recording is processed, an alarm ends the stuck state and saves what was recorded. |
-| `unlimitedStorage` | Caches the local speech model (about 291 MB) so it is downloaded only once. |
+| `unlimitedStorage` | Caches the local speech model (about 294 MB) so it is downloaded only once. |
 | `activeTab` | Lets the popup read the current tab's address when the user opens it, to show whether that tab is captured and offer "Enable on <site>" for it. |
 | Host permissions: `localhost`, `127.0.0.1`, `[::1]`, `*.localhost`, `*.test` | The core use: recording the user's own app while they develop it. The capture script and the on-page recording indicator run on these local development hosts only. The extension also uses `127.0.0.1` to hand a recording to the user's own pointcast MCP server (the companion command-line tool, running on the same computer) instead of downloading it. |
 | Optional host permission: `*://*/*` | Not requested at install. Granted one site at a time, only when the user presses "Enable on <site>" in the popup (for a staging server or a preview deployment); Chrome asks the user first, and "Remove <site>" revokes it. |

@@ -60,7 +60,7 @@ test("Stop resolves the code pointer from the page's Vite dev server, and the co
     await app.bringToFront();
     await expect(app.locator(INDICATOR)).toBeVisible();
     await app.locator("#export-btn").click({ modifiers: ["Alt"] });
-    await expect(popup.locator("#last-event")).toHaveText("Last: button «Export» · Alt+click");
+    await expect(popup.locator("#last-event")).toHaveText("Last: button “Export”");
     const { sessionId } = await stopFromPopup(popup);
 
     const { session, markdown } = await readSavedSession(popup, downloadsDir, sessionId);

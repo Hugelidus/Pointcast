@@ -78,7 +78,7 @@ describe("attachTab", () => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     const result = attachTab(LOCAL, fakeTab({ hang: true }), [], 2000);
     await vi.advanceTimersByTimeAsync(2000);
-    expect(await result).toEqual({ status: "unavailable", error: "The tab did not answer within 2 s." });
+    expect(await result).toEqual({ status: "unavailable", error: "the page did not respond within 2 s" });
   });
 });
 

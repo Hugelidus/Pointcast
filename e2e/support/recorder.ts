@@ -70,7 +70,8 @@ export async function stopFromPopup(popup: Page): Promise<{ stoppedAt: number; s
   const state = await waitForStatus(popup, "idle", PROCESSING_TIMEOUT_MS);
   expect(state.error).toBeUndefined();
   if (!state.lastSessionId) throw new Error("stopped without a saved session");
-  await expect(popup.locator("#message")).toContainText(`Saved to Downloads/pointcast/${state.lastSessionId}/`);
+  // The folder is on its own line, the session id in the code font and the whole path in its title.
+  await expect(popup.locator("#where-path")).toHaveAttribute("title", `Downloads/pointcast/${state.lastSessionId}/`);
   return { stoppedAt, sessionId: state.lastSessionId, state };
 }
 

@@ -109,7 +109,10 @@ export function libraryPackage(file: string): string | undefined {
   if (at < 0) return undefined;
   const segments = path.slice(at + marker.length).split("/");
   if (segments[0] === ".vite") {
-    const name = (segments[segments.length - 1] ?? "").replace(/[?#].*$/, "").replace(/\.[^.]+$/, "");
+    const last = segments[segments.length - 1] ?? "";
+    // Cut at the first "?" or "#" without a regex: /[?#].*$/ is quadratic on many "#" (CodeQL).
+    const cut = [last.indexOf("?"), last.indexOf("#")].filter((i) => i >= 0);
+    const name = (cut.length > 0 ? last.slice(0, Math.min(...cut)) : last).replace(/\.[^.]+$/, "");
     if (name === "" || name.startsWith("chunk-")) return undefined;
     // Vite writes "@radix-ui/react-slot" as "@radix-ui_react-slot.js".
     return name.replace(/^(@[^_/]+)_/, "$1/");

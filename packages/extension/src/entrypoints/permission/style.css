@@ -1,47 +1,65 @@
+/*
+ * The brand of the store images and the popup (UX decision A): ink and violet, with red kept for
+ * recording. Allowing the microphone is not recording, so its button is violet, not red.
+ */
 :root {
   --bg: #ffffff;
-  --fg: #202124;
-  --muted: #5f6368;
-  --accent: #d93025;
+  --fg: #1d1b2e;
+  --muted: #5b5775;
+  --border-strong: #8a86a3;
+  --surface: #f7f5ff;
+  --accent: #7c3aed;
   --accent-fg: #ffffff;
-  --ok: #137333;
+  --ok: #188038;
   --error: #b3261e;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #202124;
-    --fg: #e8eaed;
-    --muted: #9aa0a6;
+    --bg: #16132f;
+    --fg: #ecebf5;
+    --muted: #a9a4c9;
+    --border-strong: #7a74a6;
+    --surface: #211d42;
     --ok: #81c995;
     --error: #f28b82;
   }
 }
 
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font: 16px/1.6 system-ui, sans-serif;
+  font: 16px/1.6 Inter, system-ui, sans-serif;
 }
 
 main { max-width: 560px; margin: 0 auto; padding: 48px 16px; }
 
-h1 { font-size: 24px; line-height: 1.3; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+.brand img { display: block; }
+
+h1 { font-size: 24px; line-height: 1.3; margin: 24px 0 8px; }
 
 p { color: var(--muted); }
 
 button {
   padding: 10px 18px;
-  border: 0;
   border-radius: 8px;
-  background: var(--accent);
-  color: var(--accent-fg);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
+button.primary { border: 0; background: var(--accent); color: var(--accent-fg); }
+button.secondary { border: 1px solid var(--border-strong); background: transparent; color: var(--fg); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button:disabled { opacity: 0.5; cursor: default; }
+
+#steps { margin: 0 0 16px; padding: 12px 16px; border-radius: 8px; background: var(--surface); }
+#steps ol { margin: 0 0 12px; padding-left: 20px; }
+#steps li + li { margin-top: 4px; }
 
 .result { font-weight: 600; }
 .result.ok { color: var(--ok); }

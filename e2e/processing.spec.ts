@@ -30,7 +30,7 @@ const GROUND_TRUTH = path.join(REPO_ROOT, "fixtures", "audio", "es-short.words.j
 
 const PILL = "[data-pointcast-ui] .pill";
 /** What the pill and the popup may say while working: the estimate, or the first model download. */
-const WORKING = /^(Processing… (~\d+:\d\d|almost done)|Downloading the speech model \(first time only\)….*|Saving…)$/;
+const WORKING = /^(Preparing…|Processing… (~\d+:\d\d|almost done)|Downloading the speech model \(first time only\)….*|Saving…)$/;
 
 const AMBER = [227, 116, 0, 255];
 const GREEN = [24, 128, 56, 255];
@@ -80,7 +80,8 @@ test("Stop turns the narration into Markdown on the clipboard, and shows the pro
   const stopToSavedMs = Date.now() - stoppedAt;
   expect(state.error).toBeUndefined();
   expect(state.lastResult).toMatchObject({ copied: true, sessionId: state.lastSessionId });
-  await expect(app.locator(`${PILL}.done`)).toHaveText("✓ Copied — paste it into your agent");
+  // The ✓ is drawn apart from the words (indicator.ts), so the text has no space after it.
+  await expect(app.locator(`${PILL}.done`)).toHaveText("✓Copied · saved to Downloads");
   expect(await badge(popup)).toBe("✓");
   expect(await badgeColor(popup)).toEqual(GREEN);
 
@@ -107,15 +108,19 @@ test("Stop turns the narration into Markdown on the clipboard, and shows the pro
   expect(records.filter((r) => r.kind === "notification")).toEqual([
     {
       kind: "notification",
-      title: "pointcast",
-      message: `Copied — paste it into your agent. Saved to Downloads/pointcast/${sessionId}/`,
+      title: "Pointcast",
+      message: `Copied. Paste it into your agent. Saved to Downloads/pointcast/${sessionId}/`,
     },
   ]);
 
-  // ---- The popup's details: copied, how long it took, Copy again, Show in folder.
+  // ---- The popup's details: copied, where it went, how long the audio is, Copy again, Show in folder.
   await expect(popup.locator("#progress")).toBeHidden();
-  await expect(popup.locator("#message")).toHaveText(`Copied — paste it into your agent. Saved to Downloads/pointcast/${sessionId}/`);
-  await expect(popup.locator("#result-timing")).toHaveText(/^0:1\d of audio processed in \d+:\d\d\.$/);
+  await expect(popup.locator("#message")).toHaveText("Copied. Paste it into your agent.");
+  await expect(popup.locator("#where-label")).toHaveText("Saved to Downloads › pointcast");
+  await expect(popup.locator("#where-path")).toHaveText(sessionId);
+  await expect(popup.locator("#where-path")).toHaveAttribute("title", `Downloads/pointcast/${sessionId}/`);
+  await expect(popup.locator("#result-meta")).toHaveText(/^0:1\d of audio · 2 events$/);
+  await expect(popup.locator("#warning")).toBeHidden();
   await popup.locator("#copy-again").click();
   await expect(popup.locator("#copy-again")).toHaveText("Copied ✓");
   await popup.locator("#show-folder").click();

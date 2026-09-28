@@ -9,7 +9,9 @@
 
 export const REDACTED_PERSONAL = "[redacted]";
 
-const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g;
+// Bounded by the address limits (64 before the @, 63 per domain label, at most 10 labels) so a long
+// run of address characters with no @ cannot make the search quadratic (CodeQL js/polynomial-redos).
+const EMAIL = /[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9-]{1,63}(?:\.[A-Za-z0-9-]{1,63}){0,10}\.[A-Za-z]{2,24}/g;
 
 /** Two letters, two check digits, then 11–30 letters/digits, optionally grouped by spaces. */
 const IBAN = /\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]){11,30}\b/g;

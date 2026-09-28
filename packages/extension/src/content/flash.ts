@@ -3,22 +3,28 @@ import { UI_ATTRIBUTE } from "@pointcast/core";
 /** Long enough to notice while talking, short enough not to hide the app's own reaction. */
 export const FLASH_MS = 400;
 
-/** Outline + faint fill; the red matches the REC badge so both read as "pointcast". */
+/**
+ * A double ring, brand violet inside white, with a faint violet fill. Violet so a capture never
+ * reads as an error (red is the REC dot and failures); the white ring keeps it visible on a red
+ * or dark element, where a single violet outline would disappear. The white is a box-shadow
+ * under the outline: white 0–1 px, violet 1–3 px, white 3–4 px outside the element.
+ */
 const FLASH_STYLE: Record<string, string> = {
   position: "fixed",
   "box-sizing": "border-box",
   margin: "0",
   padding: "0",
   border: "0",
-  outline: "2px solid #ea4335",
+  outline: "2px solid #7c3aed",
   "outline-offset": "1px",
+  "box-shadow": "0 0 0 4px #fff",
   "border-radius": "3px",
-  background: "rgba(234, 67, 53, 0.12)",
+  background: "rgba(124, 58, 237, 0.12)",
   "pointer-events": "none",
   "z-index": "2147483647",
 };
 
-/** Undo: a grey dashed outline, so "removed" never reads as "captured" (red). */
+/** Undo: a grey dashed outline, so "removed" never reads as "captured" (violet). */
 const UNDONE_STYLE: Record<string, string> = {
   outline: "2px dashed #5f6368",
   background: "rgba(95, 99, 104, 0.15)",
@@ -47,9 +53,14 @@ export function flashElement(target: Element, durationMs: number = FLASH_MS, und
   doc.documentElement.append(overlay);
 
   // Fading is cosmetic (jsdom has no Web Animations); removal is what must always happen,
-  // so it is driven by a timer rather than by the animation's finish event.
-  if (typeof overlay.animate === "function") {
+  // so it is driven by a timer rather than by the animation's finish event. With reduced motion
+  // the ring simply appears and disappears.
+  if (typeof overlay.animate === "function" && !prefersReducedMotion(doc)) {
     overlay.animate([{ opacity: 1 }, { opacity: 1, offset: 0.6 }, { opacity: 0 }], { duration: durationMs, fill: "forwards" });
   }
   setTimeout(() => overlay.remove(), durationMs);
+}
+
+function prefersReducedMotion(doc: Document): boolean {
+  return doc.defaultView?.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 }

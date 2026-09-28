@@ -164,12 +164,24 @@ describe("processSession", () => {
     const result = await processSession(job({ warnings: ["The microphone stopped by itself."] }), d);
     expect(names(result.files)).toEqual(["session.json", "audio.wav"]);
     expect((await json<SessionFile>(result.files, "session.json")).audio?.file).toBe("audio.wav");
-    expect(result.error).toBe(
-      "Could not transcribe: Transcription took too long and was stopped. The events and the audio were saved in the " +
-        'session folder, so "pointcast process" can finish it. The microphone stopped by itself.',
-    );
+    expect(result.error).toBe("Transcription took too long and was stopped: try a shorter recording. Your events and audio are saved.");
+    expect(result.errorDetail).toMatch(/^Transcription took too long and was stopped\.\n.*"pointcast process" can transcribe it/);
+    // Kept apart from the error: the error line is the one thing to act on.
+    expect(result.warning).toBe("The microphone stopped by itself.");
     expect(result.markdown).toBeUndefined();
     expect(d.copy).not.toHaveBeenCalled();
+  });
+
+  it("turns a model download failure into a sentence that says what to do, keeping the raw text as the detail", async () => {
+    const raw = 'Could not locate file: "https://huggingface.co/Xenova/whisper-base/resolve/main/config.json".';
+    const d: ProcessorDeps = { transcribe: async () => Promise.reject(new Error(raw)), copy: vi.fn() };
+    const result = await processSession(job(), d);
+    expect(result.error).toBe(
+      "Could not download the speech model: check your internet connection, then record again. Your events and audio are saved.",
+    );
+    expect(result.error).not.toContain("http");
+    expect(result.errorDetail?.startsWith(raw)).toBe(true);
+    expect(result.warning).toBeUndefined();
   });
 
   it("keeps the events and the raw recording when the audio could not be decoded", async () => {
@@ -178,7 +190,8 @@ describe("processSession", () => {
     const result = await processSession(job({ audio: { decoded: false, raw, durationMs: 4_000, error: "Unable to decode" } }), d);
     expect(names(result.files)).toEqual(["session.json", "audio.webm"]);
     expect(await result.files[1]?.blob.text()).toBe("webm bytes");
-    expect(result.error).toMatch(/could not be converted \(Unable to decode\).*ffmpeg -i audio\.webm/);
+    expect(result.error).toBe("The audio could not be converted, so nothing was transcribed. Your events and the raw recording are saved.");
+    expect(result.errorDetail).toMatch(/^Unable to decode\n.*ffmpeg -i audio\.webm/);
     expect((await json<SessionFile>(result.files, "session.json")).events).toHaveLength(1);
     expect(d.transcribe).not.toHaveBeenCalled();
   });

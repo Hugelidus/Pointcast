@@ -101,6 +101,8 @@ export interface ProcessingResult {
   language?: string;
   /** Transcription failed; the session and its audio were still saved. */
   error?: string;
+  /** The raw text behind `error`, for the popup's "Details" (processing/failure.ts). */
+  errorDetail?: string;
   /** Worked, with something the user should know (audio problems, a language fallback, no copy). */
   warning?: string;
   /**

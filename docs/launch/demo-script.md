@@ -1,20 +1,27 @@
-# Demo GIF storyboard (~25 s)
+# Demo GIF storyboard (~30 s)
 
-Purpose: show the whole loop — record, talk + point, stop, paste — in one glance, for the top of the README. Silent GIF (no audio track), captions carry the narration.
+Purpose: show the whole loop — record, talk + point at two elements, stop, and Claude Code applying it with `/pointcast` — in one glance, for the top of the README. Silent GIF (no audio track), captions carry the narration.
 
-Recording setup: playground app (`pnpm playground`, http://localhost:5500), Chrome at 1280×800, extension popup pinned to the toolbar. Record at 2x speed where noted so the whole thing reads in ~25 s; cut dead air.
+Why the React example and not the playground: what sets Pointcast apart is voice + several elements + **the line of code behind each one**. The playground is static HTML, so its spec has no code lines; `examples/react-dashboard` is a Vite dev build of React 19, so the spec leads with `text at: src/…:line`, and it has the ambiguity pointing removes (two «View report» links, two «Export» buttons; see its [SCENARIOS.md](../../examples/react-dashboard/SCENARIOS.md), scenarios 1 and 3).
+
+Recording setup:
+
+- `pnpm example:react` (http://127.0.0.1:5174), Chrome at 1280×800, extension popup pinned to the toolbar.
+- Claude Code with the plugin installed (`claude plugin marketplace add Hugelidus/pointcast`, `claude plugin install pointcast@pointcast`), started in `examples/react-dashboard`, so the MCP server resolves the code lines in that folder and receives the recording directly (no downloads).
+- Make one short recording beforehand, off camera, so the speech model is already downloaded and Stop takes seconds. Record at 2x speed where noted so the whole thing reads in ~30 s; cut dead air.
 
 | Time | Screen | Action | Caption (burned in) |
 |---|---|---|---|
-| 0:00–0:02 | Playground app, orders table visible | Click the pointcast toolbar icon; popup opens | — |
+| 0:00–0:02 | Dashboard, Revenue and Orders cards and the Orders table visible | Click the Pointcast toolbar icon; popup opens | — |
 | 0:02–0:04 | Popup | Click **Record** | "1. Press Record" |
-| 0:04–0:05 | Page | REC pill appears top-right | — |
-| 0:05–0:10 | Page | Alt+click the "Quantity" column header (cursor visibly holds Alt); say (caption only) "This should be sortable by quantity" | "2. Alt+click what you mean, and say it" |
-| 0:10–0:14 | Page | Select the word "Export" on the toolbar button; say (caption) "And this should only export the filtered rows" | — |
-| 0:14–0:16 | Popup or page pill | Click **Stop** (or show Alt+Shift+S) | "3. Press Stop" |
-| 0:16–0:20 | Page pill | *Processing… ~0:05* progress bar fills, then *✓ Copied* | "Transcribed locally, in the browser" |
-| 0:20–0:25 | Split screen or cut to Claude Code / Cursor | Paste (Ctrl+V) into the agent's prompt box; show the rendered Markdown with `[a]`/`[b]` markers matching the two requests | "4. Paste it into your agent" |
+| 0:04–0:05 | Page | REC pill appears in the corner | — |
+| 0:05–0:10 | Page | Alt+click «View report» on the **Revenue** card (cursor visibly holds Alt); say (caption only) "This should take you to the reports page" | "2. Alt+click what you mean, and say it" |
+| 0:10–0:15 | Page | Alt+click **Export** above the Orders table; say (caption) "And this button should export the order status too" | — |
+| 0:15–0:17 | Page | Press Alt+Shift+S (show the keys) | "3. Press Stop" |
+| 0:17–0:20 | Page pill | *Processing…* progress bar fills, then *✓ Copied* (2x speed) | "Transcribed locally, in the browser" |
+| 0:20–0:24 | Cut to Claude Code | Type `/pointcast` and Enter; the tool call fetches the latest recording | "4. /pointcast in Claude Code" |
+| 0:24–0:30 | Claude Code | Show the two requests with `text at: src/pages/Dashboard.tsx:11` and `text at: src/components/OrdersTable.tsx:22`, then the agent's edit to those two files (2x speed; cut before the full diff) | "The exact elements, and the lines behind them" |
 
-Export: GIF, ≤ 8 MB, ≤ 900 px wide (GitHub renders README images at that width), 12–15 fps is enough for a screen-recording GIF and keeps the file small. Save to `docs/launch/demo.gif` and swap the placeholder path in `README.md`.
+Export: GIF or animated WebP, ≤ 8 MB, ≤ 900 px wide (GitHub renders README images at that width), 12–15 fps is enough for a screen recording and keeps the file small. An MP4 uploaded as a GitHub attachment plays inline too and weighs less. Save to `docs/launch/demo.gif` and replace the `promo-marquee.png` banner at the top of `README.md` with it.
 
-Do NOT record real personal data, a real password, or a real third-party site — use the playground pages in this repo, which are synthetic fixtures.
+Do NOT record real personal data, a real password, or a real third-party site: use the example dashboard in this repository, whose data is synthetic. Keep the Settings tab (password and API key fields) off camera anyway, and close other terminal tabs and editor panes that could show paths or names.

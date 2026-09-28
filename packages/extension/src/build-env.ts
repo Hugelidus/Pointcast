@@ -5,7 +5,7 @@ import { HANDOFF_PORT as DEFAULT_HANDOFF_PORT } from "@pointcast/core";
  * (`wxt build --mode e2e`, which reads `.env.e2e` and writes .output/chrome-mv3-e2e).
  *
  * The e2e build must never touch the machine it runs on: no real clipboard write, no real
- * notification, no file manager window, and no 291 MB model download from Hugging Face. Those
+ * notification, no file manager window, and no 294 MB model download from Hugging Face. Those
  * few side effects check IS_E2E and record what they would have done instead (e2e-record.ts).
  */
 export const IS_E2E = import.meta.env.MODE === "e2e";

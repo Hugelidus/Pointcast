@@ -13,8 +13,8 @@ import { startFromPopup, stopFromPopup } from "./support/recorder";
  */
 
 const NOT_LOCAL =
-  /^This tab is not captured: pointcast only runs on local dev hosts \(localhost, .*\), not on file:\/\/ pages or remote sites\.$/;
-const UNAVAILABLE = /^This tab is not captured: pointcast could not attach to it \(.+\)\. Reload the page\.$/;
+  /^This tab is not captured: Pointcast runs on local dev hosts \(localhost, .*\) and on sites you enable, not on file:\/\/ pages\.$/;
+const UNAVAILABLE = /^This tab is not captured: Pointcast could not attach to it \(.+\)\. Reload the page\.$/;
 
 async function openPopupFor(context: BrowserContext, extensionId: string, tabId: number): Promise<Page> {
   const popup = await context.newPage();

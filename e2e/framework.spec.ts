@@ -71,11 +71,11 @@ test("framework dev data set by the page's own scripts (Vue, Svelte, React) land
   await expect(app.locator(INDICATOR)).toBeVisible();
   // A header cell inside the table: the bridge walks up to the element that has the component.
   await app.getByRole("columnheader", { name: "Quantity" }).click({ modifiers: ["Alt"] });
-  await expect(popup.locator("#last-event")).toHaveText("Last: th «Quantity» · Alt+click");
+  await expect(popup.locator("#last-event")).toHaveText("Last: column header “Quantity”");
   await app.locator("#export-btn").click({ modifiers: ["Alt"] });
-  await expect(popup.locator("#last-event")).toHaveText("Last: button «Export» · Alt+click");
+  await expect(popup.locator("#last-event")).toHaveText("Last: button “Export”");
   await app.getByRole("button", { name: "Print" }).click({ modifiers: ["Alt"] });
-  await expect(popup.locator("#last-event")).toHaveText("Last: button «Print» · Alt+click");
+  await expect(popup.locator("#last-event")).toHaveText("Last: button “Print”");
   const { sessionId } = await stopFromPopup(popup);
 
   const { session } = await readSavedSession(popup, downloadsDir, sessionId);

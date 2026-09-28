@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { Page } from "@playwright/test";
 import type { SessionFile } from "../packages/core/src/schema";
+import { ERROR_VISIBLE_MS } from "../packages/extension/src/processing/progress";
 import {
   contentScriptWorlds,
   countContentScriptStarts,
@@ -92,9 +93,11 @@ test("a tab left open across an extension reload is captured", async ({ context,
   expect.soft(summary(session), "events in session.json").toEqual([`point button «Delete» ${APP_URL}`]);
   // One new copy, injected once: not again when the recording started.
   expect.soft(await starts(), "content script copies started after the reload").toBe(1);
-  // REC ends with the recording; the pill then shows "✓ Copied" for a few seconds and goes away.
+  // REC ends with the recording; the pill then shows the outcome for a few seconds and goes away.
+  // A recording this short is often "not sure which language" (a warning), which stays
+  // ERROR_VISIBLE_MS after it was saved rather than the 5 s of a plain "✓ Copied".
   await expect(app.locator(INDICATOR)).toHaveCount(0);
-  await expect(app.locator(INDICATOR_HOST)).toHaveCount(0, { timeout: 10_000 });
+  await expect(app.locator(INDICATOR_HOST)).toHaveCount(0, { timeout: ERROR_VISIBLE_MS + 5_000 });
 });
 
 test("a tab left open while the extension was disabled and enabled again is attached when recording starts", async ({

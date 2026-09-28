@@ -1,3 +1,4 @@
+import { readableEvent } from "../event-words";
 import type { UndoneEvent } from "../recorder-state";
 
 export interface UndoFeedbackDependencies {
@@ -40,7 +41,10 @@ export function createUndoFeedback(deps: UndoFeedbackDependencies): UndoFeedback
       // The id is free again: the next gesture reuses it (offscreen/event-log.ts).
       targets.delete(id);
       if (target?.isConnected) deps.flash(target);
-      if (target || deps.isVisible()) deps.notice(`Undone: ${summary}`);
+      if (target || deps.isVisible()) deps.notice(`Undone: ${readableSummary(summary)}`);
     },
   };
 }
+
+/** The recorder's summary in plain words for the pill (event-words.ts), the same as the popup's. */
+export const readableSummary = readableEvent;

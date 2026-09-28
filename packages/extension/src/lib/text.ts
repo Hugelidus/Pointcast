@@ -40,7 +40,7 @@ export function isInsideFormValue(el: Element): boolean {
   return false;
 }
 
-/** Inline boundaries do not separate words; adjacent element siblings are handled by visibleText. */
+/** Inline elements do not separate words unless layout sets them apart (laidOutApart); every other boundary does. */
 export const INLINE_TAGS: ReadonlySet<string> = new Set([
   "a", "abbr", "b", "bdi", "bdo", "cite", "code", "data", "dfn", "em", "i", "kbd", "mark", "q",
   "s", "samp", "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr",
@@ -84,6 +84,25 @@ export function isTextOpaque(el: Element, options: SensitivityOptions): boolean 
   );
 }
 
+/** The computed `display` of an element, or "" where there is no layout (a detached node). */
+function displayOf(el: Element): string {
+  const view = el.ownerDocument.defaultView;
+  return view ? view.getComputedStyle(el).display : "";
+}
+
+/**
+ * Whether two adjacent sibling elements are laid out apart on screen, so their texts need a space
+ * between them: `<span>Sem 2</span><span>26 oct</span>` as flex items reads "Sem 2 26 oct", but
+ * `<span>$</span><span>45</span>` in a line of text still reads "$45".
+ */
+function laidOutApart(parent: Element, previous: Element, next: Element): boolean {
+  // Flex and grid items are blockified whatever their own display says.
+  if (/^(inline-)?(flex|grid)$/.test(displayOf(parent))) return true;
+  // No layout (""): keep them together, as before; `contents` flows like inline.
+  const flows = (display: string): boolean => display === "" || display === "inline" || display === "contents";
+  return !flows(displayOf(previous)) || !flows(displayOf(next));
+}
+
 /**
  * Visible text of `root`, whitespace-collapsed and cut to `max` characters.
  * Walks the DOM instead of using innerText so it can skip sensitive subtrees and form
@@ -111,11 +130,13 @@ export function visibleText(root: Element, options: SensitivityOptions, max: num
     }
     const separated = !INLINE_TAGS.has(el.localName);
     if (separated) pieces.push(" ");
-    let previousWasElement = false;
+    let previous: Element | undefined;
     for (const child of Array.from(el.childNodes)) {
-      if (previousWasElement && child.nodeType === ELEMENT_NODE) pieces.push(" ");
+      if (previous !== undefined && child.nodeType === ELEMENT_NODE && laidOutApart(el, previous, child as Element)) {
+        pieces.push(" ");
+      }
       visit(child);
-      previousWasElement = child.nodeType === ELEMENT_NODE;
+      previous = child.nodeType === ELEMENT_NODE ? (child as Element) : undefined;
     }
     if (separated) pieces.push(" ");
   };

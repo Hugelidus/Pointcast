@@ -43,12 +43,13 @@ describe("Claude Code and Codex plugin", () => {
     expect(manifest.description).toBeTruthy();
   });
 
-  it("starts this CLI's MCP server through npx, pinned to this minor version", () => {
+  it("starts this CLI's MCP server through npx, pinned to this exact version", () => {
     const servers = Object.keys(mcp.mcpServers);
     expect(servers).toEqual(["pointcast"]);
     // npx reuses a cached copy of an unversioned package forever, so plugin users would never get
-    // a new release. An x-range such as 0.2 has no ^ or >, which cmd.exe would mangle on Windows.
-    expect(mcp.mcpServers.pointcast).toEqual({ command: "npx", args: ["-y", `pointcast@${minor(VERSION)}`, "mcp"] });
+    // a new release. The exact version is what the Claude plugin directory requires: the package it
+    // reviews is the one that runs.
+    expect(mcp.mcpServers.pointcast).toEqual({ command: "npx", args: ["-y", `pointcast@${VERSION}`, "mcp"] });
     // Claude Code and Codex only reinstall a plugin whose version changed: a new pin needs one.
     expect(minor(manifest.version)).toBe(minor(VERSION));
   });

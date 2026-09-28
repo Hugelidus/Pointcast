@@ -424,7 +424,7 @@ The agent never runs `querySelector`; it greps the codebase. So each event carri
 
 **The MCP process now also writes.** The receiver runs inside `pointcast mcp`, but its tools stay read-only (annotated `readOnlyHint`). It logs to stderr only, since stdout is the MCP channel, and does not log refusals, so web pages cannot flood the agent's log. A bug in it is contained: an isolated module, started inside try/catch, `unref`'d, with caps and `--no-handoff`.
 
-**Pinned plugin versions.** `npx` reuses a cached copy for an unversioned `pointcast`, so plugin users would have stayed on 0.1.0, which has no receiver. The Claude Code and Codex plugin and the Gemini CLI extension start `pointcast@0.2` (an x-range without `^` or `>`, which `cmd.exe` would mangle), bumped with each minor release (CONTRIBUTING).
+**Pinned plugin versions.** `npx` reuses a cached copy for an unversioned `pointcast`, so plugin users would have stayed on 0.1.0, which has no receiver. The Claude Code and Codex plugin and the Gemini CLI extension start the CLI's exact version, `pointcast@0.2.0`, bumped with each CLI release (CONTRIBUTING). Note 2026-09-28: first an x-range (`pointcast@0.2`), changed to an exact version because the Claude plugin directory requires one, so the package it reviews is the one that runs.
 
 **Tests.** The e2e build hands off to port 5542, never 20547, so the user's real server and real extension never meet the tests. `e2e/handoff.spec.ts` runs the real CLI, and checks that web pages (no-cors, beacon, custom headers) cannot inject a session.
 

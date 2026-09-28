@@ -4,6 +4,7 @@ import { IS_E2E } from "../../build-env";
 import { copyFromPopup } from "../../clipboard";
 import { openPermissionPage } from "../../background/permission-page";
 import { isLocalDevUrl } from "../../hosts";
+import { isMac } from "../../platform";
 import { sendMessage, type TabCapture } from "../../messages";
 import {
   firstRunNotice,
@@ -271,7 +272,7 @@ function render(): void {
   modeEl.hidden = !mode.visible;
   modeEl.disabled = !mode.enabled;
   for (const input of modeInputs) input.checked = input.value === mode.value;
-  pointingEl.textContent = pointingHint(mode.value);
+  pointingEl.textContent = pointingHint(mode.value, isMac());
 
   toggleEl.textContent = view.button.text;
   toggleEl.className = view.button.kind;

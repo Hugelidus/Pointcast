@@ -1,0 +1,2 @@
+A plain text file. Chrome downloads it when a link to it is Alt+clicked (Option+clicked on macOS)
+outside a recording; while recording, pointcast cancels that click (dev/e2e/alt-click-defaults.spec.ts).

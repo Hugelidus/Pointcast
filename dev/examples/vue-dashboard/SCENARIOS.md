@@ -66,6 +66,7 @@ identifica es que es el de Messages.
 - [a] «3» → code:
   - used at: `src/App.vue` — `<Sidebar>`
   - data at: `src/data/nav.ts:18` — `{ id: "messages", label: "Messages", href: "/messages", badge: 3 },`
+  - shown by: `src/components/Sidebar.vue:22` — `<span v-if="item.badge !== undefined" class="badge">{{ item.badge }}</span>`
   - on screen: span «3» next to «Messages» in «Main» on `/`
 ```
 
@@ -75,6 +76,9 @@ identifica es que es el de Messages.
 - **`data at: src/data/nav.ts:18`** — la entrada de Messages. Sale de buscar «Messages» en
   `Sidebar.vue` (su `component.file`) y en los datos que importa, y tomar la línea de esa entrada
   donde está el `3`.
+- `shown by: src/components/Sidebar.vue:22` — la línea que **muestra** ese valor (`{{ item.badge }}`,
+  la clave `badge` de la entrada). Es la que hay que tocar para cambiar cómo se ve la insignia, no
+  cuánto vale.
 - Si haces Alt+clic en el resto del ítem (el enlace, no la insignia), sale la misma línea `data at`,
   esta vez por su `href`.
 
@@ -114,7 +118,10 @@ pedido" — con dos "Export" en la app, no dice cuál.
 
 - Tabla: `#orders-table` (`src/components/OrdersTable.vue`). Una celda con un valor corto, como el
   total «$128.00», sale `next to «A-1042»` (su fila, por la primera celda) y `text at:
-  src/components/OrdersTable.vue:10`, la fila de `ORDERS`.
+  src/components/OrdersTable.vue:10`, la fila de `ORDERS`, más `shown by:
+  src/components/OrdersTable.vue:36`, el `<td>{{ order.total }}</td>` que la muestra. Un nombre, como
+  «Marco Peña», sale `text at: src/components/OrdersTable.vue:11` y `shown by:
+  src/components/OrdersTable.vue:35` (`<td>{{ order.customer }}</td>`).
 - Formulario con campo sensible: `src/components/SettingsForm.vue` (pestaña Settings) — "New
   password" (`type="password"`) y "Store API key" (`data-sensitive`) nunca se capturan.
 - Gráfico de barras (SVG propio, sin librería): `src/components/SalesChart.vue`.

@@ -124,7 +124,8 @@ describe("code pointer rendering", () => {
   it("renders the Stage 0 chain and the resolved lines in the dom-first layout, as before snippets existed", async () => {
     const resolved = await resolveSession(FLOWBITE_SESSION, memoryReader(FLOWBITE), "repo");
     const md = renderMarkdown(resolved, FLOWBITE_WORDS, { format: "requests", layout: "dom-first" });
-    // Unchanged since the code pointer was built: the snapshot file predates the code-first layout.
+    // Unchanged since the code pointer was built (the snapshot file predates the code-first layout),
+    // except for one added `shown by:` line (D9 note 2026-09-28): «Top customers» is `{tab2Title}`.
     await expect(md).toMatchFileSnapshot("__snapshots__/code-pointer.requests.md");
   });
 
@@ -363,6 +364,8 @@ describe("code-first layout (the requests default)", () => {
       "used at: `src/components/layout/nav-group.tsx:62` — `return <Badge className='rounded-full px-1 py-0 text-xs'>{children}</Badge>`",
       "defined in: `src/components/ui/badge.tsx` (shared — do not change it unless asked)",
       "data at: `src/components/layout/data/sidebar-data.ts:73` — `url: '/chats', badge: '3', icon: MessagesSquare,`",
+      // `badge: '3'` is rendered by `{item.badge}` once in nav-group.tsx (`{item.badge && …}` is no rendering).
+      "shown by: `src/components/layout/nav-group.tsx:77` — `{item.badge && <NavBadge>{item.badge}</NavBadge>}`",
       "within: `<NavGroup>` at `src/components/layout/app-sidebar.tsx:28`",
     ]);
   });
@@ -491,5 +494,34 @@ describe("a Next.js page's own markup (renderedBy: [], D9 note 2026-09-28)", () 
     const { renderedBy: _chain, resolved: _resolved, ...old } = h1;
     expect(codeFirstLines(old)).toEqual([]);
     expect(codePointerLines(old)).toEqual([]);
+  });
+});
+
+describe("shown by (D9 note 2026-09-28)", () => {
+  const cell = el("td", "Marco Peña", {
+    component: { framework: "react", name: "OrdersTable" },
+    renderedBy: [{ component: "OrdersTable", file: "src/pages/Dashboard.tsx" }],
+    resolved: [{ kind: "text", file: "src/components/OrdersTable.tsx", line: 10, via: "repo", snippet: '{ id: "A-1041", customer: "Marco Peña" },' }],
+    shownBy: { key: "customer", file: "src/components/OrdersTable.tsx", line: 38, via: "repo", snippet: "<td>{order.customer}</td>" },
+  });
+
+  it("follows the text/data line in both layouts, with its snippet code-first only", () => {
+    expect(codeFirstLines(cell)).toEqual([
+      "used at: `src/pages/Dashboard.tsx` — `<OrdersTable>`",
+      'text at: `src/components/OrdersTable.tsx:10` — `{ id: "A-1041", customer: "Marco Peña" },`',
+      "shown by: `src/components/OrdersTable.tsx:38` — `<td>{order.customer}</td>`",
+    ]);
+    expect(codePointerLines(cell)).toEqual([
+      "code: `<OrdersTable>` in `src/pages/Dashboard.tsx`",
+      "text at: `src/components/OrdersTable.tsx:10`",
+      "shown by: `src/components/OrdersTable.tsx:38`",
+    ]);
+  });
+
+  it("quotes no source for a sensitive element, and skips a hand-edited shownBy that is no location", () => {
+    expect(codeFirstLines({ ...cell, sensitive: true })).toContain("shown by: `src/components/OrdersTable.tsx:38`");
+    const broken = { ...cell, shownBy: { key: "customer", file: "", line: 0 } } as unknown as ElementInfo;
+    expect(codeFirstLines(broken).some((line) => line.startsWith("shown by"))).toBe(false);
+    expect(codePointerLines(broken).some((line) => line.startsWith("shown by"))).toBe(false);
   });
 });

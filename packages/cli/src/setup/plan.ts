@@ -348,7 +348,7 @@ export const EXTENSION_STEPS = [
   "The Chrome Web Store listing is in review. Meanwhile, download the newest pointcast-<version>-chrome.zip from " +
     `${RELEASES_URL} and unzip it.`,
   "Open chrome://extensions (edge://extensions in Edge), turn on Developer mode, choose Load unpacked and pick the unzipped folder.",
-  "Then record on your app on localhost: press Record, talk (or pick Typed) while you Alt+click things, press Stop.",
+  "Then record on your app on localhost: press Record, talk (or pick Typed) while you Alt+click things (Option+click on macOS), press Stop.",
 ];
 
 export async function planSetup(e: PlanEnvironment): Promise<SetupPlan> {

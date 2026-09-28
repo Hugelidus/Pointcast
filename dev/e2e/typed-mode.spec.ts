@@ -25,7 +25,9 @@ test("typed mode: two notes, one cancelled with Esc, the app never sees the typi
     .toMatchObject({ inputMode: "typed" });
   await popup.reload();
   await expect(popup.locator('#mode input[value="typed"]')).toBeChecked();
-  await expect(popup.locator("#pointing")).toHaveText("Alt+click or select text, then type what should change.");
+  // The key as the keyboard labels it: Chrome maps Alt to Option on macOS (src/platform.ts).
+  const gesture = process.platform === "darwin" ? "⌥ Option+click" : "Alt+click";
+  await expect(popup.locator("#pointing")).toHaveText(`${gesture} or select text, then type what should change.`);
   // No microphone, no speech model: nothing to announce before the first recording.
   await expect(popup.locator("#first-run")).toBeHidden();
 
@@ -176,7 +178,9 @@ test("typed mode: the note box inside dialogs, focus traps and a watching page",
   await app.keyboard.down("Alt");
   await app.mouse.click(inBox.x, inBox.y);
   await app.keyboard.up("Alt");
-  await app.keyboard.press("End");
+  // To the end of the note (the click put the caret inside it). End does that on Windows and Linux
+  // only; macOS moves the caret with ⌘↓, where End merely scrolls.
+  await app.keyboard.press(process.platform === "darwin" ? "Meta+ArrowDown" : "Control+End");
   await app.keyboard.type(" too");
   await expect(box).toHaveCount(1);
   await app.keyboard.press("Enter");

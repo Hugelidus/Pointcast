@@ -21,6 +21,7 @@ Change only the referenced elements, and only as asked. If something is ambiguou
   - find: `#s3` · component `TabItem` (svelte, package `flowbite-svelte`)
   - code: flowbite-svelte `<TabItem>` at `src/lib/Stats.svelte:55` ← `<Stats>` at `src/routes/utils/dashboard/Dashboard.svelte:113` ← `<Dashboard>` at `src/routes/(sidebar)/+page.svelte:14`
   - text at: `src/routes/utils/dashboard/Dashboard.svelte:79`
+  - shown by: `src/lib/Stats.svelte:57`
   - in: `main › ul[role=tablist] › li[role=presentation][2] › button#s3`
   - html: `<button type="button" role="tab" id="s3" aria-controls="tab-panel-s1">Top customers</button>`
 

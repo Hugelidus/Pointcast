@@ -23,6 +23,8 @@ type RunningStatus = "stopped" | "starting" | "running" | "stopping";
  */
 class ServiceWorkerControl {
   readonly #status = new Map<string, RunningStatus>();
+  /** Set when every known version was seen stopped at once, even if a message woke one again right after. */
+  #sawAllStopped = false;
 
   private constructor(readonly cdp: CDPSession) {}
 
@@ -33,6 +35,7 @@ class ServiceWorkerControl {
       for (const v of versions) {
         if (v.scriptURL.startsWith(`chrome-extension://${extensionId}/`)) control.#status.set(v.versionId, v.runningStatus);
       }
+      if (control.status() === "stopped") control.#sawAllStopped = true;
     });
     await cdp.send("ServiceWorker.enable");
     await expect.poll(() => control.status()).toBe("running");
@@ -45,10 +48,16 @@ class ServiceWorkerControl {
     return all.includes("running") ? "running" : all.at(-1);
   }
 
-  /** Same effect as Chrome stopping the idle worker after ~30 s (D6). */
+  /**
+   * Same effect as Chrome stopping the idle worker after ~30 s (D6). Waits until the worker was
+   * seen stopped, not until it still is: while processing, the offscreen document's progress
+   * reports wake a new worker within milliseconds, and on a slow CI runner that can happen before
+   * a poll ever sees "stopped".
+   */
   async stop(): Promise<void> {
+    this.#sawAllStopped = false;
     for (const versionId of this.#status.keys()) await this.cdp.send("ServiceWorker.stopWorker", { versionId });
-    await expect.poll(() => this.status()).toBe("stopped");
+    await expect.poll(() => this.#sawAllStopped).toBe(true);
   }
 }
 

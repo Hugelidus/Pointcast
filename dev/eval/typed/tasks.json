@@ -1,0 +1,208 @@
+{
+  "comment": "Typed-mode evaluation (2026-09-28). One task = one UI change = one typed recording with one gesture and one note. `note` is what the user types into Pointcast's note box (variants B and C); `intent` is what the independent writer of variant A is told the developer wants, next to a screenshot with the element outlined. Ground truth (files/target/lines/wrong, the grade.mjs rules) was fixed before any agent run. `kind` is recorded in the results: repeated = the same label or structure appears more than once; shared = the element is rendered by a shared component or parent template; data = the visible value lives in data, a view or a locale file, not in the markup; plain = none of these.",
+  "apps": {
+    "shadcn-admin": { "server": "vite" },
+    "vuestic-admin": { "server": "vite" },
+    "flowbite-svelte-admin": { "server": "vite" },
+    "locallibrary": {
+      "server": "django",
+      "repo": "https://github.com/mdn/django-locallibrary-tutorial",
+      "commit": "92f1c1e7bdd4ada5209a3c69876ce29e6cee3d96",
+      "license": "CC0-1.0",
+      "port": 5545
+    }
+  },
+  "tasks": [
+    {
+      "app": "shadcn-admin", "id": "overview-title", "kind": ["repeated"], "path": "/",
+      "gesture": "point", "target": "[data-slot=\"card-title\"]:text-is(\"Overview\")",
+      "note": "Que ponga «Monthly revenue»",
+      "intent": "the title of the outlined card should read \"Monthly revenue\" instead of what it says now",
+      "truth": {
+        "summary": "The Overview card's CardTitle (index.tsx:165), not the Overview tab trigger (:48) nor the top nav item (:195).",
+        "files": ["src/features/dashboard/index.tsx"], "lines": [163, 170],
+        "target": "cardtitle|card title|titulo de la tarjeta",
+        "wrong": "tabstrigger|topnav|dashboard/overview"
+      }
+    },
+    {
+      "app": "shadcn-admin", "id": "users-nav", "kind": ["data", "shared"], "path": "/",
+      "gesture": "point", "target": "a[href=\"/users\"] >> nth=0",
+      "note": "Renómbralo a «Team»",
+      "intent": "the outlined sidebar link should be called \"Team\"",
+      "truth": {
+        "summary": "The Users entry of the sidebar data (sidebar-data.ts:77), not the shared nav-group.tsx / app-sidebar.tsx.",
+        "files": ["src/components/layout/data/sidebar-data.ts"], "lines": [76, 79],
+        "target": "users|title",
+        "wrong": "nav-group|app-sidebar"
+      }
+    },
+    {
+      "app": "shadcn-admin", "id": "refund-amount", "kind": ["repeated"], "path": "/",
+      "gesture": "point", "target": "div.font-medium:text-is(\"+$39.00\")",
+      "note": "Este importe en rojo, es un reembolso",
+      "intent": "the outlined amount should be shown in red because it is a refund",
+      "truth": {
+        "summary": "Jackson Lee's +$39.00 in recent-sales.tsx:33, not the other rows (Sofia Davis's row, :78, shows the same +$39.00). Tightened after the audit, before the results were written: the pre-registered target was \"39|jackson\", which accepted an item for Sofia Davis's row.",
+        "files": ["src/features/dashboard/components/recent-sales.tsx"], "lines": [33, 33],
+        "target": "jackson",
+        "wrong": "1,999|299|olivia|isabella|william|sofia"
+      }
+    },
+    {
+      "app": "shadcn-admin", "id": "download-green", "kind": ["shared"], "path": "/",
+      "gesture": "point", "target": "button:has-text(\"Download\")",
+      "note": "Este botón en verde",
+      "intent": "the outlined button should be green",
+      "truth": {
+        "summary": "The Download <Button> instance at index.tsx:38, not the shared button.tsx variants.",
+        "files": ["src/features/dashboard/index.tsx"], "lines": [38, 38],
+        "target": "download",
+        "wrong": "button\\.tsx|buttonvariants"
+      }
+    },
+    {
+      "app": "vuestic-admin", "id": "export-regions", "kind": ["repeated"], "path": "/dashboard",
+      "gesture": "point", "target": ".va-card:has-text(\"Revenue by Top Regions\") button:has-text(\"Export\")",
+      "note": "Que ponga «Descargar CSV»",
+      "intent": "the outlined button should say \"Descargar CSV\"",
+      "truth": {
+        "summary": "The Export button of Revenue by Top Regions (RegionRevenue.vue:10), not the Revenue Report one (RevenueReport.vue:7).",
+        "files": ["src/pages/admin/dashboard/cards/RegionRevenue.vue"], "lines": [10, 10],
+        "target": "export",
+        "wrong": "revenuereport"
+      }
+    },
+    {
+      "app": "vuestic-admin", "id": "ongoing-value", "kind": ["data", "repeated"], "path": "/dashboard",
+      "gesture": "point", "target": ".va-card:has(p:text-is(\"Ongoing project\")) div.text-lg",
+      "note": "Este número debería ser 18",
+      "intent": "the outlined number should be 18",
+      "truth": {
+        "summary": "value: '15' of the ongoingProjects metric in DataSection.vue:52, not the shared DataSectionItem.vue.",
+        "files": ["src/pages/admin/dashboard/DataSection.vue"], "lines": [50, 58],
+        "target": "ongoing|15",
+        "wrong": "datasectionitem"
+      }
+    },
+    {
+      "app": "vuestic-admin", "id": "menu-projects", "kind": ["data", "repeated"], "path": "/dashboard",
+      "gesture": "point", "target": ".va-sidebar a:has-text(\"Projects\") >> nth=0",
+      "note": "Renómbralo a «Portfolio»",
+      "intent": "the outlined sidebar item should be called \"Portfolio\"",
+      "truth": {
+        "summary": "menu.projects in the locale file (gb.json:57), not messages.projects (:84), NavigationRoutes.ts or the Projects card.",
+        "files": ["src/i18n/locales/gb.json", "src/i18n/locales/es.json", "src/i18n/locales/br.json", "src/i18n/locales/cn.json", "src/i18n/locales/ir.json"],
+        "lines": [57, 57],
+        "target": "menu",
+        "wrong": "navigationroutes|appsidebar|projecttable|messages\\.projects"
+      }
+    },
+    {
+      "app": "vuestic-admin", "id": "expense-label", "kind": ["plain"], "path": "/dashboard",
+      "gesture": "select", "target": "span:text-is(\"Expense this month\")",
+      "note": "Que ponga «Expenses this month»",
+      "intent": "the selected label should say \"Expenses this month\"",
+      "truth": {
+        "summary": "RevenueReport.vue:27.",
+        "files": ["src/pages/admin/dashboard/cards/RevenueReport.vue"], "lines": [27, 27],
+        "target": "expense"
+      }
+    },
+    {
+      "app": "flowbite-svelte-admin", "id": "since-new-products", "kind": ["repeated", "shared"], "path": "/",
+      "gesture": "point", "target": "div:has(> div > h5:text-is(\"New products\")) span:text-is(\"Since last month\")",
+      "note": "Solo en esta tarjeta: que ponga «vs. mes anterior»",
+      "intent": "in the outlined card only, the text \"Since last month\" should say \"vs. mes anterior\"",
+      "truth": {
+        "summary": "The since prop of the New products ProductMetricCard (Dashboard.svelte:121), not the other three (127, 133, 158), not Change.svelte nor the api-check example.",
+        "files": ["src/routes/utils/dashboard/Dashboard.svelte"], "lines": [121, 121],
+        "target": "new products",
+        "wrong": "change\\.svelte|productmetriccard\\.svelte|productmetriccardex"
+      }
+    },
+    {
+      "app": "flowbite-svelte-admin", "id": "tablet-16k", "kind": ["data", "shared"], "path": "/",
+      "gesture": "point", "target": "text=\"16k\"",
+      "note": "Esto debería ser 18k",
+      "intent": "the outlined value should be 18k",
+      "truth": {
+        "summary": "subtitle: '16k' of the Tablet device in Dashboard.svelte:101, not SmallPanel.svelte or Traffic.svelte.",
+        "files": ["src/routes/utils/dashboard/Dashboard.svelte"], "lines": [99, 106],
+        "target": "tablet|16k",
+        "wrong": "smallpanel|traffic\\.svelte"
+      }
+    },
+    {
+      "app": "flowbite-svelte-admin", "id": "stats-title", "kind": ["data", "shared"], "path": "/",
+      "gesture": "select", "target": "text=\"Statistics this month\"",
+      "note": "Que ponga «Estadísticas del mes»",
+      "intent": "the selected card title should say \"Estadísticas del mes\"",
+      "truth": {
+        "summary": "statsCont.title in Dashboard.svelte:76, not Stats.svelte nor the api-check StatsEx.svelte.",
+        "files": ["src/routes/utils/dashboard/Dashboard.svelte"], "lines": [75, 77],
+        "target": "statistics|statscont",
+        "wrong": "stats\\.svelte|statsex"
+      }
+    },
+    {
+      "app": "flowbite-svelte-admin", "id": "sales-report-link", "kind": ["repeated", "shared"], "path": "/",
+      "gesture": "point", "target": "a:has-text(\"Sales Report\") >> nth=0",
+      "note": "Que ponga «Ver informe completo»",
+      "intent": "the outlined link should say \"Ver informe completo\"",
+      "truth": {
+        "summary": "The More instance in ChartWidget.svelte:27 (the sales card), not More.svelte, the Full Report link or CategorySalesReport.",
+        "files": ["src/lib/ChartWidget.svelte"],
+        "target": "sales report|more|chartwidget",
+        "wrong": "more\\.svelte|stats|full report|read more|categorysalesreport"
+      }
+    },
+    {
+      "app": "locallibrary", "id": "status-bold", "kind": ["data", "repeated"], "path": "/catalog/book/1",
+      "gesture": "point", "target": "p.text-success >> nth=0",
+      "note": "El estado de cada ejemplar en negrita",
+      "intent": "the copy status shown in the outlined line (and in the other copies of this book) should be bold",
+      "truth": {
+        "summary": "The status <p> in book_detail.html:18, not the LOAN_STATUS choices, bookinstance_detail/list or a shared CSS rule.",
+        "files": ["catalog/templates/catalog/book_detail.html"], "lines": [18, 18],
+        "target": "status",
+        "wrong": "models\\.py|bookinstance_detail|bookinstance_list|styles\\.css"
+      }
+    },
+    {
+      "app": "locallibrary", "id": "imprint-label", "kind": ["repeated"], "path": "/catalog/book/1",
+      "gesture": "select", "target": "strong:text-is(\"Imprint:\") >> nth=0",
+      "note": "Que ponga «Edition:»",
+      "intent": "the selected label should say \"Edition:\" on this page",
+      "truth": {
+        "summary": "The Imprint label in book_detail.html:20, not bookinstance_detail.html:9 or book_confirm_delete.html:12.",
+        "files": ["catalog/templates/catalog/book_detail.html"], "lines": [20, 20],
+        "target": "imprint",
+        "wrong": "bookinstance_detail|book_confirm_delete|models\\.py"
+      }
+    },
+    {
+      "app": "locallibrary", "id": "authors-count", "kind": ["data"], "path": "/catalog/",
+      "gesture": "point", "target": "li:has(strong:text-is(\"Authors:\"))",
+      "note": "Este número debería contar solo los autores que tienen algún libro",
+      "intent": "the outlined count should only count authors that have at least one book",
+      "truth": {
+        "summary": "num_authors in the index view (views.py:15); the template only prints it.",
+        "files": ["catalog/views.py"], "lines": [15, 15],
+        "target": "num_authors|author"
+      }
+    },
+    {
+      "app": "locallibrary", "id": "sidebar-genres", "kind": ["shared"], "path": "/catalog/book/1",
+      "gesture": "point", "target": "a:text-is(\"All genres\")",
+      "note": "Quita este enlace del menú",
+      "intent": "the outlined link should be removed from the sidebar menu",
+      "truth": {
+        "summary": "The All genres <li> in base_generic.html:25 (the parent template's sidebar block, shown on the book page through block.super), not book_detail.html.",
+        "files": ["catalog/templates/base_generic.html"], "lines": [25, 25],
+        "target": "genres",
+        "wrong": "book_detail"
+      }
+    }
+  ]
+}

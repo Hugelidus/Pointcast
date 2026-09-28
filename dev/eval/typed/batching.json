@@ -1,0 +1,131 @@
+{
+  "comment": "Batching follow-up (2026-09-28). Per app a set of 6 changes: the 4 tasks of tasks.json plus the 2 new ones below (same fields; ground truth fixed before any run). Each set is delivered as 1-by-1 (6 runs), 2-by-2 (3 runs, the pairs below) and all-6 (1 run). `topic` (per task, here and in `topics`) tells which answer items address which change when a run holds several changes, as dev/eval/grade.mjs does; a one-change run grades every item against its change (topic \".\"), as in the first evaluation. Topics match the item's `request`, lowercased and without accents.",
+  "topics": {
+    "overview-title": "monthly revenue|overview",
+    "users-nav": "team|users",
+    "refund-amount": "rojo|\\bred\\b|reembols|refund|39|jackson",
+    "download-green": "verde|green|download",
+    "revenue-change": "20[.,]1|mes anterior|last month|total revenue",
+    "analytics-tab": "analitica|analytics",
+    "export-regions": "descargar csv|export",
+    "ongoing-value": "\\b18\\b|ongoing|\\b15\\b",
+    "menu-projects": "portfolio|menu|sidebar",
+    "expense-label": "expense",
+    "view-all": "ver todos|view all",
+    "monthly-title": "ingresos mensuales|monthly earnings",
+    "since-new-products": "mes anterior|since last month|new products",
+    "tablet-16k": "18k|16k|tablet",
+    "stats-title": "estadisticas|statistics",
+    "sales-report-link": "informe completo|sales report",
+    "remove-users": "users|repetid|duplica|borr|remov|elimin|quit",
+    "desktop-title": "ordenador|desktop",
+    "status-bold": "negrita|bold|status|estado",
+    "imprint-label": "edition|imprint",
+    "authors-count": "count|cont|num_authors|cuent",
+    "sidebar-genres": "genre|genero",
+    "copies-heading": "ejemplares|\\bh4\\b|heading|encabezado",
+    "summary-label": "resumen|summary"
+  },
+  "sets": {
+    "shadcn-admin": ["overview-title", "users-nav", "refund-amount", "download-green", "revenue-change", "analytics-tab"],
+    "vuestic-admin": ["export-regions", "ongoing-value", "menu-projects", "expense-label", "view-all", "monthly-title"],
+    "flowbite-svelte-admin": ["since-new-products", "tablet-16k", "stats-title", "sales-report-link", "remove-users", "desktop-title"],
+    "locallibrary": ["status-bold", "imprint-label", "authors-count", "sidebar-genres", "copies-heading", "summary-label"]
+  },
+  "tasks": [
+    {
+      "app": "shadcn-admin", "id": "revenue-change", "kind": ["repeated"], "path": "/",
+      "gesture": "point", "target": "p:has-text(\"+20.1% from last month\")",
+      "note": "Solo aquí: que ponga «+20,1 % vs. mes anterior»",
+      "intent": "only in the outlined card, the line \"+20.1% from last month\" should read \"+20,1 % vs. mes anterior\"",
+      "truth": {
+        "summary": "Total Revenue's change line, index.tsx:81; not Subscriptions (:108) or Sales (:132).",
+        "files": ["src/features/dashboard/index.tsx"], "lines": [80, 82],
+        "target": "20[.,]1|total revenue",
+        "wrong": "180[.,]1|\\+19%"
+      }
+    },
+    {
+      "app": "shadcn-admin", "id": "analytics-tab", "kind": ["plain"], "path": "/",
+      "gesture": "point", "target": "button[role=tab]:has-text(\"Analytics\")",
+      "note": "Que ponga «Analítica»",
+      "intent": "the outlined tab should say \"Analítica\"",
+      "truth": {
+        "summary": "The Analytics TabsTrigger, index.tsx:49; not analytics.tsx.",
+        "files": ["src/features/dashboard/index.tsx"], "lines": [49, 49],
+        "target": "analytics|tabstrigger",
+        "wrong": "analytics\\.tsx|analytics-chart"
+      }
+    },
+    {
+      "app": "vuestic-admin", "id": "view-all", "kind": ["plain"], "path": "/dashboard",
+      "gesture": "point", "target": ".va-button:has-text(\"View all projects\")",
+      "note": "Que ponga «Ver todos»",
+      "intent": "the outlined button should say \"Ver todos\"",
+      "truth": {
+        "summary": "ProjectTable.vue:28.",
+        "files": ["src/pages/admin/dashboard/cards/ProjectTable.vue"], "lines": [28, 28],
+        "target": "view all|vabutton"
+      }
+    },
+    {
+      "app": "vuestic-admin", "id": "monthly-title", "kind": ["repeated"], "path": "/dashboard",
+      "gesture": "select", "target": "h1:text-is(\"Monthly Earnings\")",
+      "note": "Que ponga «Ingresos mensuales»",
+      "intent": "the selected card title should say \"Ingresos mensuales\"",
+      "truth": {
+        "summary": "The card title in MonthlyEarnings.vue:4; not the chart dataset label in lineChartData.ts:20.",
+        "files": ["src/pages/admin/dashboard/cards/MonthlyEarnings.vue"], "lines": [4, 4],
+        "target": "monthly earnings|card-title|h1",
+        "wrong": "linechartdata"
+      }
+    },
+    {
+      "app": "flowbite-svelte-admin", "id": "remove-users", "kind": ["repeated"], "path": "/",
+      "gesture": "point", "target": "div.items-center:has(:text-is(\"4,420\")) >> nth=1 >> h5",
+      "note": "Esta tarjeta está repetida, bórrala",
+      "intent": "the outlined card is a duplicate and should be removed",
+      "truth": {
+        "summary": "The second Users ProductMetricCard (horizontal bars), Dashboard.svelte:133-152; not the first (:127).",
+        "files": ["src/routes/utils/dashboard/Dashboard.svelte"], "lines": [133, 152],
+        "target": "horizontal|second|segund|third|tercer|2nd|3rd|last|ultim",
+        "wrong": "first users|primer|productmetriccard\\.svelte|productmetriccardex"
+      }
+    },
+    {
+      "app": "flowbite-svelte-admin", "id": "desktop-title", "kind": ["data", "repeated", "shared"], "path": "/",
+      "gesture": "point", "target": "h3:text-is(\"Desktop\")",
+      "note": "Que ponga «Ordenador»",
+      "intent": "the outlined device label should say \"Ordenador\"",
+      "truth": {
+        "summary": "title: 'Desktop' of the first device in Dashboard.svelte:84; not Traffic.svelte's default subtitle (:7), SmallPanel.svelte or TrafficEx.svelte:11.",
+        "files": ["src/routes/utils/dashboard/Dashboard.svelte"], "lines": [83, 90],
+        "target": "desktop",
+        "wrong": "traffic\\.svelte|smallpanel|trafficex"
+      }
+    },
+    {
+      "app": "locallibrary", "id": "copies-heading", "kind": ["repeated"], "path": "/catalog/book/1",
+      "gesture": "point", "target": "h4:text-is(\"Copies\")",
+      "note": "Que ponga «Ejemplares»",
+      "intent": "the outlined heading should say \"Ejemplares\"",
+      "truth": {
+        "summary": "The <h4>Copies</h4> of book_detail.html:14; not index.html's «Copies:» (:24) or bookinstance_list.",
+        "files": ["catalog/templates/catalog/book_detail.html"], "lines": [14, 14],
+        "target": "copies|h4",
+        "wrong": "index\\.html|bookinstance_list"
+      }
+    },
+    {
+      "app": "locallibrary", "id": "summary-label", "kind": ["plain"], "path": "/catalog/book/1",
+      "gesture": "select", "target": "strong:text-is(\"Summary:\")",
+      "note": "Que ponga «Resumen:»",
+      "intent": "the selected label should say \"Resumen:\"",
+      "truth": {
+        "summary": "book_detail.html:8.",
+        "files": ["catalog/templates/catalog/book_detail.html"], "lines": [8, 8],
+        "target": "summary"
+      }
+    }
+  ]
+}

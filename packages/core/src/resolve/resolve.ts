@@ -1,6 +1,6 @@
 import { isShortValue } from "../describe";
 import { oneLine, truncate } from "../markdown";
-import type { CapturedEvent, CodeFrame, ElementInfo, ResolvedLocation, SessionFile } from "../schema";
+import type { CapturedEvent, CodeFrame, ElementInfo, ResolvedLocation, SessionFile, ShownByLocation } from "../schema";
 import { cleanPath, codeChain, isLibraryPath } from "./chain";
 
 /**
@@ -12,6 +12,8 @@ import { cleanPath, codeChain, isLibraryPath } from "./chain";
  * Two extensions (resolveElement; docs/decisions.md D9): the files defining the chain's
  * components, only where Stage 0 found nothing (rule 4), and a short value looked up through the
  * item it belongs to (rule 3b), which needs a field Stage 0's sessions did not have (itemLabel).
+ * On top of the locations, never changing them: the line that renders a data literal's key
+ * (`shownBy`, resolveElementDetails; D9 note 2026-09-28, "shown by").
  */
 
 /** Reads project source for the resolver. */
@@ -65,18 +67,148 @@ export async function resolveElement(
   via: SourceVia,
   selectedText?: string,
 ): Promise<ResolvedLocation[]> {
+  return (await resolveElementDetails(element, reader, via, selectedText)).resolved;
+}
+
+/** resolveElement's locations, plus the line that renders the value they point at (shownByOf). */
+export interface ElementResolution {
+  resolved: ResolvedLocation[];
+  shownBy?: ShownByLocation;
+}
+
+/**
+ * resolveElement, plus `shownBy` (D9 note 2026-09-28, "shown by"): when the one location is a
+ * data literal under a property key, the line that renders that key (shownByOf). `resolved` is
+ * exactly resolveElement's, and finding `shownBy` reads no file resolveElement did not read.
+ */
+export async function resolveElementDetails(
+  element: ElementInfo,
+  reader: SourceReader,
+  via: SourceVia,
+  selectedText?: string,
+): Promise<ElementResolution> {
   const cached = cachingReader(reader);
   const chain = new Map<string, string[]>();
   for (const file of chainFiles(element)) {
     const source = await cached.read(file);
     if (source !== undefined) chain.set(file, splitLines(source));
   }
-  if (chain.size === 0) return [];
+  if (chain.size === 0) return { resolved: [] };
   const text = selectedText ?? element.text;
-  const found = await lookup(element, text, chain, cached, via);
-  if (found !== undefined) return found;
-  const scope = await withDefinitions(element, chain, cached);
-  return scope.size > chain.size ? ((await lookup(element, text, scope, cached, via)) ?? []) : [];
+  let searched: Sources = chain;
+  let resolved = await lookup(element, text, chain, cached, via);
+  if (resolved === undefined) {
+    const scope = await withDefinitions(element, chain, cached);
+    searched = scope;
+    resolved = scope.size > chain.size ? ((await lookup(element, text, scope, cached, via)) ?? []) : [];
+  }
+  const shownBy = resolved.length === 1 ? await shownByOf(element, text, resolved[0], searched, cached, via) : undefined;
+  return shownBy === undefined ? { resolved } : { resolved, shownBy };
+}
+
+/**
+ * The line that renders the value at `location` ("shown by"), or undefined:
+ * 1. the location's line holds the element's text (or one of its phrases) as the value of exactly
+ *    one property, `customer: "Marco Peña"`, `"customer": "…"` or `badge: 3` -> that key. A value
+ *    that is no property (`<td>Export</td>`, `title="Sales Report"`), or two properties with it
+ *    on the line: nothing;
+ * 2. the files the lookup searched (`files`: the chain, or the chain plus the definitions for
+ *    rule 4), innermost first, and never the data modules: in the first one that renders that key
+ *    at all (renderingsOf), exactly one rendering -> that line. Two or more there: nothing, and no
+ *    further file.
+ * No file is read here: the location's file and `files` were all read by the lookup.
+ */
+async function shownByOf(
+  element: ElementInfo,
+  text: string,
+  location: ResolvedLocation,
+  files: Sources,
+  reader: SourceReader,
+  via: SourceVia,
+): Promise<ShownByLocation | undefined> {
+  const source = files.get(location.file) ?? (await reader.read(location.file).then((read) => (read === undefined ? undefined : splitLines(read))));
+  if (source === undefined) return undefined;
+  const key = propertyKey(codeLines(location.file, source)[location.line - 1] ?? "", text);
+  if (key === undefined) return undefined;
+  for (const [file, lines] of files) {
+    const found = renderingsOf(key, file, lines);
+    if (found.length === 0) continue;
+    if (found.length > 1) return undefined;
+    if (file === location.file && found[0] === location.line) return undefined;
+    const snippet = element.sensitive ? undefined : sourceSnippet(lines, found[0]);
+    return { key, file, line: found[0], via, ...(snippet === undefined ? {} : { snippet }) };
+  }
+  return undefined;
+}
+
+/**
+ * A property and its value, as written in an object literal or JSON: a key (bare or quoted) right
+ * after `{`, `,` or the line start, `:`, then a quoted string or a bare token (`3`, `true`).
+ * The `{`/`,` before a key keeps out a ternary's `? "a" : "b"`.
+ */
+const PROPERTY =
+  /(?:^|[{,])\s*(?:(["'])([A-Za-z_$][\w$-]*)\1|([A-Za-z_$][\w$]*))\s*:\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|`((?:\\.|[^`\\])*)`|([^\s,}\]"'`]+))/g;
+
+/** The key of the one property on `line` whose value is the element's text or one of its phrases. */
+export function propertyKey(line: string, text: string): string | undefined {
+  const values = new Set(phrases(text));
+  const keys: string[] = [];
+  for (const match of line.matchAll(PROPERTY)) {
+    const value = (match[4] ?? match[5] ?? match[6] ?? match[7] ?? "").replace(/\s+/g, " ").trim();
+    if (value.includes("${")) continue;
+    if (values.has(value)) keys.push(match[2] ?? match[3]);
+  }
+  return keys.length === 1 ? keys[0] : undefined;
+}
+
+/** `order.`, `row.order.`, `order?.`: the object path before a key, any depth, or none. */
+const OBJECT_PATH = "(?:[A-Za-z_$][\\w$]*\\??\\.)*";
+
+/**
+ * The 1-based line of every expression in `file` that renders `key` as element content, one entry
+ * per rendering:
+ * - `{{ x.key }}`, `{{ key }}`, `{{ x?.key }}`, with filters or pipes (`{{ x.key|upper }}`) and
+ *   Jinja's `{{- … -}}`: Vue, Django, Jinja, and any other file;
+ * - `{x.key}`, `{key}`, `{x?.key}`, Svelte's `{@html x.key}`: JSX and Svelte (not `.vue` or
+ *   templates, where a single brace is script, and not `${…}`).
+ * Never an attribute value (`key={o.id}`, `title="{{ x.key }}"`, `:title="…"`), an expression
+ * inside a tag on its line (Svelte's `<Row {customer} />`), or a single brace that reads as
+ * script: destructuring (`const { customer } =`), a call's argument, a shorthand property.
+ * Only these exact forms: `{format(x.key)}` or `{x.key.toUpperCase()}` render it too but are not
+ * counted, so a file with only those gives nothing. Comments are not code (withoutComments; in
+ * templates also `{# #}` and `{% comment %}`).
+ */
+export function renderingsOf(key: string, file: string, lines: readonly string[]): number[] {
+  const name = escapeRegExp(key);
+  const patterns = [new RegExp(`\\{\\{-?\\s*${OBJECT_PATH}${name}\\s*(?:\\|[^{}]*)?-?\\}\\}`, "g")];
+  const single = !isTemplateFile(file) && !/\.vue$/i.test(file);
+  if (single) patterns.push(new RegExp(`(?<![{$])\\{\\s*(?:@html\\s+)?${OBJECT_PATH}${name}\\s*\\}(?!\\})`, "g"));
+  const code = isTemplateFile(file) ? withoutComments(withoutTemplateHidden(lines)) : withoutComments(lines);
+  const found: number[] = [];
+  code.forEach((line, i) => {
+    if (/^\s*(import|export)\b/.test(line)) return;
+    patterns.forEach((pattern, p) => {
+      for (const match of line.matchAll(pattern)) {
+        const before = line.slice(0, match.index);
+        const after = line.slice(match.index + match[0].length);
+        if (/=\s*["']?\s*$/.test(before) || insideTag(before)) continue;
+        if (p === 1 && readsAsScript(before, after)) continue;
+        found.push(i + 1);
+      }
+    });
+  });
+  return found;
+}
+
+/** True when `before` (a line up to a match) has an opening tag that is not closed yet. */
+function insideTag(before: string): boolean {
+  const open = before.search(/<[A-Za-z][^<]*$/);
+  return open >= 0 && before.lastIndexOf(">") < open;
+}
+
+/** A single-brace match that is script, not markup: `const { a } =`, `f({ a })`, `[{ a }, …]`, `{ a };`. */
+function readsAsScript(before: string, after: string): boolean {
+  return /(?:[(,:?]|\b(?:const|let|var|return|function)|=>)\s*$/.test(before) || /^\s*[=,:;)]/.test(after);
 }
 
 /**
@@ -167,7 +299,7 @@ function linesNear(code: Sources, hit: Hit, pattern: RegExp): number[] {
 }
 
 /**
- * A copy of the session with `ElementInfo.resolved` set for every element that has a chain and
+ * A copy of the session with `ElementInfo.resolved` (and `shownBy`, resolveElementDetails) set for every element that has a chain and
  * whose chain files could be read, and a `snippet` on each `renderedBy` frame with a line whose
  * file was read (not for sensitive elements, D8); nothing is mutated, and snippets need no extra read. An element keeps what it had when
  * none of its chain files was readable (e.g. resolved earlier through another route), and loses
@@ -180,15 +312,18 @@ export async function resolveSession(session: SessionFile, reader: SourceReader,
       const files = chainFiles(event.element);
       const sources = await Promise.all(files.map((file) => cached.read(file)));
       if (sources.every((source) => source === undefined)) return event;
-      const resolved = await resolveElement(event.element, cached, via, event.selection?.text);
+      const { resolved, shownBy } = await resolveElementDetails(event.element, cached, via, event.selection?.text);
       const read = new Map<string, string[]>();
       files.forEach((file, i) => {
         const source = sources[i];
         if (source !== undefined) read.set(file, splitLines(source));
       });
-      const { resolved: _previous, ...element } = event.element;
+      const { resolved: _previous, shownBy: _previousShownBy, ...element } = event.element;
       if (Array.isArray(element.renderedBy) && !element.sensitive) element.renderedBy = withSnippets(element.renderedBy, read);
-      return { ...event, element: resolved.length > 0 ? { ...element, resolved } : element };
+      return {
+        ...event,
+        element: { ...element, ...(resolved.length > 0 ? { resolved } : {}), ...(shownBy === undefined ? {} : { shownBy }) },
+      };
     }),
   );
   return { ...session, events };

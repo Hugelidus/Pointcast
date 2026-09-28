@@ -12,6 +12,7 @@ Apply a pointcast recording to this project.
 3. Follow the spec's own rules, written at its top: they come first. Each request quotes what the user said (speech-to-text, so words may be misheard) and lists the elements they pointed at while saying it.
 4. Find each element through its code pointer before searching:
    - `text at:` or `data at:` is the line that holds that element's text or data: usually the line to change.
+   - `shown by:` is the line that displays that value (`<td>{order.customer}</td>`): change it instead when the request is about how the value is shown, not what it is.
    - `code:` is where that instance is written, innermost first. The first frame may be a shared component that renders every instance; change the instance, not the shared component, unless the request is about all of them.
    - Search the codebase only when the spec gives no pointer, and then use its `find:` hints.
 5. If a request is ambiguous, ask before editing it. Change only what was asked.

@@ -19,7 +19,7 @@ In a [typed-mode evaluation on four apps](docs/eval/results-2026-09-28-batching.
 
 **[Quick start](#quick-start) · [How it works](#how-it-works) · [Eval](docs/eval/results-2026-09-27.md) · [Discussions](https://github.com/Hugelidus/pointcast/discussions) · [Changelog](CHANGELOG.md)**
 
-> **Public beta (0.6).** Chrome and Edge on desktop, developed and tested on Windows; macOS and Linux should work but are untested. Feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
+> **Public beta (0.6).** Chrome and Edge on desktop. CI-tested on Windows, macOS and Linux (Chrome); Edge developed and tested on Windows. Feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
 
 ## Quick start
 

@@ -191,3 +191,11 @@ describe("announcement", () => {
     expect(announcement(null)).toBe("");
   });
 });
+
+describe("the pill in typed mode (D12)", () => {
+  it("says Notes rather than REC, since no microphone is on", () => {
+    expect(splitGlyph({ kind: "recording", typed: true })).toEqual({ text: "Notes" });
+    expect(splitGlyph({ kind: "recording" })).toEqual({ text: "REC" });
+    expect(announcement({ kind: "recording", typed: true })).toBe("Pointcast is recording notes");
+  });
+});

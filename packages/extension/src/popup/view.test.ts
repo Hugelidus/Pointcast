@@ -7,6 +7,8 @@ import {
   friendlyEvent,
   lastEventText,
   metaLine,
+  modeView,
+  pointingHint,
   popupView,
   processingPanel,
   recordingTimeMs,
@@ -458,5 +460,48 @@ describe("stageAnnouncement (screen readers)", () => {
   it("names the recorder's status otherwise, and nothing when idle", () => {
     expect(stageAnnouncement({ status: "recording", t0: 1 }, 2_000)).toBe("Recording");
     expect(stageAnnouncement({ status: "idle" }, 2_000)).toBe("");
+  });
+});
+
+describe("typed mode (D12)", () => {
+  it("offers Record without the microphone grant or the model notice", () => {
+    for (const microphone of ["prompt", "denied"] as const) {
+      expect(popupView({ status: "idle" }, { microphone, inputMode: "typed" }).button).toMatchObject({
+        text: "Record",
+        action: "start",
+      });
+      expect(siteView({ host: "example.com", enabled: false }, undefined)?.kind).toBe("primary");
+    }
+    expect(firstRunNotice({ status: "idle" }, "prompt", false, "typed")).toBeNull();
+    expect(firstRunNotice({ status: "idle" }, "prompt", false)).not.toBeNull();
+  });
+
+  it("shows the Voice / Typed choice where the user records, fixed while recording", () => {
+    expect(modeView({ status: "idle" }, "typed")).toEqual({ visible: true, enabled: true, value: "typed" });
+    // A recording keeps the mode it started with, whatever the setting says now.
+    expect(modeView({ status: "recording", t0: 1, inputMode: "typed" }, "voice")).toEqual({
+      visible: true,
+      enabled: false,
+      value: "typed",
+    });
+    expect(modeView({ status: "recording", t0: 1 }, "typed").value).toBe("voice");
+    expect(modeView({ status: "processing" }, "typed").visible).toBe(false);
+    expect(pointingHint("typed")).toBe("Alt+click or select text, then type what should change.");
+    expect(pointingHint("voice")).toBe("Alt+click or select text to point.");
+  });
+
+  it("says how long the notes took, not how much audio there is", () => {
+    const processing: ProcessingInfo = {
+      startedAt: 1,
+      audioMs: 12_000,
+      stage: "saving",
+      estimatedEnd: 2,
+      deadline: 3,
+      firstRun: false,
+    };
+    expect(metaLine({ status: "processing", inputMode: "typed", processing }, 2)).toBe("0:12 of notes · 2 events");
+    const lastResult = { sessionId: "s", finishedAt: 1, copied: true, audioMs: 5_000, processingMs: 1, typed: true };
+    expect(metaLine({ status: "idle", lastSessionId: "s", lastResult }, 1)).toBe("0:05 of notes · 1 event");
+    expect(processingPanel({ status: "processing", inputMode: "typed", processing: { ...processing, stage: "stopping" } }, 1)?.detail).toBe("");
   });
 });

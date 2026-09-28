@@ -1,10 +1,10 @@
-import { SESSIONS_FOLDER } from "@pointcast/core";
+import { SESSIONS_FOLDER, type InputMode } from "@pointcast/core";
 import { readableEvent } from "../event-words";
 import { LOCAL_HOSTS } from "../hosts";
 import type { TabCapture } from "../messages";
 import { errorDetailOf } from "../processing/failure";
 import { processingView, SPEECH_MODEL_MB } from "../processing/progress";
-import type { RecorderState } from "../recorder-state";
+import { isTyped, type RecorderState } from "../recorder-state";
 
 /**
  * What the popup shows for a given state: pure, so it is unit-tested without a browser.
@@ -39,6 +39,8 @@ export interface PopupContext {
   microphone?: MicrophonePermission;
   /** The active tab is a remote site the user has not enabled: Record would capture nothing there. */
   offSite?: boolean;
+  /** Settings.inputMode: what the next Record starts. Typed needs no microphone (D12). */
+  inputMode?: InputMode;
 }
 
 /** The main button: Record, Stop, or "Allow microphone" until Chrome has the grant. */
@@ -90,7 +92,7 @@ export function popupView(state: RecorderState, context: PopupContext = {}): Pop
   };
 }
 
-function mainButton(state: RecorderState, { microphone, offSite }: PopupContext): MainButton {
+function mainButton(state: RecorderState, { microphone, offSite, inputMode }: PopupContext): MainButton {
   switch (state.status) {
     case "recording":
       return { text: "Stop", kind: "stop", action: "stop", visible: true, enabled: true };
@@ -104,7 +106,8 @@ function mainButton(state: RecorderState, { microphone, offSite }: PopupContext)
     case "idle":
       // Without the grant, Record opened a tab and closed the popup, and the error then sat under
       // a green "will be captured": the first action of every new user failed (decision E).
-      if (microphone === "prompt" || microphone === "denied") {
+      // Typed mode (D12) never opens the microphone, so it never waits for the grant.
+      if (inputMode !== "typed" && (microphone === "prompt" || microphone === "denied")) {
         return { text: "Allow microphone", kind: "primary", action: "allow-microphone", visible: true, enabled: true };
       }
       if (offSite) {
@@ -136,10 +139,12 @@ export function firstRunNotice(
   state: RecorderState,
   microphone: MicrophonePermission,
   modelReady: boolean | undefined,
+  inputMode: InputMode = "voice",
 ): FirstRunNotice | null {
   // An error already says what to do (a failed download, a denied microphone): a second box
-  // above it about the same step only pushed the error down.
-  if (state.status !== "idle" || state.error) return null;
+  // above it about the same step only pushed the error down. Typed mode (D12) needs neither the
+  // microphone nor the model.
+  if (state.status !== "idle" || state.error || inputMode === "typed") return null;
   const needsMicrophone = microphone === "prompt" || microphone === "denied";
   const needsModel = modelReady === false;
   // SPEECH_MODEL_MB is megabytes() of what the download reports, so the notice and the progress
@@ -201,7 +206,8 @@ export function processingPanel(state: RecorderState, now: number): ProcessingPa
         text: view.text,
         fraction: view.fraction,
         stage: "Processing…",
-        detail: "The time is estimated from earlier runs on this device.",
+        // A typed session (D12) transcribes nothing: there is nothing to estimate.
+        detail: isTyped(state) ? "" : "The time is estimated from earlier runs on this device.",
       };
   }
 }
@@ -215,7 +221,35 @@ export function processingPanel(state: RecorderState, now: number): ProcessingPa
 export function metaLine(state: RecorderState, eventCount: number): string | null {
   const audioMs = isBusy(state) ? state.processing?.audioMs : state.status === "idle" ? state.lastResult?.audioMs : undefined;
   if (audioMs === undefined || audioMs <= 0) return null;
-  return `${formatElapsed(audioMs)} of audio · ${eventCount} ${eventCount === 1 ? "event" : "events"}`;
+  const events = `${eventCount} ${eventCount === 1 ? "event" : "events"}`;
+  // A typed session (D12) has no audio: its length is how long the notes took.
+  const typed = isBusy(state) ? isTyped(state) : state.lastResult?.typed === true;
+  return typed ? `${formatElapsed(audioMs)} of notes · ${events}` : `${formatElapsed(audioMs)} of audio · ${events}`;
+}
+
+/** The Voice / Typed choice above Record (D12). */
+export interface ModeView {
+  /** Shown where the user is about to record, or recording (then it says which mode is on). */
+  visible: boolean;
+  /** Only while idle: a recording keeps the mode it started with. */
+  enabled: boolean;
+  value: InputMode;
+}
+
+export function modeView(state: RecorderState, settingsMode: InputMode): ModeView {
+  const recording = state.status === "recording" || state.status === "starting";
+  return {
+    visible: state.status === "idle" || recording,
+    enabled: state.status === "idle",
+    value: recording ? (state.inputMode ?? "voice") : settingsMode,
+  };
+}
+
+/** How to point, in the mode the next (or current) recording uses. */
+export function pointingHint(mode: InputMode): string {
+  return mode === "typed"
+    ? "Alt+click or select text, then type what should change."
+    : "Alt+click or select text to point.";
 }
 
 /** Where the last session is, on one line: a label, then the folder in the code font. */

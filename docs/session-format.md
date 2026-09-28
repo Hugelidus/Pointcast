@@ -5,7 +5,7 @@ A recording produces one folder, `Downloads/pointcast/<session-id>/`, or `<sessi
 | File | Written by | Contents |
 |---|---|---|
 | `session.json` | extension | Metadata and captured events (`SessionFile`). |
-| `words.json` | extension (v2), CLI | Transcription with word timestamps (`WordsFile`). |
+| `words.json` | extension (v2), CLI | Transcription with word timestamps (`WordsFile`). Absent in a typed session. |
 | `session.md` | extension (v2), CLI | The Markdown spec for the coding agent. |
 | `audio.wav` | extension | Microphone audio, 16 kHz, mono, 16-bit PCM. Sample 0 is `t0`. Always saved in v1; in v2 only when the user keeps the audio. |
 
@@ -15,6 +15,8 @@ A recording produces one folder, `Downloads/pointcast/<session-id>/`, or `<sessi
 
 - **v1** (until 2026-09-27): the extension saves `audio.wav` + `session.json`; the CLI transcribes the audio into `words.json` and writes `session.md`.
 - **v2** (since 2026-09-27): the extension transcribes in the browser ([D1 note](decisions.md#d1-transcription--whisper-via-transformersjs-locally)) and saves `session.json` + `words.json` + `session.md`. `audio` is optional: it is present, and `audio.wav` exists, only when the audio was saved: with the popup's *Keep audio*, when the language had to be guessed, or when transcription failed (then there is no `words.json` or `session.md`, and `pointcast process` finishes the job). Nothing else changed.
+
+**Typed sessions** (since extension 0.4.0, [D12](decisions.md#d12-typed-mode)): the user typed a note for each gesture instead of speaking. `session.json` has `"inputMode": "typed"` and the notes in the events' `note`; the folder holds `session.json` + `session.md` only, never `words.json` or audio. Readers render such a session from `session.json` alone (every noted event is a request of its own) and never transcribe it. Both fields are optional, so `schemaVersion` stays 2: a session without `inputMode` is a voice session, and a reader that ignores the fields still loads the file.
 
 The CLI never needs the audio when `words.json` is there: `pointcast process` re-runs fusion and rendering from `session.json` + `words.json`. `words.json` is a cache of the slow step: delete it and the CLI transcribes the audio again, which needs `audio.wav`. A folder with neither `words.json` nor audio cannot be processed, and the CLI says so. `words.json` has its own `schemaVersion`, still 1.
 
@@ -61,6 +63,9 @@ For other clients that want to hand a session to a running pointcast MCP server.
 | `url` | `location.href` when the gesture happened. SPA route changes show up here. |
 | `element` | `point` (and legacy `click`): the target. Selections: the common container of the range. |
 | `selection` | Selections only: the text, plus `start`/`end` elements when the container is too large to describe. |
+| `note` | Optional, typed sessions only (D12): what the user typed about this gesture. The user's own words, not page content, so it is not redacted; it is cleaned (line endings as `\n`, control characters removed, trimmed) and at most 2,000 characters (`NOTE_MAX_CHARS`), cut with `…`. Absent when the gesture was saved without a note. |
+
+`inputMode` (top level, optional): `"typed"` for a typed session; absent (or `"voice"`) for a spoken one, which is every session recorded before 0.4.0.
 
 ## ElementInfo
 
@@ -134,5 +139,7 @@ A v2 session saved without its audio, so there is no `audio` field:
   ]
 }
 ```
+
+A typed session has `"inputMode": "typed"` at the top level, no `audio`, and a `note` in the events that have one, e.g. `"note": "Make this column sortable"`.
 
 With the audio saved, `session.json` also has `"audio": { "file": "audio.wav", "format": "wav", "sampleRate": 16000, "channels": 1 }`, as every v1 session does. `dev/fixtures/sessions/e2e-es` (v1, with audio) and `dev/fixtures/sessions/e2e-es-v2` (v2, same events and words, no audio) render the same `session.md`.

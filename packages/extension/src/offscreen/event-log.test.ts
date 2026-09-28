@@ -27,13 +27,17 @@ describe("EventLog", () => {
     expect(log.events.map((e) => e.id)).toEqual(["e1", "e2"]);
   });
 
-  it("removes the last event on undo, and the next event reuses its id", () => {
+  it("removes the last event on undo without reusing its id; the session is renumbered at Stop", () => {
     const log = new EventLog(10_000);
     log.add(draft(11_000));
     log.add(draft(12_000));
     expect(log.removeLast()?.id).toBe("e2");
-    expect(log.add(draft(13_000)).id).toBe("e2");
-    expect(log.events.map((e) => e.tStart)).toEqual([1000, 3000]);
+    // A page may still hold "e2" (an Undo flash, an open note box): it never names another gesture.
+    expect(log.add(draft(13_000)).id).toBe("e3");
+    expect(log.events.map((e) => e.id)).toEqual(["e1", "e3"]);
+    expect(log.session().map((e) => `${e.id}@${e.tStart}`)).toEqual(["e1@1000", "e2@3000"]);
+    // session() copies: the live ids are untouched.
+    expect(log.events.map((e) => e.id)).toEqual(["e1", "e3"]);
     log.removeLast();
     log.removeLast();
     expect(log.removeLast()).toBeUndefined();
@@ -52,5 +56,46 @@ describe("EventLog", () => {
   it("omits selection when the draft has none", () => {
     const log = new EventLog(0);
     expect("selection" in log.add(draft(1))).toBe(false);
+  });
+});
+
+describe("EventLog notes (typed mode, D12)", () => {
+  const draftAt = (at: number) => ({
+    gesture: "point" as const,
+    atStart: at,
+    atEnd: at,
+    url: "http://localhost/",
+    element: { tag: "a", text: "x", selector: "a", selectorUnique: true, path: "a", html: "<a>x</a>" },
+  });
+
+  it("keeps the other ids when a gesture before the last one is removed; the session has e1..eN", () => {
+    const log = new EventLog(0);
+    for (const at of [10, 20, 30]) log.add(draftAt(at));
+    expect(log.remove("e2")?.tStart).toBe(20);
+    expect(log.events.map((e) => `${e.id}@${e.tStart}`)).toEqual(["e1@10", "e3@30"]);
+    expect(log.add(draftAt(40)).id).toBe("e4");
+    expect(log.session().map((e) => `${e.id}@${e.tStart}`)).toEqual(["e1@10", "e2@30", "e3@40"]);
+  });
+
+  it("a note box still open in another tab writes onto its own gesture after an earlier one is cancelled", () => {
+    // Tab 1 cancels A (e1) while tab 2's box for B (e2) and tab 3's for C (e3) are open.
+    const log = new EventLog(0);
+    for (const at of [10, 20, 30]) log.add(draftAt(at));
+    log.setNote("e2", "note for B");
+    log.remove("e1");
+    expect(log.setNote("e2", "note for B, continued")).toBe(true);
+    expect(log.setNote("e3", "note for C")).toBe(true);
+    // Tab 2 cancels B with its (still valid) id: C stays.
+    expect(log.remove("e2")?.tStart).toBe(20);
+    expect(log.session().map((e) => `${e.id}@${e.tStart} ${e.note}`)).toEqual(["e1@30 note for C"]);
+  });
+
+  it("stores the note cleaned and capped", () => {
+    const log = new EventLog(0);
+    log.add(draftAt(10));
+    expect(log.setNote("e1", " a\r\nb ")).toBe(true);
+    expect(log.events[0]?.note).toBe("a\nb");
+    log.setNote("e1", "y".repeat(5000));
+    expect(log.events[0]?.note).toHaveLength(2000);
   });
 });

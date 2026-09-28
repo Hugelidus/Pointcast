@@ -134,7 +134,7 @@ describe("Recorder stop", () => {
     expect(await stop(recorder)).toMatchObject({ ok: true, eventCount: 1 });
     const job = jobs[0];
     expect(job?.audio).toMatchObject({ decoded: false, error: "Unable to decode audio data" });
-    if (job?.audio.decoded === false) expect(await job.audio.raw.text()).toBe("webm bytes");
+    if (job?.audio.decoded === false && !job.audio.typed) expect(await job.audio.raw.text()).toBe("webm bytes");
     expect(job?.events).toHaveLength(1);
   });
 
@@ -189,5 +189,57 @@ describe("Recorder stop", () => {
 
   it("refuses to stop when nothing was ever recorded", async () => {
     expect(await stop(newRecorder().recorder)).toEqual({ ok: false, error: "Not recording." });
+  });
+});
+
+describe("Recorder in typed mode (D12)", () => {
+  async function typedRecorder() {
+    const { recorder, jobs } = newRecorder();
+    const started = await recorder.handle({ to: "offscreen", type: "recorder-start", inputMode: "typed" });
+    return { recorder, jobs, started };
+  }
+
+  it("starts without the microphone and hands over a job with no audio at Stop", async () => {
+    const start = vi.spyOn(await import("./microphone-recording").then((m) => m.MicrophoneRecording), "start");
+    const { recorder, jobs, started } = await typedRecorder();
+    expect(start).not.toHaveBeenCalled();
+    expect(started).toMatchObject({ ok: true, t0: expect.any(Number) });
+    await recorder.handle({ to: "offscreen", type: "capture-event", draft: { ...draft, atStart: Date.now(), atEnd: Date.now() } });
+    expect(await recorder.handle({ to: "offscreen", type: "capture-note", id: "e1", note: "  Export only the filtered rows  " })).toEqual({ ok: true });
+
+    const result = await stop(recorder);
+    expect(result).toMatchObject({ ok: true, pendingMs: 0, modelLoaded: false, eventCount: 1 });
+    expect(audio.decodeRecording).not.toHaveBeenCalledWith(expect.anything());
+    expect(jobs[0]?.audio).toMatchObject({ decoded: false, typed: true });
+    expect(jobs[0]?.live).toBeUndefined();
+    expect(jobs[0]?.events[0]?.note).toBe("Export only the filtered rows");
+    start.mockRestore();
+  });
+
+  it("removes a note left blank, and the gesture of a cancelled note box", async () => {
+    vi.mocked(sendMessage).mockClear();
+    const { recorder, jobs } = await typedRecorder();
+    for (let i = 0; i < 2; i++) await recorder.handle({ to: "offscreen", type: "capture-event", draft });
+    await recorder.handle({ to: "offscreen", type: "capture-note", id: "e1", note: "first" });
+    await recorder.handle({ to: "offscreen", type: "capture-note", id: "e1", note: "   " });
+    expect(await recorder.handle({ to: "offscreen", type: "capture-discard", id: "e2" })).toEqual({ ok: true });
+    expect(await recorder.handle({ to: "offscreen", type: "capture-discard", id: "e2" })).toEqual({ ok: false });
+    expect(await recorder.handle({ to: "offscreen", type: "capture-note", id: "e9", note: "x" })).toEqual({ ok: false });
+    // The popup's count follows the discard.
+    expect(vi.mocked(sendMessage).mock.calls.at(-1)?.[0]).toEqual({
+      to: "background",
+      type: "event-count",
+      count: 1,
+      lastEvent: "button «Export» · Alt+click",
+    });
+    await stop(recorder);
+    expect(jobs[0]?.events).toHaveLength(1);
+    expect(jobs[0]?.events[0]).not.toHaveProperty("note");
+  });
+
+  it("ignores notes when not recording", async () => {
+    const { recorder } = newRecorder();
+    expect(await recorder.handle({ to: "offscreen", type: "capture-note", id: "e1", note: "x" })).toEqual({ ok: false });
+    expect(await recorder.handle({ to: "offscreen", type: "capture-discard", id: "e1" })).toEqual({ ok: false });
   });
 });

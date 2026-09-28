@@ -27,6 +27,7 @@
   <div class="hdr" id="h2"><span class="step">2 · Stop</span><h1>Stop: the spec is <em class="g">copied</em></h1></div>
   <div class="hdr" id="h3"><span class="step">3 · Spec</span><h1>Each sentence becomes a <em class="g">request</em></h1></div>
   <div class="hdr" id="h4"><span class="step">4 · Code</span><h1>Each element leads to its <em class="g">line of code</em></h1></div>
+  <div class="hdr" id="h5"><span class="step">5 · Or type it</span><h1>Rather not talk? <em class="g">Type a note</em></h1></div>
   <div class="brand" id="brand"><img src="../../../dev/scripts/icon/pointcast.svg" alt=""><span>Pointcast</span></div>
 
   <!-- The example app (dev/examples/react-dashboard), rebuilt from its source with its own CSS. -->
@@ -61,7 +62,7 @@
           <section class="panel">
             <div class="panel-toolbar"><h2>Orders</h2><button type="button" class="btn btn-export" id="t-export">Export</button></div>
             <table class="data-table">
-              <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead>
+              <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th id="t-status">Status</th></tr></thead>
               <tbody>
                 <tr><td>A-1042</td><td>Lina Torres</td><td>$128.00</td><td>Paid</td></tr>
                 <tr><td>A-1041</td><td>Marco Peña</td><td>$64.50</td><td>Pending</td></tr>
@@ -74,12 +75,25 @@
       </div>
       <div class="pill rec" id="pill-rec"><span class="dot"></span>REC</div>
       <div class="pill processing" id="pill-proc"><span class="dot"></span><span id="proc-text">Processing… ~0:03</span><div class="pbar"><div class="fill" id="proc-fill"></div></div></div>
+      <div class="pill rec" id="pill-notes"><span class="dot"></span>Notes</div>
       <div class="pill done" id="pill-done"><span class="glyph">✓</span>Copied · sent to your agent</div>
     </div>
   </div>
 
   <div class="flash" id="flash1"></div>
   <div class="flash" id="flash2"></div>
+  <div class="flash" id="flash3"></div>
+
+  <!-- Typed mode's note box: the markup of packages/extension/src/content/note-box.ts (a div for the
+       textarea, so the caret is drawn by the timeline instead of blinking on its own). -->
+  <div class="note" id="note">
+    <div class="box" role="dialog" aria-label="Pointcast note">
+      <div class="title"><span class="dot"></span>Pointcast note</div>
+      <div class="textarea"><span class="ph" id="note-ph">What should change here?</span><span id="note-text"></span><span class="caret" id="note-caret"></span></div>
+      <div class="hint"><kbd>Enter</kbd> save · <kbd>Shift+Enter</kbd> new line · <kbd>Esc</kbd> cancel</div>
+    </div>
+  </div>
+  <div id="enterkey"><span class="key">Enter</span></div>
 
   <div class="bubble" id="b1">
     <div class="tail"></div>
@@ -115,6 +129,20 @@
     </div>
   </div>
 
+  <!-- Scene 5's spec: the real rendering of a typed session (core renderTypedRequests) for this note,
+       abridged like the one above; «Status» resolves to OrdersTable.tsx:31 against the example. -->
+  <div id="doc3">
+    <div class="doc-head"><span class="ok">✓</span>Copied: the note is its own request</div>
+    <div class="spec">
+      <div class="ln"><span class="h1"># UI change requests</span></div>
+      <div class="gap"></div>
+      <div class="ln"><span class="h">## Request 1</span></div>
+      <div class="ln q">&gt; <span id="note-quote"></span> <span class="mk2">[a]</span></div>
+      <div class="ln">- <span class="mk2">[a]</span> «Status» → code:</div>
+      <div class="ln">  - <span class="k">text at:</span> <span class="loc" id="loc3">src/components/OrdersTable.tsx:31</span></div>
+    </div>
+  </div>
+
   <div class="fly" id="fly1"></div>
   <div class="fly" id="fly2"></div>
 
@@ -123,6 +151,9 @@
     <div class="pane"><div class="tab"><b></b>src/pages/Dashboard.tsx</div><div class="code" id="code1"></div></div>
     <div class="pane"><div class="tab"><b></b>src/components/OrdersTable.tsx</div><div class="code" id="code2"></div></div>
   </div>
+  <div id="editor3">
+    <div class="pane"><div class="tab"><b></b>src/components/OrdersTable.tsx</div><div class="code" id="code3"></div></div>
+  </div>
 
   <svg id="arrows" width="1600" height="900" aria-hidden="true">
     <defs>
@@ -130,6 +161,7 @@
       <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     </defs>
     <g id="arrow1"><path class="shaft" fill="none" stroke="url(#ag)" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/><path class="head" fill="#f472b6"/><circle class="spark" r="7" fill="#fff" filter="url(#glow)"/></g>
+    <g id="arrow3"><path class="shaft" fill="none" stroke="url(#ag)" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/><path class="head" fill="#f472b6"/><circle class="spark" r="7" fill="#fff" filter="url(#glow)"/></g>
     <g id="arrow2"><path class="shaft" fill="none" stroke="url(#ag)" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/><path class="head" fill="#f472b6"/><circle class="spark" r="7" fill="#fff" filter="url(#glow)"/></g>
   </svg>
 </div>

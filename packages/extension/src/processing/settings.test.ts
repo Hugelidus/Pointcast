@@ -3,7 +3,13 @@ import { chosenLanguage, DEFAULT_SETTINGS, languageName, nameOrFallback, parseSe
 
 describe("settings", () => {
   it("defaults to auto-detection, no audio, a notification, and the handoff to a running MCP server", () => {
-    expect(parseSettings(undefined)).toEqual({ language: "auto", keepAudio: false, notify: true, handoff: true });
+    expect(parseSettings(undefined)).toEqual({
+      language: "auto",
+      keepAudio: false,
+      notify: true,
+      handoff: true,
+      inputMode: "voice",
+    });
     expect(chosenLanguage(DEFAULT_SETTINGS)).toBeUndefined();
   });
 
@@ -13,6 +19,7 @@ describe("settings", () => {
       keepAudio: true,
       notify: false,
       handoff: false,
+      inputMode: "voice",
     });
     expect(parseSettings({ language: "klingon" }).language).toBe("auto");
     expect(chosenLanguage({ ...DEFAULT_SETTINGS, language: "es" })).toBe("es");
@@ -21,6 +28,13 @@ describe("settings", () => {
   it("keeps the handoff on unless it was turned off: settings saved before 0.2.0 have no such field", () => {
     expect(parseSettings({ language: "es", keepAudio: true, notify: false }).handoff).toBe(true);
     expect(parseSettings({ handoff: "no" }).handoff).toBe(true);
+  });
+
+  it("remembers typed mode, and reads voice from settings saved before it existed or from a bad value (D12)", () => {
+    expect(parseSettings({ inputMode: "typed" }).inputMode).toBe("typed");
+    expect(parseSettings({ inputMode: "voice" }).inputMode).toBe("voice");
+    expect(parseSettings({ language: "es", keepAudio: true, notify: false, handoff: false }).inputMode).toBe("voice");
+    expect(parseSettings({ inputMode: "keyboard" }).inputMode).toBe("voice");
   });
 
   it("names the languages for the picker", () => {

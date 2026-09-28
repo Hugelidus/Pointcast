@@ -216,7 +216,7 @@ em.g {
 
 /* ---------------------------------------------------------------- the spec */
 
-#doc {
+#doc, #doc3 {
   left: 370px; top: 186px; width: 860px;
   padding: 18px 34px 26px;
   border-radius: 18px;
@@ -226,8 +226,8 @@ em.g {
   transform-origin: 0 0;
   opacity: 0;
 }
-#doc .doc-head { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 17px; font-weight: 600; color: var(--muted); }
-#doc .doc-head .ok { color: #34a853; font-weight: 800; }
+#doc .doc-head, #doc3 .doc-head { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 17px; font-weight: 600; color: var(--muted); }
+#doc .doc-head .ok, #doc3 .doc-head .ok { color: #34a853; font-weight: 800; }
 .spec { font-family: var(--mono); font-size: 21px; line-height: 38px; color: #e9e6ff; }
 .spec .ln { position: relative; height: 38px; white-space: pre; }
 .spec .gap { height: 14px; }
@@ -272,3 +272,32 @@ em.g {
 
 #arrows { left: 0; top: 0; overflow: visible; pointer-events: none; }
 .spec .mk2 { color: #f0abfc; font-weight: 700; }
+
+/* ---------------------------------------------------------------- scene 5: typed mode */
+
+/* The note box of packages/extension/src/content/note-box.ts (its STYLE, the textarea focused),
+   drawn at 2x like the pill so it reads. */
+.note { left: 0; top: 0; width: 600px; transform-origin: 0 0; }
+.note .box {
+  box-sizing: border-box; display: grid; gap: 12px; padding: 16px;
+  border-radius: 20px; background: rgba(18, 15, 45, 0.96); color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.16); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  font: 500 26px/1.4 Inter, system-ui, sans-serif;
+}
+.note .title { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 600; letter-spacing: 0.02em; color: #c4b5fd; }
+.note .dot { width: 12px; height: 12px; border-radius: 50%; background: #a78bfa; }
+.note .textarea {
+  /* textarea at rows=3 (min-height 56px, 1x) with :focus's outline. */
+  position: relative; box-sizing: border-box; width: 100%; min-height: 112px; padding: 12px 16px;
+  border-radius: 12px; border: 2px solid transparent; outline: 4px solid #a78bfa; outline-offset: 2px;
+  background: rgba(255, 255, 255, 0.07); color: #fff; font-weight: 400; white-space: pre-wrap;
+}
+.note .ph { position: absolute; left: 16px; top: 12px; color: rgba(255, 255, 255, 0.6); }
+.note .caret { display: inline-block; width: 2.5px; height: 1.15em; margin-left: 1px; vertical-align: -0.2em; background: #c4b5fd; }
+.note .hint { font-size: 22px; color: rgba(255, 255, 255, 0.7); }
+.note kbd { font: 21px ui-monospace, Consolas, monospace; padding: 0 6px; border: 2px solid rgba(255, 255, 255, 0.35); border-radius: 6px; }
+#enterkey { left: 0; top: 0; }
+
+/* Scene 6's place and size of the spec (DOC6 in timeline.js). */
+#doc3 { left: 50px; top: 196px; }
+#editor3 { left: 700px; top: 178px; width: 840px; opacity: 0; }

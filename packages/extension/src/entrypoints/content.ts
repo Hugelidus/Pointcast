@@ -2,12 +2,13 @@ import { defineContentScript } from "wxt/utils/define-content-script";
 import { createCaptureController } from "../content/capture-controller";
 import { flashElement } from "../content/flash";
 import { createIndicator, followWithPill } from "../content/indicator";
-import { followState, sendDraft } from "../content/recorder-link";
+import { createNoteBox } from "../content/note-box";
+import { discardEvent, followState, sendDraft, sendNote } from "../content/recorder-link";
 import { createUndoFeedback } from "../content/undo-feedback";
 import { isLocalDevUrl, LOCAL_HOST_MATCHES } from "../hosts";
 import { isCapturableUrl } from "../sites";
 import { listenFor } from "../messages";
-import { isRecording } from "../recorder-state";
+import { isRecording, isTyped } from "../recorder-state";
 import { watchStore } from "../state-store";
 
 /**
@@ -37,14 +38,23 @@ export default defineContentScript({
       notice: (text) => pill.notice(text),
       isVisible: () => document.visibilityState === "visible",
     });
+    // Typed mode (D12): each gesture opens a box for its note. Created before capture can start:
+    // its window listener then runs before capture's, so a click inside the box is the box's own
+    // and a press that ends up pointing again is seen before capture cancels it (note-box.ts).
+    const notes = createNoteBox(document, { setNote: sendNote, discard: discardEvent });
+    let typed = false;
     const capture = createCaptureController(document, {
-      // Fire and forget: the recorder answers asynchronously, and waiting would delay the
-      // app's reaction to the click. A rejected draft (recording just stopped) is dropped;
-      // an accepted one is remembered so Undo can flash its element.
-      send: (draft, target) =>
-        void sendDraft(draft).then((result) => {
-          if (result.accepted) undo.remember(result.id, target);
-        }),
+      // Not awaited: the recorder answers asynchronously, and waiting would delay the app's
+      // reaction to the click. A rejected draft (recording just stopped) is dropped; an accepted
+      // one is remembered so Undo can flash its element.
+      send: (draft, target) => {
+        const accepted = sendDraft(draft).then((result) => {
+          if (!result.accepted) return undefined;
+          undo.remember(result.id, target);
+          return result.id;
+        });
+        if (typed) notes.open(accepted, target);
+      },
       flash: (target) => flashElement(target),
       // PRIVACY (D8 note 2026-09-27): a site the user enabled is not their own dev build, so
       // text that looks like personal data (emails, phone numbers...) is redacted as well.
@@ -54,6 +64,7 @@ export default defineContentScript({
     // calls only touch the DOM, so they cannot fail in an orphaned copy.
     ctx.onInvalidated(() => {
       capture.stop();
+      notes.dispose();
       pill.stop();
     });
 
@@ -66,9 +77,11 @@ export default defineContentScript({
       if (isRecording(state)) {
         // A new recording: event ids restart at e1.
         if (!recording) undo.reset();
+        typed = isTyped(state);
         capture.start();
       } else {
         capture.stop();
+        notes.close();
       }
       recording = isRecording(state);
       pill.update(state);
@@ -84,11 +97,15 @@ export default defineContentScript({
       }
     };
     const unwatch = watchStore((changes) => {
-      if (changes.undone) undo.undone(changes.undone);
+      if (changes.undone) {
+        notes.undone(changes.undone.id);
+        undo.undone(changes.undone);
+      }
       // The user removed this site (popup, or Chrome's "Site access" menu). Chrome keeps this
       // script running until the page reloads, so it releases the page itself (D8 note).
       if (changes.sites && !isCapturableUrl(location.href, changes.sites)) {
         capture.stop();
+        notes.dispose();
         pill.stop();
         disconnect();
       }

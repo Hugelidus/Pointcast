@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 (unreleased)
+
+**Typed mode: type instead of talking** ([D12](docs/decisions.md#d12-typed-mode))
+- The popup has a **🎤 Voice / ⌨️ Typed** choice above Record, remembered for the next recordings. Typed never opens the microphone: no permission page, no speech model download, no audio.
+- While recording in Typed mode the pill says **● Notes**, and each Alt+click (or text selection) opens a small note box next to the element: Enter saves, Shift+Enter starts a new line, Esc drops that gesture, a click outside saves what you typed (or drops an empty box), and pointing at the next element (Alt+click or a selection) saves the open one. Keys typed into the box never reach your app, and its scripts cannot read the note. The box also works inside modal dialogs and focus-trapped panels.
+- Stop turns the notes into the spec right away, with the same result as a voice recording: copied, sent to your agent's MCP server or saved to Downloads, and announced in the popup. Each note becomes a request (`> This button should export only the filtered orders. [a]`) followed by its element and code pointer as before.
+- Session format: `session.json` gains an optional `inputMode` (`"typed"`) and events an optional `note`. Both are optional, so older sessions and readers are unaffected. A typed session has no `words.json` or audio; `pointcast process`, `get_session` and `pointcast issue` render it from its notes without transcribing.
+
 ## 0.3.0 (2026-09-28)
 
 Extension, CLI and integrations at 0.3.0.

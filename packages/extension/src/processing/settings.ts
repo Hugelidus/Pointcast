@@ -2,6 +2,7 @@
  * The popup's settings, kept in chrome.storage.local so they survive browser restarts.
  * Read by the service worker when a recording stops, never cached in a variable (D6).
  */
+import type { InputMode } from "@pointcast/core";
 
 export interface Settings {
   /** "auto", or an ISO 639-1 code Whisper knows (WHISPER_LANGUAGES). */
@@ -15,9 +16,15 @@ export interface Settings {
    * default: it only acts when a server answers, and the files land where its tools read them.
    */
   handoff: boolean;
+  /**
+   * Speak, or type a note for each gesture (D12). Read by the service worker at Record, so a
+   * recording keeps the mode it started with. Voice by default: settings saved before 0.4.0 have
+   * no such field.
+   */
+  inputMode: InputMode;
 }
 
-export const DEFAULT_SETTINGS: Settings = { language: "auto", keepAudio: false, notify: true, handoff: true };
+export const DEFAULT_SETTINGS: Settings = { language: "auto", keepAudio: false, notify: true, handoff: true, inputMode: "voice" };
 
 /** chrome.storage.local key. */
 export const SETTINGS_KEY = "settings";
@@ -42,6 +49,7 @@ export function parseSettings(value: unknown): Settings {
     keepAudio: typeof v.keepAudio === "boolean" ? v.keepAudio : DEFAULT_SETTINGS.keepAudio,
     notify: typeof v.notify === "boolean" ? v.notify : DEFAULT_SETTINGS.notify,
     handoff: typeof v.handoff === "boolean" ? v.handoff : DEFAULT_SETTINGS.handoff,
+    inputMode: v.inputMode === "typed" || v.inputMode === "voice" ? v.inputMode : DEFAULT_SETTINGS.inputMode,
   };
 }
 

@@ -204,3 +204,40 @@ describe("processSession", () => {
     expect(result.timings).toBeUndefined();
   });
 });
+
+describe("processSession of a typed session (D12)", () => {
+  const typedJob = (extra: Partial<ProcessingJob> = {}) =>
+    job({
+      events: [{ ...event, note: "Sort by this column" }],
+      audio: { decoded: false, typed: true, durationMs: 8_000 },
+      ...extra,
+    });
+
+  it("renders the notes at once: no transcription, no audio, no words.json, no timings", async () => {
+    const d = deps();
+    const result = await processSession(typedJob(), d);
+
+    expect(d.transcribe).not.toHaveBeenCalled();
+    expect(names(result.files)).toEqual(["session.md", "session.json"]);
+    expect(result.markdown).toContain("> Sort by this column [a]\n\n- [a] th «Quantity» on `/`");
+    expect(d.copy).toHaveBeenCalledWith(result.markdown);
+    expect(result).toMatchObject({ copied: true, audioMs: 8_000 });
+    expect(result.timings).toBeUndefined();
+    expect(result.language).toBeUndefined();
+    const session = await json<SessionFile>(result.files, "session.json");
+    expect(session).toMatchObject({ inputMode: "typed", durationMs: 8_000, schemaVersion: 2 });
+    expect(session.audio).toBeUndefined();
+    expect(session.events[0]?.note).toBe("Sort by this column");
+  });
+
+  it("resolves the code pointers and still saves when the clipboard fails", async () => {
+    const d = deps();
+    d.copy.mockRejectedValue(new Error("Document is not focused"));
+    const resolveCode = vi.fn(async (session: SessionFile) => ({ session, note: "Code pointer: 1 location found." }));
+    const result = await processSession(typedJob(), { ...d, resolveCode });
+    expect(resolveCode).toHaveBeenCalledOnce();
+    expect(result).toMatchObject({ copied: false, code: "Code pointer: 1 location found." });
+    expect(result.warning).toMatch(/Copy again/);
+    expect(names(result.files)).toEqual(["session.md", "session.json"]);
+  });
+});

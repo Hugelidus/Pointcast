@@ -1,6 +1,7 @@
-import type { CapturedEventDraft } from "@pointcast/core";
+import type { CapturedEvent, CapturedEventDraft, InputMode } from "@pointcast/core";
 import {
   sendMessage,
+  type CaptureChangeResult,
   type CaptureEventResult,
   type OffscreenMessage,
   type ProcessingOptions,
@@ -17,7 +18,9 @@ import type { LiveTranscription } from "./live-transcription";
 import type { ProcessingJob } from "./session-processor";
 
 interface ActiveSession {
-  recording: MicrophoneRecording;
+  /** Null in typed mode (D12): nothing is recorded, not even opened. */
+  recording: MicrophoneRecording | null;
+  t0: number;
   log: EventLog;
   live: LiveTranscription | undefined;
 }
@@ -50,24 +53,41 @@ export class Recorder {
 
   handle(
     message: OffscreenMessage,
-  ): Promise<RecorderStartResult | RecorderStopResult | CaptureEventResult | RecorderUndoResult> {
+  ): Promise<RecorderStartResult | RecorderStopResult | CaptureEventResult | CaptureChangeResult | RecorderUndoResult> {
     switch (message.type) {
       case "recorder-start":
-        return this.#start(message.language);
+        return this.#start(message.language, message.inputMode ?? "voice");
       case "recorder-stop":
         return this.#stop(message.extensionVersion, message.sessionId, message.options);
       case "capture-event":
         return Promise.resolve(this.#capture(message.draft));
+      case "capture-note":
+        return Promise.resolve({ ok: this.#active?.log.setNote(message.id, message.note) ?? false });
+      case "capture-discard":
+        return Promise.resolve(this.#discard(message.id));
       case "recorder-undo":
         return Promise.resolve(this.#undo());
     }
   }
 
-  async #start(language: string | undefined): Promise<RecorderStartResult> {
+  async #start(language: string | undefined, inputMode: InputMode): Promise<RecorderStartResult> {
     if (this.#active) return { ok: false, reason: "error", error: "Already recording." };
+    if (inputMode === "typed") {
+      // D12: no microphone (so no permission prompt), no audio, no speech model. t0 is only the
+      // origin of the event times.
+      const t0 = Date.now();
+      this.#active = { recording: null, t0, log: new EventLog(t0), live: undefined };
+      this.#lastStop = null;
+      return { ok: true, t0 };
+    }
     try {
       const recording = await MicrophoneRecording.start();
-      this.#active = { recording, log: new EventLog(recording.t0), live: this.#startLive(recording, language) };
+      this.#active = {
+        recording,
+        t0: recording.t0,
+        log: new EventLog(recording.t0),
+        live: this.#startLive(recording, language),
+      };
       this.#lastStop = null;
       return { ok: true, t0: recording.t0 };
     } catch (error) {
@@ -92,6 +112,22 @@ export class Recorder {
   ): Promise<RecorderStopResult> {
     const { recording, log, live } = active;
     const stoppedAt = Date.now();
+    if (recording === null) {
+      // Typed mode (D12): nothing to stop or decode; the spec is made from the notes right away.
+      const events = log.session();
+      const durationMs = Math.max(0, stoppedAt - active.t0);
+      this.startProcessing({
+        sessionId,
+        t0: active.t0,
+        events,
+        extensionVersion,
+        userAgent: navigator.userAgent,
+        audio: { decoded: false, typed: true, durationMs },
+        warnings: [],
+        options,
+      });
+      return { ok: true, sessionId, durationMs, pendingMs: 0, modelLoaded: false, eventCount: events.length };
+    }
     let compressed: Blob;
     try {
       compressed = await recording.stop();
@@ -119,7 +155,7 @@ export class Recorder {
       audio = { decoded: false, raw: compressed, durationMs, error: errorMessage(error) };
     }
 
-    const events = log.events;
+    const events = log.session();
     const durationMs = audio.decoded ? samplesDurationMs(audio.samples) : audio.durationMs;
     this.startProcessing({
       ...(live ? { live } : {}),
@@ -155,14 +191,27 @@ export class Recorder {
   #capture(draft: CapturedEventDraft): CaptureEventResult {
     if (!this.#active) return { accepted: false };
     const event = this.#active.log.add(draft);
-    // Fire and forget: the count and the summary are only for the popup; losing one update is harmless.
+    this.#reportCount(this.#active.log.events, event);
+    return { accepted: true, id: event.id };
+  }
+
+  /** Typed mode (D12): the note box was cancelled, so its gesture goes, as with Undo. */
+  #discard(id: string): CaptureChangeResult {
+    const log = this.#active?.log;
+    if (!log?.remove(id)) return { ok: false };
+    this.#reportCount(log.events, log.events.at(-1));
+    return { ok: true };
+  }
+
+  /** Fire and forget: the count and the summary are only for the popup; losing one update is harmless. */
+  #reportCount(events: readonly CapturedEvent[], last: CapturedEvent | undefined): void {
     sendMessage({
       to: "background",
       type: "event-count",
-      count: this.#active.log.events.length,
-      lastEvent: summarizeEvent(event),
+      count: events.length,
+      // The service worker stores "" as no last event (parseLastEvent).
+      lastEvent: last ? summarizeEvent(last) : "",
     }).catch(() => undefined);
-    return { accepted: true, id: event.id };
   }
 
   /**

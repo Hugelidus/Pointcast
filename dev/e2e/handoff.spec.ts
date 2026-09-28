@@ -148,8 +148,8 @@ test("fallbacks: setting off makes no request; a refusing server gets a warning;
     const handoff = popup.locator("#handoff");
     await expect(handoff).toBeChecked();
     await handoff.uncheck();
-    // The popup writes all four fields: turning this off must not reset the others.
-    await expect.poll(() => storedSettings(popup)).toEqual({ language: "es", keepAudio: false, notify: true, handoff: false });
+    // The popup writes every field: turning this off must not reset the others.
+    await expect.poll(() => storedSettings(popup)).toEqual({ language: "es", keepAudio: false, notify: true, handoff: false, inputMode: "voice" });
     await startFromPopup(popup);
     await popup.waitForTimeout(3_000);
     const off = await stopFromPopup(popup);

@@ -1,4 +1,4 @@
-import { SCHEMA_VERSION, type CapturedEvent, type SessionFile } from "@pointcast/core";
+import { SCHEMA_VERSION, type CapturedEvent, type InputMode, type SessionFile } from "@pointcast/core";
 
 /** Format of audio.wav: what Whisper expects, so the CLI never needs ffmpeg (D6). */
 export const AUDIO_FILE = { file: "audio.wav", format: "wav", sampleRate: 16000, channels: 1 } as const;
@@ -19,6 +19,8 @@ export interface SessionFileInput {
   userAgent: string;
   /** True when audio.wav (or the raw recording, named as audio.wav would be) is saved too. */
   withAudio: boolean;
+  /** Written only for typed sessions (D12): absent means voice, as in every older session. */
+  inputMode?: InputMode;
 }
 
 export function buildSessionFile(input: SessionFileInput): SessionFile {
@@ -33,5 +35,6 @@ export function buildSessionFile(input: SessionFileInput): SessionFile {
     ...(input.withAudio ? { audio: { ...AUDIO_FILE } } : {}),
     recorder: { extensionVersion: input.extensionVersion, userAgent: input.userAgent },
     events: [...input.events],
+    ...(input.inputMode === "typed" ? { inputMode: "typed" as const } : {}),
   };
 }

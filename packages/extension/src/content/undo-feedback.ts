@@ -38,7 +38,7 @@ export function createUndoFeedback(deps: UndoFeedbackDependencies): UndoFeedback
     },
     undone({ id, summary }) {
       const target = targets.get(id)?.deref();
-      // The id is free again: the next gesture reuses it (offscreen/event-log.ts).
+      // Ids are never reused within a recording (offscreen/event-log.ts): this one is done.
       targets.delete(id);
       if (target?.isConnected) deps.flash(target);
       if (target || deps.isVisible()) deps.notice(`Undone: ${readableSummary(summary)}`);

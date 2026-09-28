@@ -6,12 +6,14 @@
 "use strict";
 
 /** Length of one loop, in seconds. renderAt(DURATION) looks exactly like renderAt(0). */
-const DURATION = 17.9;
+const DURATION = 23.95;
 
 // ---------------------------------------------------------------- timeline (seconds)
 
 const SPEC = 8.8; // scene 5: the phrases leave the page for the spec
 const CODE = SPEC + 3.2; // scene 6: the editor
+const TYPED = CODE + 3.2; // scene 7: the same gesture with a typed note instead of words
+const END = TYPED + 6.45; // the end card
 const T = {
   titleOut: 1.0, // the title holds until here, then clears in 0.5 s
   browserIn: 1.1,
@@ -35,13 +37,27 @@ const T = {
   code: CODE,
   arrow1: [CODE + 0.95, CODE + 1.45],
   arrow2: [CODE + 1.8, CODE + 2.3],
-  endOut: CODE + 3.2,
-  end: CODE + 3.5,
+  typed: TYPED,
+  // Scene 7: the browser comes back (still scrolled to the Orders table), the pill reads "Notes".
+  browser2: TYPED + 0.15,
+  move3: [TYPED + 0.55, TYPED + 1.1],
+  click3: TYPED + 1.2, // on «Status»: the note box opens by it, with the focus
+  typing: [TYPED + 1.4, TYPED + 2.75],
+  enter: TYPED + 3.1, // saves the note and closes the box
+  stopKeys2: TYPED + 3.15,
+  stopPress2: TYPED + 3.35,
+  done2: TYPED + 3.7, // no words to transcribe: the spec is ready at once
+  spec2: TYPED + 4.05,
+  arrow3: [TYPED + 4.9, TYPED + 5.35],
+  endOut: END - 0.3,
+  end: END,
   loop: DURATION - 0.6, // the end card starts turning back into the title
 };
 
 const WORDS1 = ["This", "should", "take", "you", "to", "the", "reports", "page."];
 const WORDS2 = ["And", "this", "button", "should", "export", "only", "the", "filtered", "orders."];
+/** Scene 7's note, typed a character at a time. */
+const NOTE = "Show each status as a colored badge.";
 /** How far the page scrolls (CSS px of the app, shown at 1.3x). */
 const SCROLL = 150;
 const ZOOM = 1.3;
@@ -128,6 +144,10 @@ function rectOf(el) {
 const DOC5 = { x: 370, y: 186 };
 const DOC6 = { x: 50, y: 196, s: 0.74 };
 const toDoc6 = (p) => ({ x: DOC6.x + (p.x - DOC5.x) * DOC6.s, y: DOC6.y + (p.y - DOC5.y) * DOC6.s });
+/** Scene 7's spec is at scene 6's place from the start (#doc3 sits at DOC6, scaled from there). */
+const toDoc3 = (p) => ({ x: DOC6.x + (p.x - DOC6.x) * DOC6.s, y: DOC6.y + (p.y - DOC6.y) * DOC6.s });
+/** The note box's WIDTH_PX and GAP_PX (note-box.ts), at the 2x it is drawn at. */
+const NOTE_W = 600, NOTE_GAP = 16;
 
 function measure() {
   // Everything at rest: no transform, markers at full width (the final line layout).
@@ -139,10 +159,24 @@ function measure() {
   L.report = rectOf($("t-report"));
   app.style.transform = `translateY(${-SCROLL * ZOOM}px) scale(${ZOOM})`;
   L.export = rectOf($("t-export")); // where it is once the page has scrolled
+  L.status = rectOf($("t-status"));
   app.style.transform = `scale(${ZOOM})`;
-  for (const [id, r] of [["flash1", L.report], ["flash2", L.export]]) {
+  for (const [id, r] of [["flash1", L.report], ["flash2", L.export], ["flash3", L.status]]) {
     Object.assign($(id).style, { left: `${r.x}px`, top: `${r.y}px`, width: `${r.w}px`, height: `${r.h}px` });
   }
+
+  // The note box where note-box.ts place() puts it: below the element when it fits, its left edge
+  // on the element's but kept inside the viewport.
+  const vp = rectOf(document.querySelector("#browser .viewport"));
+  const note = $("note");
+  const noteH = note.offsetHeight;
+  const below = L.status.y + L.status.h + NOTE_GAP;
+  const noteTop = below + noteH <= vp.y + vp.h - NOTE_GAP ? below : L.status.y - NOTE_GAP - noteH;
+  const noteLeft = Math.min(Math.max(vp.x + NOTE_GAP, L.status.x), vp.x + vp.w - NOTE_GAP - NOTE_W);
+  L.note = { x: noteLeft, y: noteTop, w: NOTE_W, h: noteH };
+  Object.assign(note.style, { left: `${noteLeft}px`, top: `${noteTop}px` });
+  const enter = $("enterkey");
+  Object.assign(enter.style, { left: `${noteLeft + NOTE_W - enter.offsetWidth - 8}px`, top: `${noteTop + noteH + 14}px` });
 
   // Bubble 1 to the right of «View report» (over the Orders card, never over Revenue); bubble 2
   // above «Export», over the sales chart, its tail pointing down at the button.
@@ -170,6 +204,8 @@ function measure() {
   L.loc2 = rectOf($("loc2"));
   L.row11 = rectOf($("code1").querySelector(".row.hot"));
   L.row22 = rectOf($("code2").querySelector(".row.hot"));
+  L.loc3 = rectOf($("loc3"));
+  L.row31 = rectOf($("code3").querySelector(".row.hot"));
 
   // The flying phrases start as the bubbles' text.
   for (const [fly, said, rect] of [["fly1", "said1", L.said1], ["fly2", "said2", L.said2]]) {
@@ -183,8 +219,8 @@ function measure() {
   L.words2W = L.words2.w - L.mk;
 
   // Arrows: from each location in the spec (at its scene-6 place) to its line in the editor.
-  for (const [g, loc, row] of [["arrow1", L.loc1, L.row11], ["arrow2", L.loc2, L.row22]]) {
-    const a = toDoc6({ x: loc.x + loc.w, y: loc.cy });
+  for (const [g, loc, row, toPlace] of [["arrow1", L.loc1, L.row11, toDoc6], ["arrow2", L.loc2, L.row22, toDoc6], ["arrow3", L.loc3, L.row31, toDoc3]]) {
+    const a = toPlace({ x: loc.x + loc.w, y: loc.cy });
     const x0 = a.x + 14, y0 = a.y;
     const x1 = row.x - 8, y1 = row.cy;
     const dx = Math.max(60, (x1 - x0) * 0.55);
@@ -207,6 +243,7 @@ function cursorAt(t) {
     const u = 1 - e;
     return { x: u * u * a.x + 2 * u * e * c.x + e * e * b.x, y: u * u * a.y + 2 * u * e * c.y + e * e * b.y };
   };
+  if (t >= T.typed) return arc(start, { x: L.status.x + L.status.w * 0.5, y: L.status.cy + 3 }, prog(t, ...T.move3), 60);
   if (t < T.move2[0]) return arc(start, p1, prog(t, ...T.move1), 60);
   // The cursor stays put while the page scrolls under it, then goes to Export.
   return arc(p1, p2, prog(t, ...T.move2), 70);
@@ -246,7 +283,7 @@ function renderAt(tRaw) {
   }
 
   // ---- headers and the corner brand
-  const heads = [["h1", T.browserIn + 0.1, T.stopKeys - 0.1], ["h2", T.stopKeys - 0.1, T.spec], ["h3", T.spec, T.code], ["h4", T.code, T.endOut]];
+  const heads = [["h1", T.browserIn + 0.1, T.stopKeys - 0.1], ["h2", T.stopKeys - 0.1, T.spec], ["h3", T.spec, T.code], ["h4", T.code, T.typed], ["h5", T.typed, T.endOut]];
   for (const [id, a, b] of heads) {
     const op = span(t, a, b - 0.15, 0.45, 0.3);
     const y = 14 * (1 - out(prog(t, a, a + 0.45)));
@@ -257,7 +294,11 @@ function renderAt(tRaw) {
   // ---- browser
   const bin = outQuint(prog(t, T.browserIn, T.browserIn + 0.75));
   const bout = inOut(prog(t, T.spec, T.spec + 0.5));
-  style($("browser"), Math.min(bin, 1 - bout), `translateY(${40 * (1 - bin) + 40 * bout}px) scale(${(0.96 + 0.04 * bin) * (1 - 0.1 * bout)})`);
+  // Scene 7 brings it back the same way, and sends it off the same way for its spec.
+  const bin2 = outQuint(prog(t, T.browser2, T.browser2 + 0.75));
+  const bout2 = inOut(prog(t, T.spec2, T.spec2 + 0.35));
+  const [bi, bo] = t < T.typed ? [bin, bout] : [bin2, bout2];
+  style($("browser"), Math.min(bi, 1 - bo), `translateY(${40 * (1 - bi) + 40 * bo}px) scale(${(0.96 + 0.04 * bi) * (1 - 0.1 * bo)})`);
 
   // pill states
   const rec = span(t, T.browserIn + 0.5, T.processing - 0.12, 0.3, 0.12);
@@ -268,35 +309,45 @@ function renderAt(tRaw) {
   $("proc-fill").style.width = `${(6 + 88 * out(pp)).toFixed(2)}%`;
   $("proc-text").textContent = `Processing… ~0:0${Math.max(1, 3 - Math.floor(pp * 3))}`;
   $("pill-proc").querySelector(".dot").style.transform = `scale(${0.8 + 0.2 * Math.sin(2 * Math.PI * (t - T.processing) * 1.2)})`;
-  const done = out(prog(t, T.done, T.done + 0.25));
-  style($("pill-done"), done, `scale(${0.9 + 0.1 * back(prog(t, T.done, T.done + 0.35))})`);
+  // A typed recording's pill reads "Notes" (indicator.ts): no microphone is on.
+  const notes = span(t, T.browser2 + 0.5, T.done2 - 0.12, 0.3, 0.12);
+  style($("pill-notes"), notes, `scale(${0.9 + 0.1 * back(prog(t, T.browser2 + 0.5, T.browser2 + 0.8))})`);
+  const doneAt = t < T.typed ? T.done : T.done2;
+  const done = out(prog(t, doneAt, doneAt + 0.25));
+  style($("pill-done"), done, `scale(${0.9 + 0.1 * back(prog(t, doneAt, doneAt + 0.35))})`);
 
   // ---- cursor, Alt key, flash, ripple
   const cur = cursorAt(t);
-  const curOp = Math.min(out(prog(t, T.cursorIn, T.cursorIn + 0.3)), 1 - inOut(prog(t, T.cursorOut, T.cursorOut + 0.3)), 1 - bout);
+  const curOp = t < T.typed
+    ? Math.min(out(prog(t, T.cursorIn, T.cursorIn + 0.3)), 1 - inOut(prog(t, T.cursorOut, T.cursorOut + 0.3)), 1 - bout)
+    : Math.min(out(prog(t, T.move3[0] - 0.25, T.move3[0] + 0.05)), 1 - inOut(prog(t, T.click3 + 0.35, T.click3 + 0.65)));
   const press = (c) => { const d = t - c; return d < -0.08 || d > 0.2 ? 0 : d < 0 ? (d + 0.08) / 0.08 : 1 - d / 0.2; };
-  const pressing = Math.max(press(T.click1), press(T.click2));
+  const pressing = Math.max(press(T.click1), press(T.click2), press(T.click3));
   style($("cursor"), curOp, `translate(${cur.x - 2}px, ${cur.y - 2}px) scale(${1 - 0.14 * pressing})`);
 
-  const altOp = Math.max(span(t, T.click1 - 0.45, T.click1 + 0.45, 0.2, 0.25), span(t, T.click2 - 0.45, T.click2 + 0.45, 0.2, 0.25));
+  const clicks = [T.click1, T.click2, T.click3];
+  const altOp = Math.max(...clicks.map((c) => span(t, c - 0.45, c + 0.45, 0.2, 0.25)));
   style($("altkey"), altOp, `translate(${cur.x + 26}px, ${cur.y + 30}px)`);
-  const altDown = Math.abs(t - T.click1) < 0.12 || Math.abs(t - T.click2) < 0.12;
+  const altDown = clicks.some((c) => Math.abs(t - c) < 0.12);
   $("altkey").firstElementChild.classList.toggle("down", altDown);
 
   // The capture flash, as the extension draws it: full, then fading over the last 40 %.
   const flash = (c) => { const d = t - c; const dur = 0.75; return d < 0 || d > dur ? 0 : d < dur * 0.6 ? 1 : 1 - (d - dur * 0.6) / (dur * 0.4); };
   style($("flash1"), flash(T.click1));
   style($("flash2"), flash(T.click2));
+  style($("flash3"), flash(T.click3));
   const rip = (c) => prog(t, c, c + 0.55);
-  const r = t < T.move2[0] ? rip(T.click1) : rip(T.click2);
+  const r = t < T.move2[0] ? rip(T.click1) : t < T.typed ? rip(T.click2) : rip(T.click3);
   const ro = r <= 0 || r >= 1 ? 0 : 1 - r;
   style($("ripple"), ro, `translate(${cur.x}px, ${cur.y}px)`);
   $("ripple").style.setProperty("--s", (0.2 + 0.8 * out(r)).toFixed(3));
 
-  // Stop shortcut
-  const sk = span(t, T.stopKeys, T.processing + 0.35, 0.3, 0.3);
-  style($("stopkeys"), sk, `translate(${1400 - 24 - 330 - 310}px, ${172 + 690 - 24 - 72 + 10 * (1 - out(prog(t, T.stopKeys, T.stopKeys + 0.3)))}px)`);
-  const sDown = t >= T.stopPress && t < T.stopPress + 0.16;
+  // Stop shortcut. A typed recording has no processing pill to stand beside: the keys go before
+  // the done pill takes their corner.
+  const [skAt, skPress, skOut] = t < T.typed ? [T.stopKeys, T.stopPress, T.processing + 0.35] : [T.stopKeys2, T.stopPress2, T.stopPress2 + 0.05];
+  const sk = span(t, skAt, skOut, 0.3, 0.3);
+  style($("stopkeys"), sk, `translate(${1400 - 24 - 330 - 310}px, ${172 + 690 - 24 - 72 + 10 * (1 - out(prog(t, skAt, skAt + 0.3)))}px)`);
+  const sDown = t >= skPress && t < skPress + 0.16;
   for (const k of $("stopkeys").querySelectorAll(".key")) k.classList.toggle("down", sDown);
 
   // ---- speech bubbles, typed word by word
@@ -325,7 +376,7 @@ function renderAt(tRaw) {
   // ---- scene 5: the phrases fly into the spec
   const docMove = inOut(prog(t, T.code, T.code + 0.7));
   const docIn = out(prog(t, T.spec + 0.35, T.spec + 0.8));
-  const docOut = inOut(prog(t, T.endOut, T.endOut + 0.4));
+  const docOut = inOut(prog(t, T.typed, T.typed + 0.4));
   const dx = mix(0, DOC6.x - DOC5.x, docMove), dy = mix(18 * (1 - docIn), DOC6.y - DOC5.y, docMove), ds = mix(1, DOC6.s, docMove);
   style($("doc"), Math.min(docIn, 1 - docOut), `translate(${dx}px, ${dy}px) scale(${ds})`);
 
@@ -375,14 +426,34 @@ function renderAt(tRaw) {
   // ---- scene 6: the editor and the arrows
   const edIn = outQuint(prog(t, T.code + 0.2, T.code + 0.95));
   style($("editor"), Math.min(edIn, 1 - docOut), `translateX(${60 * (1 - edIn)}px)`);
-  const arrows = [["arrow1", T.arrow1, "loc1", "code1"], ["arrow2", T.arrow2, "loc2", "code2"]];
-  for (const [g, [a, b], loc, code] of arrows) {
+  // ---- scene 7: the note box, then the typed request and its line
+  // The box appears as note-box.ts animates it (120 ms, from 4 px up; 8 px here at 2x), and goes
+  // at once on Enter, as the host is removed.
+  const boxIn = out(prog(t, T.click3 + 0.02, T.click3 + 0.14));
+  style($("note"), t < T.enter + 0.04 ? boxIn : 0, `translateY(${(-8 * (1 - boxIn)).toFixed(2)}px)`);
+  const chars = Math.round(NOTE.length * prog(t, ...T.typing));
+  $("note-text").textContent = NOTE.slice(0, chars);
+  $("note-ph").style.visibility = chars === 0 ? "visible" : "hidden";
+  // The caret blinks while nothing is typed and holds still while typing, as a browser draws it.
+  const typing = t >= T.typing[0] && t <= T.typing[1] + 0.1;
+  $("note-caret").style.opacity = typing || (t - T.click3) % 1 < 0.5 ? "1" : "0";
+  style($("enterkey"), span(t, T.enter - 0.4, T.enter + 0.3, 0.2, 0.25), `translateY(${6 * (1 - out(prog(t, T.enter - 0.4, T.enter - 0.2)))}px)`);
+  $("enterkey").firstElementChild.classList.toggle("down", Math.abs(t - T.enter) < 0.1);
+
+  const doc3In = out(prog(t, T.spec2 + 0.25, T.spec2 + 0.7));
+  const endOut = inOut(prog(t, T.endOut, T.endOut + 0.4));
+  style($("doc3"), Math.min(doc3In, 1 - endOut), `translateY(${18 * (1 - doc3In)}px) scale(${DOC6.s})`);
+  const ed3In = outQuint(prog(t, T.spec2 + 0.25, T.spec2 + 1.0));
+  style($("editor3"), Math.min(ed3In, 1 - endOut), `translateX(${60 * (1 - ed3In)}px)`);
+
+  const arrows = [["arrow1", T.arrow1, "loc1", "code1", docOut], ["arrow2", T.arrow2, "loc2", "code2", docOut], ["arrow3", T.arrow3, "loc3", "code3", endOut]];
+  for (const [g, [a, b], loc, code, gone] of arrows) {
     const p = inOut(prog(t, a, b));
     const { path, len } = L[g];
     path.style.strokeDasharray = `${len}`;
     path.style.strokeDashoffset = `${(len * (1 - p)).toFixed(2)}`;
     const on = p > 0 ? 1 : 0;
-    const gop = Math.min(on, 1 - docOut);
+    const gop = Math.min(on, 1 - gone);
     style($(g), gop);
     $(g).querySelector(".head").style.opacity = out(prog(p, 0.85, 1)).toFixed(3);
     const spark = $(g).querySelector(".spark");
@@ -405,9 +476,11 @@ window.ready = (async () => {
   buildChart();
   buildWords("said1", WORDS1);
   buildWords("said2", WORDS2);
+  $("note-quote").textContent = NOTE;
   await Promise.all([
     buildCode("code1", "../../../dev/examples/react-dashboard/src/pages/Dashboard.tsx", 6, 15, 11),
     buildCode("code2", "../../../dev/examples/react-dashboard/src/components/OrdersTable.tsx", 17, 25, 22),
+    buildCode("code3", "../../../dev/examples/react-dashboard/src/components/OrdersTable.tsx", 25, 35, 31),
     document.fonts.ready,
     ...["400 16px Inter", "500 16px Inter", "600 16px Inter", "700 16px Inter", "800 16px Inter", "400 16px 'JetBrains Mono'", "600 16px 'JetBrains Mono'", "700 16px 'JetBrains Mono'"].map((f) => document.fonts.load(f).catch(() => {})),
     ...[...document.images].map((img) => (img.complete ? null : new Promise((r) => { img.onload = img.onerror = r; }))),

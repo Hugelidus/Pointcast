@@ -1,4 +1,5 @@
 import { browser } from "wxt/browser";
+import type { InputMode } from "@pointcast/core";
 import { IS_E2E } from "../../build-env";
 import { copyFromPopup } from "../../clipboard";
 import { openPermissionPage } from "../../background/permission-page";
@@ -9,6 +10,8 @@ import {
   formatElapsed,
   lastEventText,
   metaLine,
+  modeView,
+  pointingHint,
   popupView,
   processingPanel,
   recordingTimeMs,
@@ -90,6 +93,9 @@ const languageEl = byId<HTMLSelectElement>("language");
 const keepAudioEl = byId<HTMLInputElement>("keep-audio");
 const notifyEl = byId<HTMLInputElement>("notify");
 const handoffEl = byId<HTMLInputElement>("handoff");
+const modeEl = byId<HTMLFieldSetElement>("mode");
+const modeInputs = [...modeEl.querySelectorAll<HTMLInputElement>('input[name="mode"]')];
+const pointingEl = byId("pointing");
 
 // The popup only mirrors storage; the service worker owns every transition. These copies
 // are fine here: the popup is rebuilt from storage each time it opens.
@@ -114,6 +120,13 @@ let site: (SiteStatus & { pattern: string }) | undefined;
 let microphone: MicrophonePermission;
 /** Whether the speech model was ever loaded here (processing/stats.ts), for the first-run notice. */
 let modelReady: boolean | undefined;
+/** Settings.inputMode: what the next Record starts (D12). */
+let inputMode: InputMode = "voice";
+
+/** What the popup knows besides the state; typed mode needs no microphone (D12). */
+function context() {
+  return { microphone, offSite: site !== undefined && !site.enabled, inputMode };
+}
 
 function setMessage(message: Message | null): void {
   messageEl.hidden = message === null;
@@ -242,17 +255,22 @@ function renderResult(): void {
 
 function render(): void {
   const before = document.activeElement;
-  const view = popupView(state, { microphone, offSite: site !== undefined && !site.enabled });
+  const view = popupView(state, context());
   statusEl.textContent = view.statusText;
   statusEl.dataset["status"] = state.status;
 
-  const notice = firstRunNotice(state, microphone, modelReady);
+  const notice = firstRunNotice(state, microphone, modelReady, inputMode);
   firstRunEl.hidden = notice === null;
   firstRunTitleEl.textContent = notice?.title ?? "";
   firstRunTextEl.textContent = notice?.text ?? "";
 
   statsEl.hidden = !view.showStats;
   hintsEl.hidden = !view.showHints;
+  const mode = modeView(state, inputMode);
+  modeEl.hidden = !mode.visible;
+  modeEl.disabled = !mode.enabled;
+  for (const input of modeInputs) input.checked = input.value === mode.value;
+  pointingEl.textContent = pointingHint(mode.value);
 
   toggleEl.textContent = view.button.text;
   toggleEl.className = view.button.kind;
@@ -278,7 +296,7 @@ function render(): void {
   undoEl.disabled = !undo.enabled;
   undoEl.setAttribute("aria-disabled", String(undoPending));
 
-  const siteSection = siteView(site, microphone);
+  const siteSection = siteView(site, inputMode === "typed" ? undefined : microphone);
   siteEl.hidden = siteSection === null || !view.showTab;
   siteToggleEl.textContent = siteSection?.button ?? "";
   siteToggleEl.className = siteSection?.kind ?? "secondary";
@@ -435,7 +453,7 @@ undoEl.addEventListener("click", async () => {
 
 toggleEl.addEventListener("click", async () => {
   if (commandPending) return;
-  const action = popupView(state, { microphone, offSite: site !== undefined && !site.enabled }).button.action;
+  const action = popupView(state, context()).button.action;
   if (action === "allow-microphone") {
     // Opening the tab closes this popup; the permission page asks, then brings the user back to
     // the tab they were in, and the button here reads Record from the next time the popup opens.
@@ -507,6 +525,7 @@ function renderSettings(settings: Settings): void {
   keepAudioEl.checked = settings.keepAudio;
   notifyEl.checked = settings.notify;
   handoffEl.checked = settings.handoff;
+  inputMode = settings.inputMode;
 }
 
 function saveSettings(): void {
@@ -515,9 +534,18 @@ function saveSettings(): void {
     keepAudio: keepAudioEl.checked,
     notify: notifyEl.checked,
     handoff: handoffEl.checked,
+    inputMode,
   });
 }
 for (const element of [languageEl, keepAudioEl, notifyEl, handoffEl]) element.addEventListener("change", saveSettings);
+for (const input of modeInputs) {
+  input.addEventListener("change", () => {
+    if (!input.checked) return;
+    inputMode = input.value === "typed" ? "typed" : "voice";
+    saveSettings();
+    render();
+  });
+}
 
 /** The model may have been downloaded by the run that just ended: the first-run notice then goes. */
 async function refreshModelReady(): Promise<void> {

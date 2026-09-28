@@ -23,6 +23,18 @@ export async function sendDraft(draft: CapturedEventDraft): Promise<CaptureEvent
 }
 
 /**
+ * Typed mode (D12): the note of event `id`, or its removal (the note box was cancelled). Fire and
+ * forget: with no recording to receive it, there is nothing left to change.
+ */
+export function sendNote(id: string, note: string): void {
+  sendMessage({ to: "offscreen", type: "capture-note", id, note }).catch(() => undefined);
+}
+
+export function discardEvent(id: string): void {
+  sendMessage({ to: "offscreen", type: "capture-discard", id }).catch(() => undefined);
+}
+
+/**
  * Calls `onChange(state)` now (after asking the service worker) and whenever the recorder state
  * changes: the content script turns capture on and off with it, and draws the pill (REC, then
  * processing, then the outcome). Returns an unsubscribe function, after which `onChange` is

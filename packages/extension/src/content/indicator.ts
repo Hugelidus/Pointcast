@@ -72,7 +72,8 @@ const LEADING_GLYPH = new RegExp("^([\\u2713\\u2717\\u26A0])\\uFE0F?\\s*", "u");
 
 /** The glyph drawn in color (undefined: a dot) and the words, for an outcome's text. */
 export function splitGlyph(view: PillView): { glyph?: string; text: string } {
-  if (view.kind === "recording") return { text: "REC" };
+  // Typed mode (D12) records no sound: "REC" would suggest the microphone is on.
+  if (view.kind === "recording") return { text: view.typed ? "Notes" : "REC" };
   const match = LEADING_GLYPH.exec(view.text);
   const text = match ? view.text.slice(match[0].length) : view.text;
   const glyph = GLYPH_BY_KIND[view.kind];
@@ -86,7 +87,7 @@ export function splitGlyph(view: PillView): { glyph?: string; text: string } {
  */
 export function announcement(view: PillView | null): string {
   if (!view) return "";
-  if (view.kind === "recording") return "Pointcast is recording";
+  if (view.kind === "recording") return view.typed ? "Pointcast is recording notes" : "Pointcast is recording";
   const { text } = splitGlyph(view);
   if (view.kind !== "processing") return `Pointcast: ${text}`;
   const stage = text.replace(/\s*\(first time only\)/, "");

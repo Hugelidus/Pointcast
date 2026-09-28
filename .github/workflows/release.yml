@@ -83,7 +83,7 @@ jobs:
       # The store zip goes to the Chrome Web Store and Edge Add-ons by hand, never on the release
       # (it has no manifest key, so an unpacked install of it gets a random id).
       - name: Upload the store zip (workflow artifact only)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pointcast-${{ env.VERSION }}-chrome-store
           path: packages/extension/.output/pointcast-${{ env.VERSION }}-chrome-store.zip

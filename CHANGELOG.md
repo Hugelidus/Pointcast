@@ -1,5 +1,9 @@
 # Changelog
 
+## Extension 0.1.2 (2026-09-28)
+
+- The extension's name is "Pointcast", capitalized, in the Chrome Web Store, `chrome://extensions` and the toolbar tooltip.
+
 ## Extension 0.1.1 (2026-09-28)
 
 - New logo, drawn for every size: a pointer casting voice waves ("point" + "cast"), with a simplified 16 px version for the toolbar.

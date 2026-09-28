@@ -46,7 +46,7 @@ export default defineConfig({
   // helpers come from, which keeps the code readable without knowing WXT's magic.
   imports: false,
   manifest: {
-    name: "pointcast",
+    name: "Pointcast",
     description: "Talk and point at your web app: your coding agent gets a spec with the exact elements and the code behind them.",
     // storage: state machine in chrome.storage.session (D6), settings in chrome.storage.local.
     // offscreen: the only long-lived context that can hold a MediaRecorder (D6), and the one
@@ -67,7 +67,6 @@ export default defineConfig({
     // Any other site only when the user enables it, one host at a time, from the popup; Chrome
     // asks them first. Declared optional, so installing grants nothing beyond local hosts (D8).
     optional_host_permissions: [...OPTIONAL_SITE_MATCHES],
-    action: { default_title: "pointcast" },
     // ONNX Runtime compiles WebAssembly, which extension pages refuse without 'wasm-unsafe-eval'.
     content_security_policy: {
       extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",

@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="docs/launch/video/out/pointcast-demo.mp4"><img src="docs/launch/video/out/pointcast-demo.gif" alt="Pointcast in 18 seconds: Alt+click two elements while talking, press Stop, and the spoken requests become a spec whose code locations lead to the exact lines in the source" width="800"></a>
+  <a href="docs/launch/video/out/pointcast-demo.mp4"><img src="docs/launch/video/out/pointcast-hero.gif" alt="Alt+click a table cell while talking: your agent gets the source line that makes it, not the page's HTML" width="800"></a>
 </p>
 
 # Pointcast
@@ -9,6 +9,8 @@
 One recording covers a whole list of UI changes: say what you want while you point, press Stop, and Claude Code, Codex, Gemini CLI or Cursor get a spec that leads with `src/…:line`. In [an evaluation on three real admin dashboards](docs/eval/results-2026-09-27.md), pointing raised the agent's accuracy from 78 % to 89 % over the same words without pointing; in a follow-up, adding the code lines [cut the tokens it spent finding the elements by more than half](docs/eval/stage0-code-pointer-2026-09-27.md). Your voice is transcribed locally, in the browser.
 
 In a [typed-mode evaluation on four apps](docs/eval/results-2026-09-28-batching.md) (React, Vue, Svelte, Django), an agent reading one Pointcast recording with six changes found the right code 96 % of the time, against 85 % for a quick hand-typed request with the same six changes, with 24 % fewer tokens and 75 % fewer searches. One change per request is more accurate but [not cheaper](docs/eval/results-2026-09-28.md): the saving comes from batching.
+
+<img src="docs/launch/video/out/pointcast-batch.gif" alt="Three Alt+clicks in one recording become one spec with three requests" width="640">
 
 [![CI](https://github.com/Hugelidus/pointcast/actions/workflows/ci.yml/badge.svg)](https://github.com/Hugelidus/pointcast/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Hugelidus/pointcast?include_prereleases&label=beta)](https://github.com/Hugelidus/pointcast/releases)
@@ -41,6 +43,8 @@ Any other agent: paste the spec from the clipboard. (In Windows PowerShell 5.1, 
 **3. Record** on your app on `localhost`: press **Record**, talk while you **Alt+click** things, press **Stop**.
 
 **Rather type than talk?** Pick **⌨️ Typed** above Record in the popup. Each Alt+click then opens a small box next to the element: type what should change, press Enter (Esc drops that gesture). No microphone, no speech model, and Stop gives you the spec at once.
+
+<img src="docs/launch/video/out/pointcast-typed.gif" alt="Typed mode: Alt+click, type a note, press Enter" width="640">
 
 <details id="manual-install">
 <summary><b>Manual install (release zip)</b>, updating from 0.1.x, and where recordings go</summary>
@@ -77,6 +81,8 @@ Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://git
 (From a real recording on [dev/examples/react-dashboard](dev/examples/react-dashboard), spoken in Spanish and translated here; selector, DOM path and styles lines trimmed. The app has a second «Export» button, in another component: the spec names this one.)
 
 When something is broken ("this button does nothing"), the element also lists what failed on the page around that moment: uncaught errors, `console.error`/`warn` and failed requests (`POST /api/export → 500`), never a request body ([D13](docs/decisions.md#d13-debug-capture)).
+
+<img src="docs/launch/video/out/pointcast-errors.gif" alt="Alt+click a broken Export button: the spec lists the failed POST /api/export under it" width="640">
 
 Your agent fetches the spec through its plugin, or you paste it. On React 19, Vue 3 and Svelte 5 dev builds, and Django templates with [pointcast-django](integrations/django/README.md), each element leads with its code: where that instance is used, which component defines it (marked when it is shared) and the line where its text or data lives. Other pages get the DOM description: selector, path, HTML and text.
 
@@ -115,6 +121,8 @@ A coding agent can't see what "this" is in "make *this* sortable and move *this*
 | Gemini CLI | extension | `/pointcast [session-id]` |
 | Cursor, Windsurf | [MCP server](packages/cli/README.md#mcp-server) | ask for your latest pointcast recording |
 | Any other agent | the clipboard | paste |
+
+<img src="docs/launch/video/out/pointcast-mcp.gif" alt="Stop sends the recording to the agent's MCP server; the agent reads it and edits the line" width="640">
 
 Browsers: Chrome and Microsoft Edge. Brave, Opera, Vivaldi and Arc are Chromium too and load the same extension, but are untested. Firefox is not supported yet.
 

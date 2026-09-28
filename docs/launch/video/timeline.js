@@ -6,13 +6,14 @@
 "use strict";
 
 /** Length of one loop, in seconds. renderAt(DURATION) looks exactly like renderAt(0). */
-const DURATION = 23.95;
+const DURATION = 27.55;
 
 // ---------------------------------------------------------------- timeline (seconds)
 
 const SPEC = 8.8; // scene 5: the phrases leave the page for the spec
 const CODE = SPEC + 3.2; // scene 6: the editor
-const TYPED = CODE + 3.2; // scene 7: the same gesture with a typed note instead of words
+const JUMP = CODE + 3.2; // the jump: not the element's HTML, the line of source that makes it
+const TYPED = JUMP + 3.6; // scene 7: the same gesture with a typed note instead of words
 const END = TYPED + 6.45; // the end card
 const T = {
   titleOut: 1.0, // the title holds until here, then clears in 0.5 s
@@ -35,6 +36,7 @@ const T = {
   spec: SPEC,
   lines: { L0: SPEC + 0.95, L1: SPEC + 1.1, L5: SPEC + 1.1, markers: SPEC + 1.35, L3: SPEC + 1.6, L7: SPEC + 1.75, L4: SPEC + 2.0, L8: SPEC + 2.15 },
   code: CODE,
+  jump: JUMP,
   arrow1: [CODE + 0.95, CODE + 1.45],
   arrow2: [CODE + 1.8, CODE + 2.3],
   typed: TYPED,
@@ -97,38 +99,16 @@ function buildWords(id, words) {
   $(id).innerHTML = words.map((w, i) => `<span>${w}</span>${i < words.length - 1 ? " " : ""}`).join("");
 }
 
-const escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-/** Just enough TSX highlighting for a dozen lines. */
-function highlight(line) {
-  const re = /(\/\*\*.*?\*\/|\/\/.*$)|("(?:[^"\\]|\\.)*")|\b(import|export|from|function|return|const|interface|type)\b|(<\/?[A-Za-z][A-Za-z]*|\/>)|\b([A-Za-z]+)(?==)|\b(\d+)\b/g;
-  let html = "";
-  let last = 0;
-  for (const m of line.matchAll(re)) {
-    html += escapeHtml(line.slice(last, m.index));
-    const cls = m[1] ? "com" : m[2] ? "str" : m[3] ? "kw" : m[4] ? "tag" : m[5] ? "attr" : "num";
-    html += `<span class="tok-${cls}">${escapeHtml(m[0])}</span>`;
-    last = m.index + m[0].length;
-  }
-  return html + escapeHtml(line.slice(last));
-}
-
+/** The real lines of the example (shared.js). */
 async function buildCode(id, url, from, to, hot) {
-  let lines;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(String(response.status));
-    lines = (await response.text()).replace(/\r\n/g, "\n").split("\n");
-  } catch (error) {
-    lines = [];
-    console.error(`could not read ${url}: ${error}`);
-  }
-  const rows = [];
-  for (let n = from; n <= to; n++) {
-    rows.push(`<div class="row${n === hot ? " hot" : ""}" data-n="${n}">${n === hot ? '<div class="hlbar"></div>' : ""}<span class="num">${n}</span><span class="src">${highlight(lines[n - 1] ?? "")}</span></div>`);
-  }
-  $(id).innerHTML = rows.join("");
+  $(id).innerHTML = await window.PC.codeRows(url, from, to, hot);
 }
+
+/**
+ * The jump (shared.js): «View report» as the browser has it, struck out, and the line that makes
+ * it, Dashboard.tsx:11, where this instance passes its reportHref (the spec's `text at:`).
+ */
+let jump;
 
 // ---------------------------------------------------------------- layout, measured once
 
@@ -283,7 +263,7 @@ function renderAt(tRaw) {
   }
 
   // ---- headers and the corner brand
-  const heads = [["h1", T.browserIn + 0.1, T.stopKeys - 0.1], ["h2", T.stopKeys - 0.1, T.spec], ["h3", T.spec, T.code], ["h4", T.code, T.typed], ["h5", T.typed, T.endOut]];
+  const heads = [["h1", T.browserIn + 0.1, T.stopKeys - 0.1], ["h2", T.stopKeys - 0.1, T.spec], ["h3", T.spec, T.code], ["h4", T.code, T.jump], ["hj", T.jump, T.typed], ["h5", T.typed, T.endOut]];
   for (const [id, a, b] of heads) {
     const op = span(t, a, b - 0.15, 0.45, 0.3);
     const y = 14 * (1 - out(prog(t, a, a + 0.45)));
@@ -376,7 +356,7 @@ function renderAt(tRaw) {
   // ---- scene 5: the phrases fly into the spec
   const docMove = inOut(prog(t, T.code, T.code + 0.7));
   const docIn = out(prog(t, T.spec + 0.35, T.spec + 0.8));
-  const docOut = inOut(prog(t, T.typed, T.typed + 0.4));
+  const docOut = inOut(prog(t, T.jump, T.jump + 0.4));
   const dx = mix(0, DOC6.x - DOC5.x, docMove), dy = mix(18 * (1 - docIn), DOC6.y - DOC5.y, docMove), ds = mix(1, DOC6.s, docMove);
   style($("doc"), Math.min(docIn, 1 - docOut), `translate(${dx}px, ${dy}px) scale(${ds})`);
 
@@ -426,6 +406,9 @@ function renderAt(tRaw) {
   // ---- scene 6: the editor and the arrows
   const edIn = outQuint(prog(t, T.code + 0.2, T.code + 0.95));
   style($("editor"), Math.min(edIn, 1 - docOut), `translateX(${60 * (1 - edIn)}px)`);
+  // ---- the jump: after the editor, before typed mode
+  jump.render(t < T.jump + 0.2 ? -1 : t - T.jump - 0.2, prog(t, T.typed - 0.4, T.typed + 0.1));
+
   // ---- scene 7: the note box, then the typed request and its line
   // The box appears as note-box.ts animates it (120 ms, from 4 px up; 8 px here at 2x), and goes
   // at once on Enter, as the host is removed.
@@ -477,7 +460,14 @@ window.ready = (async () => {
   buildWords("said1", WORDS1);
   buildWords("said2", WORDS2);
   $("note-quote").textContent = NOTE;
+  jump = window.PC.Jump($("stage"), {
+    id: "jump",
+    html: ['<a class="stat-link"', '   href="/reports/revenue">', "  View report</a>"],
+    file: "src/pages/Dashboard.tsx", url: "../../../dev/examples/react-dashboard/src/pages/Dashboard.tsx", from: 9, to: 13, hot: 11, mark: '"Revenue"',
+    card: { x: 90, y: 456, w: 600 }, pane: { x: 740, y: 356, w: 800 }, htmlSize: 30, codeSize: 26, codeLine: 46,
+  });
   await Promise.all([
+    jump.load(),
     buildCode("code1", "../../../dev/examples/react-dashboard/src/pages/Dashboard.tsx", 6, 15, 11),
     buildCode("code2", "../../../dev/examples/react-dashboard/src/components/OrdersTable.tsx", 17, 25, 22),
     buildCode("code3", "../../../dev/examples/react-dashboard/src/components/OrdersTable.tsx", 25, 35, 31),
@@ -486,6 +476,7 @@ window.ready = (async () => {
     ...[...document.images].map((img) => (img.complete ? null : new Promise((r) => { img.onload = img.onerror = r; }))),
   ]);
   measure();
+  jump.measure();
   window.renderAt = renderAt;
   renderAt(0);
 

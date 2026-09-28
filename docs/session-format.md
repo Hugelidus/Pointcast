@@ -69,6 +69,19 @@ Both are absent in older sessions and in production builds; without them the spe
 
 **Privacy invariant:** nothing in a session may contain a form field value or the text of a sensitive element (D8). Sensitive elements keep `tag`, `selector`, `path` and `label`, with `text: ""`, redacted `html` and `sensitive: true`.
 
+## Words
+
+`words.json` (`WordsFile`, `schemaVersion` 1):
+
+| Field | Meaning |
+|---|---|
+| `engine` | Engine and model, e.g. `local:Xenova/whisper-base`. |
+| `language` | ISO 639-1 code. Absent when nothing was said and no language was chosen. |
+| `words` | `{ text, start, end, probability? }` in time order; `text` keeps the engine's punctuation and leading space. |
+| `unreliable` | Optional (since 2026-09-28). Stretches `{ start, end }` whose transcript looked unreliable and was left out of `words`: the engine looped on a phrase, or produced a run of words with no duration ([D1 note](decisions.md#d1-transcription--whisper-via-transformersjs-locally)). `session.md` mentions them in one line, so the agent knows something may be missing there, and the popup and the CLI warn. Absent when nothing was dropped. |
+
+Older readers ignore `unreliable`, and files written before it existed have none, so `schemaVersion` stays 1.
+
 ## Example
 
 A v2 session saved without its audio, so there is no `audio` field:

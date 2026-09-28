@@ -37,6 +37,7 @@ export {
   DEFAULT_RENDER_OPTIONS,
   estimateTokens,
   renderMarkdown,
+  unreliableTimes,
   type RenderFormat,
   type RenderLayout,
   type RenderOptions,

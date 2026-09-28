@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Silence and room noise no longer turn into invented words ("¡Adiós!", "Gracias.", "Thank you."). A voice activity detector (Silero VAD, 2 MB, downloaded once like the Whisper model) finds the speech first, and only the speech is transcribed.
+- Whisper can no longer loop for pages: its output is limited to what the audio's length allows, a phrase repeated three times or more is kept once, and words with impossible times are dropped.
+- When part of a transcript had to be dropped as unreliable, the spec says where in one line, and the popup and the CLI warn. `words.json` gains an optional `unreliable` field ([session format](docs/session-format.md#words)).
+
 ## Extension 0.1.2 (2026-09-28)
 
 - The extension's name is "Pointcast", capitalized, in the Chrome Web Store, `chrome://extensions` and the toolbar tooltip.

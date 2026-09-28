@@ -89,6 +89,36 @@ describe("LiveTranscription", () => {
     expect(worker.terminate).toHaveBeenCalled();
   });
 
+  it("keeps each piece's unreliable stretches, on the recording's time line; a silent piece detects no language", async () => {
+    const worker = fakeWorker();
+    worker.transcribe = vi.fn(async (job) => {
+      worker.jobs.push(job);
+      const silent = worker.jobs.length === 1;
+      return {
+        type: "done" as const,
+        words: {
+          schemaVersion: 1 as const,
+          engine: "local:test",
+          // Nothing said in the first piece: no words, no language (the engine skips detection).
+          ...(silent ? {} : { language: job.language ?? "es" }),
+          words: silent ? [] : [{ text: "hola", start: 100, end: 400 }],
+          ...(worker.jobs.length === 2 ? { unreliable: [{ start: 1_000, end: 9_000 }] } : {}),
+        },
+        loadMs: 0,
+        transcribeMs: 800,
+      };
+    });
+    const { live } = record(worker);
+    await vi.advanceTimersByTimeAsync(39_200);
+    const done = await live.finish(RECORDING, OPTIONS);
+    // The second piece still detected the language, and the third reused it.
+    expect(worker.jobs.map((job) => job.language)).toEqual([undefined, undefined, "es"]);
+    expect(done.words.language).toBe("es");
+    expect(done.words.unreliable).toHaveLength(1);
+    expect(done.words.unreliable![0]!.start / 1000).toBeCloseTo(18.3, 1);
+    expect(done.words.unreliable![0]!.end / 1000).toBeCloseTo(26.3, 1);
+  });
+
   it("transcribes a short recording as one piece, exactly like the one-shot path", async () => {
     const worker = fakeWorker({ fallback: { guess: { code: "fr", probability: 0.5 }, used: "en", reason: "last-used" } });
     const { live } = record(worker);

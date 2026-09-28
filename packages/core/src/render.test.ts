@@ -361,6 +361,42 @@ No elements were pointed at.
   });
 });
 
+describe("renderMarkdown with an unreliable transcript", () => {
+  const words: WordsFile = {
+    ...transcript([w(" Filtra", 1000, 1300), w(" esto.", 1300, 1700)]),
+    unreliable: [{ start: 15_200, end: 30_000 }],
+  };
+  const NOTE =
+    "_Note: the transcript around 00:15–00:30 looked unreliable (the speech-to-text repeated itself or invented words) and was dropped; something said there may be missing._";
+
+  it("says so once, before the requests", () => {
+    const markdown = renderMarkdown(session([]), words);
+    expect(markdown.split(NOTE)).toHaveLength(2);
+    expect(markdown.indexOf(NOTE)).toBeLessThan(markdown.indexOf("## Request 1"));
+    expect(markdown.indexOf(NOTE)).toBeGreaterThan(markdown.indexOf("Each request below"));
+  });
+
+  it("says so in the classic header", () => {
+    const markdown = renderClassic(session([]), words);
+    expect(markdown.indexOf(NOTE)).toBeGreaterThan(0);
+    expect(markdown.indexOf(NOTE)).toBeLessThan(markdown.indexOf("## Transcript"));
+  });
+
+  it("lists every stretch, and a single time for an instant", () => {
+    const markdown = renderMarkdown(session([]), {
+      ...words,
+      unreliable: [{ start: 3_000, end: 3_000 }, { start: 15_200, end: 30_000 }, { start: 62_000, end: 70_500 }],
+    });
+    expect(markdown).toContain("around 00:03, 00:15–00:30 and 01:02–01:10 looked unreliable");
+  });
+
+  it("says nothing when nothing was dropped (and for files written before the field existed)", () => {
+    const plain = renderMarkdown(session([]), transcript(words.words));
+    expect(renderMarkdown(session([]), { ...words, unreliable: [] })).toBe(plain);
+    expect(plain).not.toContain("unreliable");
+  });
+});
+
 describe("estimateTokens", () => {
   it("is characters / 4, rounded up", () => {
     expect(estimateTokens("")).toBe(0);

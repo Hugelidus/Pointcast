@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findCut, joinSegments } from "./segments";
+import { findCut, joinSegments, joinUnreliable } from "./segments";
 
 const RATE = 16000;
 
@@ -68,5 +68,15 @@ describe("joinSegments", () => {
       { text: "Esto", start: 100, end: 400 },
       { text: " y esto", start: 17_500, end: 17_800 },
     ]);
+  });
+});
+
+describe("joinUnreliable", () => {
+  it("moves each piece's unreliable stretches to the recording's time line", () => {
+    const spans = joinUnreliable([
+      { startSample: 0 },
+      { startSample: 17.3 * RATE, unreliable: [{ start: 1_000, end: 9_000 }] },
+    ]);
+    expect(spans).toEqual([{ start: 18_300, end: 26_300 }]);
   });
 });

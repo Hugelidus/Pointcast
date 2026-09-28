@@ -9,7 +9,7 @@ import { LocalTranscriptionEngine, type TranscriptionProgress } from "@pointcast
 
 /**
  * The default local engine (packages/transcribe, as the CLI configures it) on a 2.5-minute
- * Spanish narration (fixtures/audio/es-2min.wav, eight overlapping 30 s chunks). Real model, so
+ * Spanish narration (fixtures/audio/es-2min.wav, overlapping 30 s chunks of its speech). Real model, so
  * guarded like run.slow.test.ts. Run with:
  *   POINTCAST_SLOW=1 pnpm vitest run packages/cli/src/transcribe/local.slow.test.ts
  */
@@ -53,7 +53,11 @@ describe.skipIf(process.env.POINTCAST_SLOW !== "1")("LocalTranscriptionEngine on
     expect(stages[0]).toBe("loading-model");
     expect(stages.indexOf("model-ready")).toBeGreaterThan(0);
     const chunks = progress.flatMap((p) => (p.stage === "transcribing" ? [`${p.chunksDone}/${p.chunksTotal}`] : []));
-    expect(chunks).toEqual(["0/8", "1/8", "2/8", "3/8", "4/8", "5/8", "6/8", "7/8", "8/8"]);
+    // Only the speech is transcribed (the VAD cuts silences of 2 s or more), so the 152 s make
+    // fewer than the 8 chunks the whole recording would.
+    const total = chunks.length - 1;
+    expect(total).toBeGreaterThanOrEqual(4);
+    expect(chunks).toEqual(Array.from({ length: total + 1 }, (_, done) => `${done}/${total}`));
     expect(progress.at(-1)).toEqual({ stage: "done", language: "es", words: words.length });
 
     // Includes loading the model from the local cache: what a user waits for.

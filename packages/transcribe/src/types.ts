@@ -47,7 +47,7 @@ export type TranscriptionProgress =
    * chunk. The last chunk is often shorter, so time is roughly, not exactly, proportional.
    */
   | { stage: "transcribing"; language: string; chunksDone: number; chunksTotal: number }
-  /** `words` is the number of words in the result. */
-  | { stage: "done"; language: string; words: number };
+  /** `words` is the number of words in the result. No `language` when nothing was said and none was given. */
+  | { stage: "done"; language?: string; words: number };
 
 export type TranscriptionProgressListener = (progress: TranscriptionProgress) => void;

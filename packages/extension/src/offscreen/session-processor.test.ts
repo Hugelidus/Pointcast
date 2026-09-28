@@ -142,6 +142,14 @@ describe("processSession", () => {
     expect(names(result.files)).toContain("audio.wav");
   });
 
+  it("warns when part of the transcript was dropped as unreliable, and the spec says so too", async () => {
+    const words: WordsFile = { ...WORDS, unreliable: [{ start: 15_000, end: 30_000 }] };
+    const result = await processSession(job(), deps({ words }));
+    expect(result.warning).toBe("The transcript around 00:15–00:30 looked unreliable and was dropped; say it again if something is missing.");
+    expect(result.markdown).toContain("the transcript around 00:15–00:30 looked unreliable");
+    expect((await json<WordsFile>(result.files, "words.json")).unreliable).toEqual([{ start: 15_000, end: 30_000 }]);
+  });
+
   it("still saves the Markdown when the clipboard refuses, and says how to copy it", async () => {
     const d = deps();
     d.copy.mockRejectedValue(new Error("the browser refused to copy"));

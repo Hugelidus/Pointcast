@@ -24,7 +24,7 @@ Effective 28 September 2026. It covers the pointcast Chrome extension, the `poin
 
 The extension makes only these requests:
 
-1. **Once, to download the speech model** (`Xenova/whisper-base`, about 291 MB) from Hugging Face, which is then kept in the browser's cache. No data of yours is sent with it. As with any download, Hugging Face sees ordinary request information such as your IP address.
+1. **Once, to download the speech models** (`Xenova/whisper-base`, about 291 MB, and the voice activity detector `onnx-community/silero-vad`, about 2 MB) from Hugging Face, which are then kept in the browser's cache. No data of yours is sent with it. As with any download, Hugging Face sees ordinary request information such as your IP address.
 2. **To the page's own development server**, to read source files as described above.
 
 There are no other requests: no analytics, telemetry, crash reports or advertising.

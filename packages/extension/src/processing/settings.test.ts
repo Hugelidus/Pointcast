@@ -2,15 +2,25 @@ import { describe, expect, it } from "vitest";
 import { chosenLanguage, DEFAULT_SETTINGS, languageName, parseSettings, WHISPER_LANGUAGES } from "./settings";
 
 describe("settings", () => {
-  it("defaults to auto-detection, no audio, and a notification", () => {
-    expect(parseSettings(undefined)).toEqual({ language: "auto", keepAudio: false, notify: true });
+  it("defaults to auto-detection, no audio, a notification, and the handoff to a running MCP server", () => {
+    expect(parseSettings(undefined)).toEqual({ language: "auto", keepAudio: false, notify: true, handoff: true });
     expect(chosenLanguage(DEFAULT_SETTINGS)).toBeUndefined();
   });
 
   it("keeps valid values and drops a language Whisper does not know", () => {
-    expect(parseSettings({ language: "es", keepAudio: true, notify: false })).toEqual({ language: "es", keepAudio: true, notify: false });
+    expect(parseSettings({ language: "es", keepAudio: true, notify: false, handoff: false })).toEqual({
+      language: "es",
+      keepAudio: true,
+      notify: false,
+      handoff: false,
+    });
     expect(parseSettings({ language: "klingon" }).language).toBe("auto");
     expect(chosenLanguage({ ...DEFAULT_SETTINGS, language: "es" })).toBe("es");
+  });
+
+  it("keeps the handoff on unless it was turned off: settings saved before 0.2.0 have no such field", () => {
+    expect(parseSettings({ language: "es", keepAudio: true, notify: false }).handoff).toBe(true);
+    expect(parseSettings({ handoff: "no" }).handoff).toBe(true);
   });
 
   it("names the languages for the picker", () => {

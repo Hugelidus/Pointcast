@@ -13,6 +13,13 @@ Ideas worth exploring after Phase 1. Not commitments: each needs a decision entr
 - Trivial search hints such as `href #top` should be filtered out.
 - Div-based card titles (shadcn, MUI, Ant) are not read as card context yet.
 
+## After the handoff to a running MCP server (noted 2026-09-28)
+
+Left out of [D11](decisions.md#d11-handoff-to-a-running-mcp-server) on purpose:
+- **Show in folder for handed-off sessions.** `downloads.show` only reveals Chrome's own downloads, and an extension cannot open a path, so the popup names the folder instead. A "reveal" endpoint on the receiver could open it, but an HTTP request would then start `explorer.exe` (or `open`, `xdg-open`) inside the agent's MCP process: more attack surface for a secondary button.
+- **Several sessions folders.** Servers started with different `--dir` all read their own folder, but a recording lands only in the receiving server's. Delivering to every running server's folder would need discovery and several receivers.
+- **Shared multi-user machines.** Loopback is shared by every OS user, so another user can post a session to your server, or receive yours while it is down. A peer-uid check on Linux (the connecting socket's owner), or native messaging (a host manifest the user installs, with no port at all), would close that.
+
 ## GitHub issues from a recording (parked 2026-09-27)
 
 `pointcast issue` (CLI) can already file the spec as an issue with permalinks to the resolved lines, but a raw spec is not a good issue for a human reader. Before promoting it, pass the spec through an LLM that writes a proper issue (title, short summary, one checklist item per request with its code links, acceptance criteria), keeping the code pointers intact. Parked because v1's goal is narrower: save the user's time and the agent's tokens by turning speech into a spec that points at the right code.

@@ -9,6 +9,7 @@ import { resolveAudioTarget } from "./audio-target";
 import { CliError } from "./errors";
 import { githubToken, repoLabel } from "./github/api";
 import { runIssue } from "./github/issue";
+import { resolveHandoffSettings } from "./handoff/config";
 import { copyMarkdownToClipboard } from "./process/clipboard";
 import { resolveSessionDir } from "./process/discover";
 import { runProcess } from "./process/run";
@@ -54,14 +55,20 @@ async function main(): Promise<void> {
       return runTranscribe(command);
     case "process":
       return runProcessCommand(command);
-    case "mcp":
+    case "mcp": {
+      // D11: recordings from the extension land in the same folder, with no Save dialogs. A bad
+      // handoff setting only turns the receiver off: the agent keeps its tools.
+      const handoff = resolveHandoffSettings(command.noHandoff === true, process.env, log);
       return runMcpServer({
         dirFlag: fromUserCwd(command.dir),
         envDir: fromUserCwd(process.env.POINTCAST_DIR || undefined),
         // Claude Code sets CLAUDE_PROJECT_DIR for the servers it starts; their working directory
         // is not always the project (plugin and user-scope servers start in ~/.claude).
         repoRoot: fromUserCwd(command.repo ?? (process.env.CLAUDE_PROJECT_DIR || ".")),
+        handoffPort: handoff.port,
+        allowedExtensionIds: handoff.allowedExtensionIds,
       });
+    }
     case "issue":
       return runIssueCommand(command);
   }

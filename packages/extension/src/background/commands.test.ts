@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Message, ProcessingResult, RecorderStopResult } from "../messages";
+import { HANDOFF_HELLO_TIMEOUT_MS, HANDOFF_UPLOAD_TIMEOUT_MS } from "../offscreen/handoff";
 import type { RecorderState } from "../recorder-state";
 import { formatSessionId } from "../session-id";
 
@@ -164,11 +165,21 @@ describe("stopRecording", () => {
     fake.local.set("processingStats", { speed: { loadMs: 1000, msPerAudioSecond: 200 }, modelReady: true, lastLanguage: "en" });
     await stopped();
 
-    expect(stopMessage().options).toEqual({ fallbackLanguage: "en", keepAudio: false, deadline: expect.any(Number) });
+    expect(stopMessage().options).toEqual({ fallbackLanguage: "en", keepAudio: false, deadline: expect.any(Number), handoff: true });
     // The estimate comes from this device's speed: 1 s fixed + 1 s load + 0.5 s + 200 ms × 12 s.
     const { processing } = state();
     expect(processing?.stage).toBe("transcribing");
     expect((processing?.estimatedEnd ?? 0) - (processing?.startedAt ?? 0)).toBe(1_000 + 1_000 + 500 + 2_400);
+  });
+
+  it("passes the popup's handoff setting: try a running pointcast MCP server, unless it is off", async () => {
+    await stopped();
+    expect(stopMessage().options.handoff).toBe(true);
+
+    fake.sendMessage.mockReset();
+    fake.local.set("settings", { language: "auto", keepAudio: false, notify: true, handoff: false });
+    await stopped();
+    expect(stopMessage().options.handoff).toBe(false);
   });
 
   it("estimates only the audio that live transcription has not done yet", async () => {
@@ -413,6 +424,100 @@ describe("finishProcessing", () => {
       error: expect.stringMatching(/a save dialog was cancelled.*Ask where to save each file before downloading/),
     });
     expect(fake.notify).toHaveBeenCalledWith("pointcast: saving failed", expect.stringMatching(/save dialog was cancelled/));
+  });
+});
+
+describe("finishProcessing, handed off to a pointcast MCP server (D11)", () => {
+  const DIR = `~\\Downloads\\pointcast\\${BASE_ID}`;
+  const HANDED_OFF: ProcessingResult = { ...DONE, files: [], handedOff: { dir: DIR } };
+
+  it("downloads nothing and ends the session at once, saying where the server saved it", async () => {
+    await stopped();
+    expect(await commands.finishProcessing(BASE_ID, HANDED_OFF)).toEqual({ ok: true });
+
+    expect(fake.downloads.size).toBe(0);
+    // No blob URLs to keep for downloads: the offscreen document and the alarm go right away.
+    expect(fake.offscreenOpen).toBe(false);
+    expect(fake.alarms.size).toBe(0);
+    expect(state()).toMatchObject({
+      status: "idle",
+      lastSessionId: BASE_ID,
+      lastResult: { sessionId: BASE_ID, copied: true, audioMs: 12_000, code: DONE.code, handedOffTo: DIR },
+    });
+    // Show in folder only reveals Chrome's downloads: hidden for this session.
+    expect(state().lastResult).not.toHaveProperty("downloadId");
+    expect(state().error).toBeUndefined();
+    expect(state().warning).toBeUndefined();
+    expect(await readLastMarkdown()).toBe(DONE.markdown);
+    expect(fake.local.get("processingStats")).toMatchObject({ modelReady: true, lastLanguage: "es" });
+    expect(fake.outcomeBadge).toHaveBeenCalledWith(true);
+    expect(fake.notify).toHaveBeenCalledWith("pointcast", `Copied — paste it into your agent. Saved by the pointcast MCP server to ${DIR}`);
+  });
+
+  it("says transcription failed, for a session handed off with its audio", async () => {
+    await stopped();
+    await commands.finishProcessing(BASE_ID, {
+      files: [],
+      handedOff: { dir: DIR },
+      copied: false,
+      audioMs: 12_000,
+      error: "Could not transcribe: offline.",
+    });
+    expect(state()).toMatchObject({
+      status: "idle",
+      lastSessionId: BASE_ID,
+      error: "Could not transcribe: offline.",
+      lastResult: { handedOffTo: DIR },
+    });
+    expect(fake.outcomeBadge).toHaveBeenCalledWith(false);
+    expect(fake.notify).toHaveBeenCalledWith("pointcast: could not transcribe", "Could not transcribe: offline.");
+  });
+
+  it("keeps a warning, and the notification points to the popup for it", async () => {
+    await stopped();
+    await commands.finishProcessing(BASE_ID, { ...HANDED_OFF, warning: "The microphone stopped by itself." });
+    expect(state()).toMatchObject({ status: "idle", warning: "The microphone stopped by itself." });
+    expect(fake.notify).toHaveBeenCalledWith(
+      "pointcast",
+      `Copied — paste it into your agent. See the popup for a warning. Saved by the pointcast MCP server to ${DIR}`,
+    );
+  });
+
+  it("ends idle, not busy or 'lost', when keeping the last run fails (a full disk)", async () => {
+    await stopped();
+    const quota = Object.assign(new Error("The quota has been exceeded."), { name: "QuotaExceededError" });
+    const cacheApi = globalThis.caches;
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.stubGlobal("caches", { ...cacheApi, open: async () => ({ put: async () => Promise.reject(quota) }) });
+    try {
+      expect(await commands.finishProcessing(BASE_ID, HANDED_OFF)).toEqual({ ok: true });
+    } finally {
+      vi.stubGlobal("caches", cacheApi);
+      consoleError.mockRestore();
+    }
+    expect(state()).toMatchObject({ status: "idle", lastSessionId: BASE_ID, lastResult: { handedOffTo: DIR } });
+    expect(state().error).toBeUndefined();
+    expect(fake.offscreenOpen).toBe(false);
+    expect(fake.alarms.size).toBe(0);
+    expect(fake.notify).toHaveBeenCalledWith("pointcast", `Copied — paste it into your agent. Saved by the pointcast MCP server to ${DIR}`);
+    // A later restart finds nothing to recover.
+    await commands.recoverInterruptedTransition();
+    expect(state()).toMatchObject({ status: "idle", lastResult: { handedOffTo: DIR } });
+    expect(state().error).toBeUndefined();
+  });
+
+  it("is idempotent: a repeated report changes nothing", async () => {
+    await stopped();
+    await commands.finishProcessing(BASE_ID, HANDED_OFF);
+    const finished = state();
+    fake.notify.mockClear();
+    await commands.finishProcessing(BASE_ID, HANDED_OFF);
+    expect(state()).toEqual(finished);
+    expect(fake.notify).not.toHaveBeenCalled();
+  });
+
+  it("fits the handoff's timeouts in the alarm's grace, so the alarm never closes the document mid-upload", () => {
+    expect(HANDOFF_HELLO_TIMEOUT_MS + HANDOFF_UPLOAD_TIMEOUT_MS).toBeLessThan(commands.ALARM_GRACE_MS);
   });
 });
 

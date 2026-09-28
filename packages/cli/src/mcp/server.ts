@@ -1,9 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import path from "node:path";
+import { OFFICIAL_EXTENSION_IDS } from "@pointcast/core";
 import { z } from "zod";
 import { CliError } from "../errors";
-import { skippedNewerSessionsNote, type ResolveSessionsBaseOptions } from "../process/discover";
+import { startHandoffReceiver } from "../handoff/receiver";
+import { resolveSessionsBase, skippedNewerSessionsNote, type ResolveSessionsBaseOptions } from "../process/discover";
 import { getElement } from "./get-element";
 import { VERSION } from "../version";
 import { getSession, listSessions, resolveSessionDirById, type RepoOption } from "./sessions";
@@ -27,6 +29,10 @@ export interface ServerOptions extends ResolveSessionsBaseOptions {
    * directory: plugin and user-scope servers start in ~/.claude), else the working directory.
    */
   repoRoot: string;
+  /** Port to receive recordings from the extension on (D11, handoff/config.ts); undefined: no receiver. */
+  handoffPort?: number;
+  /** Extension ids the receiver accepts; default OFFICIAL_EXTENSION_IDS. */
+  allowedExtensionIds?: ReadonlySet<string>;
 }
 
 const repoArgument = z
@@ -41,7 +47,10 @@ const repoArgument = z
  * `pointcast mcp`'s 3 read-only tools, all built on the same session discovery `pointcast
  * process` uses (`--dir` / `POINTCAST_DIR` / `<Downloads>/pointcast`, D2/session-format.md).
  * Read-only by design: an MCP client is a coding agent, and this tool exists so it can look up
- * what a pointcast recording captured — not to transcribe or re-run anything.
+ * what a pointcast recording captured — not to transcribe or re-run anything. (The process also
+ * receives recordings from the extension, runMcpServer below; no tool writes a session.)
+ *
+ * Every tool carries readOnlyHint: Gemini CLI's plan mode refuses MCP tools without it.
  */
 export function createServer(options: ServerOptions): McpServer {
   const server = new McpServer({ name: "pointcast", version: VERSION });
@@ -53,10 +62,13 @@ export function createServer(options: ServerOptions): McpServer {
     {
       description: "List recent pointcast recordings (id, date, duration, event count), newest first.",
       inputSchema: { limit: z.number().int().positive().max(200).optional().describe("Max sessions to return (default 20).") },
+      annotations: { readOnlyHint: true },
     },
     async ({ limit }) => {
       try {
-        return text(await listSessions(options, limit ?? 20));
+        // An object, not a bare array: Gemini CLI copies JSON text into structuredContent, which
+        // MCP requires to be an object, and fails the whole call otherwise.
+        return text({ sessions: await listSessions(options, limit ?? 20) });
       } catch (error) {
         return toolError(error);
       }
@@ -71,6 +83,7 @@ export function createServer(options: ServerOptions): McpServer {
         'is not on disk yet. Pass "latest" for the most recent session. Code locations are resolved ' +
         "against the project's source when the recording has them.",
       inputSchema: { id: z.string().describe('Session id (the folder name), or "latest".'), repo: repoArgument },
+      annotations: { readOnlyHint: true },
     },
     async ({ id, repo }) => {
       try {
@@ -98,6 +111,7 @@ export function createServer(options: ServerOptions): McpServer {
         eventId: z.string().describe('Event id within the session, e.g. "e3".'),
         repo: repoArgument,
       },
+      annotations: { readOnlyHint: true },
     },
     async ({ id, eventId, repo }) => {
       try {
@@ -115,8 +129,28 @@ export function createServer(options: ServerOptions): McpServer {
   return server;
 }
 
-/** Connects the server to stdio and never resolves (the client disconnecting ends the process). */
+/**
+ * Connects the server to stdio (the client disconnecting ends the process), then, unless
+ * `handoffPort` is undefined, receives recordings from the extension into the sessions folder the
+ * tools read (D11). The receiver must never cost the agent its tools: a failure to start is only
+ * logged, and it is closed when stdin ends, because the SDK's transport ignores that and an open
+ * listener would otherwise keep a dead server alive.
+ */
 export async function runMcpServer(options: ServerOptions): Promise<void> {
   const server = createServer(options);
   await server.connect(new StdioServerTransport());
+  if (options.handoffPort === undefined) return;
+  try {
+    const receiver = startHandoffReceiver({
+      base: resolveSessionsBase(options),
+      port: options.handoffPort,
+      allowedExtensionIds: options.allowedExtensionIds ?? new Set(OFFICIAL_EXTENSION_IDS),
+      version: VERSION,
+    });
+    const stop = () => void receiver.close();
+    process.stdin.once("end", stop);
+    process.stdin.once("close", stop);
+  } catch (error) {
+    console.error(`[pointcast] could not receive recordings from the extension (${(error as Error).message})`);
+  }
 }

@@ -79,7 +79,7 @@ describe("mcp sessions tools", () => {
   });
 
   describe("resolveSessionDirById rejects ids that leave the sessions folder", () => {
-    it.each(["..", ".", "", "../other", "a/../../b", "..\\other", "C:\\Windows", "/etc"])("%j", async (id) => {
+    it.each(["..", ".", "", "../other", "a/../../b", "..\\other", "C:\\Windows", "/etc", ".incoming-x", ".hidden"])("%j", async (id) => {
       await expect(resolveSessionDirById({ dirFlag: base }, id)).rejects.toThrow("is not a session id");
     });
   });

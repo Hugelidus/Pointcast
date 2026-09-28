@@ -5,7 +5,7 @@ plus the elements you pointed at while narrating — into a Markdown spec a codi
 or serve it straight to one over MCP. The recordings come from the pointcast Chrome extension
 ([install it from the releases](https://github.com/Hugelidus/pointcast/releases)).
 
-Public beta (0.1): feedback and bug reports are welcome in the
+Public beta (0.2): feedback and bug reports are welcome in the
 [issues](https://github.com/Hugelidus/pointcast/issues).
 
 ## Install
@@ -37,7 +37,9 @@ pointcast process [session-dir]   Transcribe (if needed), fuse and render sessio
                                    --dir / POINTCAST_DIR / <Downloads>/pointcast.
 pointcast transcribe <session-dir | file.wav>
                                    Write words.json from audio, on its own.
-pointcast mcp                      Run a stdio MCP server exposing sessions read-only.
+pointcast mcp                      Run a stdio MCP server exposing sessions read-only. While it
+                                   runs, it also receives the extension's recordings on
+                                   127.0.0.1, so they skip Chrome's downloads.
 pointcast issue [session-dir] --repo owner/name
                                    Experimental: file the spec as a GitHub issue, linked to the code.
 ```
@@ -97,7 +99,8 @@ repository, `issue` refuses to create the issue, since it looks like the wrong r
 `pointcast mcp` runs a stdio [MCP](https://modelcontextprotocol.io) server with 3 read-only tools,
 so an agent can look up a recording itself instead of you pasting `session.md` in:
 
-- **list_sessions** — recent sessions (id, date, duration, event count), newest first.
+- **list_sessions** — recent sessions (id, date, duration, event count), newest first, as
+  `{ "sessions": [...] }`.
 - **get_session** — a session's Markdown spec, by id or `"latest"`. Renders it from
   `session.json`/`words.json` if `session.md` isn't on disk yet; never transcribes.
 - **get_element** — the full captured detail (selector, source location, styles, framework
@@ -106,11 +109,54 @@ so an agent can look up a recording itself instead of you pasting `session.md` i
 It looks for sessions the same way `pointcast process` does: `--dir` / `POINTCAST_DIR` /
 `<Downloads>/pointcast`.
 
+Pin the version in MCP configs (`pointcast@0.2`, as below): `npx` keeps using a cached copy for
+an unversioned `pointcast`, which may be an older one.
+
 `get_session` and `get_element` resolve [code locations](#code-locations) in the project the
 server was started for: `--repo`, else `CLAUDE_PROJECT_DIR` (Claude Code sets it), else the
 server's working directory. Both tools also take an optional `repo` argument. When none of the
 recording's files is in that project, the result starts with a one-line warning that the
 recording is probably from another project.
+
+### Receiving recordings from the extension
+
+While `pointcast mcp` runs, it also listens on `127.0.0.1:20547`, never on your network (a port
+forward you set up is the exception, see *A remote dev server* below). At Stop
+the extension (0.2+) hands it the recording, and the server stores it in its sessions folder, the
+one its tools read. Chrome downloads nothing, so no Save dialog appears, even with Chrome's "Ask
+where to save each file" on. When no server answers, the extension saves the recording with
+Chrome's downloads as before. The popup says where each recording went.
+
+- **Only from the pointcast extension.** The server takes a recording only from the official
+  extension's id (its `chrome-extension://` origin), with pointcast's own header and content type,
+  so web pages cannot send it one. For a fork, or an Edge Add-ons install until its id ships in a
+  release, add ids with `POINTCAST_EXTENSION_IDS=<id>[,<id>…]`; the popup names the id when a
+  server refuses it. An invalid id turns the receiver off (the server logs why); the tools keep
+  working.
+- **Never half-written, never overwritten.** Files are written to a hidden `.incoming-*` folder
+  and then renamed to the session id. If that folder already exists, the extension falls back to
+  Chrome's downloads.
+- **Several servers** (several agents or projects): the first one to start receives. The others
+  log that the port is in use and try again every 3 s, so one takes over within 3 s after it
+  exits. A recording lands in the receiving server's folder when their `--dir` differ.
+- **Turn it off** with `--no-handoff` or `POINTCAST_HANDOFF=off`, or in the extension's Settings
+  (*Send to a running pointcast MCP server*).
+- **Shared multi-user computers:** `127.0.0.1` is shared by every user of the computer, so another
+  user could send recordings to your server, or receive yours while it is down. Turn it off on
+  both sides there.
+- **A remote dev server** (your agent and `pointcast mcp` run on another machine over SSH):
+  forward the port from your computer with `ssh -L 20547:127.0.0.1:20547 <host>`, with
+  `pointcast mcp` running on the host. The extension's requests go through the tunnel, and the
+  host's server stores the recordings where its tools read them. Mind that any forward of local
+  port 20547 does this, including an editor's automatic port forwarding for a remote workspace
+  (VS Code Remote-SSH, Codespaces): the recordings leave your computer for that host, and on a
+  shared host the server on its port 20547 can be another user's. While the forward holds the
+  port, a local `pointcast mcp` cannot receive. Never open the forward to your network
+  (`ssh -g`, `GatewayPorts`): anyone who reaches it could send the host's server recordings.
+- It logs to stderr only (stdout is the MCP channel): one line when it listens, one per stored
+  recording.
+
+`POINTCAST_HANDOFF_PORT` is a test hook: the extension's port is fixed when it is built.
 
 ### Claude Code: plugin
 
@@ -125,14 +171,43 @@ claude plugin install pointcast@pointcast
 ### Claude Code: MCP server only
 
 ```sh
-claude mcp add pointcast -- npx -y pointcast mcp
+claude mcp add pointcast -- npx -y pointcast@0.2 mcp
 ```
 
 Or, pointed at a specific sessions folder:
 
 ```sh
-claude mcp add pointcast -- npx -y pointcast mcp --dir /path/to/pointcast-sessions
+claude mcp add pointcast -- npx -y pointcast@0.2 mcp --dir /path/to/pointcast-sessions
 ```
+
+### Codex CLI
+
+The same plugin works in Codex: the MCP server plus a `pointcast` skill. Start a new session after
+installing it, then type `$pointcast:pointcast [session-id]` or ask to "apply my latest pointcast
+recording":
+
+```sh
+codex plugin marketplace add Hugelidus/pointcast
+codex plugin add pointcast@pointcast
+```
+
+Codex starts the server in the session's folder, so code locations resolve there. It passes only a
+fixed set of environment variables to MCP servers: to use `POINTCAST_DIR` (or another `POINTCAST_`
+variable), list it in `env_vars = ["POINTCAST_DIR"]` under `[mcp_servers.pointcast]` in
+`~/.codex/config.toml`. Codex does not wait for MCP servers before the first message, so a message
+sent right at launch may not see the tools: send it again.
+
+### Gemini CLI
+
+The extension adds the MCP server (`npx -y pointcast@0.2 mcp --repo <the folder you run gemini
+in>`) and a `/pointcast [session-id]` command:
+
+```sh
+gemini extensions install https://github.com/Hugelidus/pointcast
+```
+
+Gemini starts extension commands and stdio MCP servers only in folders you trust (it asks the
+first time). Update with `gemini extensions update pointcast`.
 
 ### Cursor
 
@@ -144,7 +219,7 @@ tells the server which project to resolve code locations in:
   "mcpServers": {
     "pointcast": {
       "command": "npx",
-      "args": ["-y", "pointcast", "mcp", "--repo", "${workspaceFolder}"]
+      "args": ["-y", "pointcast@0.2", "mcp", "--repo", "${workspaceFolder}"]
     }
   }
 }
@@ -161,7 +236,7 @@ project:
   "mcpServers": {
     "pointcast": {
       "command": "npx",
-      "args": ["-y", "pointcast", "mcp"]
+      "args": ["-y", "pointcast@0.2", "mcp"]
     }
   }
 }
@@ -171,7 +246,10 @@ project:
 
 `POINTCAST_DIR` (sessions folder), `POINTCAST_LANGUAGE`; for `--engine openai`:
 `POINTCAST_API_BASE`, `POINTCAST_API_KEY` (`OPENAI_API_KEY` is used only for api.openai.com);
-for `issue`: `GITHUB_TOKEN` (or `GH_TOKEN`); for `mcp`: `CLAUDE_PROJECT_DIR`.
+for `issue`: `GITHUB_TOKEN` (or `GH_TOKEN`); for `mcp`: `CLAUDE_PROJECT_DIR`,
+`POINTCAST_HANDOFF` (`off` or `0`: do not receive recordings, like `--no-handoff`),
+`POINTCAST_EXTENSION_IDS` (more extension ids to accept recordings from, comma-separated) and
+`POINTCAST_HANDOFF_PORT` (tests only).
 
 ## License
 

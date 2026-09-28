@@ -10,9 +10,14 @@ export interface Settings {
   keepAudio: boolean;
   /** A system notification when processing ends. */
   notify: boolean;
+  /**
+   * Send a recording to a running pointcast MCP server instead of downloading it (D11). On by
+   * default: it only acts when a server answers, and the files land where its tools read them.
+   */
+  handoff: boolean;
 }
 
-export const DEFAULT_SETTINGS: Settings = { language: "auto", keepAudio: false, notify: true };
+export const DEFAULT_SETTINGS: Settings = { language: "auto", keepAudio: false, notify: true, handoff: true };
 
 /** chrome.storage.local key. */
 export const SETTINGS_KEY = "settings";
@@ -36,6 +41,7 @@ export function parseSettings(value: unknown): Settings {
         : DEFAULT_SETTINGS.language,
     keepAudio: typeof v.keepAudio === "boolean" ? v.keepAudio : DEFAULT_SETTINGS.keepAudio,
     notify: typeof v.notify === "boolean" ? v.notify : DEFAULT_SETTINGS.notify,
+    handoff: typeof v.handoff === "boolean" ? v.handoff : DEFAULT_SETTINGS.handoff,
   };
 }
 

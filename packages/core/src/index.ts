@@ -1,5 +1,6 @@
 export * from "./schema";
 export * from "./constants";
+export * from "./handoff";
 export { projectRelativePath } from "./paths";
 export { isShortValue } from "./describe";
 export {

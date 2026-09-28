@@ -10,7 +10,7 @@
 [![Release](https://img.shields.io/github/v/release/Hugelidus/pointcast?include_prereleases&label=beta)](https://github.com/Hugelidus/pointcast/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> **Public beta (0.1).** Chrome on desktop, developed and tested on Windows; macOS and Linux should work but are untested. Bug reports and feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
+> **Public beta (0.2).** Chrome and other Chromium browsers on desktop, developed and tested on Windows; macOS and Linux should work but are untested. Bug reports and feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
 
 ## The problem
 
@@ -46,7 +46,7 @@
 
 (From a real recording on [examples/react-dashboard](examples/react-dashboard), spoken in Spanish and translated here; selector, DOM path and styles lines trimmed. Two stat cards share the «View report» link: the spec names the Revenue one, on its own line.)
 
-4. Paste it into Claude Code, Cursor or any agent, or let Claude Code fetch it itself with the [plugin](integrations/claude-code-plugin/README.md)'s `/pointcast`.
+4. Paste it into any agent, or let your agent fetch it itself: see [Works with](#works-with).
 
 ## Pointing at the code
 
@@ -64,7 +64,7 @@ In a small evaluation this cut the tokens a coding agent spent finding the eleme
 
 - **Clipboard** (what Stop does): the spec you paste has the chain and, when the dev server below could be read, the `text at:` lines.
 - **Dev server** (nothing to install): at Stop, the extension reads the chain's files from your page's own **Vite** dev server (`/src/…?raw`). It takes at most 2 s, runs while your voice is transcribed, and keeps the source in memory only: the spec gets paths, line numbers and the one source line of each location (your own code, kept local like the rest of the session). Other dev servers (webpack, Next.js) are not supported yet: the spec keeps the chain without `text at:`, and the popup says why in one line.
-- **MCP server / Claude Code plugin**: the agent fetches the recording itself, and the lines are resolved in your local repository (`pointcast mcp`, or the [plugin](integrations/claude-code-plugin/README.md)'s `/pointcast`). `pointcast process` does the same from the CLI.
+- **MCP server / agent plugins**: the agent fetches the recording itself, and the lines are resolved in your local repository (`pointcast mcp`, or the Claude Code, Codex and Gemini CLI [integrations](#works-with)). `pointcast process` does the same from the CLI.
 
 Nothing is added when the text is written more than once: no line beats a wrong line. (Filing the spec as a GitHub issue, `pointcast issue`, is experimental and parked.)
 
@@ -87,19 +87,48 @@ A careful, deliberately written request is still more accurate (96 %) and cheape
 
 pointcast's angle: DOM-level precision **and** narration **and** many elements per session, so one recording covers a whole list of changes instead of one element at a time.
 
+## Works with
+
+| Agent | How | Apply a recording |
+|---|---|---|
+| Claude Code | [plugin](integrations/claude-code-plugin/README.md) | `/pointcast [session-id]` |
+| Codex CLI | plugin (the same one) | `$pointcast:pointcast [session-id]`, or ask to "apply my latest pointcast recording" |
+| Gemini CLI | extension | `/pointcast [session-id]` |
+| Cursor, Windsurf | [MCP server](packages/cli/README.md#mcp-server) | ask for your latest pointcast recording |
+| Any other agent | the clipboard | paste |
+
+Install commands: [Install](#install). Browsers: Chrome and Microsoft Edge (checked in Edge 154). Brave, Opera, Vivaldi and Arc are Chromium too and load the same extension, but are untested. Firefox is not supported yet.
+
 ## Install
 
-**1. The Chrome extension.** Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://github.com/Hugelidus/pointcast/releases) and unzip it. In Chrome, open `chrome://extensions`, turn on *Developer mode*, choose *Load unpacked* and pick the unzipped folder. (The Chrome Web Store listing is in review. To build it yourself, see [Try it locally](#try-it-locally).)
+**1. The browser extension.** Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://github.com/Hugelidus/pointcast/releases) and unzip it. Open `chrome://extensions` (`edge://extensions` in Edge), turn on *Developer mode*, choose *Load unpacked* and pick the unzipped folder. (The Chrome Web Store listing is in review. To build it yourself, see [Try it locally](#try-it-locally).)
+
+> **Updating an unpacked 0.1.x?** Remove it and load 0.2 as a new extension, once. From 0.2 on, every build has the same extension id (the Chrome Web Store item's), so the id changes this one time: allow the microphone again, and the speech model downloads once more. Later updates keep the id.
 
 pointcast runs on `localhost`, `127.0.0.1`, `[::1]`, `*.localhost` and `*.test` out of the box. For any other site (staging, a preview deployment), open the popup there and press **Enable on `<host>`** — Chrome asks for access to that host only.
 
-> **Turn off Chrome's "Ask where to save each file before downloading"** (`chrome://settings/downloads`). With it on, Chrome asks where to save every file of every recording, and the sessions miss `Downloads/pointcast/`, where the plugin, the MCP server and the CLI look for them. The popup tells you when that happened.
+> **Keep your agent's pointcast MCP server running** (the plugins below, or `npx -y pointcast@0.2 mcp`): recordings go straight to it, with no downloads and no Save dialogs. Without it, Chrome's downloads save them to `Downloads/pointcast/`; then turn off *Ask where to save each file before downloading* (`chrome://settings/downloads`), or Chrome asks where to save every file and the sessions miss the folder where the plugins, the MCP server and the CLI look. The popup tells you when that happened.
 
-**2. Claude Code (optional).** The plugin lets Claude Code fetch your latest recording itself and apply it with `/pointcast`, resolving each element to its line in your local repository:
+**2. Your agent (optional).** The plugin or extension lets your agent fetch your latest recording itself and apply it, resolving each element to its line in your local repository.
+
+Claude Code, then `/pointcast`:
 
 ```bash
 claude plugin marketplace add Hugelidus/pointcast
 claude plugin install pointcast@pointcast
+```
+
+Codex CLI, then start a new session and type `$pointcast:pointcast` or just ask:
+
+```bash
+codex plugin marketplace add Hugelidus/pointcast
+codex plugin add pointcast@pointcast
+```
+
+Gemini CLI, then `/pointcast` in a folder you trust:
+
+```bash
+gemini extensions install https://github.com/Hugelidus/pointcast
 ```
 
 The MCP server alone, or in Cursor and Windsurf: see the [CLI's README](packages/cli/README.md#mcp-server).
@@ -108,19 +137,22 @@ The MCP server alone, or in Cursor and Windsurf: see the [CLI's README](packages
 
 ```bash
 npx pointcast process            # re-render the latest session, with its code lines resolved in the current repo
-npx pointcast mcp                # MCP server: list_sessions, get_session, get_element
+npx -y pointcast@0.2 mcp         # MCP server: list_sessions, get_session, get_element
 ```
 
 ### Known limitations of the beta
 
-- **Chrome only**, desktop. Firefox is not supported yet.
+- **Chromium browsers only**, desktop. Firefox is not supported yet.
+- **Show in folder** works only for recordings Chrome's downloads saved. For one your MCP server stored, the popup names its folder instead.
+- **Shared multi-user computers:** another user of the same computer could send recordings to your running MCP server, or receive yours while it is down. There, turn off *Send to a running pointcast MCP server* in the popup's Settings and start the server with `--no-handoff`.
+- **Port forwards:** a forward of local port 20547 to another machine (`ssh -L 20547:127.0.0.1:20547`, or an editor's automatic port forwarding for a remote workspace) sends your recordings to the pointcast MCP server on that machine, which is how to use one on a remote dev server. On a shared remote host that server can be another user's; turn the handoff off there.
 - **The code pointer needs a dev build** of React, Vue 3 or Svelte 5 (the component chain comes from their dev-mode data). Production builds, Angular and other frameworks get the DOM description only: selector, path, HTML, text.
 - **Code lines on the clipboard need a Vite dev server.** With webpack or Next.js the pasted spec has the component chain but no `text at:` lines; the plugin, the MCP server and `pointcast process` still resolve them in your local repository.
 - **The first recording downloads the Whisper model** (291 MB, once), so it takes longer.
 
 ## Privacy
 
-- **Local-first.** Audio and transcription stay on your machine by default (transformers.js/Whisper in the browser). No account, no server, no API key needed.
+- **Local-first.** Audio and transcription stay on your machine by default (transformers.js/Whisper in the browser). No account, no server, no API key needed. Besides the model download and your dev server, the extension only talks to your own pointcast MCP server on `127.0.0.1`, which accepts recordings from the pointcast extension only.
 - **Off by default everywhere but local dev hosts.** Any other site needs an explicit, per-host opt-in; the extension never asks for "all sites".
 - **Sensitive fields are never captured**: password fields, `autocomplete=current-password|new-password|one-time-code|cc-*`, or anything marked `data-sensitive`. On a site you've enabled, text that looks like personal data (emails, phone numbers, tokens in URLs) is redacted too.
 - **Allowlist, not blocklist.** Only a fixed set of HTML attributes is ever captured; anything unforeseen is excluded by default.
@@ -146,8 +178,9 @@ Privacy policy: [PRIVACY.md](PRIVACY.md). Full rationale and the canary test tha
 
 ## Roadmap
 
-- **0.1, public beta** (now) — the extension records your voice and the elements you point at, transcribes in the browser and copies a spec that leads with the code (React, Vue 3, Svelte 5 dev builds); MCP server and Claude Code plugin; CLI.
-- **Next** — code lines from more dev servers (webpack, Next.js) and frameworks (Angular); readable GitHub issues from a recording; Chrome Web Store listing; Firefox.
+- **0.1, public beta** — the extension records your voice and the elements you point at, transcribes in the browser and copies a spec that leads with the code (React, Vue 3, Svelte 5 dev builds); MCP server and Claude Code plugin; CLI.
+- **0.2** (now) — recordings go straight to a running MCP server, with no downloads; Codex and Gemini CLI integrations; Edge.
+- **Next** — code lines from more dev servers (webpack, Next.js) and frameworks (Angular); readable GitHub issues from a recording; Chrome Web Store and Edge Add-ons listings; Firefox.
 
 What else is being considered, and why: [docs/ideas.md](docs/ideas.md).
 
@@ -161,13 +194,13 @@ The whole loop runs from this repository (Chrome, and Node ≥ 22.12 with pnpm t
 2. **Open an app on a local host.** `pnpm playground` serves test pages on http://localhost:5500. pointcast runs on `localhost`, `127.0.0.1`, `[::1]`, `*.localhost` and `*.test`, on any port. For any other site (a staging server, a preview deployment), open the popup there and press **Enable on `<host>`**: Chrome asks for access to that host only, and on such sites text that looks like personal data (emails, phone numbers…) is redacted. **Remove `<host>`** turns it off again. The playground is static HTML, so it cannot show [the code pointer](#pointing-at-the-code); `pnpm example:react` and `pnpm example:vue` each start a small Vite dev build of the same "Acme Store" admin dashboard (React 19 and Vue 3, on `127.0.0.1:5174`/`5175`) built to exercise it — shared components, a data-driven sidebar badge, two identically-labeled buttons. Each has a `SCENARIOS.md` under [examples/](examples/) with three narrated pointing scenarios and the code locations they should turn up.
 3. **Record.** Click the pointcast icon and press **Record**. The first time, a page asks for the microphone: allow it, then press Record again. The popup says whether the current tab is captured; while recording it should read *Capturing this tab*. Talk while you **Alt+click** things (the app does not react) or select text; only those two gestures are recorded, so a plain click reaches the app exactly as if pointcast were not there. The popup shows the last element it captured. Pointed at the wrong thing? **Undo last gesture** in the popup, or **Alt+Shift+U**, removes it; the element flashes grey and the pill says what was undone. **Alt+Shift+S** starts and stops recording without opening the popup (change it in `chrome://extensions/shortcuts`).
 4. **Stop.** Press **Stop** (or Alt+Shift+S). pointcast transcribes your voice on your machine, in the browser, and puts the Markdown in the clipboard. The pill in the page corner turns from *REC* into *Processing… ~0:05* with a progress bar, then says *✓ Copied — paste it into your agent*. The toolbar icon shows *…* and then *✓*, and a notification appears when it is done. The time is an estimate from the length of the recording and the speed measured on your machine in earlier runs. The first time, the Whisper model is downloaded once (291 MB, `Xenova/whisper-base`) and kept in the browser; the popup shows the download in MB. On a desktop CPU, 12 s of speech takes about 5 s, and a minute takes about 17 s.
-5. **Paste it into your coding agent.** The popup has **Copy again** and **Show in folder**, and on a dev build one line on whether the code lines were found through your dev server ([Pointing at the code](#pointing-at-the-code)). The session is saved to `Downloads/pointcast/<session-id>/`: `session.md` (the Markdown), `words.json` (the transcript) and `session.json` (the events).
+5. **Paste it into your coding agent.** The popup has **Copy again** and **Show in folder**, keeps showing the recording's length until the next one, and on a dev build adds one line on whether the code lines were found through your dev server ([Pointing at the code](#pointing-at-the-code)). The session is saved to `Downloads/pointcast/<session-id>/`, or, while a pointcast MCP server runs, into that server's sessions folder (the popup says which): `session.md` (the Markdown), `words.json` (the transcript) and `session.json` (the events).
 
-The popup's **Settings**: the spoken **Language** (*Auto-detect* by default; when detection is unsure, pointcast uses the language of your previous session, or its best guess, and says so), **Keep audio** (also saves `audio.wav`), and **Notify when done**. When something goes wrong, the popup says what happened, and the session is still saved with its audio so the CLI can finish it.
+The popup's **Settings**: the spoken **Language** (*Auto-detect* by default; when detection is unsure, pointcast uses the language of your previous session, or its best guess, and says so), **Keep audio** (also saves `audio.wav`), **Notify when done**, and **Send to a running pointcast MCP server** (on by default; it only acts when one answers). When something goes wrong, the popup says what happened, and the session is still saved with its audio so the CLI can finish it.
 
 **The CLI is optional.** `pnpm pointcast process` re-renders the latest session (or `pnpm pointcast process <session-dir>`) after a change to fusion or rendering, reusing `words.json`. With the audio it can transcribe again (`--force`, `--language es`) or use an OpenAI-compatible endpoint (`--engine openai`), and Node is faster than the browser on slow machines. If Chrome saves downloads somewhere other than your Downloads folder, pass `--dir <that folder>/pointcast` or set `POINTCAST_DIR`.
 
-**The MCP server is optional.** `pnpm pointcast mcp` starts a read-only MCP server (`list_sessions`, `get_session`, `get_element`) so an agent can fetch your latest recording itself instead of you pasting it.
+**The MCP server is optional.** `pnpm pointcast mcp` starts a read-only MCP server (`list_sessions`, `get_session`, `get_element`) so an agent can fetch your latest recording itself instead of you pasting it. While it runs, it also receives recordings from the extension, on `127.0.0.1:20547` only and from the pointcast extension only, and stores them in its sessions folder.
 
 ## Development
 
@@ -183,7 +216,8 @@ pnpm example:vue   # the same dashboard, Vue 3 + Vite, on http://127.0.0.1:5175 
 
 pnpm dev           # opens Chrome with the extension; reloads it when you edit the code (WXT)
 pnpm build         # production build in packages/extension/.output/chrome-mv3
-pnpm zip           # packaged extension for loading or distribution: packages/extension/.output/pointcast-<version>-chrome.zip
+pnpm zip           # packaged extension to load unpacked (GitHub releases): packages/extension/.output/pointcast-<version>-chrome.zip
+pnpm --filter @pointcast/extension zip:store  # the store upload, without the manifest key: …/pointcast-<version>-chrome-store.zip
 pnpm e2e           # builds the e2e flavor (.output/chrome-mv3-e2e), then runs it in headless Chromium (Playwright)
 ```
 

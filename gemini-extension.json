@@ -1,0 +1,12 @@
+{
+  "name": "pointcast",
+  "version": "0.2.0",
+  "description": "Apply a pointcast recording (what you said while pointing at your web app) as code changes: the pointcast MCP server plus a /pointcast command.",
+  "mcpServers": {
+    "pointcast": {
+      "command": "npx",
+      "args": ["-y", "pointcast@0.2", "mcp", "--repo", "${workspacePath}"]
+    }
+  },
+  "contextFileName": []
+}

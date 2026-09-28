@@ -1,3 +1,4 @@
+import { SESSIONS_FOLDER } from "@pointcast/core";
 import type { ProcessingInfo } from "./processing/progress";
 
 /**
@@ -5,13 +6,14 @@ import type { ProcessingInfo } from "./processing/progress";
  * the content scripts (readers). It lives in chrome.storage.session, never in variables,
  * because Chrome stops the service worker after ~30 s idle (D6).
  *
- *   idle ─start─▶ starting ─started─▶ recording ─stop─▶ stopping ─audio decoded─▶ processing ─files saved─▶ idle
+ *   idle ─start─▶ starting ─started─▶ recording ─stop─▶ stopping ─audio decoded─▶ processing ─files saved or handed off─▶ idle
  *     ▲              │ (microphone denied / error)          │ (error)                  │ (error, timeout)
  *     └──────────────┴──────────────────────────────────────┴──────────────────────────┘
  *
  * stopping: the recorder stops the microphone and decodes the audio (seconds at most).
- * processing: the offscreen document transcribes, fuses, renders and copies the Markdown, then
- * the service worker saves the files (D1 note 2026-09-27).
+ * processing: the offscreen document transcribes, fuses, renders and copies the Markdown (D1 note
+ * 2026-09-27), then hands the files to a running pointcast MCP server (D11), or the service
+ * worker downloads them.
  */
 
 export type RecorderStatus = "idle" | "starting" | "recording" | "stopping" | "processing";
@@ -25,6 +27,11 @@ export interface LastResult {
   copied: boolean;
   /** chrome.downloads id of a file in the session folder, for "Show in folder". */
   downloadId?: number;
+  /**
+   * The session folder, for display ("~" for the home folder), when a pointcast MCP server stored
+   * the files (D11); downloadId is then absent: Chrome downloaded nothing it could show.
+   */
+  handedOffTo?: string;
   audioMs: number;
   /** From Stop to saved. */
   processingMs: number;
@@ -101,6 +108,16 @@ export function parseState(value: unknown): RecorderState {
   const status = (value as { status?: unknown }).status;
   const valid: readonly unknown[] = ["idle", "starting", "recording", "stopping", "processing"];
   return valid.includes(status) ? (value as RecorderState) : IDLE_STATE;
+}
+
+/**
+ * Where the session's files went, in one line for the popup and the notification: the folder a
+ * pointcast MCP server reported (handedOffTo), or the folder Chrome's downloads were asked for.
+ */
+export function savedLocationText(sessionId: string, handedOffTo?: string): string {
+  return handedOffTo !== undefined
+    ? `Saved by the pointcast MCP server to ${handedOffTo}`
+    : `Saved to Downloads/${SESSIONS_FOLDER}/${sessionId}/`;
 }
 
 export function isRecording(state: RecorderState): boolean {

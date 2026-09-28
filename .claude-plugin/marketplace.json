@@ -4,12 +4,12 @@
     "name": "Hugelidus",
     "url": "https://github.com/Hugelidus"
   },
-  "description": "pointcast for Claude Code: apply what you said while pointing at your web app as code changes.",
+  "description": "pointcast for Claude Code and Codex: apply what you said while pointing at your web app as code changes.",
   "plugins": [
     {
       "name": "pointcast",
       "source": "./integrations/claude-code-plugin",
-      "description": "The pointcast MCP server (list_sessions, get_session, get_element) plus a /pointcast command that applies the latest recording.",
+      "description": "The pointcast MCP server (list_sessions, get_session, get_element) plus a pointcast skill that applies the latest recording (/pointcast in Claude Code).",
       "category": "development"
     }
   ]

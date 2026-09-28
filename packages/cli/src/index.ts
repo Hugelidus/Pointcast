@@ -2,7 +2,7 @@
 import { spawn } from "node:child_process";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { WordsFile } from "@pointcast/core";
+import { unreliableTimes, type WordsFile } from "@pointcast/core";
 import { parseCommandLine, USAGE, type CliCommand } from "./args";
 import { readAudioSamples } from "./audio/read-audio";
 import { resolveAudioTarget } from "./audio-target";
@@ -81,6 +81,12 @@ function logDetectedLanguage(requested: string | undefined, words: WordsFile): v
   }
 }
 
+/** The spec says it too (core's renderer); the terminal says it where the user is looking. */
+function logUnreliable(words: WordsFile): void {
+  const times = unreliableTimes(words);
+  if (times) log(`warning: the transcript around ${times} looked unreliable and was dropped`);
+}
+
 async function runTranscribe(command: Extract<CliCommand, { command: "transcribe" }>): Promise<void> {
   const { audioPath, wordsPath } = await resolveAudioTarget(fromUserCwd(command.target));
   const samples = await readAudioSamples(audioPath);
@@ -89,6 +95,7 @@ async function runTranscribe(command: Extract<CliCommand, { command: "transcribe
   log(`transcribing ${audioPath} with ${engine.name}...`);
   const words = await engine.transcribe(samples, { language: command.language });
   logDetectedLanguage(command.language, words);
+  logUnreliable(words);
 
   await writeFile(wordsPath, JSON.stringify(words, null, 2), "utf8");
   log(`wrote ${wordsPath} (${words.words.length} words)`);
@@ -120,6 +127,7 @@ async function runProcessCommand(command: Extract<CliCommand, { command: "proces
   if (result.transcribed) {
     logDetectedLanguage(command.language, result.words);
     log(`transcribed with ${result.words.engine} (${result.words.words.length} words)`);
+    logUnreliable(result.words);
   } else {
     log("words.json already present, skipped transcription (--force to redo it)");
   }

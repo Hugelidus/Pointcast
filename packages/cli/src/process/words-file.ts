@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { Word, WordsFile } from "@pointcast/core";
+import type { TimeSpan, Word, WordsFile } from "@pointcast/core";
 import { CliError } from "../errors";
 
 /**
@@ -41,13 +41,24 @@ export function validateWordsFile(value: unknown, sourceLabel: string): WordsFil
   if (!Array.isArray(obj.words)) fail("words", "must be an array");
 
   const words: Word[] = (obj.words as unknown[]).map((word, index) => validateWord(word, index, fail));
+  // Optional since 2026-09-28 (session-format.md): files written before it have none.
+  if (obj.unreliable !== undefined && !Array.isArray(obj.unreliable)) fail("unreliable", "must be an array when present");
+  const unreliable = ((obj.unreliable ?? []) as unknown[]).map((span, index) => validateSpan(span, index, fail));
 
   return {
     schemaVersion: 1,
     engine: obj.engine as string,
     language: obj.language as string | undefined,
     words,
+    ...(unreliable.length > 0 ? { unreliable } : {}),
   };
+}
+
+function validateSpan(value: unknown, index: number, fail: (field: string, expected: string) => never): TimeSpan {
+  const span = (typeof value === "object" && value !== null ? value : {}) as Record<string, unknown>;
+  if (typeof span.start !== "number") fail(`unreliable[${index}].start`, "must be a number");
+  if (typeof span.end !== "number") fail(`unreliable[${index}].end`, "must be a number");
+  return { start: span.start as number, end: span.end as number };
 }
 
 function validateWord(value: unknown, index: number, fail: (field: string, expected: string) => never): Word {

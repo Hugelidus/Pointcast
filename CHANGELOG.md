@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.1 (2026-09-28)
+
+CLI 0.2.1, extension 0.2.1 and the integrations at 0.2.1.
+
+**Transcription you can trust**
+
+- Silence and room noise no longer turn into invented words ("¡Adiós!", "Gracias.", "Thank you."). A voice activity detector (Silero VAD, 2 MB, downloaded once like the Whisper model) finds the speech first, and only the speech is transcribed.
+- Whisper can no longer loop for pages: its output is limited to what the audio's length allows, a phrase repeated three times or more is kept once, and words with impossible times are dropped.
+- When part of a transcript had to be dropped as unreliable, the spec says where in one line, and the popup and the CLI warn. `words.json` gains an optional `unreliable` field ([session format](docs/session-format.md#words)).
+- The CLI ships an `npm-shrinkwrap.json`: every dependency version is locked, so the MCP server the plugins start is exactly the reviewed one. The plugins start `pointcast@0.2.1`.
+
 ## 0.2.0 (2026-09-28)
 
 Extension 0.2.0, CLI 0.2.0 (`pointcast` on npm), and the Claude Code, Codex and Gemini CLI integrations at 0.2.0.

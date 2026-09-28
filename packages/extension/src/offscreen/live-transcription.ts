@@ -1,8 +1,8 @@
-import type { Word } from "@pointcast/core";
+import type { TimeSpan, Word } from "@pointcast/core";
 import type { TranscriptionProgress } from "@pointcast/transcribe";
 // The subpath, not the package: its entry point would pull transformers.js (and a second copy of
 // ONNX Runtime's 27 MB .wasm) into the offscreen document, which only needs these pure functions.
-import { findCut, joinSegments, MIN_SEGMENT_S } from "@pointcast/transcribe/segments";
+import { findCut, joinSegments, joinUnreliable, MIN_SEGMENT_S } from "@pointcast/transcribe/segments";
 import { beforeDeadline, type TranscriptionWorker } from "../transcriber/client";
 import type { TranscribeDone } from "../transcriber/protocol";
 import { AUDIO_FILE } from "./session-file";
@@ -59,7 +59,7 @@ export class LiveTranscription {
   #engine = "";
   #loadMs = 0;
   #modelLoaded = false;
-  readonly #pieces: { startSample: number; words: Word[] }[] = [];
+  readonly #pieces: { startSample: number; words: Word[]; unreliable?: TimeSpan[] }[] = [];
   /** Pieces are transcribed one after the other, in recording order. Never rejects. */
   #queue: Promise<unknown>;
   #failure: unknown;
@@ -115,10 +115,17 @@ export class LiveTranscription {
       const whole = this.#from === 0 ? { fallbackLanguage: options.fallbackLanguage } : undefined;
       const last = await beforeDeadline(this.#enqueue(tail, this.#from, whole), options.deadline);
       if (!last) throw this.#failure;
+      const unreliable = joinUnreliable(this.#pieces);
       return {
         type: "done",
         ...(last.fallback ? { fallback: last.fallback } : {}),
-        words: { schemaVersion: 1, engine: this.#engine, language: this.#language, words: joinSegments(this.#pieces) },
+        words: {
+          schemaVersion: 1,
+          engine: this.#engine,
+          language: this.#language,
+          words: joinSegments(this.#pieces),
+          ...(unreliable.length > 0 ? { unreliable } : {}),
+        },
         loadMs: this.#loadMs,
         transcribeMs: last.transcribeMs,
         audioMs: Math.round((tail.length * 1000) / RATE),
@@ -175,7 +182,7 @@ export class LiveTranscription {
         if (done.fallback && !whole) throw new Error("the language of the first piece was uncertain");
         this.#language ??= done.words.language;
         this.#engine = done.words.engine;
-        this.#pieces.push({ startSample, words: done.words.words });
+        this.#pieces.push({ startSample, words: done.words.words, unreliable: done.words.unreliable });
         this.#doneUntil = startSample + samples.length;
         return done;
       } catch (error) {

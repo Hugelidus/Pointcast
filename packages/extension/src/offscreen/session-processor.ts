@@ -1,4 +1,4 @@
-import { renderMarkdown, type CapturedEvent, type SessionFile, type WordsFile } from "@pointcast/core";
+import { renderMarkdown, unreliableTimes, type CapturedEvent, type SessionFile, type WordsFile } from "@pointcast/core";
 import type { ProcessingOptions, ProcessingResult } from "../messages";
 import { languageName } from "../processing/settings";
 import type { TranscribeDone } from "../transcriber/protocol";
@@ -117,6 +117,11 @@ export async function processSession(job: ProcessingJob, deps: ProcessorDeps): P
         : `Not sure which language you spoke; it was transcribed as ${used} (${guess}).`,
       "If that is wrong, pick the language in the popup; the audio was kept for the CLI.",
     );
+  }
+  const unreliable = unreliableTimes(words);
+  if (unreliable) {
+    // The spec says so too (core's renderer), but the user should hear it before pasting.
+    warnings.push(`The transcript around ${unreliable} looked unreliable and was dropped; say it again if something is missing.`);
   }
   const withAudio = job.options.keepAudio || fallback !== undefined;
   const code = await resolving;

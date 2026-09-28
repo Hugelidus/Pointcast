@@ -60,10 +60,11 @@ try {
   const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
   const popup = await context.newPage();
   await popup.goto(`chrome-extension://${new URL(worker.url()).host}/popup.html`);
-  // Spanish narration: no language guessing; keep the audio to check sync afterwards.
+  // Spanish narration: no language guessing; keep the audio to check sync afterwards. Handoff
+  // off: the e2e build hands off to port 5542, which is shadcn-admin's dev server here.
   await popup.evaluate(async () => {
     const { settings } = await chrome.storage.local.get("settings");
-    await chrome.storage.local.set({ settings: { ...settings, language: "es", keepAudio: true } });
+    await chrome.storage.local.set({ settings: { ...settings, language: "es", keepAudio: true, handoff: false } });
   });
 
   const page = await context.newPage();

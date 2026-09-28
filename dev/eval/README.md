@@ -94,6 +94,15 @@ This run checked the runner's flags and the grader's parsing, not the results: 4
 
 Both P runs lost the same change: they recolored `button.primary`, the class the Export button shares with Save, next to `#export-btn`. The spec lists `class primary` among Export's search hints. The pilot's sub-agents did not do this; `claude -p` did.
 
+## Typed evaluation (2026-09-28): `dev/eval/typed/`
+
+One UI change per task, recorded with the extension in typed mode, three variants: **A** a hand-typed request written by an independent writer from a screenshot, **B** the Pointcast spec without code lines, **C** the recording read through the pointcast MCP server (`--mcp-config` per run), which resolves code locations in the app. Results: [docs/eval/results-2026-09-28.md](../../docs/eval/results-2026-09-28.md).
+
+- `tasks.json`: the four apps (the three above plus mdn/django-locallibrary-tutorial, run from a clone outside the repo with the settings in `django/`), 16 tasks with gesture, note, the A writer's intent and the ground truth (the `grade.mjs` rules).
+- `record.mjs` (typed recordings, handoff off), `prepare.mjs` (B specs, C's MCP configs, prompt hashes), `write-a.mjs` (A requests; the screenshot goes inside the message), `run.mjs` (the runs, stream-json), `grade.mjs` (accuracy, tokens, tool calls, searches before the first ground-truth read), `claude.mjs` (the `claude -p` runner with a cost ledger and a stop-loss).
+- Differences from the runs above: no `--safe-mode` (it disables MCP), auto memory off through `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` instead.
+- Windows: inside a worktree the path to shadcn-admin's pnpm store gets too long for Node (`ERR_PACKAGE_IMPORT_NOT_DEFINED` from vitest when Vite loads its config). Install it with `pnpm install --frozen-lockfile --ignore-workspace --config.virtual-store-dir-max-length=40`.
+
 ## Full run (2026-09-27)
 
 36 runs, $3.42: [docs/eval/results-2026-09-27.md](../../docs/eval/results-2026-09-27.md). After a manual audit of every answer, two ground-truth regular expressions were tightened (shadcn's subtitle, flowbite's Sales Report link); the results page says which and why. Its addendum re-runs P-requests on shadcn-admin and flowbite-svelte-admin after fixing two of the failures it found (6 runs, $0.63).

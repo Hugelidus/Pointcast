@@ -1,6 +1,6 @@
 {
   "name": "pointcast",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Turn a pointcast recording (your voice + the elements you pointed at) into a Markdown spec for coding agents, or serve it over MCP.",
   "license": "MIT",
   "author": "Hugelidus (https://github.com/Hugelidus)",
@@ -30,14 +30,16 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "npm-shrinkwrap.json"
   ],
   "scripts": {
     "start": "tsx src/index.ts",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run src",
-    "test:slow": "vitest run src/process/run.slow.test.ts"
+    "test:slow": "vitest run src/process/run.slow.test.ts",
+    "shrinkwrap": "node scripts/shrinkwrap.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.1",

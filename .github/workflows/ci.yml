@@ -1,7 +1,9 @@
 name: CI
 
+# Pull requests, and main after a merge. Branch pushes and tags get no run of their own: their PR has one.
 on:
   push:
+    branches: [main]
   pull_request:
 
 # Cancel a run that a newer push to the same branch/PR has superseded.
@@ -22,14 +24,14 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Reads the pnpm version to install from package.json's "packageManager" field.
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -43,18 +45,25 @@ jobs:
       - name: Test
         run: pnpm test
 
+  # The whole suite, on pull requests only (main already passed it in its PR), split in three
+  # parallel shards. It catches what local runs on one OS miss (a Linux-only path bug in 0.2.0).
   e2e:
-    name: e2e
+    name: e2e (${{ matrix.shard }}/3)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -76,14 +85,17 @@ jobs:
       - name: Download the Whisper model
         run: node scripts/download-model.mjs
 
+      - name: Build the e2e extension
+        run: pnpm --filter @pointcast/extension build:e2e
+
       - name: Run e2e tests
-        run: pnpm e2e
+        run: pnpm exec playwright test --shard=${{ matrix.shard }}/3
 
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.shard }}
           path: playwright-report/
           if-no-files-found: ignore
           retention-days: 7
@@ -92,7 +104,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-${{ matrix.shard }}
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7

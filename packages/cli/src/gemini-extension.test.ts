@@ -16,7 +16,6 @@ import { VERSION } from "./version";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const PLUGIN = join(ROOT, "integrations/claude-code-plugin");
 const readJson = (file: string) => JSON.parse(readFileSync(file, "utf8")) as Record<string, any>;
-const minor = (version: string) => version.split(".").slice(0, 2).join(".");
 
 /**
  * The whole command file: comment lines, `description = "…"` with no escapes, and
@@ -40,7 +39,7 @@ describe("Gemini CLI extension", () => {
     // Gemini replaces ${workspacePath} with that folder; being explicit keeps it right even if a
     // later Gemini starts servers elsewhere.
     expect(manifest.mcpServers).toEqual({
-      pointcast: { command: "npx", args: ["-y", `pointcast@${minor(VERSION)}`, "mcp", "--repo", "${workspacePath}"] },
+      pointcast: { command: "npx", args: ["-y", `pointcast@${VERSION}`, "mcp", "--repo", "${workspacePath}"] },
     });
     expect(manifest.mcpServers.pointcast.args[1]).toBe(readJson(join(PLUGIN, ".mcp.json")).mcpServers.pointcast.args[1]);
   });

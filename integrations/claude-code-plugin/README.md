@@ -6,7 +6,7 @@ it.
 
 The plugin contains:
 
-- **The pointcast MCP server** (`npx -y pointcast@0.2 mcp`), with read-only tools:
+- **The pointcast MCP server** (`npx -y pointcast@0.2.0 mcp`), with read-only tools:
   `list_sessions`, `get_session` and `get_element`. They find the recordings the pointcast
   extension saved (`<Downloads>/pointcast`, or `POINTCAST_DIR`) and resolve each pointed element
   to its line in this project's source.
@@ -90,6 +90,6 @@ The manifests are checked by each agent's validator:
   `commands/pointcast.toml`).
 
 `packages/cli/src/plugin.test.ts` checks that the files agree with each other and with the MCP
-server's tool names, and that the `pointcast@0.x` pin follows the CLI's version.
+server's tool names, and that the `pointcast@<version>` pin is the CLI's exact version.
 `packages/cli/src/gemini-extension.test.ts` keeps the Gemini manifest and its `/pointcast` prompt
 equal to the plugin's.

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/launch/store/promo-marquee.png" alt="Pointcast: talk and point at your web app; your coding agent gets the exact elements and the code behind them" width="900">
+  <a href="docs/launch/video/out/pointcast-demo.mp4"><img src="docs/launch/video/out/pointcast-demo.gif" alt="Pointcast in 17 seconds: Alt+click two elements while talking, press Stop, and the spoken requests become a spec whose code locations lead to the exact lines in the source" width="800"></a>
 </p>
 
 # Pointcast
@@ -15,7 +15,7 @@ One recording covers a whole list of UI changes: say what you want while you poi
 
 **[Quick start](#quick-start) · [How it works](#how-it-works) · [Eval](docs/eval/results-2026-09-27.md) · [Discussions](https://github.com/Hugelidus/pointcast/discussions) · [Changelog](CHANGELOG.md)**
 
-> **Public beta (0.2).** Chrome and Edge on desktop, developed and tested on Windows; macOS and Linux should work but are untested. Feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
+> **Public beta (0.3).** Chrome and Edge on desktop, developed and tested on Windows; macOS and Linux should work but are untested. Feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
 
 ## Quick start
 

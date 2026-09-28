@@ -45,6 +45,29 @@ jobs:
       - name: Test
         run: pnpm test
 
+  # pointcast-django (integrations/django): a few seconds, on both supported Django lines.
+  django:
+    name: django (${{ matrix.django }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        django: ["4.2", "5.2"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Django
+        run: pip install "django~=${{ matrix.django }}.0"
+
+      - name: Test
+        run: python -m unittest discover -s integrations/django/tests
+
   # The whole suite, on pull requests only (main already passed it in its PR), split in three
   # parallel shards. It catches what local runs on one OS miss (a Linux-only path bug in 0.2.0).
   e2e:

@@ -4,7 +4,7 @@ Two versions of one post: Spanish first (your network), English second (post it 
 
 How to post:
 
-- **Upload the video natively** (`docs/launch/video/out/pointcast-demo.mp4`, 18 s, no sound; LinkedIn plays it muted and inline). A link in the post body lowers its reach, so the repository link goes in the **first comment**, posted right away by you. The post says so in its last line.
+- **Upload the video natively** (`docs/launch/video/out/pointcast-demo.mp4`, ~27.5 s, no sound; LinkedIn plays it muted and inline). The short hero GIF (`pointcast-hero.gif`, 9.6 s) works too if you'd rather keep it snappy. A link in the post body lowers its reach, so the repository link goes in the **first comment**, posted right away by you. The post says so in its last line.
 - No more than 3–5 hashtags, at the end.
 - Tag nobody who hasn't agreed to it. The colleague who tested it can be thanked by name only if they're happy with that; the app itself is never named.
 
@@ -14,7 +14,7 @@ How to post:
 
 Trabajando con agentes de programación, me encontraba siempre con el mismo problema: le escribes "haz que esto se pueda ordenar y pon esto al lado de aquello", y el agente no sabe qué es "esto". Así que acabas escribiendo un segundo mensaje explicándolo.
 
-Construí Pointcast para resolverlo: una extensión de Chrome y Edge en la que hablas mientras haces Alt+clic en los elementos de tu aplicación. Al parar, cada frase se convierte en una petición, y cada elemento señalado llega al agente (Claude Code, Codex, Gemini CLI o Cursor) con la línea de código que hay detrás. La voz se transcribe en el propio navegador; nada sale del ordenador.
+Construí Pointcast para resolverlo: una extensión de Chrome y Edge en la que hablas (o escribes una nota, si no puedes hablar) mientras haces Alt+clic en los elementos de tu aplicación. Al parar, cada frase se convierte en una petición, y cada elemento señalado llega al agente (Claude Code, Codex, Gemini CLI o Cursor) con la línea de código que hay detrás — no el HTML, la línea que lo genera. La voz se transcribe en el propio navegador; nada sale del ordenador.
 
 Lo que más he aprendido no ha sido construirlo, sino medirlo:
 
@@ -24,7 +24,11 @@ Lo que más he aprendido no ha sido construirlo, sino medirlo:
 
 • Ese resultado marcó el siguiente paso: darle al agente el archivo y la línea exactos. Con eso, los tokens que gastaba en encontrar los elementos bajaron a menos de la mitad.
 
-• Un compañero lo probó en su proyecto Django real y ahí no llegaba al código: las plantillas del servidor no dicen de dónde viene cada elemento. La versión 0.3 añade un paquete para Django que las marca solo en desarrollo. En una app Django + HTMX de unas 1.300 plantillas, colocó ~94 % de los elementos de muestra en su línea exacta, y ninguno en una línea equivocada.
+• Un compañero lo probó en su proyecto Django real y ahí no llegaba al código: las plantillas del servidor no dicen de dónde viene cada elemento. Un paquete para Django lo resuelve, marcando las plantillas solo en desarrollo. En una app Django + HTMX de unas 1.300 plantillas, colocó ~94 % de los elementos de muestra en su línea exacta, y ninguno en una línea equivocada.
+
+• Una grabación real trae varios cambios a la vez, no uno. Repetí la comparación con seis cambios en una sola grabación: el agente acertó el código el 96 % de las veces frente al 85 % del mismo pedido escrito a mano, con un 24 % menos de tokens y un 75 % menos de búsquedas. Con un cambio cada vez también acierta más (96 % frente a 84 %), pero no gasta menos: el ahorro está en agruparlos. En tiempo, mi estimación (no medida) para seis cambios: ~15 min pidiéndolos de uno en uno frente a ~5 min con una grabación de 2 minutos.
+
+• Desde entonces añadí lo que pedían los primeros usuarios: un modo escrito para cuando no se puede hablar, y que la grabación recoja los errores de consola y de red de los segundos alrededor de cada elemento señalado, para que el agente sepa no solo qué botón sino por qué no hacía nada.
 
 • La regla que más ha pesado en el diseño: si no está seguro, no dice nada. Una línea que falta le cuesta al agente una búsqueda; una línea equivocada le cuesta un cambio en el sitio equivocado.
 
@@ -46,7 +50,7 @@ Repositorio, vídeo e informes de evaluación: https://github.com/Hugelidus/poin
 
 Working with coding agents, I kept running into the same problem: you type "make this sortable and put this next to that", and the agent has no idea what "this" is. So you write a second message explaining it.
 
-I built Pointcast to fix that: a Chrome and Edge extension where you talk while you Alt+click the elements of your app. At Stop, each sentence becomes a request, and each element you pointed at reaches the agent (Claude Code, Codex, Gemini CLI or Cursor) with the line of code behind it. Your voice is transcribed in the browser; nothing leaves your machine.
+I built Pointcast to fix that: a Chrome and Edge extension where you talk (or type a note, if you can't) while you Alt+click the elements of your app. At Stop, each sentence becomes a request, and each element you pointed at reaches the agent (Claude Code, Codex, Gemini CLI or Cursor) with the line of code behind it — not the HTML, the line that makes it. Your voice is transcribed in the browser; nothing leaves your machine.
 
 What taught me the most wasn't building it, it was measuring it:
 
@@ -56,7 +60,11 @@ What taught me the most wasn't building it, it was measuring it:
 
 • That result set the next step: give the agent the exact file and line. With it, the tokens the agent spent finding the elements fell by more than half.
 
-• A colleague tried it on their real Django project, and there it couldn't reach the code: server templates don't say where each element comes from. Version 0.3 adds a small Django package that marks them, in development only. On a Django + HTMX app with about 1,300 templates, it placed ~94% of sampled elements on their exact line, and none on a wrong one.
+• A colleague tried it on their real Django project, and there it couldn't reach the code: server templates don't say where each element comes from. A small Django package fixes that, marking templates in development only. On a Django + HTMX app with about 1,300 templates, it placed ~94% of sampled elements on their exact line, and none on a wrong one.
+
+• A real recording usually carries several changes, not one. I re-ran the comparison with six changes in a single recording: the agent got the right code 96% of the time against 85% for the same six changes typed by hand, at 24% fewer tokens and 75% fewer searches. With one change at a time it is still more accurate (96% vs. 84%), but not cheaper: the saving is in batching them. In time, my rough estimate (not measured) for six changes: ~15 min asking one by one vs. ~5 min with one 2-minute recording.
+
+• Since then I've added what early users asked for: a typed mode for when talking isn't an option, and a setting that carries the console and network errors around each pointed element, so the agent knows not just which button but why it did nothing.
 
 • The rule that shaped the design most: when it isn't sure, it says nothing. A missing line costs the agent a search; a wrong line costs an edit in the wrong place.
 

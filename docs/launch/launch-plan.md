@@ -1,16 +1,16 @@
-# Plan de lanzamiento (0.3)
+# Plan de lanzamiento (0.5)
 
 Para Hugo. Los textos están en esta carpeta; aquí va solo qué hacer, en qué orden y cuándo. Nada de esto está publicado: todo lo publicas tú.
 
 ## 1. Antes del lanzamiento (checklist)
 
-- [ ] **Chrome Web Store aprobada.** Sin ella, cada post dice "carga el zip a mano", y eso frena a la mitad de la gente. Cuando la aprueben: subir el zip de tienda de 0.3.0 (el artefacto `pointcast-0.3.0-chrome-store` del workflow de release, nunca el zip de la release), comprobar que se instala desde la ficha y cambiar el paso 1 del README ("in review") por el enlace a la ficha. Si la aprobación tarda más de ~2 semanas, lanzar igual con el zip y decirlo en los posts.
+- [ ] **Chrome Web Store aprobada.** Sin ella, cada post dice "carga el zip a mano", y eso frena a la mitad de la gente. Cuando la aprueben: subir el zip de tienda de 0.5.0 (el artefacto `pointcast-0.5.0-chrome-store` del workflow de release, nunca el zip de la release), comprobar que se instala desde la ficha y cambiar el paso 1 del README ("in review") por el enlace a la ficha. Si la aprobación tarda más de ~2 semanas, lanzar igual con el zip y decirlo en los posts.
 - [ ] **Edge Add-ons enviada** ([edge-addons.md](edge-addons.md)). No bloquea el lanzamiento; al publicarse, añadir su id a `OFFICIAL_EXTENSION_IDS` en la siguiente release del CLI.
-- [ ] **Vídeo en `main`.** El vídeo de 18 s con «View report» y «Export» está en la rama `video-export`: hacer merge (PR) antes del lanzamiento, porque todos los posts enlazan a `blob/main/docs/launch/video/out/pointcast-demo.mp4`. Detalle: el `alt` del GIF en el README dice "17 seconds"; ahora dura ~18.
-- [ ] **Segunda prueba del compañero** con 0.3 y `pointcast-django` en su app real: que grabe 3–5 peticiones, aplique con su agente y te diga qué señaló mal. Si sale algo grave, arreglarlo antes; si no, sus palabras (con su permiso) valen más que cualquier número. Nunca nombrar su app en público.
+- [x] **Vídeo en `main`.** Ya está: el vídeo largo (`pointcast-demo.mp4`, ~27.5 s) y el GIF de cabecera del README (`pointcast-hero.gif`, 9.6 s, «Not the HTML. The line that makes it.») están en `main`, junto con los GIFs cortos de modo escrito, lote, MCP y captura de errores. Quedan por revisar: que ningún post siga diciendo "18 s" o enlazando a `pointcast-demo.gif` (ya no es el que se usa en el README).
+- [ ] **Segunda prueba del compañero** con 0.5 y `pointcast-django` en su app real: que grabe 3–5 peticiones, aplique con su agente y te diga qué señaló mal. Si sale algo grave, arreglarlo antes; si no, sus palabras (con su permiso) valen más que cualquier número. Nunca nombrar su app en público.
 - [ ] **Social preview.** GitHub ya tiene una imagen personalizada (`docs/launch/store/social-preview.png`). Dice "Chrome extension": valorar regenerarla con "Chrome & Edge" (`node docs/launch/store/render.mjs`) y volver a subirla en *Settings → Social preview*. Comprobar cómo se ve pegando el enlace del repo en X y LinkedIn (vista previa).
 - [ ] **Pins.** Fijar el repo en tu perfil de GitHub; abrir una Discussion "Launch feedback" (Announcements) y fijarla; el día del lanzamiento, fijar el hilo de X/Bluesky en tu perfil.
-- [ ] **README al día.** El Quick start todavía dice `npx -y pointcast@0.2 mcp`: pasarlo a `@0.3`. Revisar que los enlaces de los informes funcionan desde `main`.
+- [ ] **README al día.** Revisar que el Quick start apunta a la versión publicada (`npx -y pointcast@0.5 mcp` o la que esté en npm ese día) y que los enlaces de los informes funcionan desde `main`.
 - [ ] **Temas del repo.** Añadir `django` y `htmx` a los topics (ahora no están).
 - [ ] **Issues para recién llegados.** Ya hay `good first issue`/`help wanted` (#3–#9); revisar que siguen vigentes y cerrar o agrupar los PR de dependabot (#11, #12, #17) para que el repo se vea cuidado.
 - [ ] **Cuentas listas:** HN (una cuenta con algo de historial ayuda), Reddit (karma mínimo en algunos subs), X, Bluesky, LinkedIn, dev.to.
@@ -21,7 +21,7 @@ Para Hugo. Los textos están en esta carpeta; aquí va solo qué hacer, en qué 
 
 1. Verificar la galería de extensiones de Gemini CLI (automática).
 2. Enviar a awesome-mcp-servers (PR con una línea).
-3. MCP Registry: requiere una release del CLI con `mcpName` (0.3.1); hacerlo cuando salga esa release, antes o después del lanzamiento, da igual.
+3. MCP Registry: requiere una release del CLI con `mcpName` (0.5.1, placeholder); hacerlo cuando salga esa release, antes o después del lanzamiento, da igual.
 4. Directorio de plugins de Claude: ya enviado; comprobar el estado. Marketplace de la comunidad: ver la nota en listings.md antes de enviar otra vez.
 5. PyPI para `pointcast-django`: publicarlo antes del lanzamiento, así el post de r/django dice `pip install pointcast-django`.
 
@@ -46,6 +46,6 @@ Reglas: un mismo texto nunca en dos sitios el mismo día; no pedir votos a nadie
 
 - **Bloquear las 24 h siguientes al post de HN.** Las primeras 2–3 h deciden si sube a portada; contestar cada comentario en minutos, con datos y enlaces a los informes, sin discutir. Reconocer los límites antes de que te los señalen.
 - **Tener abiertos:** HN, los hilos de Reddit, las notificaciones de X/Bluesky/LinkedIn, las issues y Discussions del repo.
-- **Bugs que lleguen ese día:** reproducir, abrir issue, responder con el enlace; arreglar en una 0.3.x solo si bloquea la instalación. Mejor una respuesta rápida y honesta que un parche con prisa.
+- **Bugs que lleguen ese día:** reproducir, abrir issue, responder con el enlace; arreglar en una 0.5.x solo si bloquea la instalación. Mejor una respuesta rápida y honesta que un parche con prisa.
 - **Preguntas previsibles** y sus respuestas: al final de [show-hn.md](show-hn.md).
 - **Después:** apuntar en una issue o Discussion lo que se repitió (fallos, frameworks pedidos). Eso decide la 0.4 y da material al artículo.

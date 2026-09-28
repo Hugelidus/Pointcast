@@ -19,7 +19,7 @@ Show HN: Pointcast – narrate UI changes while pointing, transcribed locally
 
 ## First comment (by the author)
 
-Hi HN, I'm the author. Pointcast is a Chrome/Edge extension plus a small local MCP server. You press Record, talk about the changes you want in your web app, and Alt+click the things you mean while you say them ("this should take you to the reports page", "and this button should export only the filtered orders"). At Stop, each sentence becomes a request, and each element you pointed at comes with the line of code behind it, so Claude Code, Codex, Gemini CLI or Cursor go straight to `src/pages/Dashboard.tsx:11` instead of searching the repo. 18-second video: https://github.com/Hugelidus/pointcast/blob/main/docs/launch/video/out/pointcast-demo.mp4
+Hi HN, I'm the author. Pointcast is a Chrome/Edge extension plus a small local MCP server. You press Record, talk about the changes you want in your web app (or type a note if you'd rather not talk), and Alt+click the things you mean while you say them ("this should take you to the reports page", "and this button should export only the filtered orders"). At Stop, each sentence becomes a request, and each element you pointed at comes with the line of code behind it — not the HTML, the source line that makes it — so Claude Code, Codex, Gemini CLI or Cursor go straight to `src/pages/Dashboard.tsx:11` instead of searching the repo. 27-second video: https://github.com/Hugelidus/pointcast/blob/main/docs/launch/video/out/pointcast-demo.mp4
 
 **Why.** I kept typing "make this sortable and move this next to that" into a coding agent and then writing a second message explaining which "this". A screenshot doesn't fix it: the agent needs the element and the file, not pixels. And a page often has two «Export» buttons or two identical cards, which is exactly where words fail.
 
@@ -28,8 +28,10 @@ Hi HN, I'm the author. Pointcast is a Chrome/Edge extension plus a small local M
 - Alt+click is cancelled before it reaches the page, so pointing at «Delete» never deletes. Plain clicks are never captured.
 - Your voice is transcribed in the browser (Whisper base via transformers.js, in an MV3 offscreen document), while you record. There is a voice activity detector (Silero) in front of Whisper, because Whisper invents speech on silence: 15 s of room noise came out as "¡Adiós!", and one tester's recording had "de la" 430 times. Now silence gives no words.
 - Words and gestures are aligned with a small dynamic-programming pass (greedy nearest-neighbour picks the wrong pairing when two "this" are close together).
-- The code pointer comes from framework dev metadata (React 19, Vue 3, Svelte 5 dev builds), and for Django templates from a small dev-only package, `pointcast-django`, that marks each rendered template with HTML comments. A resolver then looks the element's text up in those few files. If the text is written more than once, it says nothing: a missing line costs the agent a search, a wrong line costs a wrong edit.
+- Don't want to talk (open-plan office, no mic)? Typed mode swaps speech for a short note you type next to each element you point at; everything else works the same.
+- The code pointer comes from framework dev metadata (React 19, Vue 3, Svelte 5 dev builds), and for Django templates from a small dev-only package, `pointcast-django`, that marks each rendered template with HTML comments. A resolver then looks the element's text up in those few files. If the text is written more than once, it says nothing: a missing line costs the agent a search, a wrong line costs a wrong edit. It also never resolves into a library's own code (Radix, shadcn/ui primitives): a library wrapper is skipped rather than mistaken for your file.
 - Recordings go straight to the MCP server your agent already runs, on 127.0.0.1, with no downloads. The server only accepts the extension's origin, a custom header and content type, and checks `Host`, so a web page can't inject a recording.
+- While recording, it also keeps the console errors and failed requests around the moment you pointed (a setting, on by default), so the spec says why the button did nothing, not just which button.
 
 Plugins: Claude Code (`/pointcast`), Codex CLI, Gemini CLI; Cursor/Windsurf through the MCP server; anything else by pasting the spec.
 
@@ -37,9 +39,10 @@ Plugins: Claude Code (`/pointcast`), Codex CLI, Gemini CLI; Cursor/Windsurf thro
 
 - On three open-source admin dashboards (React, Vue, Svelte), the same spoken request with pointing vs. without: the agent picked the right element 89% vs. 78% of the time (40/45 vs. 35/45). A careful, hand-written description still did better (96%). https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-27.md
 - Adding the code lines cut the input tokens the agent spent finding the elements by more than half (93.7k → 39.9k per run, 44/45 correct), with zero searches before it opened the right file. https://github.com/Hugelidus/pointcast/blob/main/docs/eval/stage0-code-pointer-2026-09-27.md
+- A recording usually carries several changes at once, so I re-ran the comparison with six changes in one request: reading the recording through the MCP server got the right code 96% of the time against 85% for the same six changes typed by hand in one message, with 24% fewer input tokens and 75% fewer searches. Asking one change at a time is more accurate for both (96% vs. 84%), but not cheaper. https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-28-batching.md
 - Django: on a real ~1,300-template Django + HTMX app, a read-only dry run placed ~94% of sampled on-screen elements on their exact template line, with 0 wrong; the rest stay silent. https://github.com/Hugelidus/pointcast/blob/main/docs/decisions.md#d9-source-mapping
 
-Small samples (3 runs per condition, one model), and the code-pointer run used chains from a probe, not the shipped extension. The reports list their own limits; please read those before quoting me.
+Small samples (3–5 runs per condition, one model), and the code-pointer run used chains from a probe, not the shipped extension. The reports list their own limits; please read those before quoting me.
 
 **Limits.**
 

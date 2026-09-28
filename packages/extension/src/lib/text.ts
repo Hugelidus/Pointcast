@@ -40,7 +40,7 @@ export function isInsideFormValue(el: Element): boolean {
   return false;
 }
 
-/** Inline elements do not separate words; every other boundary does ("<td>a</td><td>b</td>" → "a b"). */
+/** Inline boundaries do not separate words; adjacent element siblings are handled by visibleText. */
 export const INLINE_TAGS: ReadonlySet<string> = new Set([
   "a", "abbr", "b", "bdi", "bdo", "cite", "code", "data", "dfn", "em", "i", "kbd", "mark", "q",
   "s", "samp", "small", "span", "strong", "sub", "sup", "time", "u", "var", "wbr",
@@ -111,7 +111,12 @@ export function visibleText(root: Element, options: SensitivityOptions, max: num
     }
     const separated = !INLINE_TAGS.has(el.localName);
     if (separated) pieces.push(" ");
-    for (const child of Array.from(el.childNodes)) visit(child);
+    let previousWasElement = false;
+    for (const child of Array.from(el.childNodes)) {
+      if (previousWasElement && child.nodeType === ELEMENT_NODE) pieces.push(" ");
+      visit(child);
+      previousWasElement = child.nodeType === ELEMENT_NODE;
+    }
     if (separated) pieces.push(" ");
   };
 

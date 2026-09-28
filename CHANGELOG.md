@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.0 (unreleased)
+## 0.4.0 (2026-09-28)
 
 **Typed mode: type instead of talking** ([D12](docs/decisions.md#d12-typed-mode))
 - The popup has a **🎤 Voice / ⌨️ Typed** choice above Record, remembered for the next recordings. Typed never opens the microphone: no permission page, no speech model download, no audio.

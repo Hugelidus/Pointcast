@@ -13,7 +13,7 @@ import { isLocalDevUrl, LOCAL_HOST_MATCHES } from "./hosts";
 // pattern contains it: "*://example.com/*" (what sitePattern asks for) fits in "*://*/*" but in
 // neither "http://*/*" nor "https://*/*". With those two, Chrome refused every request with
 // "Only permissions specified in the manifest may be requested" (found by
-// e2e/enabled-site.spec.ts; D8 note 2026-09-27).
+// dev/e2e/enabled-site.spec.ts; D8 note 2026-09-27).
 export const OPTIONAL_SITE_MATCHES: readonly string[] = ["*://*/*"];
 
 /**

@@ -4,14 +4,14 @@ import { MIN_LANGUAGE_PROBABILITY, pickLanguage, requireConfidentLanguage, speec
 
 describe("pickLanguage", () => {
   it("returns the top language token as a code, with its softmax probability", () => {
-    // Real logits from Xenova/whisper-base on fixtures/audio/es-short.wav.
+    // Real logits from Xenova/whisper-base on dev/fixtures/audio/es-short.wav.
     const guess = pickLanguage(new Map([["<|es|>", 23.56], ["<|gl|>", 15.96], ["<|eu|>", 15.17]]));
     expect(guess.code).toBe("es");
     expect(guess.probability).toBeGreaterThan(0.99);
   });
 
   it("reports low confidence when two languages are close", () => {
-    // Real logits on fixtures/audio/en-short.wav (a synthetic voice): an ambiguous case.
+    // Real logits on dev/fixtures/audio/en-short.wav (a synthetic voice): an ambiguous case.
     const guess = pickLanguage(new Map([["<|la|>", 14.12], ["<|ar|>", 13.36], ["<|eu|>", 13.12]]));
     expect(guess.code).toBe("la");
     expect(guess.probability).toBeLessThan(MIN_LANGUAGE_PROBABILITY);

@@ -16,16 +16,16 @@ The best P-chain variant must have:
 
 ## Setup
 
-- **Apps, scenarios, recordings, grader:** the same as the [full evaluation](results-2026-09-27.md) (3 apps × 5 changes, `eval/grade.mjs` and the ground truth unchanged; hedging counts as wrong).
+- **Apps, scenarios, recordings, grader:** the same as the [full evaluation](results-2026-09-27.md) (3 apps × 5 changes, `dev/eval/grade.mjs` and the ground truth unchanged; hedging counts as wrong).
 - **Base spec:** today's `requests` spec for each recorded session. Rendered today with the CLI, it is byte-identical to the spec the P-requests baseline runs received (checked for all three apps), so the conditions differ from the baseline only by the added lines.
-- **Agent under test:** exactly the harness settings of `eval/run.mjs` (`claude -p`, Sonnet (`claude-sonnet-5`), medium effort, tools Read, Grep and Glob only, `--setting-sources ""`, `--safe-mode`, `--strict-mcp-config`, no session persistence, the same task prompt `eval/prompt.md` and answer schema). The only change is `--output-format stream-json --verbose`, so every tool call is logged. The `init` event of every run lists only `Glob, Grep, Read, StructuredOutput` and no MCP server. CLI 2.1.258.
+- **Agent under test:** exactly the harness settings of `dev/eval/run.mjs` (`claude -p`, Sonnet (`claude-sonnet-5`), medium effort, tools Read, Grep and Glob only, `--setting-sources ""`, `--safe-mode`, `--strict-mcp-config`, no session persistence, the same task prompt `dev/eval/prompt.md` and answer schema). The only change is `--output-format stream-json --verbose`, so every tool call is logged. The `init` event of every run lists only `Glob, Grep, Read, StructuredOutput` and no MCP server. CLI 2.1.258.
 - **Runs:** 3 P-chain conditions and M3 × 3 apps × 3 runs = 36 runs, 4 at a time, below-normal priority. All 36 returned a structured answer. Cost: $2.34 for the runs, $0.10 for the M3 writer calls, $0.04 for one flag check.
-- **Baselines:** P-requests and M2 are **recorded numbers**, not re-run: the P-requests runs after the context fix (shadcn-admin and flowbite from `eval/.runs/followup-2026-09-27/`, vuestic-admin from `eval/.runs/full-2026-09-27/`; the vuestic session was not re-recorded and its spec is the same) and M2 from the full run. They were run with `--output-format json`, so **their tool calls were not logged**: the Grep/Glob and Read columns are empty for them. They used the same model.
+- **Baselines:** P-requests and M2 are **recorded numbers**, not re-run: the P-requests runs after the context fix (shadcn-admin and flowbite from `dev/eval/.runs/followup-2026-09-27/`, vuestic-admin from `dev/eval/.runs/full-2026-09-27/`; the vuestic session was not re-recorded and its spec is the same) and M2 from the full run. They were run with `--output-format json`, so **their tool calls were not logged**: the Grep/Glob and Read columns are empty for them. They used the same model.
 - **Snapshots:** every P prompt was rendered and hashed before the first run (`prompts.sha256`) and was unchanged afterwards. Product code (`packages/**`) was not touched.
 
 ### Where the chains come from
 
-Two debate agents probed each app headless (dev server, Chromium) with the **recorded selectors** from each `session.json`. The probed elements are the recorded ones: the second "Users" card (`Dashboard.svelte:133`), the "Sales Report" link of the sales card, the Export button of Revenue Report, the Monthly Earnings chart. Every frame was then checked by hand against the source in `eval/.apps` (the build script also checks that each `file:line` holds the expected tag).
+Two debate agents probed each app headless (dev server, Chromium) with the **recorded selectors** from each `session.json`. The probed elements are the recorded ones: the second "Users" card (`Dashboard.svelte:133`), the "Sales Report" link of the sales card, the Export button of Revenue Report, the Monthly Earnings chart. Every frame was then checked by hand against the source in `dev/eval/.apps` (the build script also checks that each `file:line` holds the expected tag).
 
 - **React 19** (shadcn-admin): the owner chain (`_debugOwner`) with each fiber's JSX call site from `_debugStack`, mapped to the original line with the module's inline source map.
 - **Svelte 5** (flowbite): `__svelte_meta` (`loc` and the `parent` chain of call sites), exact lines.
@@ -142,7 +142,7 @@ Tool calls per run, per app (Grep+Glob / Read / Grep+Glob before the first groun
 | vuestic-admin | 0 / 5.0 / 0 | 0 / 5.7 / 0 | 0 / 4.7 / 0 | 6.7 / 5.3 / 3.7 |
 | flowbite-svelte-admin | 0 / 5.3 / 0 | 0 / 5.3 / 0 | 0 / 5.7 / 0 | 12.0 / 5.0 / 4.3 |
 
-Time and cost per run, per app, are in `eval/.runs/stage0-2026-09-27/summary.md` and `stage0-analysis.json`.
+Time and cost per run, per app, are in `dev/eval/.runs/stage0-2026-09-27/summary.md` and `stage0-analysis.json`.
 
 Per change (correct runs out of 3):
 
@@ -228,4 +228,4 @@ Shared constructs that appear in the chains and were never edited: `components/u
 - **M3 writers are agents, not people.** They saw only the spoken words and the element's own text, not the card titles a person would also see. The flowbite texts are over the word limit (43–46 words), which makes M3 more detailed, not less.
 - **Identification only.** The agents did not implement the changes. Grading checks the element, not the action.
 - **Small apps, one component per file.** In larger repos search costs more, so the saving could be larger. So could the chance that a chain frame points at a shared component.
-- Raw runs, stream logs, writer inputs and outputs, prompts with hashes, the probe outputs and the scripts are in `eval/.runs/stage0-2026-09-27/` (not in git). `stage0-analysis.json` has every run's tool-call sequence.
+- Raw runs, stream logs, writer inputs and outputs, prompts with hashes, the probe outputs and the scripts are in `dev/eval/.runs/stage0-2026-09-27/` (not in git). `stage0-analysis.json` has every run's tool-call sequence.

@@ -1,0 +1,11 @@
+{
+  // Typechecks the e2e suite and the Playwright config: `pnpm exec tsc -p dev/e2e`.
+  // Playwright itself only strips types when it runs the tests.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // DOM: callbacks passed to page.evaluate run in the browser.
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"]
+  },
+  "include": ["./**/*.ts", "../playwright.config.ts"]
+}

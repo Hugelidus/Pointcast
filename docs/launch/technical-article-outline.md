@@ -32,7 +32,7 @@ Target length: 1800–2500 words. Audience: developers building browser extensio
 ## 5. In-browser Whisper: making transformers.js work inside MV3
 
 - Why move transcription into the extension at all: the CLI round-trip (record → save → open terminal → run CLI) was the main remaining friction.
-- The spike (`spikes/in-browser-whisper/`) and its numbers: 43 s to transcribe 152 s of audio in the browser (4 WASM threads) vs. 26 s in Node — 1.7× slower, same accuracy (92.8%, same word-timing distribution).
+- The spike (`dev/spikes/in-browser-whisper/`) and its numbers: 43 s to transcribe 152 s of audio in the browser (4 WASM threads) vs. 26 s in Node — 1.7× slower, same accuracy (92.8%, same word-timing distribution).
 - Three concrete MV3/CSP obstacles and their fixes:
   1. `'wasm-unsafe-eval'` needed in `content_security_policy.extension_pages` or ONNX Runtime can't compile WASM.
   2. MV3 forbids remote code — the ONNX Runtime `.wasm`/`.mjs` files must ship with the extension (resolved from `node_modules` at build time so they can't drift from the library version) instead of being fetched from jsDelivr; `wasmPaths` must be a URL-prefix string, not the `{wasm, mjs}` object form (which makes the library import a `blob:` URL that extension pages refuse).
@@ -67,5 +67,5 @@ Target length: 1800–2500 words. Audience: developers building browser extensio
 
 - `docs/decisions.md` (D1, D4, D6, D7, D8)
 - `docs/eval/pilot-2026-09-27.md`, `docs/eval/results-2026-09-27.md`
-- `spikes/in-browser-whisper/`
+- `dev/spikes/in-browser-whisper/`
 - `docs/plan-phase-1.md`

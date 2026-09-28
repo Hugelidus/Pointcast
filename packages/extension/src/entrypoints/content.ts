@@ -23,7 +23,7 @@ import { watchStore } from "../state-store";
  * whether the older one is an orphan from before an extension reload or a second copy of this
  * same instance; refusing to start here would leave the page with no live copy at all. The
  * service worker avoids injecting a second copy in the first place: it injects only where no
- * copy answers its ping. Both cases are covered by e2e/extension-reload.spec.ts.
+ * copy answers its ping. Both cases are covered by dev/e2e/extension-reload.spec.ts.
  */
 export default defineContentScript({
   // Local development hosts only (D8); see hosts.ts for how ports are matched. Enabled sites

@@ -15,7 +15,7 @@ import { readWavPcm16Mono16k } from "../audio/wav";
  * Real model, so guarded like local.slow.test.ts. Run with:
  *   POINTCAST_SLOW=1 pnpm vitest run packages/cli/src/transcribe/segments.slow.test.ts
  */
-const FIXTURES = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../fixtures/audio");
+const FIXTURES = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../dev/fixtures/audio");
 const RATE = 16000;
 /** The extension checks the growing recording every 2 s (offscreen/live-transcription.ts). */
 const POLL_S = 2;

@@ -10,7 +10,7 @@ Extension, CLI and integrations at 0.3.0.
 
 **CLI**
 - `pointcast doctor`: checks your setup in a few lines (Node, the sessions folder, whether an MCP server is receiving recordings, local transcription, the Linux clipboard) and says how to fix each problem. `--json` for agents, `--online` to compare with npm.
-- Releases are built by CI from a version tag, as a draft with the zip, the CLI package and checksums ([CONTRIBUTING](CONTRIBUTING.md)).
+- Releases are built by CI from a version tag, as a draft with the zip, the CLI package and checksums ([CONTRIBUTING](.github/CONTRIBUTING.md)).
 
 ## Extension 0.2.2 (2026-09-28)
 

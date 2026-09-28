@@ -1,6 +1,6 @@
 # Chrome Web Store listing
 
-Everything the [developer dashboard](https://chrome.google.com/webstore/devconsole) asks for, tab by tab, ready to paste. Images are in [store/](store/) (regenerate them with `node docs/launch/store/render.mjs`; the icon with `node scripts/icon/render.mjs`).
+Everything the [developer dashboard](https://chrome.google.com/webstore/devconsole) asks for, tab by tab, ready to paste. Images are in [store/](store/) (regenerate them with `node docs/launch/store/render.mjs`; the icon with `node dev/scripts/icon/render.mjs`).
 
 ## Package
 

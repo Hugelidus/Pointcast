@@ -40,7 +40,7 @@ export interface LocalEngineOptions {
    * URL prefix (ending in "/") of ONNX Runtime's .wasm/.mjs files. Unset, transformers.js loads
    * them from jsDelivr, which an extension's CSP does not allow, so the extension serves its own
    * copy. A plain string, not {wasm, mjs}: that form makes the library import a blob: URL, which
-   * extension pages also refuse (spikes/in-browser-whisper).
+   * extension pages also refuse (dev/spikes/in-browser-whisper).
    */
   wasmPaths?: string;
   /** Where model files are downloaded from. Default: the Hugging Face Hub. */
@@ -74,7 +74,7 @@ export interface LocalEngineOptions {
  * attentions to extract timestamps" — confirmed by hand while wiring this up). The Xenova
  * org's whisper exports were built for transformers.js from the start and do include them.
  *
- * Why base (scripts/bench/results.json, 2026-09-26, 152 s Spanish fixture, 4 threads): 93 % of
+ * Why base (dev/scripts/bench/results.json, 2026-09-26, 152 s Spanish fixture, 4 threads): 93 % of
  * words right, word starts within 165 ms median / 265 ms p90, transcribed in 24 s. That meets
  * plan step 3's "under 60 s" with room to spare. tiny is less accurate (87 %); small (96 %,
  * 66 s) and large-v3-turbo (96 %, 122 s) miss the budget and do not time words any better.
@@ -102,7 +102,7 @@ const MAX_NEW_TOKENS = 440;
 /**
  * No run of this many tokens may be generated twice in one pass: a loop is cut after a dozen
  * tokens ("de la" after 6 copies, a sentence on its second copy) instead of hundreds. Measured on
- * fixtures/audio (2026-09-28): 3 changed a correctly repeated word in es-short ("filtrado" became
+ * dev/fixtures/audio (2026-09-28): 3 changed a correctly repeated word in es-short ("filtrado" became
  * "filtralo") and 5 cost en-short two words; 8 and 12 change nothing. 12 tokens are 8 words or
  * more, which a person rarely repeats word for word within 30 s. A repetition penalty (1.1) was
  * rejected: it penalizes every repeated token, and cost es-2min a word.
@@ -218,7 +218,7 @@ export class LocalTranscriptionEngine implements TranscriptionEngine {
 
   /**
    * Loads the model without transcribing anything, so a UI can download it ahead of time and a
-   * benchmark (scripts/bench/transcribe.ts) can time loading apart from transcribing.
+   * benchmark (dev/scripts/bench/transcribe.ts) can time loading apart from transcribing.
    */
   async preload(): Promise<void> {
     await this.getPipeline();

@@ -2,7 +2,7 @@ import type { SourceReader } from "./resolve";
 
 /**
  * Test fixtures: the few source lines the resolver needs from the three evaluation apps
- * (eval/.apps, see docs/eval/stage0-code-pointer-2026-09-27.md), copied verbatim at their real
+ * (dev/eval/.apps, see docs/eval/stage0-code-pointer-2026-09-27.md), copied verbatim at their real
  * line numbers. Every other line is blank, so a location found here is the one found in the app.
  */
 

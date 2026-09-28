@@ -135,4 +135,4 @@ A v2 session saved without its audio, so there is no `audio` field:
 }
 ```
 
-With the audio saved, `session.json` also has `"audio": { "file": "audio.wav", "format": "wav", "sampleRate": 16000, "channels": 1 }`, as every v1 session does. `fixtures/sessions/e2e-es` (v1, with audio) and `fixtures/sessions/e2e-es-v2` (v2, same events and words, no audio) render the same `session.md`.
+With the audio saved, `session.json` also has `"audio": { "file": "audio.wav", "format": "wav", "sampleRate": 16000, "channels": 1 }`, as every v1 session does. `dev/fixtures/sessions/e2e-es` (v1, with audio) and `dev/fixtures/sessions/e2e-es-v2` (v2, same events and words, no audio) render the same `session.md`.

@@ -9,11 +9,11 @@ import { LocalTranscriptionEngine, type TranscriptionProgress } from "@pointcast
 
 /**
  * The default local engine (packages/transcribe, as the CLI configures it) on a 2.5-minute
- * Spanish narration (fixtures/audio/es-2min.wav, overlapping 30 s chunks of its speech). Real model, so
+ * Spanish narration (dev/fixtures/audio/es-2min.wav, overlapping 30 s chunks of its speech). Real model, so
  * guarded like run.slow.test.ts. Run with:
  *   POINTCAST_SLOW=1 pnpm vitest run packages/cli/src/transcribe/local.slow.test.ts
  */
-const AUDIO = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../fixtures/audio/es-2min.wav");
+const AUDIO = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../dev/fixtures/audio/es-2min.wav");
 
 /** Plan step 3: "a 2-minute Spanish recording … in under 60 s on a laptop CPU". */
 const TIME_BUDGET_S = 60;

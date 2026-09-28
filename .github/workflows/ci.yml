@@ -98,7 +98,7 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       # The e2e suite serves Whisper to the extension from transformers.js' node_modules cache
-      # (playwright.config.ts): download it once per lockfile instead of on every run.
+      # (dev/playwright.config.ts): download it once per lockfile instead of on every run.
       - name: Cache the Whisper model
         uses: actions/cache@v4
         with:
@@ -106,20 +106,20 @@ jobs:
           key: whisper-base-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Download the Whisper model
-        run: node scripts/download-model.mjs
+        run: node dev/scripts/download-model.mjs
 
       - name: Build the e2e extension
         run: pnpm --filter @pointcast/extension build:e2e
 
       - name: Run e2e tests
-        run: pnpm exec playwright test --shard=${{ matrix.shard }}/3
+        run: pnpm exec playwright test --config dev/playwright.config.ts --shard=${{ matrix.shard }}/3
 
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.shard }}
-          path: playwright-report/
+          path: dev/playwright-report/
           if-no-files-found: ignore
           retention-days: 7
 
@@ -128,6 +128,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.shard }}
-          path: test-results/
+          path: dev/test-results/
           if-no-files-found: ignore
           retention-days: 7

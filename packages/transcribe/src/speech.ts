@@ -40,7 +40,7 @@ const MIN_SPEECH_SAMPLES = 0.25 * SAMPLE_RATE;
 export const SPEECH_PAD_SAMPLES = 0.4 * SAMPLE_RATE;
 /**
  * Only silences at least this long are taken out; shorter pauses reach Whisper as spoken.
- * faster-whisper's default, and measured here too (2026-09-28, fixtures/audio): cutting every
+ * faster-whisper's default, and measured here too (2026-09-28, dev/fixtures/audio): cutting every
  * pause the VAD finds left Whisper with phrases butted together, and it dropped the first
  * sentence of en-short (25 % of words right instead of 69 %).
  */

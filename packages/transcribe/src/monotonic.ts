@@ -5,7 +5,7 @@ import type { Word } from "@pointcast/core";
  * moves forward in time.
  *
  * Why: transformers.js transcribes audio longer than 30 s in overlapping chunks, and with
- * word-level timestamps it does not always merge the overlap. On fixtures/audio/es-2min.wav it
+ * word-level timestamps it does not always merge the overlap. On dev/fixtures/audio/es-2min.wav it
  * emitted "…por ejemplo por cliente," and then the same 12 words again, with the same times,
  * starting 3.7 s earlier. Fusion (packages/core) assumes time-ordered words: a repeated span
  * duplicates sentences in session.md, adds a second copy of every deictic in it, and makes

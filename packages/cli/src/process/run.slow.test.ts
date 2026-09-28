@@ -12,7 +12,7 @@ import { runProcess } from "./run";
  * Guarded so `pnpm test` stays fast and offline. Run with:
  *   POINTCAST_SLOW=1 pnpm vitest run packages/cli/src/process/run.slow.test.ts
  */
-const FIXTURES = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../fixtures");
+const FIXTURES = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../dev/fixtures");
 const SESSION_FIXTURE = join(FIXTURES, "sessions/e2e-es");
 
 /** A scratch copy of the fixture session, optionally with another recording as its audio. */

@@ -223,6 +223,44 @@ describe("code pointer rendering", () => {
     ]);
   });
 
+  // A shadcn dropdown trigger on Radix: the wrappers (Primitive, SlotClone, Slot, Presence, Portal)
+  // come first and outnumber the cap. They are skipped before it, whatever form their path has,
+  // so the 3 places go to the app's frames, and no node_modules path is printed.
+  it("skips Radix-style library wrappers before the 3-frame cap", () => {
+    const pnpm = "node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_react@19.1.0/node_modules/@radix-ui/react-primitive/dist/index.mjs";
+    const trigger = el("button", "Account", {
+      component: { framework: "react", name: "Primitive.button", file: pnpm, line: 38 },
+      renderedBy: [
+        { component: "Primitive.button", file: pnpm, line: 38 },
+        { component: "SlotClone", file: "C:/Users/someone/app/node_modules/@radix-ui/react-slot/dist/index.mjs", line: 61 },
+        { component: "Slot", file: "node_modules/.vite/deps/@radix-ui_react-slot.js?v=9f1c" },
+        { component: "Presence", file: "_next/static/chunks/node_modules_@radix-ui_react-presence_dist_index_mjs_1a2b._.js" },
+        { component: "Portal", file: "node_modules\\@radix-ui\\react-portal\\dist\\index.mjs", line: 12 },
+        // Written by Radix's own DropdownMenuTrigger: its package names the next (app) frame.
+        {
+          component: "Primitive.button",
+          file: "node_modules/.pnpm/@radix-ui+react-dropdown-menu@2.1.15/node_modules/@radix-ui/react-dropdown-menu/dist/index.mjs",
+          line: 90,
+        },
+        { component: "DropdownMenuTrigger", file: "src/components/ui/dropdown-menu.tsx", line: 12 },
+        { component: "NavUser", file: "src/components/layout/app-sidebar.tsx", line: 31 },
+        { component: "AppSidebar", file: "src/components/layout/authenticated-layout.tsx", line: 20 },
+      ],
+    });
+    const lines = [...codePointerLines(trigger), ...codeFirstLines(trigger)];
+    expect(codePointerLines(trigger)).toEqual([
+      "code: @radix-ui/react-dropdown-menu `<DropdownMenuTrigger>` at `src/components/ui/dropdown-menu.tsx:12` ← `<NavUser>` at `src/components/layout/app-sidebar.tsx:31` ← `<AppSidebar>` at `src/components/layout/authenticated-layout.tsx:20`",
+    ]);
+    expect(lines.join("\n")).not.toMatch(/node_modules|\.pnpm|Primitive|Slot|Presence/);
+
+    // The nearest wrapper's package is unknown (a flattened chunk name): no package is named,
+    // never an earlier wrapper's.
+    const frames = trigger.renderedBy ?? [];
+    const presence = frames[3];
+    const unknown = { ...trigger, renderedBy: [...frames.slice(0, 5), presence, ...frames.slice(6)] };
+    expect(codePointerLines(unknown)[0]).toMatch(/^code: `<DropdownMenuTrigger>` at `src\/components\/ui\/dropdown-menu\.tsx:12` ← /);
+  });
+
   it("adds nothing to elements recorded before renderedBy and resolved existed", () => {
     expect(codePointerLines(el("h1", "Settings", { component: { framework: "svelte", name: "Page", file: "src/App.svelte", line: 3 } }))).toEqual([]);
   });

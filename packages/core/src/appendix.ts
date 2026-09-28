@@ -4,6 +4,7 @@ import type { Placement } from "./fuse";
 import { trimHtml } from "./html-trim";
 import { codeSpan, escapeMarkdown, fencedBlock, inlineText, oneLine, truncate } from "./markdown";
 import { EVENT_ERRORS_HEADING, eventErrorLines } from "./page-errors";
+import { isLibraryPath } from "./resolve/chain";
 import type { CapturedEvent, ElementInfo, Word } from "./schema";
 import { splitWord } from "./word-text";
 
@@ -50,7 +51,8 @@ export function renderAppendix(
     lines.push(
       `- selector: ${codeSpan(element.selector)} (${element.selectorUnique ? "unique" : "not unique"})`,
     );
-    if (element.source) {
+    // Never a node_modules path: an agent must not open or edit library code (searchHints too).
+    if (element.source && !isLibraryPath(element.source.file)) {
       const distance = element.source.distance;
       const ancestor = distance > 0 ? ` (ancestor +${distance})` : "";
       lines.push(`- source: ${codeSpan(fullSource(element.source))}${ancestor}`);

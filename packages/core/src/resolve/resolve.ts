@@ -1,7 +1,7 @@
 import { isShortValue } from "../describe";
 import { oneLine, truncate } from "../markdown";
 import type { CapturedEvent, CodeFrame, ElementInfo, ResolvedLocation, SessionFile } from "../schema";
-import { cleanPath, codeChain, NOT_APP_CODE } from "./chain";
+import { cleanPath, codeChain, isLibraryPath } from "./chain";
 
 /**
  * Resolves pointed elements to code locations: pure, with file access injected, so every route
@@ -715,7 +715,7 @@ async function withDefinitions(element: ElementInfo, chain: Sources, reader: Sou
   };
 
   const own = typeof element.component?.file === "string" ? safePath(cleanPath(element.component.file)) : undefined;
-  if (own !== undefined && !NOT_APP_CODE.test(own)) add(await read([own]));
+  if (own !== undefined && !isLibraryPath(element.component?.file as string)) add(await read([own]));
   for (const { component: name, file } of codeChain(element)) {
     const lines = chain.get(file);
     const specifier = name === undefined || lines === undefined ? undefined : specifierOf(name, lines, "import");

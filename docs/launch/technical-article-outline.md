@@ -3,7 +3,7 @@
 For dev.to (canonical) and Medium (import with the canonical URL set to the dev.to post, so search engines don't split it). Publish about a week after launch day ([launch-plan.md](launch-plan.md)), when the launch threads have brought questions worth answering in it.
 
 - **Audience:** developers who use coding agents on web UIs, and people building agent tooling, browser extensions or local ML.
-- **Length:** 2,500–3,000 words, 6 code blocks, 2 figures, the video at the top.
+- **Length:** 2,800–3,300 words, 7 code blocks, 3 figures, the video at the top.
 - **Tone:** an engineering write-up, not a launch post. Every number links to the report it comes from, and every section says what didn't work.
 - **Tags (dev.to, max 4):** `ai`, `webdev`, `opensource`, `javascript`.
 - **Cover image:** `docs/launch/store/social-preview.png` (1280×640), or frame `docs/launch/video/out/frames/6-code.png`.
@@ -16,9 +16,9 @@ For dev.to (canonical) and Medium (import with the canonical URL set to the dev.
 
 ## 0. Hook (150 words)
 
-- The video (18 s, `docs/launch/video/out/pointcast-demo.mp4`, or the GIF next to it for Medium): Alt+click «View report», then «Export», say what should change, Stop; the spec's `src/pages/Dashboard.tsx:11` and `src/components/OrdersTable.tsx:22` draw arrows to the lines in the editor.
+- The video (`docs/launch/video/out/pointcast-demo.mp4`, ~27.5 s; the shorter hero GIF, 9.6 s, works for Medium): Alt+click a table cell while talking; the spec's line draws an arrow to it in the editor. Not the HTML — the source line that makes it.
 - The one-line problem: "make this sortable" is how people talk about UIs, and an agent can't resolve "this". The page has two «Export» buttons; which one?
-- What the article covers: four engineering decisions, each with a number behind it.
+- What the article covers: five engineering decisions, each with a number behind it.
 
 ## 1. What the tool does, in one diagram (250 words)
 
@@ -36,8 +36,9 @@ The core section. The story is that the first evaluation said something unflatte
 - **Result table** (copy the four-row table): pointing 89% vs. 78% without; M2 96% with a third fewer tokens. "Pointcast does not save tokens" was the report's own conclusion.
 - **The grader story:** a manual audit of every answer found the grader had counted 8 wrong answers as right, mostly in pointcast's favour (P-requests would have read 43/45). It was tightened before the tables were computed. Lesson: audit your grader against the answers, especially when it flatters you.
 - **What the failures taught:** a shared component rendering the same text twice (the flowbite «Sales Report» link, 0/6) needs the card around the element; a selection made at the start of a sentence was attached to the previous one. Both fixed and re-run (addendum: shadcn 13→15/15, flowbite 12→13/15).
-- **Stage 0, the code pointer** ([stage0-code-pointer-2026-09-27.md](../eval/stage0-code-pointer-2026-09-27.md)): a bar fixed before any run (≥ 40/45, ≥ 30% fewer tokens, no new "edited the shared component" errors). The winning variant (component chain + a repo lookup of the element's text) got 44/45 at 39.9k input tokens per run vs. 93.7k (−57%), with 0 searches before the first right file; a realistic quickly-typed request (M3) got 35/45 at 90.5k. The chain alone failed the bar: in 2 of 6 runs the agent edited the shared `nav-group.tsx` instead of the sidebar data. That failure is why the lookup exists, and it leads straight into section 4.
-- **Limits, stated in the article, not a footnote:** 3 runs per condition, 15 changes, one model; M2 written by someone who knew the scenarios; Stage 0's chains came from a probe, and the recommended re-run with product-captured chains on an unseen app hasn't happened yet.
+- **Stage 0, the code pointer** ([stage0-code-pointer-2026-09-27.md](../eval/stage0-code-pointer-2026-09-27.md)): a bar fixed before any run (≥ 40/45, ≥ 30% fewer tokens, no new "edited the shared component" errors). The winning variant (component chain + a repo lookup of the element's text) got 44/45 at 39.9k input tokens per run vs. 93.7k (−57%), with 0 searches before the first right file; a realistic quickly-typed request (M3) got 35/45 at 90.5k. The chain alone failed the bar: in 2 of 6 runs the agent edited the shared `nav-group.tsx` instead of the sidebar data. That failure is why the lookup exists, and it leads straight into section 5.
+- **The follow-up, on the shipped product** ([results-2026-09-28.md](../eval/results-2026-09-28.md), [results-2026-09-28-batching.md](../eval/results-2026-09-28-batching.md)): once typed notes, the MCP server and Django were real, not a probe, one change per request showed no token saving (30.5k vs 28.0k for a hand-typed request) — the fixed cost of a run swamps the one grep it avoids. The saving reappears once a recording batches several changes, which is how people actually use it: six changes in one recording got the right code 96% of the time against 85% for the same six typed by hand in one message, at 24% fewer input tokens and 75% fewer searches. One change per request stays a little more accurate for both variants (96% vs. 84%), but not cheaper. Say plainly which of these two evaluations backs which claim; they measure different things.
+- **Limits, stated in the article, not a footnote:** 3–5 runs per condition, 15–16 changes, one model; the written-description conditions were written by someone who knew the scenarios (or, in the follow-up, by an LLM writer looking at a screenshot); Stage 0's chains came from a probe, and the recommended re-run with product-captured chains on an unseen app hasn't happened yet.
 
 ## 3. Server-rendered pages: pointing at a Django template (350 words)
 
@@ -47,10 +48,26 @@ The core section. The story is that the first evaluation said something unflatte
 - Guarantees: nothing with `DEBUG` off, only HTML output, no absolute paths, and a test that the markers are the only difference from Django's output.
 - The number: a read-only dry run on the ~1,300-template app placed ~94% of sampled on-screen elements on their exact line, 0 wrong ([D9, Django note](../decisions.md#d9-source-mapping)).
 
-## 4. The resolver: silence beats a wrong answer (600 words)
+## 4. Two things users asked for: typing instead of talking, and knowing why it broke (350 words)
+
+- **Typed mode** ([D12](../decisions.md#d12-typed-mode)): not everyone can or wants to talk (open-plan office, a call, no microphone, a language Whisper handles badly). The popup gets a two-option switch above Record; a typed session opens no microphone, downloads no speech model, and each gesture opens a small note box next to the element instead. Every noted gesture becomes its own request; nothing else about capture, the code pointer or the handoff changes.
+- **The one implementation detail worth a paragraph:** the note box lives in a closed shadow root, and a capture-phase listener on `window` stops the page's own keyboard shortcuts from firing while it's open (typing "/" would otherwise trigger a search shortcut, Backspace a "delete row" handler) — without blocking the text from reaching the box.
+- **Debug capture** ([D13](../decisions.md#d13-debug-capture)): the most common bug report is "this button does nothing". Now, while recording, Pointcast keeps the console errors and failed requests from 5 s before each gesture to 3 s after, and the spec lists them under the element:
+
+  ```markdown
+  - [a] button «Export» in «Broken buttons» on `/errors.html`
+    - errors around this moment:
+      - network: `POST /api/export` → 500 (0.6 s before)
+      - uncaught: `TypeError: Cannot read properties of undefined (reading 'rows')` at `errors.js:22` (0.3 s before)
+  ```
+
+- **Why 5 s and 3 s:** Alt+click is cancelled before it reaches the page, so the click that fails happens before the user points and says so; 3 s after covers a request still in flight. On, redacted, everywhere by default — query strings, tokens and sensitive-field values are stripped before a message is kept, the same rules that redact page text ([D8](../decisions.md#d8-privacy)).
+- One line on the same evaluation's fix that shipped alongside these: the resolver no longer resolves a `find:` line into a library's own code (`node_modules`, `.pnpm`) — a Radix or shadcn/ui wrapper is skipped rather than mistaken for the user's file, closing the "edited the shared component" failure mode from section 2 for good.
+
+## 5. The resolver: silence beats a wrong answer (600 words)
 
 - **The job:** turn "the element's component chain" into one `file:line`. The chain says where an instance is used; the text the user wants changed can live in the instance's props, in a data file, or in a shared component.
-- **The rules, as tested** (numbered list from D9): only the chain's files; the element's literal as a code literal, exactly once → `text at:`; else its label; else its link's href, one import hop into data modules → `data at:`; otherwise nothing.
+- **The rules, as tested** (numbered list from D9): only the chain's files, never a library's own; the element's literal as a code literal, exactly once → `text at:`; else its label; else its link's href, one import hop into data modules → `data at:`; otherwise nothing.
 - **Why "exactly once":** «Users» is written twice in `Dashboard.svelte`; a guess would point at the wrong card. Put the asymmetry plainly: a missing line costs the agent one search (it still has the DOM description); a wrong line costs a confident edit in the wrong place, which the user may not notice.
 - **Evidence it holds:** in Stage 0, none of the lookup's lines caused a wrong answer; in the Django dry run, 0 wrong across the sample, and the template rules turned "1 located, 1 wrong" into "101 located, 0 wrong" on text between template tags.
 - **Rules that close silences without guessing** (Django pass): innermost template first; of several hits, the one inside the element's own tag; ignore `<script>`, attribute values and `{% if %}` operands. Each one was accepted only after the remaining silences were classified by hand.
@@ -58,7 +75,7 @@ The core section. The story is that the first evaluation said something unflatte
 - **Comments are not code:** a JSDoc naming the "Export" button made the real line look written twice; comments are stripped before searching.
 - Code block: the spec for the Chats badge before and after the lookup (`nav-group.tsx` vs. `sidebar-data.ts:73`).
 
-## 5. Whisper invents speech on silence: the VAD fix (500 words)
+## 6. Whisper invents speech on silence: the VAD fix (500 words)
 
 - **Symptom** ([D1, note 2026-09-28](../decisions.md#d1-transcription--whisper-via-transformersjs-locally)): 15 s of room noise at −49 dBFS became "¡Adiós!"; a tester's recording had "Por favor, vengan a la vida." nine times over 15 s of silence, and "de la" ×430 in a 19.2 s recording. Each invented sentence became a request of its own in the spec.
 - **Why:** OpenAI's reference implementation limits this with a no-speech threshold and temperature fallbacks; faster-whisper adds a VAD; transformers.js has none of these, and it was called bare.
@@ -68,7 +85,7 @@ The core section. The story is that the first evaluation said something unflatte
 - **Signal, not silence:** dropped stretches are recorded (`unreliable`), and the spec says in one line where the transcript was dropped.
 - **Result:** noise-only audio went from one invented word each to none; word accuracy on the Spanish fixtures unchanged (93.8%, 92.8%); the 2-minute fixture got faster (18 s vs. 20 s) because long pauses are cut.
 
-## 6. Handing recordings to a local MCP server, safely (500 words)
+## 7. Handing recordings to a local MCP server, safely (500 words)
 
 - **Why:** extensions can only write files through Chrome's downloads; with "Ask where to save each file" on, every recording opened Save dialogs and landed in the wrong folder. The agent's MCP server is already running, so the extension posts the recording to it on `127.0.0.1:20547` ([D11](../decisions.md#d11-handoff-to-a-running-mcp-server)).
 - **The threat model table** (who could post to a loopback port): web pages, including DNS-rebinding pages; other extensions; a different program on the port; other OS users on a shared machine.
@@ -79,7 +96,7 @@ The core section. The story is that the first evaluation said something unflatte
 - **What it accepts, openly:** other OS users on a shared machine could reach the port; there is a switch on both sides (`--no-handoff`), and native messaging is the upgrade path. Say why pairing tokens were rejected (the extension can't read a file the CLI writes).
 - The e2e test that checks web pages (no-cors, beacon, custom headers) can't inject a session.
 
-## 7. What I'd do differently, and what's next (250 words)
+## 8. What I'd do differently, and what's next (250 words)
 
 - Evaluate earlier: the first eval changed the roadmap (from "pointing" to "pointing at code").
 - Write the bar down before the run; it stopped at least one tempting reading of noisy results.

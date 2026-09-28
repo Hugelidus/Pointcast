@@ -9,7 +9,7 @@ What the rules usually are, from memory, **not re-checked for this draft**:
 - **r/webdev:** your own projects go in **Showoff Saturday** posts only (Saturdays, with that flair). So the r/webdev post goes out on the first Saturday after launch, not on launch day.
 - **r/django:** project posts are fine when they are useful to Django developers; lead with the Django part.
 
-For every post: upload `docs/launch/video/out/pointcast-demo.mp4` (18 s, no sound) as the post's video where the sub allows video, or put the link in the first line. Reddit prefers the video natively uploaded to a link to GitHub. Don't cross-post the same text on the same day; space them out (see [launch-plan.md](launch-plan.md)).
+For every post: upload `docs/launch/video/out/pointcast-demo.mp4` (~27.5 s, no sound) as the post's video where the sub allows video, or put the link in the first line; the short hero GIF (`pointcast-hero.gif`, 9.6 s) is a fallback where a sub won't take video. Reddit prefers the video natively uploaded to a link to GitHub. Don't cross-post the same text on the same day; space them out (see [launch-plan.md](launch-plan.md)).
 
 Links used below:
 
@@ -27,9 +27,9 @@ Links used below:
 
 **Body:**
 
-The 18 s video shows the whole loop: talk, Alt+click two things, Stop, and each element comes with its line of code.
+The video shows the whole loop: talk, Alt+click two things, Stop, and each element comes with its line of code — not the HTML, the line that makes it.
 
-I do a lot of UI work with Claude Code, and the most annoying part was the second message: "no, not that Export button, the one above the orders table". So I built Pointcast. You record yourself talking about the changes while you Alt+click the elements you mean. At Stop, the extension transcribes your voice in the browser (Whisper, nothing leaves your machine) and hands the recording straight to the plugin's MCP server. Then `/pointcast` in Claude Code fetches it:
+I do a lot of UI work with Claude Code, and the most annoying part was the second message: "no, not that Export button, the one above the orders table". So I built Pointcast. You record yourself talking about the changes while you Alt+click the elements you mean (or type a short note instead, if you'd rather not talk). At Stop, the extension transcribes your voice in the browser (Whisper, nothing leaves your machine) and hands the recording straight to the plugin's MCP server. Then `/pointcast` in Claude Code fetches it:
 
 ```markdown
 ## Request 2
@@ -46,7 +46,7 @@ claude plugin marketplace add Hugelidus/pointcast && claude plugin install point
 
 plus the Chrome/Edge extension (the Chrome Web Store listing is in review; the release zip works meanwhile).
 
-**Does it help, or is it just a nice demo?** I measured it with `claude -p` (Sonnet) on three open-source admin dashboards: with pointing, Claude picked the right element 89% of the time, against 78% with the same words and no pointing. Adding the code lines cut the tokens Claude spent finding the elements by more than half. A careful hand-written prompt still beats it on accuracy (96%): Pointcast is for when you'd rather talk and point than write that prompt. Reports, with their limits: [eval](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-27.md), [code pointer](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/stage0-code-pointer-2026-09-27.md).
+**Does it help, or is it just a nice demo?** I measured it with `claude -p` (Sonnet) on three open-source admin dashboards: with pointing, Claude picked the right element 89% of the time, against 78% with the same words and no pointing. A careful hand-written prompt still beats it on accuracy for a single change (96%): Pointcast is for when you'd rather talk and point than write that prompt. Where it does pay off is a real recording with several changes: read through the MCP server, six changes in one recording got the right code 96% of the time against 85% for the same six changes typed by hand, with 24% fewer tokens and 75% fewer searches. Reports, with their limits: [eval](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-27.md), [code pointer](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/stage0-code-pointer-2026-09-27.md), [batching](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-28-batching.md).
 
 How Claude was involved: I built it with Claude Code, and the evaluation runs Claude as the agent under test.
 
@@ -64,16 +64,16 @@ https://github.com/Hugelidus/pointcast
 
 **Body:**
 
-Video (18 s): https://github.com/Hugelidus/pointcast/blob/main/docs/launch/video/out/pointcast-demo.mp4
+Video (~27.5 s): https://github.com/Hugelidus/pointcast/blob/main/docs/launch/video/out/pointcast-demo.mp4
 
-Most of my UI prompts are deictic: "make this sortable", "move this next to that". Agents can't see "this". I built Pointcast (free, MIT, my project): a Chrome/Edge extension where you talk while you Alt+click the elements you mean. At Stop you get one request per sentence, with each element's code location (`src/components/OrdersTable.tsx:22`) on React 19, Vue 3 and Svelte 5 dev builds and Django templates.
+Most of my UI prompts are deictic: "make this sortable", "move this next to that". Agents can't see "this". I built Pointcast (free, MIT, my project): a Chrome/Edge extension where you talk (or type a note, if you'd rather) while you Alt+click the elements you mean. At Stop you get one request per sentence, with each element's code location (`src/components/OrdersTable.tsx:22`) on React 19, Vue 3 and Svelte 5 dev builds and Django templates — the source line that makes the element, not its HTML.
 
 It works with whatever agent you use:
 
 - Codex CLI: `codex plugin marketplace add Hugelidus/pointcast && codex plugin add pointcast@pointcast`
 - Gemini CLI: `gemini extensions install https://github.com/Hugelidus/pointcast`
 - Claude Code: plugin, `/pointcast`
-- Cursor / Windsurf / any MCP client: `npx -y pointcast@0.4 mcp`
+- Cursor / Windsurf / any MCP client: `npx -y pointcast@0.5 mcp`
 - Anything else: paste the spec from the clipboard
 
 What I measured (three open-source dashboards, 45 changes, same agent and prompt, only the request differs):
@@ -86,6 +86,8 @@ What I measured (three open-source dashboards, 45 changes, same agent and prompt
 | Careful hand-written description | 96% | 65k |
 
 The code-lines row is a second run of the same harness on the same apps (pointing without code lines got 43/45 and 94k there), with code chains taken by a probe rather than the shipped extension, so read it as indicative; the reports say what they can and can't show ([eval](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-27.md), [code pointer](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/stage0-code-pointer-2026-09-27.md)). Small samples, one model (Sonnet).
+
+A follow-up ran the whole product end to end (typed notes, the MCP server, four apps including Django) with a recording of six changes at once: reading it through the MCP server got the right code 96% of the time against 85% for the same six changes typed by hand, at 24% fewer input tokens and 75% fewer searches. One change per request is a bit more accurate for both (96% vs. 84%), but not cheaper — the saving is in batching. [Full results](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-28-batching.md).
 
 Voice is transcribed locally in the browser (Whisper, with a voice activity detector so silence doesn't turn into invented sentences). Recordings go to a local MCP server, no cloud.
 
@@ -101,16 +103,17 @@ https://github.com/Hugelidus/pointcast
 
 **Body:**
 
-Video (18 s): https://github.com/Hugelidus/pointcast/blob/main/docs/launch/video/out/pointcast-demo.mp4
+Video (~27.5 s): https://github.com/Hugelidus/pointcast/blob/main/docs/launch/video/out/pointcast-demo.mp4
 
-Pointcast is a Chrome/Edge extension for your local dev server. You record your voice, Alt+click or select the elements you're talking about, and at Stop you get a Markdown spec: one request per sentence, each with the elements you pointed at and where they live in your source. It's meant for handing UI changes to a coding agent, but the spec reads fine for a human too.
+Pointcast is a Chrome/Edge extension for your local dev server. You record your voice (or switch to Typed mode and write a short note per element instead), Alt+click or select the elements you're talking about, and at Stop you get a Markdown spec: one request per sentence, each with the elements you pointed at and where they live in your source. It's meant for handing UI changes to a coding agent, but the spec reads fine for a human too.
 
 Some implementation details this sub might like:
 
-- **Where the line comes from.** React 19, Vue 3 and Svelte 5 expose component info in dev builds; the extension reads it, then fetches the component files from your Vite dev server (`/src/…?raw`, in memory, 2 s budget) and looks the element's text up in them. If the text is written more than once, it adds nothing. A wrong line is worse than no line.
+- **Where the line comes from.** React 19, Vue 3 and Svelte 5 expose component info in dev builds; the extension reads it, then fetches the component files from your Vite dev server (`/src/…?raw`, in memory, 2 s budget) and looks the element's text up in them. If the text is written more than once, it adds nothing. A wrong line is worse than no line, and a library's own code (Radix, shadcn/ui primitives) is skipped rather than resolved as if it were yours.
 - **Pointing never touches your app.** Alt+click is cancelled before the page sees it; plain clicks pass straight through and are never recorded.
 - **Privacy.** Local dev hosts only by default; other hosts are opt-in one at a time. Password and one-time-code fields are never captured, attributes come from an allowlist, and a canary test checks it.
 - **Whisper in an MV3 extension.** transformers.js in an offscreen document, with WASM threads (needs cross-origin isolation) and the ONNX runtime shipped in the package, since MV3 forbids remote code.
+- **Debug capture.** While recording, it also keeps the console errors and failed requests around the moment you pointed (a setting), so "this button does nothing" comes with the 500 or the exception that caused it.
 
 Limits: dev builds only for the code lines. With webpack or Next.js the pasted spec has the component chain but no line (the local MCP server still resolves it from your repo). Chromium only; macOS and Linux untested.
 

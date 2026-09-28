@@ -6,10 +6,10 @@ One section per place: its status, the exact text, and the steps. Everything her
 |---|---|---|
 | [Claude plugin directory](#claude-plugin-directory) | submitted, in review | check status |
 | [Claude community marketplace](#claude-community-marketplace) | probably the same review as above | only if it turns out to be separate |
-| [Chrome Web Store](#chrome-web-store) | 0.1.2 in review | upload 0.3.0 when approved |
+| [Chrome Web Store](#chrome-web-store) | 0.1.2 in review | upload 0.5.0 when approved |
 | [Microsoft Edge Add-ons](#microsoft-edge-add-ons) | not submitted | before launch |
 | [Gemini CLI extensions gallery](#gemini-cli-extensions-gallery) | automatic | verify before launch |
-| [MCP Registry](#mcp-registry) | needs a CLI release with `mcpName` | with CLI 0.3.1 |
+| [MCP Registry](#mcp-registry) | needs a CLI release with `mcpName` | with CLI 0.5.1 |
 | [awesome-mcp-servers](#awesome-mcp-servers) | not submitted | week before launch |
 | [awesome-claude-code](#awesome-claude-code) | not eligible yet | after launch, from 2026-10-11, once it has users |
 | [PyPI: pointcast-django](#pypi-pointcast-django) | not published | before launch |
@@ -20,7 +20,7 @@ One section per place: its status, the exact text, and the steps. Everything her
 
 **Where:** claude.ai/directory/manage. **Status:** submitted, in manual review. The plugin pins the CLI's exact version, which the directory requires (D11, *Pinned plugin versions*).
 
-**Steps now:** check the submission's status there. When 0.3.0 is the version under review, nothing to change: the plugin (`integrations/claude-code-plugin`) starts `pointcast@0.5.0`, and the marketplace entry is `.claude-plugin/marketplace.json`. If the reviewers ask for changes, answer in the same submission rather than submitting again.
+**Steps now:** check the submission's status there. When 0.5.0 is the version under review, nothing to change: the plugin (`integrations/claude-code-plugin`) starts `pointcast@0.5.0`, and the marketplace entry is `.claude-plugin/marketplace.json`. If the reviewers ask for changes, answer in the same submission rather than submitting again.
 
 **Reviewer note.** Keep the note you sent with the submission; its text is not in the repository, so it could not be copied here. If the form asks for one again (a resubmission, or the community form below), this is a draft to adapt, not the original:
 
@@ -58,7 +58,7 @@ To test without the extension: copy the recorded sample session in dev/fixtures/
 - **Long description:**
 
   ```
-  Record yourself talking through UI changes while you Alt+click the elements you mean, with the Pointcast browser extension (Chrome and Edge). Your voice is transcribed locally, in the browser, and the recording goes straight to this plugin's MCP server on 127.0.0.1. Then /pointcast fetches it: one request per sentence, each element with its location in your source (React 19, Vue 3 and Svelte 5 dev builds, Django templates with pointcast-django). In an evaluation on three open-source dashboards, pointing raised the agent's element accuracy from 78% to 89%, and the code locations cut the tokens it spent finding the elements by more than half. MIT, no account, no cloud.
+  Record yourself talking (or typing a note) through UI changes while you Alt+click the elements you mean, with the Pointcast browser extension (Chrome and Edge). Your voice is transcribed locally, in the browser, and the recording goes straight to this plugin's MCP server on 127.0.0.1. Then /pointcast fetches it: one request per sentence, each element with its location in your source (React 19, Vue 3 and Svelte 5 dev builds, Django templates with pointcast-django). In an evaluation on three open-source dashboards, pointing raised the agent's element accuracy from 78% to 89%; with a recording of several changes read through this MCP server, the agent found the right code 96% of the time against 85% for the same changes typed by hand, at 24% fewer tokens and 75% fewer searches. MIT, no account, no cloud.
   ```
 
 - **Reviewer note:** the draft in the previous section.
@@ -68,9 +68,9 @@ To test without the extension: copy the recorded sample session in dev/fixtures/
 
 Everything, tab by tab: [chrome-web-store.md](chrome-web-store.md). Status: 0.1.2 submitted as *Unlisted*, in review.
 
-**When approved:** upload the 0.3.0 store zip (the `pointcast-0.3.0-chrome-store` artifact of the v0.3.0 release workflow run, or `pnpm --filter @pointcast/extension zip:store`; never the GitHub release zip), and put the listing's link in the README's Quick start.
+**When approved:** upload the latest release's store zip (the `pointcast-0.5.0-chrome-store` artifact of the v0.5.0 release workflow run, or `pnpm --filter @pointcast/extension zip:store`; never the GitHub release zip), and put the listing's link in the README's Quick start.
 
-**Optional description update for 0.3** (the text under "IT POINTS AT THE CODE" names React, Vue 3 and Svelte 5 only). Replacement for its first sentence, if you want to mention Django:
+**Optional description update for 0.5** (the text under "IT POINTS AT THE CODE" names React, Vue 3 and Svelte 5 only). Replacement for its first sentence, if you want to mention Django:
 
 ```
 On development builds of React, Vue 3 and Svelte 5, and on Django templates with the pointcast-django package, each element leads with its code: where that instance is used, and the line of its text or data in your source, quoted.
@@ -80,9 +80,9 @@ Change it in a separate listing update after approval, not while the item is in 
 
 ## Microsoft Edge Add-ons
 
-Everything, step by step: [edge-addons.md](edge-addons.md). Same store zip as Chrome. Two things to add for 0.3:
+Everything, step by step: [edge-addons.md](edge-addons.md). Same store zip as Chrome. Two things to add for 0.5:
 
-- **YouTube video URL:** the form has a field for it. Upload `docs/launch/video/out/pointcast-demo.mp4` to YouTube (unlisted is enough) and paste the link, if you want the video on the listing.
+- **YouTube video URL:** the form has a field for it. Upload `docs/launch/video/out/pointcast-demo.mp4` (~27.5 s) to YouTube (unlisted is enough) and paste the link, if you want the video on the listing.
 - **After publishing:** append Edge's item id to `OFFICIAL_EXTENSION_IDS` (`packages/core/src/handoff.ts`) in the next CLI release, as edge-addons.md explains.
 
 ## Gemini CLI extensions gallery
@@ -93,7 +93,7 @@ Checked on 2026-09-28 with `gh api`:
 
 - the topic `gemini-cli-extension` is set on Hugelidus/pointcast;
 - `gemini-extension.json` is at the root, version 0.5.0, starting `pointcast@0.5.0`;
-- the latest release, v0.3.0, is published (not a draft) with 3 assets (release zip, CLI tarball, `SHA256SUMS.txt`), none named `win32.*`/`darwin.*`/`linux.*`, so `gemini extensions install` installs the source (CONTRIBUTING, Releasing step 6).
+- the latest release, v0.5.0, is published (not a draft) with 3 assets (release zip, CLI tarball, `SHA256SUMS.txt`), none named `win32.*`/`darwin.*`/`linux.*`, so `gemini extensions install` installs the source (CONTRIBUTING, Releasing step 6).
 
 **To verify by hand:** search for "pointcast" in the gallery (**Not verified** from here: the gallery page could not be opened, and its crawl may take a few days). Then, in a clean folder: `gemini extensions install https://github.com/Hugelidus/pointcast`, `gemini extensions list`, and `/pointcast` in a trusted folder.
 
@@ -111,7 +111,7 @@ The official registry ([modelcontextprotocol/registry](https://github.com/modelc
 - the 128 px icon from `docs/launch/store/icon-128.png` (served from `raw.githubusercontent.com`, main branch);
 - `description` is 96 characters (the schema's maximum is 100).
 
-**Version:** the draft says `0.3.1`, a placeholder for the first CLI release that carries `mcpName`. The registry checks that the npm package at that version has `mcpName` equal to the server name, and `pointcast@0.5.0` on npm has none. Set `version` and `packages[0].version` to the actual release.
+**Version:** the draft says `0.5.1`, a placeholder for the first CLI release that carries `mcpName`. The registry checks that the npm package at that version has `mcpName` equal to the server name, and `pointcast@0.5.0` on npm has none. Set `version` and `packages[0].version` to the actual release.
 
 **Steps:**
 
@@ -155,7 +155,7 @@ The official registry ([modelcontextprotocol/registry](https://github.com/modelc
 - **PR title:** `Add Hugelidus/pointcast`. **PR body:**
 
   ```
-  Adds Pointcast to Developer Tools: a local MCP server (npm "pointcast", `npx -y pointcast@0.4 mcp`) with 3 read-only tools (list_sessions, get_session, get_element) that serve recordings from the Pointcast browser extension, the user's voice plus the elements they Alt+clicked, and resolve each element to its file and line in the local repository. MIT.
+  Adds Pointcast to Developer Tools: a local MCP server (npm "pointcast", `npx -y pointcast@0.5 mcp`) with 3 read-only tools (list_sessions, get_session, get_element) that serve recordings from the Pointcast browser extension, the user's voice plus the elements they Alt+clicked, and resolve each element to its file and line in the local repository. MIT.
   ```
 
 ## awesome-claude-code

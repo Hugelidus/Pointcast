@@ -752,3 +752,4 @@ Files are made short and project-relative: `http://localhost:5173/src/OrdersTabl
 ## Out of scope for Phase 1
 
 iframes, shadow DOM and canvas content; a UI to configure hosts beyond enabling the current site (D8 note 2026-09-27); MCP server; Phase 2 source injectors; Firefox. (Transcription inside the extension was pulled forward on 2026-09-27: D1, D2 and D6 notes.)
+- *Note 2026-09-28 (repeated point gestures).* A second Alt+click on the same URL and element identity (tag, selector and readable path) within 2 seconds of the last accepted point is ignored. It is likely a repeated gesture, so it should not become a second item in `session.json`; a different element or page remains a separate point.

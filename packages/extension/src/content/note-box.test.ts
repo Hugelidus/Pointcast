@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { UI_ATTRIBUTE } from "@pointcast/core";
-import { createNoteBox, GESTURE_WAIT_MS, NOTE_PLACEHOLDER, type NoteBox } from "./note-box";
+import { createNoteBox, GESTURE_WAIT_MS, NOTE_PLACEHOLDER, openAfterAcceptance, type NoteBox } from "./note-box";
 
 // The box's shadow root is closed, so page scripts cannot reach it; the tests keep the roots the
 // box creates, as the content script itself does.
@@ -68,6 +68,13 @@ describe("createNoteBox (typed mode, D12)", () => {
       setNote: (id, note) => calls.push(`note ${id} ${JSON.stringify(note)}`),
       discard: (id) => calls.push(`discard ${id}`),
     });
+  });
+
+  it("does not open a note box when the recorder rejected the gesture", async () => {
+    openAfterAcceptance(box, Promise.resolve(undefined), button);
+    await Promise.resolve();
+    expect(box.isOpen()).toBe(false);
+    expect(hosts()).toHaveLength(0);
   });
 
   afterEach(() => {

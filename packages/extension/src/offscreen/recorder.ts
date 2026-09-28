@@ -24,7 +24,10 @@ interface ActiveSession {
   t0: number;
   log: EventLog;
   live: LiveTranscription | undefined;
+  lastPointByElement: Map<string, number>;
 }
+
+const REPEATED_POINT_WINDOW_MS = 2_000;
 
 /** Starts transcribing a recording while it is made (offscreen/live-transcription.ts). */
 export type StartLive = (
@@ -85,7 +88,7 @@ export class Recorder {
       // D12: no microphone (so no permission prompt), no audio, no speech model. t0 is only the
       // origin of the event times.
       const t0 = Date.now();
-      this.#active = { recording: null, t0, log: new EventLog(t0), live: undefined };
+      this.#active = { recording: null, t0, log: new EventLog(t0), live: undefined, lastPointByElement: new Map() };
       this.#lastStop = null;
       return { ok: true, t0 };
     }
@@ -96,6 +99,7 @@ export class Recorder {
         t0: recording.t0,
         log: new EventLog(recording.t0),
         live: this.#startLive(recording, language, quality),
+        lastPointByElement: new Map(),
       };
       this.#lastStop = null;
       return { ok: true, t0: recording.t0 };
@@ -205,6 +209,18 @@ export class Recorder {
 
   #capture(draft: CapturedEventDraft): CaptureEventResult {
     if (!this.#active) return { accepted: false };
+    if (draft.gesture === "point") {
+      const points = this.#active.lastPointByElement;
+      for (const [key, atStart] of points) {
+        if (draft.atStart - atStart >= REPEATED_POINT_WINDOW_MS) points.delete(key);
+      }
+      const key = JSON.stringify([draft.url, draft.element.tag, draft.element.selector, draft.element.path]);
+      const previous = points.get(key);
+      if (previous !== undefined && draft.atStart >= previous && draft.atStart - previous < REPEATED_POINT_WINDOW_MS) {
+        return { accepted: false };
+      }
+      points.set(key, draft.atStart);
+    }
     const event = this.#active.log.add(draft);
     this.#reportCount(this.#active.log.events, event);
     return { accepted: true, id: event.id };
@@ -235,9 +251,11 @@ export class Recorder {
    * one change.
    */
   #undo(): RecorderUndoResult {
-    const log = this.#active?.log;
+    const active = this.#active;
+    const log = active?.log;
     const removed = log?.removeLast();
-    if (!log || !removed) return { undone: null };
+    if (!active || !log || !removed) return { undone: null };
+    active.lastPointByElement.clear();
     const last = log.events.at(-1);
     return {
       undone: {

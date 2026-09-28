@@ -108,7 +108,9 @@ test("recording state survives the service worker being stopped", async ({
   const { session } = saved;
   expect(session.t0).toBe(t0);
   expect(session.events[0]?.tStart).toBe(atStart - t0);
-  expect(Math.abs(savedWav(saved).durationMs - (stoppedAt - t0))).toBeLessThan(500);
+  // The audio is whole, not cut at the worker stops. 1 s, not 0.5: slow macOS runners were off by
+  // 550 ms, while a lost stretch of audio would be seconds.
+  expect(Math.abs(savedWav(saved).durationMs - (stoppedAt - t0))).toBeLessThan(1000);
 });
 
 test("processing finishes when the service worker is stopped in the middle of it", async ({

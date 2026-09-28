@@ -57,6 +57,14 @@ describe("buildSessionFile", () => {
     expect(withoutAudio.schemaVersion).toBe(2);
   });
 
+  it("writes the session's page errors only when there were some (D13)", () => {
+    const base = { id: "x", t0, durationMs: 1, events: [], extensionVersion: "0.5.0", userAgent: "UA", withAudio: false };
+    const error = { kind: "error" as const, t: 5, message: "boom" };
+    expect(buildSessionFile({ ...base, errors: [error] }).errors).toEqual([error]);
+    expect(buildSessionFile({ ...base, errors: [] })).not.toHaveProperty("errors");
+    expect(buildSessionFile(base)).not.toHaveProperty("errors");
+  });
+
   it("serializes to JSON without losing anything", () => {
     expect(JSON.parse(JSON.stringify(session))).toEqual(session);
   });

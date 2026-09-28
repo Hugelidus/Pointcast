@@ -3,12 +3,13 @@ import { createCaptureController } from "../content/capture-controller";
 import { flashElement } from "../content/flash";
 import { createIndicator, followWithPill } from "../content/indicator";
 import { createNoteBox } from "../content/note-box";
-import { discardEvent, followState, sendDraft, sendNote } from "../content/recorder-link";
+import { createPageErrors } from "../content/page-errors";
+import { discardEvent, followState, sendDraft, sendError, sendNote } from "../content/recorder-link";
 import { createUndoFeedback } from "../content/undo-feedback";
 import { isLocalDevUrl, LOCAL_HOST_MATCHES } from "../hosts";
 import { isCapturableUrl } from "../sites";
 import { listenFor } from "../messages";
-import { isRecording, isTyped } from "../recorder-state";
+import { capturesErrors, isRecording, isTyped } from "../recorder-state";
 import { watchStore } from "../state-store";
 
 /**
@@ -60,10 +61,14 @@ export default defineContentScript({
       // text that looks like personal data (emails, phone numbers...) is redacted as well.
       options: { redactPersonalData: !isLocalDevUrl(location.href) },
     });
-    // Invalidated when a newer copy starts (see above). The page is released first: those two
+    // Debug capture (D13): what fails on the page while recording, from the MAIN-world hook
+    // (framework.content.ts), redacted like the page's text on an enabled site.
+    const pageErrors = createPageErrors(window, { send: sendError, redactPersonalData: !isLocalDevUrl(location.href) });
+    // Invalidated when a newer copy starts (see above). The page is released first: those
     // calls only touch the DOM, so they cannot fail in an orphaned copy.
     ctx.onInvalidated(() => {
       capture.stop();
+      pageErrors.stop();
       notes.dispose();
       pill.stop();
     });
@@ -83,6 +88,8 @@ export default defineContentScript({
         capture.stop();
         notes.close();
       }
+      if (capturesErrors(state) && state.t0 !== undefined) pageErrors.start(state.t0);
+      else pageErrors.stop();
       recording = isRecording(state);
       pill.update(state);
     });
@@ -105,6 +112,7 @@ export default defineContentScript({
       // script running until the page reloads, so it releases the page itself (D8 note).
       if (changes.sites && !isCapturableUrl(location.href, changes.sites)) {
         capture.stop();
+        pageErrors.stop();
         notes.dispose();
         pill.stop();
         disconnect();

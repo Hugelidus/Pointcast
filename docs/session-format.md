@@ -64,8 +64,27 @@ For other clients that want to hand a session to a running pointcast MCP server.
 | `element` | `point` (and legacy `click`): the target. Selections: the common container of the range. |
 | `selection` | Selections only: the text, plus `start`/`end` elements when the container is too large to describe. |
 | `note` | Optional, typed sessions only (D12): what the user typed about this gesture. The user's own words, not page content, so it is not redacted; it is cleaned (line endings as `\n`, control characters removed, trimmed) and at most 2,000 characters (`NOTE_MAX_CHARS`), cut with `…`. Absent when the gesture was saved without a note. |
+| `errors` | Optional, since extension 0.5.0 ([D13](decisions.md#d13-debug-capture)): the page errors from 5 s before the gesture to 3 s after it (`ERROR_WINDOW_BEFORE_MS`, `ERROR_WINDOW_AFTER_MS`), identical ones merged into a `count`, at most 5 (`EVENT_ERRORS_MAX`), in time order. Absent when there were none. |
 
 `inputMode` (top level, optional): `"typed"` for a typed session; absent (or `"voice"`) for a spoken one, which is every session recorded before 0.4.0.
+
+`errors` (top level, optional, since extension 0.5.0): every page error captured while recording, in time order, at most the last 50 (`SESSION_ERRORS_MAX`). Each event's `errors` are picked from them. Absent when nothing failed, when *Capture console and network errors* was off, and in older sessions.
+
+## Page errors
+
+`CapturedError` (debug capture, [D13](decisions.md#d13-debug-capture)), in `SessionFile.errors` and `CapturedEvent.errors`:
+
+| Field | Meaning |
+|---|---|
+| `kind` | `error` (uncaught exception), `rejection` (unhandled promise rejection), `console-error`, `console-warn`, or `network` (a fetch or XMLHttpRequest that answered 400 or more, or failed). |
+| `t` | When, relative to `t0` (the first time, when `count` merged repeats). |
+| `message` | One line, at most 300 characters: `TypeError: x is undefined`, the console arguments as a log line, or `POST /api/export → 500`. |
+| `source` | Optional. Where it was thrown or logged: `src/components/OrdersTable.tsx:31:7`, the first frame in the app's code (not `node_modules`), project-relative; another origin keeps its host. The line is the one the browser ran, not source-mapped. |
+| `stack` | Optional. The first 3 frames, `OrdersTable (src/components/OrdersTable.tsx:31:7)`. |
+| `request` | `network` only: `{ method, url, status }`. `url` is the path (with its host for another origin), with query parameter names but never their values (`/api/orders?status&page`) and no fragment; `status` is 0 for a request that got no answer. Bodies and headers are never captured. |
+| `count` | Optional. How many times the same error happened within the window (absent means once). |
+
+Page output, so it is redacted like the page's text: query values, token-shaped path segments and the values of sensitive fields always; personal data too on enabled sites. Readers bound every field again and drop a malformed entry rather than the session. The `requests` format lists an event's errors last under its element (`- errors around this moment:`, one line each, with how long before or after the gesture), the classic appendix under the event (`- e1 errors around this moment:`); both end the appendix with the session's errors that were near no gesture, at most 5. Without errors, the spec is the same as before. Both fields are optional, so `schemaVersion` stays 2.
 
 ## ElementInfo
 

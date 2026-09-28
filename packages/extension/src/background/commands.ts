@@ -155,7 +155,9 @@ export async function startRecording(): Promise<CommandResult> {
   const settings = await readSettings();
   const inputMode = settings.inputMode;
   const typedMode = inputMode === "typed" ? { inputMode } : {};
-  await setState({ ...idle(state), status: "starting", ...typedMode });
+  // Debug capture (D13) is fixed at Record too; captured pages follow it from the state.
+  const debugCapture = settings.captureErrors ? { captureErrors: true } : {};
+  await setState({ ...idle(state), status: "starting", ...typedMode, ...debugCapture });
   await resetCapturedEvents();
   // Every local tab gets a live content script before the recording is reported as started:
   // a tab opened before the extension was (re)loaded would otherwise capture nothing (D6).
@@ -185,7 +187,7 @@ export async function startRecording(): Promise<CommandResult> {
       return failed;
     }
     await attaching;
-    await setState({ status: "recording", t0: result.t0, ...typedMode });
+    await setState({ status: "recording", t0: result.t0, ...typedMode, ...debugCapture });
     return { ok: true };
   } catch (error) {
     await closeOffscreenDocument().catch(() => undefined);

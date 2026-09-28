@@ -22,9 +22,22 @@ export interface Settings {
    * no such field.
    */
   inputMode: InputMode;
+  /**
+   * Debug capture (D13): while recording, keep the page's uncaught errors, console errors and
+   * warnings and failed requests, and list those around each gesture in the spec. On by default,
+   * on local dev hosts and (redacted) on enabled sites; read at Record, like inputMode.
+   */
+  captureErrors: boolean;
 }
 
-export const DEFAULT_SETTINGS: Settings = { language: "auto", keepAudio: false, notify: true, handoff: true, inputMode: "voice" };
+export const DEFAULT_SETTINGS: Settings = {
+  language: "auto",
+  keepAudio: false,
+  notify: true,
+  handoff: true,
+  inputMode: "voice",
+  captureErrors: true,
+};
 
 /** chrome.storage.local key. */
 export const SETTINGS_KEY = "settings";
@@ -50,6 +63,7 @@ export function parseSettings(value: unknown): Settings {
     notify: typeof v.notify === "boolean" ? v.notify : DEFAULT_SETTINGS.notify,
     handoff: typeof v.handoff === "boolean" ? v.handoff : DEFAULT_SETTINGS.handoff,
     inputMode: v.inputMode === "typed" || v.inputMode === "voice" ? v.inputMode : DEFAULT_SETTINGS.inputMode,
+    captureErrors: typeof v.captureErrors === "boolean" ? v.captureErrors : DEFAULT_SETTINGS.captureErrors,
   };
 }
 

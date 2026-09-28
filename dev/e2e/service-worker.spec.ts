@@ -78,7 +78,7 @@ test("recording state survives the service worker being stopped", async ({
 
   // Nothing was kept in service worker memory: storage still says recording, with the same t0,
   // and a freshly opened popup rebuilds its view from it.
-  expect((await readRecorder(popup)).state).toEqual({ status: "recording", t0 });
+  expect((await readRecorder(popup)).state).toEqual({ status: "recording", t0, captureErrors: true });
   await popup.reload();
   await expect(popup.locator("#status")).toHaveText("Recording");
   await expect(popup.locator("#toggle")).toHaveText("Stop");

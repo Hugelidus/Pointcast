@@ -105,7 +105,8 @@ export function createServer(options: ServerOptions): McpServer {
   server.registerTool(
     "get_element",
     {
-      description: "Get the full captured details (ElementInfo) of one event in a session by its event id.",
+      description:
+        "Get the full captured details (ElementInfo) of one event in a session by its event id, with the page errors captured around it (stack frames included) when there were any.",
       inputSchema: {
         id: z.string().describe('Session id (the folder name), or "latest".'),
         eventId: z.string().describe('Event id within the session, e.g. "e3".'),

@@ -1,6 +1,15 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { SCHEMA_VERSION, type CapturedEvent, type ElementInfo, type SessionFile } from "@pointcast/core";
+import {
+  EVENT_ERRORS_MAX,
+  parseCapturedErrors,
+  SCHEMA_VERSION,
+  SESSION_ERRORS_MAX,
+  type CapturedError,
+  type CapturedEvent,
+  type ElementInfo,
+  type SessionFile,
+} from "@pointcast/core";
 import { CliError } from "../errors";
 
 /**
@@ -74,7 +83,17 @@ export function validateSessionFile(value: unknown, sourceLabel: string): Sessio
     recorder: recorder as SessionFile["recorder"],
     events,
     ...(obj.inputMode === undefined ? {} : { inputMode: obj.inputMode as SessionFile["inputMode"] }),
+    ...optionalErrors(obj.errors, SESSION_ERRORS_MAX),
   };
+}
+
+/**
+ * Debug capture (D13): `errors` is optional page output, bounded again here. Lenient on purpose:
+ * a malformed entry is dropped, never the session, since the errors only add context.
+ */
+function optionalErrors(value: unknown, max: number): { errors?: CapturedError[] } {
+  const errors = parseCapturedErrors(value, max);
+  return errors === undefined ? {} : { errors };
 }
 
 function validateAudio(value: unknown, fail: (field: string, expected: string) => never): void {
@@ -128,6 +147,7 @@ function validateEvent(
     element,
     selection: event.selection as CapturedEvent["selection"],
     ...(event.note === undefined ? {} : { note: event.note as string }),
+    ...optionalErrors(event.errors, EVENT_ERRORS_MAX),
   };
 }
 

@@ -3,6 +3,7 @@ import { elementKey, elementText, eventText, formatClock, fullSource } from "./d
 import type { Placement } from "./fuse";
 import { trimHtml } from "./html-trim";
 import { codeSpan, escapeMarkdown, fencedBlock, inlineText, oneLine, truncate } from "./markdown";
+import { EVENT_ERRORS_HEADING, eventErrorLines } from "./page-errors";
 import type { CapturedEvent, ElementInfo, Word } from "./schema";
 import { splitWord } from "./word-text";
 
@@ -100,6 +101,9 @@ function eventLines(
   if (selection?.end) {
     lines.push(`- ${event.id} selection ends in: ${describeBound(selection.end)}`);
   }
+  // Debug capture (D13): nothing when nothing failed around this gesture.
+  const errors = eventErrorLines(event);
+  if (errors.length > 0) lines.push(`- ${event.id} ${EVENT_ERRORS_HEADING}`, ...errors.map((error) => `  - ${error}`));
   return lines;
 }
 

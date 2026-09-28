@@ -62,6 +62,11 @@ export interface RecorderState {
    * Absent means voice, as in states written before 0.4.0.
    */
   inputMode?: InputMode;
+  /**
+   * Settings.captureErrors of the current recording (D13): captured pages forward what fails on
+   * them while recording. Absent means off, as in states written before 0.5.0.
+   */
+  captureErrors?: boolean;
   /** Folder name of the session being saved; known once the recorder has stopped. */
   sessionId?: string;
   /** chrome.downloads ids of the files being saved; the session ends when all complete. */
@@ -155,6 +160,11 @@ export function isRecording(state: RecorderState): boolean {
 /** The current recording is typed (D12): notes instead of speech. */
 export function isTyped(state: RecorderState): boolean {
   return state.inputMode === "typed";
+}
+
+/** The current recording keeps the page's errors (D13). */
+export function capturesErrors(state: RecorderState): boolean {
+  return state.status === "recording" && state.captureErrors === true && state.t0 !== undefined;
 }
 
 /**

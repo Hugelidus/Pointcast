@@ -29,7 +29,15 @@ export async function waitForStatus(extensionPage: Page, status: RecorderStatus,
 
 /** Changes the popup's settings (chrome.storage.local), e.g. to keep audio.wav for a test that reads it. */
 export async function setSettings(extensionPage: Page, settings: Partial<Settings>): Promise<void> {
-  const full: Settings = { language: "auto", keepAudio: false, notify: true, handoff: true, inputMode: "voice", ...settings };
+  const full: Settings = {
+    language: "auto",
+    keepAudio: false,
+    notify: true,
+    handoff: true,
+    inputMode: "voice",
+    captureErrors: true,
+    ...settings,
+  };
   await extensionPage.evaluate((value) => chrome.storage.local.set({ settings: value }), full);
 }
 

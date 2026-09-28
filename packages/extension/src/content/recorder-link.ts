@@ -1,4 +1,4 @@
-import type { CapturedEventDraft } from "@pointcast/core";
+import type { CapturedErrorDraft, CapturedEventDraft } from "@pointcast/core";
 import { sendMessage, type CaptureEventResult } from "../messages";
 import { IDLE_STATE, type RecorderState } from "../recorder-state";
 import { watchStore } from "../state-store";
@@ -32,6 +32,14 @@ export function sendNote(id: string, note: string): void {
 
 export function discardEvent(id: string): void {
   sendMessage({ to: "offscreen", type: "capture-discard", id }).catch(() => undefined);
+}
+
+/**
+ * Debug capture (D13): something failed on the page. Sent at once, like a gesture (D6): the
+ * classic failure is a request that fails right before the page navigates away.
+ */
+export function sendError(draft: CapturedErrorDraft): void {
+  sendMessage({ to: "offscreen", type: "capture-error", draft }).catch(() => undefined);
 }
 
 /**

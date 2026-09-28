@@ -203,7 +203,72 @@ export interface CapturedEvent {
    * (D12). Absent when they saved the gesture without a note, and in voice sessions.
    */
   note?: string;
+  /**
+   * Debug capture (D13, since extension 0.5.0): the page errors from a window around this gesture
+   * (ERROR_WINDOW_BEFORE_MS before its start to ERROR_WINDOW_AFTER_MS after its end), deduplicated,
+   * at most EVENT_ERRORS_MAX. Absent when there were none, when the setting was off, and in older
+   * sessions.
+   */
+  errors?: CapturedError[];
 }
+
+/**
+ * What went wrong on the page (D13):
+ * - error: an uncaught exception (window "error" event);
+ * - rejection: an unhandled promise rejection;
+ * - console-error / console-warn: the page called console.error / console.warn;
+ * - network: a fetch or XMLHttpRequest answered with a status of 400 or more, or failed.
+ */
+export type CapturedErrorKind = "error" | "rejection" | "console-error" | "console-warn" | "network";
+
+/** A failed request, without its query values, fragment, headers or bodies (D13). */
+export interface CapturedRequest {
+  /** Upper case, e.g. "POST". */
+  method: string;
+  /**
+   * The path, e.g. "/api/export"; with its host ("api.example.com/v1/orders") when it is not the
+   * page's origin. Query parameter names are kept, their values never ("/api/orders?status&page").
+   */
+  url: string;
+  /** The HTTP status; 0 when the request failed without an answer (network error, CORS, timeout). */
+  status: number;
+}
+
+/** One page error captured while recording (D13). Page content: redacted like the page text on enabled sites. */
+export interface CapturedError {
+  kind: CapturedErrorKind;
+  /** When it happened, relative to t0 (the first time, when `count` merged repeats). */
+  t: Ms;
+  /** One line, at most ERROR_MESSAGE_MAX_CHARS, e.g. "TypeError: x is undefined" or "POST /api/export → 500". */
+  message: string;
+  /** Where it was thrown or logged, project-relative: "src/components/OrdersTable.tsx:31:7". */
+  source?: string;
+  /** The first stack frames (at most ERROR_STACK_MAX), e.g. "OrdersTable (src/components/OrdersTable.tsx:31:7)". */
+  stack?: string[];
+  /** kind "network" only. */
+  request?: CapturedRequest;
+  /** How many times the same error happened within the window; absent means once. */
+  count?: number;
+}
+
+/** A CapturedError as sent by the content script, before the recorder makes its time relative to t0. */
+export type CapturedErrorDraft = Omit<CapturedError, "t" | "count"> & {
+  /** Epoch ms (Date.now()) when it happened. */
+  at: number;
+};
+
+/** Longest error message kept (D13), in characters. */
+export const ERROR_MESSAGE_MAX_CHARS = 300;
+/** Stack frames kept per error (D13). */
+export const ERROR_STACK_MAX = 3;
+/** Errors listed under one gesture (D13). */
+export const EVENT_ERRORS_MAX = 5;
+/** Errors kept in `SessionFile.errors` (D13): the most recent ones. */
+export const SESSION_ERRORS_MAX = 50;
+/** An error belongs to a gesture from this long before it started (D13)… */
+export const ERROR_WINDOW_BEFORE_MS = 5000;
+/** …to this long after it ended. */
+export const ERROR_WINDOW_AFTER_MS = 3000;
 
 /** Contents of session.json. */
 export interface SessionFile {
@@ -234,6 +299,12 @@ export interface SessionFile {
    * before typed mode existed. A typed session has no audio and no words.json.
    */
   inputMode?: InputMode;
+  /**
+   * Debug capture (D13, since extension 0.5.0): every page error captured while recording, in time
+   * order, at most SESSION_ERRORS_MAX (the most recent). Each event's own `errors` are picked from
+   * these. Absent when there were none, when the setting was off, and in older sessions.
+   */
+  errors?: CapturedError[];
 }
 
 /** One transcribed word. */

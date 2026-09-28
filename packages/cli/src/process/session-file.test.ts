@@ -100,6 +100,20 @@ describe("validateSessionFile", () => {
     expect(() => validateSessionFile(raw, "session.json")).toThrowError(/events\[0\]\.gesture/);
   });
 
+  it("keeps debug capture's errors (D13), bounded, and drops malformed ones without failing", () => {
+    const raw = validSession();
+    const error = { kind: "network", t: 5, message: "POST /api/export → 500", request: { method: "POST", url: "/api/export", status: 500 } };
+    (raw.events as Record<string, unknown>[])[0]!.errors = [error, { kind: "nope" }];
+    raw.errors = [error, "junk"];
+    const session = validateSessionFile(raw, "session.json");
+    expect(session.events[0]?.errors).toEqual([error]);
+    expect(session.errors).toEqual([error]);
+    raw.errors = "not a list";
+    expect(validateSessionFile(raw, "session.json")).not.toHaveProperty("errors");
+    delete raw.errors;
+    expect(validateSessionFile(validSession(), "session.json")).not.toHaveProperty("errors");
+  });
+
   it("rejects a non-object root", () => {
     expect(() => validateSessionFile(null, "session.json")).toThrowError();
     expect(() => validateSessionFile("nope", "session.json")).toThrowError();

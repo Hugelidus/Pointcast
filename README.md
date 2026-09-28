@@ -74,6 +74,8 @@ Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://git
 
 (From a real recording on [dev/examples/react-dashboard](dev/examples/react-dashboard), spoken in Spanish and translated here; selector, DOM path and styles lines trimmed. The app has a second «Export» button, in another component: the spec names this one.)
 
+When something is broken ("this button does nothing"), the element also lists what failed on the page around that moment: uncaught errors, `console.error`/`warn` and failed requests (`POST /api/export → 500`), never a request body ([D13](docs/decisions.md#d13-debug-capture)).
+
 Your agent fetches the spec through its plugin, or you paste it. On React 19, Vue 3 and Svelte 5 dev builds, and Django templates with [pointcast-django](integrations/django/README.md), each element leads with its code: where that instance is used, which component defines it (marked when it is shared) and the line where its text or data lives. Other pages get the DOM description: selector, path, HTML and text.
 
 <details>
@@ -120,6 +122,7 @@ Browsers: Chrome and Microsoft Edge. Brave, Opera, Vivaldi and Arc are Chromium 
 - **Off by default everywhere but local dev hosts.** Any other site needs an explicit, per-host opt-in; the extension never asks for "all sites".
 - **Sensitive fields are never captured**: password fields, `autocomplete=current-password|new-password|one-time-code|cc-*`, or anything marked `data-sensitive`. On a site you've enabled, text that looks like personal data is redacted too.
 - **Allowlist, not blocklist.** Only a fixed set of HTML attributes is ever captured.
+- **Page errors only while recording**, with no request bodies, headers or query values, and redacted on enabled sites; *Capture console and network errors* in the popup's Settings turns them off.
 - **A plain click is never captured.** Only Alt+click and text selection are; every other click reaches your app as if the extension weren't there.
 
 Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that verifies it: [docs/decisions.md](docs/decisions.md#d8-privacy). Security problems: report them privately ([SECURITY.md](.github/SECURITY.md)).

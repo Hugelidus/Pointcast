@@ -33,11 +33,11 @@ const TYPES = { ".html": "text/html", ".css": "text/css", ".js": "text/javascrip
 const KEYS = {
   "1-title": 0.5,
   "2-first-point": 3.05,
-  "3-second-point": 5.95,
-  "4-stop": 7.9,
-  "5-spec": 10.9,
-  "6-code": 14.1,
-  "7-end": 16.2,
+  "3-second-point": 5.65,
+  "4-stop": 8.5,
+  "5-spec": 11.5,
+  "6-code": 14.7,
+  "7-end": 16.8,
 };
 
 const args = process.argv.slice(2);

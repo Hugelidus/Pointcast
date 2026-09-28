@@ -47,7 +47,7 @@
             <li><a class="nav-item nav-item-active"><span>Dashboard</span></a></li>
             <li><a class="nav-item"><span>Orders</span></a></li>
             <li><a class="nav-item"><span>Customers</span></a></li>
-            <li><a class="nav-item"><span>Messages</span><span class="badge" id="t-badge">3</span></a></li>
+            <li><a class="nav-item"><span>Messages</span><span class="badge">3</span></a></li>
             <li><a class="nav-item"><span>Settings</span></a></li>
           </ul>
         </nav>
@@ -58,6 +58,18 @@
             <section class="stat-card"><h3>Orders</h3><p class="stat-subtitle">Last 30 days</p><p class="stat-value">128</p><a class="stat-link">View report</a></section>
           </div>
           <section class="chart-card"><h3>Sales this week</h3><svg class="sales-chart" id="chart" viewBox="0 0 378 120"></svg></section>
+          <section class="panel">
+            <div class="panel-toolbar"><h2>Orders</h2><button type="button" class="btn btn-export" id="t-export">Export</button></div>
+            <table class="data-table">
+              <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>A-1042</td><td>Lina Torres</td><td>$128.00</td><td>Paid</td></tr>
+                <tr><td>A-1041</td><td>Marco Peña</td><td>$64.50</td><td>Pending</td></tr>
+                <tr><td>A-1040</td><td>Sofía Ibarra</td><td>$212.00</td><td>Paid</td></tr>
+                <tr><td>A-1039</td><td>Diego Farfán</td><td>$39.90</td><td>Refunded</td></tr>
+              </tbody>
+            </table>
+          </section>
         </main>
       </div>
       <div class="pill rec" id="pill-rec"><span class="dot"></span>REC</div>
@@ -97,9 +109,9 @@
       <div class="ln" id="L4">  - <span class="k">text at:</span> <span class="loc" id="loc1">src/pages/Dashboard.tsx:11</span></div>
       <div class="gap"></div>
       <div class="ln" id="L5"><span class="h">## Request 2</span></div>
-      <div class="ln q" id="L6"><span class="gt">&gt; </span><span class="words">And this<span class="mk" id="mk2"> [a]</span> should say five.</span></div>
-      <div class="ln" id="L7">- <span class="mk2">[a]</span> «3» → code:</div>
-      <div class="ln" id="L8">  - <span class="k">data at:</span> <span class="loc" id="loc2">src/data/nav.ts:16</span></div>
+      <div class="ln q" id="L6"><span class="gt">&gt; </span><span class="words">And this<span class="mk" id="mk2"> [a]</span> button should export only the filtered orders.</span></div>
+      <div class="ln" id="L7">- <span class="mk2">[a]</span> «Export» → code:</div>
+      <div class="ln" id="L8">  - <span class="k">text at:</span> <span class="loc" id="loc2">src/components/OrdersTable.tsx:22</span></div>
     </div>
   </div>
 
@@ -109,7 +121,7 @@
   <!-- The real files, fetched from dev/examples/react-dashboard at load. -->
   <div id="editor">
     <div class="pane"><div class="tab"><b></b>src/pages/Dashboard.tsx</div><div class="code" id="code1"></div></div>
-    <div class="pane"><div class="tab"><b></b>src/data/nav.ts</div><div class="code" id="code2"></div></div>
+    <div class="pane"><div class="tab"><b></b>src/components/OrdersTable.tsx</div><div class="code" id="code2"></div></div>
   </div>
 
   <svg id="arrows" width="1600" height="900" aria-hidden="true">

@@ -6,11 +6,11 @@
 "use strict";
 
 /** Length of one loop, in seconds. renderAt(DURATION) looks exactly like renderAt(0). */
-const DURATION = 17.3;
+const DURATION = 17.9;
 
 // ---------------------------------------------------------------- timeline (seconds)
 
-const SPEC = 8.2; // scene 5: the phrases leave the page for the spec
+const SPEC = 8.8; // scene 5: the phrases leave the page for the spec
 const CODE = SPEC + 3.2; // scene 6: the editor
 const T = {
   titleOut: 1.0, // the title holds until here, then clears in 0.5 s
@@ -20,15 +20,16 @@ const T = {
   click1: 2.68, // just after "This": the [a] of Request 1
   bubble1: 2.3,
   words1: [2.45, 2.82, 3.0, 3.15, 3.27, 3.38, 3.5, 3.72],
+  scroll: [4.0, 4.65], // the page scrolls so the Orders table and its Export button are in view
   move2: [4.45, 5.15],
   click2: 5.28, // just after "this": the [a] of Request 2
   bubble2: 4.8,
-  words2: [4.95, 5.12, 5.42, 5.6, 5.78],
-  cursorOut: 6.1,
-  stopKeys: 6.2,
-  stopPress: 6.45,
-  processing: 6.55,
-  done: 7.45,
+  words2: [4.95, 5.12, 5.38, 5.58, 5.76, 5.95, 6.08, 6.2, 6.45],
+  cursorOut: 6.7,
+  stopKeys: 6.8,
+  stopPress: 7.05,
+  processing: 7.15,
+  done: 8.05,
   spec: SPEC,
   lines: { L0: SPEC + 0.95, L1: SPEC + 1.1, L5: SPEC + 1.1, markers: SPEC + 1.35, L3: SPEC + 1.6, L7: SPEC + 1.75, L4: SPEC + 2.0, L8: SPEC + 2.15 },
   code: CODE,
@@ -40,7 +41,10 @@ const T = {
 };
 
 const WORDS1 = ["This", "should", "take", "you", "to", "the", "reports", "page."];
-const WORDS2 = ["…and", "this", "should", "say", "five."];
+const WORDS2 = ["And", "this", "button", "should", "export", "only", "the", "filtered", "orders."];
+/** How far the page scrolls (CSS px of the app, shown at 1.3x). */
+const SCROLL = 150;
+const ZOOM = 1.3;
 
 // ---------------------------------------------------------------- easing
 
@@ -121,8 +125,8 @@ function rectOf(el) {
 }
 
 /** Where the spec sits in scene 6, relative to its scene-5 place (transform-origin 0 0). */
-const DOC5 = { x: 420, y: 186 };
-const DOC6 = { x: 56, y: 196, s: 0.82 };
+const DOC5 = { x: 370, y: 186 };
+const DOC6 = { x: 50, y: 196, s: 0.74 };
 const toDoc6 = (p) => ({ x: DOC6.x + (p.x - DOC5.x) * DOC6.s, y: DOC6.y + (p.y - DOC5.y) * DOC6.s });
 
 function measure() {
@@ -130,26 +134,34 @@ function measure() {
   for (const el of $("stage").children) el.style.transform = "none";
   for (const id of ["mk1", "mk2"]) $(id).style.width = "auto";
 
+  const app = document.querySelector(".app");
+  app.style.transform = `scale(${ZOOM})`;
   L.report = rectOf($("t-report"));
-  L.badge = rectOf($("t-badge"));
-  for (const [id, r] of [["flash1", L.report], ["flash2", L.badge]]) {
+  app.style.transform = `translateY(${-SCROLL * ZOOM}px) scale(${ZOOM})`;
+  L.export = rectOf($("t-export")); // where it is once the page has scrolled
+  app.style.transform = `scale(${ZOOM})`;
+  for (const [id, r] of [["flash1", L.report], ["flash2", L.export]]) {
     Object.assign($(id).style, { left: `${r.x}px`, top: `${r.y}px`, width: `${r.w}px`, height: `${r.h}px` });
   }
 
-  // Bubble 1 to the right of «View report» (over the Orders card, never over Revenue), bubble 2
-  // under the Messages badge.
+  // Bubble 1 to the right of «View report» (over the Orders card, never over Revenue); bubble 2
+  // above «Export», over the sales chart, its tail pointing down at the button.
   const b1 = $("b1"), b2 = $("b2");
   const b1h = b1.offsetHeight;
   b1.style.left = `${L.report.x + L.report.w + 34}px`;
   b1.style.top = `${L.report.cy - b1h / 2 - 8}px`;
   Object.assign(b1.querySelector(".tail").style, { left: "-10px", top: `${b1h / 2 - 3}px` });
   b1.style.transformOrigin = "0 50%";
-  b2.style.left = `${L.badge.x - 44}px`;
-  b2.style.top = `${L.badge.y + L.badge.h + 64}px`;
-  Object.assign(b2.querySelector(".tail").style, { left: "46px", top: "-10px" });
-  b2.style.transformOrigin = "56px 0";
+  const b2w = b2.offsetWidth, b2h = b2.offsetHeight;
+  b2.style.left = `${L.export.x + L.export.w + 24 - b2w}px`;
+  b2.style.top = `${L.export.y - 30 - b2h}px`;
+  Object.assign(b2.querySelector(".tail").style, { right: "44px", bottom: "-10px" });
+  b2.style.transformOrigin = `${b2w - 50}px 100%`;
 
+  // Bubble 1 scrolls with the page, so its phrase leaves from where it is after the scroll.
   L.said1 = rectOf($("said1"));
+  L.said1.y -= SCROLL * ZOOM;
+  L.said1.cy -= SCROLL * ZOOM;
   L.said2 = rectOf($("said2"));
   L.words1 = rectOf($("L2").querySelector(".words"));
   L.words2 = rectOf($("L6").querySelector(".words"));
@@ -157,7 +169,7 @@ function measure() {
   L.loc1 = rectOf($("loc1"));
   L.loc2 = rectOf($("loc2"));
   L.row11 = rectOf($("code1").querySelector(".row.hot"));
-  L.row16 = rectOf($("code2").querySelector(".row.hot"));
+  L.row22 = rectOf($("code2").querySelector(".row.hot"));
 
   // The flying phrases start as the bubbles' text.
   for (const [fly, said, rect] of [["fly1", "said1", L.said1], ["fly2", "said2", L.said2]]) {
@@ -171,7 +183,7 @@ function measure() {
   L.words2W = L.words2.w - L.mk;
 
   // Arrows: from each location in the spec (at its scene-6 place) to its line in the editor.
-  for (const [g, loc, row] of [["arrow1", L.loc1, L.row11], ["arrow2", L.loc2, L.row16]]) {
+  for (const [g, loc, row] of [["arrow1", L.loc1, L.row11], ["arrow2", L.loc2, L.row22]]) {
     const a = toDoc6({ x: loc.x + loc.w, y: loc.cy });
     const x0 = a.x + 14, y0 = a.y;
     const x1 = row.x - 8, y1 = row.cy;
@@ -188,7 +200,7 @@ function measure() {
 function cursorAt(t) {
   const start = { x: 1180, y: 790 };
   const p1 = { x: L.report.x + L.report.w * 0.55, y: L.report.cy + 2 };
-  const p2 = { x: L.badge.cx + 1, y: L.badge.cy + 2 };
+  const p2 = { x: L.export.x + L.export.w * 0.6, y: L.export.cy + 3 };
   const arc = (a, b, p, bend) => {
     const e = inOut(p);
     const c = { x: (a.x + b.x) / 2 + bend, y: (a.y + b.y) / 2 - Math.abs(bend) * 0.6 };
@@ -196,7 +208,8 @@ function cursorAt(t) {
     return { x: u * u * a.x + 2 * u * e * c.x + e * e * b.x, y: u * u * a.y + 2 * u * e * c.y + e * e * b.y };
   };
   if (t < T.move2[0]) return arc(start, p1, prog(t, ...T.move1), 60);
-  return arc(p1, p2, prog(t, ...T.move2), -40);
+  // The cursor stays put while the page scrolls under it, then goes to Export.
+  return arc(p1, p2, prog(t, ...T.move2), 70);
 }
 
 function renderAt(tRaw) {
@@ -282,14 +295,16 @@ function renderAt(tRaw) {
 
   // Stop shortcut
   const sk = span(t, T.stopKeys, T.processing + 0.35, 0.3, 0.3);
-  style($("stopkeys"), sk, `translate(${1400 - 24 - 330}px, ${172 + 690 - 24 - 150 + 10 * (1 - out(prog(t, T.stopKeys, T.stopKeys + 0.3)))}px)`);
+  style($("stopkeys"), sk, `translate(${1400 - 24 - 330 - 310}px, ${172 + 690 - 24 - 72 + 10 * (1 - out(prog(t, T.stopKeys, T.stopKeys + 0.3)))}px)`);
   const sDown = t >= T.stopPress && t < T.stopPress + 0.16;
   for (const k of $("stopkeys").querySelectorAll(".key")) k.classList.toggle("down", sDown);
 
   // ---- speech bubbles, typed word by word
   const bubbleFade = 1 - inOut(prog(t, T.spec, T.spec + 0.2));
   const b1in = back(prog(t, T.bubble1, T.bubble1 + 0.35));
-  style($("b1"), Math.min(out(prog(t, T.bubble1, T.bubble1 + 0.25)), bubbleFade), `scale(${0.85 + 0.15 * b1in})`);
+  const scrollY = -SCROLL * ZOOM * inOut(prog(t, ...T.scroll));
+  document.querySelector(".app").style.transform = `translateY(${scrollY.toFixed(2)}px) scale(${ZOOM})`;
+  style($("b1"), Math.min(out(prog(t, T.bubble1, T.bubble1 + 0.25)), bubbleFade), `translateY(${scrollY.toFixed(2)}px) scale(${0.85 + 0.15 * b1in})`);
   const b2in = back(prog(t, T.bubble2, T.bubble2 + 0.35));
   style($("b2"), Math.min(out(prog(t, T.bubble2, T.bubble2 + 0.25)), bubbleFade), `scale(${0.85 + 0.15 * b2in})`);
   const typed = (id, times) => {
@@ -391,8 +406,8 @@ window.ready = (async () => {
   buildWords("said1", WORDS1);
   buildWords("said2", WORDS2);
   await Promise.all([
-    buildCode("code1", "../../../dev/examples/react-dashboard/src/pages/Dashboard.tsx", 6, 17, 11),
-    buildCode("code2", "../../../dev/examples/react-dashboard/src/data/nav.ts", 12, 18, 16),
+    buildCode("code1", "../../../dev/examples/react-dashboard/src/pages/Dashboard.tsx", 6, 15, 11),
+    buildCode("code2", "../../../dev/examples/react-dashboard/src/components/OrdersTable.tsx", 17, 25, 22),
     document.fonts.ready,
     ...["400 16px Inter", "500 16px Inter", "600 16px Inter", "700 16px Inter", "800 16px Inter", "400 16px 'JetBrains Mono'", "600 16px 'JetBrains Mono'", "700 16px 'JetBrains Mono'"].map((f) => document.fonts.load(f).catch(() => {})),
     ...[...document.images].map((img) => (img.complete ? null : new Promise((r) => { img.onload = img.onerror = r; }))),

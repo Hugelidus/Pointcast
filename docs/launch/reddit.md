@@ -84,6 +84,6 @@ Got `Xenova/whisper-base` fp32 running fully client-side inside a Chrome MV3 ext
 - q8 quantized weights loaded faster but were both slower to run (46 s) and less accurate (90.7%) than fp32 in this setup, so fp32 stayed the default in both the Node CLI and the browser.
 - Now transcribes **while recording**, cutting audio into 15–30 s pieces at quiet points (never mid-word) so only the last piece is left after Stop — cut latency on a 152 s recording from 27.2 s to 2.9 s after Stop, same accuracy.
 
-All measurements and the reasoning behind each default: [docs/decisions.md § D1](../decisions.md#d1-transcription--whisper-via-transformersjs-locally) and [spikes/in-browser-whisper](../../spikes/in-browser-whisper/). MIT licensed if anyone wants to reuse the transcription package (`packages/transcribe`, no `node:` imports, runs unchanged in Node or a browser worker).
+All measurements and the reasoning behind each default: [docs/decisions.md § D1](../decisions.md#d1-transcription--whisper-via-transformersjs-locally) and [dev/spikes/in-browser-whisper](../../dev/spikes/in-browser-whisper/). MIT licensed if anyone wants to reuse the transcription package (`packages/transcribe`, no `node:` imports, runs unchanged in Node or a browser worker).
 
 GitHub: <link>

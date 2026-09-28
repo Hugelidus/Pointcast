@@ -22,7 +22,7 @@ export interface ProcessingStats {
 }
 
 /**
- * Before the first run: spike numbers (spikes/in-browser-whisper, i9-12900K, 4 threads):
+ * Before the first run: spike numbers (dev/spikes/in-browser-whisper, i9-12900K, 4 threads):
  * 1.6 s to load the cached model, 43 s for 152 s of audio (about 280 ms per second). Rounded up,
  * since a laptop is slower and an estimate that finishes early reads better than a late one.
  */

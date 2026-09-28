@@ -13,7 +13,7 @@ export type PlaygroundPage = "index.html" | "other.html" | "spa.html";
 
 // Plain paths, not URL objects: in the jsdom environment the global URL is jsdom's class,
 // which node:fs does not accept.
-const PLAYGROUND_DIR = join(dirname(fileURLToPath(import.meta.url)), "../../../../../playground");
+const PLAYGROUND_DIR = join(dirname(fileURLToPath(import.meta.url)), "../../../../../dev/playground");
 
 export interface LoadOptions {
   /** Run the page's inline scripts (fake app behaviour such as "Delete removes the row"). */

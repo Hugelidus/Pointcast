@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createServer } from "./server";
 import { connectClient } from "./test-transport";
 
-const FIXTURE = join(__dirname, "../../../../fixtures/sessions/e2e-es-v2");
+const FIXTURE = join(__dirname, "../../../../dev/fixtures/sessions/e2e-es-v2");
 
 /**
  * The one "smoke test beyond a plain unit test" the task asked for: it goes through the SDK's own

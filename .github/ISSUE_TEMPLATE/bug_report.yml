@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting. A **security problem** goes privately to [SECURITY.md](https://github.com/Hugelidus/pointcast/blob/main/SECURITY.md), not here.
+        Thanks for reporting. A **security problem** goes privately to [SECURITY.md](https://github.com/Hugelidus/pointcast/blob/main/.github/SECURITY.md), not here.
   - type: textarea
     id: what-happened
     attributes:

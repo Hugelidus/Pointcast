@@ -7,4 +7,4 @@ contact_links:
     about: Ask how something works, or float an idea before it becomes a feature request.
   - name: Security problem
     url: https://github.com/Hugelidus/pointcast/security/advisories/new
-    about: Report it privately (see SECURITY.md), not as a public issue.
+    about: Report it privately (see .github/SECURITY.md), not as a public issue.

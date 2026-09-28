@@ -13,7 +13,7 @@ import { readWavPcm16Mono16k } from "../audio/wav";
  * like local.slow.test.ts:
  *   POINTCAST_SLOW=1 pnpm vitest run packages/cli/src/transcribe/silence.slow.test.ts
  */
-const ES_SHORT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../fixtures/audio/es-short.wav");
+const ES_SHORT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../dev/fixtures/audio/es-short.wav");
 const RATE = 16000;
 
 /** Room noise: pink-ish noise with a faint mains hum, at `dbfs` RMS. Seeded, so runs repeat. */

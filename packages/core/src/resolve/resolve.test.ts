@@ -4,7 +4,7 @@ import { codeChain } from "./chain";
 import { FLOWBITE, SHADCN, memoryReader } from "./eval-fixtures";
 import { cachingReader, MAX_SNIPPET_CHARS, projectMatch, resolveElement, resolveSession, sourceSnippet } from "./resolve";
 
-/** Elements as the extension recorded them in the evaluation (eval/.runs/sessions), plus a chain. */
+/** Elements as the extension recorded them in the evaluation (dev/eval/.runs/sessions), plus a chain. */
 function el(tag: string, text: string, renderedBy: CodeFrame[] | undefined, extra: Partial<ElementInfo> = {}): ElementInfo {
   return {
     tag,
@@ -137,7 +137,7 @@ describe("resolveElement (Stage 0 rules on the eval apps)", () => {
       [{ component: "StatCard", file: "src/pages/Dashboard.tsx" }, { component: "Dashboard", file: "src/App.tsx" }],
       { html: '<a class="stat-link" href="/reports/revenue">View report</a>' },
     );
-    // What a Vite dev server actually does (reproduced from examples/react-dashboard, 2026-09-27):
+    // What a Vite dev server actually does (reproduced from dev/examples/react-dashboard, 2026-09-27):
     // App.tsx imports "./pages/Dashboard" with no extension; the resolver's own ".js" guess is
     // served by Vite as an alias of Dashboard.tsx (only the .tsx file exists on disk), byte for
     // byte, because Vite falls back through its own extension list when the exact path 404s.
@@ -203,7 +203,7 @@ describe("resolveElement (Stage 0 rules on the eval apps)", () => {
 const lines = (...source: string[]): string => source.join("\n");
 
 /**
- * The shape of examples/react-dashboard, with the sidebar importing its own data (the common
+ * The shape of dev/examples/react-dashboard, with the sidebar importing its own data (the common
  * pattern): <Sidebar /> is used in App.tsx, and Sidebar.tsx renders the Messages badge from
  * data/nav.ts. React 19 frames name where each instance is used, so Sidebar.tsx is no chain file.
  */
@@ -289,7 +289,7 @@ const REACT_APP: Record<string, string> = {
   ),
 };
 
-/** The same sidebar in Vue (examples/vue-dashboard): the element's own component file comes from `__file`. */
+/** The same sidebar in Vue (dev/examples/vue-dashboard): the element's own component file comes from `__file`. */
 const VUE_APP: Record<string, string> = {
   "src/App.vue": lines(
     '<script setup lang="ts">',
@@ -443,7 +443,7 @@ describe("resolveElement: the files that define the chain's components (rule 4)"
   });
 });
 
-/** The Messages badge exactly as the extension captured it on examples/react-dashboard: no href anywhere. */
+/** The Messages badge exactly as the extension captured it on dev/examples/react-dashboard: no href anywhere. */
 const REACT_BADGE_CAPTURED = el(
   "span",
   "3",
@@ -522,7 +522,7 @@ describe("resolveElement: a short value through the item it belongs to (rule 3b)
   });
 
   it("keeps Stage 0's «2+»: a short value without an item label still goes through rule 1", async () => {
-    // vuestic-admin's notification badge (eval/.apps, lines 1-6 verbatim): the badge is alone in its
+    // vuestic-admin's notification badge (dev/eval/.apps, lines 1-6 verbatim): the badge is alone in its
     // button, so no item label, and rule 1 finds it written once, as in Stage 0.
     const dropdown = "src/components/navbar/components/dropdowns/NotificationDropdown.vue";
     const files = {

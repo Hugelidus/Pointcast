@@ -14,7 +14,7 @@ describe("countChunks (30 s windows, 5 s stride: a new window every 20 s)", () =
     expect(countChunks(seconds(31), 30)).toBe(2);
     expect(countChunks(seconds(50), 30)).toBe(2);
     expect(countChunks(seconds(51), 30)).toBe(3);
-    // fixtures/audio/es-2min.wav: 152 s, windows starting at 0, 20, … 140 s.
+    // dev/fixtures/audio/es-2min.wav: 152 s, windows starting at 0, 20, … 140 s.
     expect(countChunks(seconds(152.195), 30)).toBe(8);
   });
 

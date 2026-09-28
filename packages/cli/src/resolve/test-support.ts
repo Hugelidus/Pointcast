@@ -9,7 +9,7 @@ import type { SessionFile } from "@pointcast/core";
  * code chain on its "Export" button (e2), and the source files that chain names.
  */
 
-const FIXTURE = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../fixtures/sessions/e2e-es-v2");
+const FIXTURE = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../dev/fixtures/sessions/e2e-es-v2");
 
 export const TOOLBAR = "src/components/Toolbar.tsx";
 export const APP = "src/App.tsx";

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/launch/store/promo-marquee.png" alt="Pointcast: talk and point at your web app; your coding agent gets the exact elements and the code behind them" width="900">
+  <a href="docs/launch/video/out/pointcast-demo.mp4"><img src="docs/launch/video/out/pointcast-demo.gif" alt="Pointcast in 17 seconds: Alt+click two elements while talking, press Stop, and the spoken requests become a spec whose code locations lead to the exact lines in the source" width="800"></a>
 </p>
 
 # Pointcast
@@ -15,7 +15,7 @@ One recording covers a whole list of UI changes: say what you want while you poi
 
 **[Quick start](#quick-start) · [How it works](#how-it-works) · [Eval](docs/eval/results-2026-09-27.md) · [Discussions](https://github.com/Hugelidus/pointcast/discussions) · [Changelog](CHANGELOG.md)**
 
-> **Public beta (0.2).** Chrome and Edge on desktop, developed and tested on Windows; macOS and Linux should work but are untested. Feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
+> **Public beta (0.3).** Chrome and Edge on desktop, developed and tested on Windows; macOS and Linux should work but are untested. Feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
 
 ## Quick start
 
@@ -41,7 +41,7 @@ Any other agent: paste the spec from the clipboard. (In Windows PowerShell 5.1, 
 <details id="manual-install">
 <summary><b>Manual install (release zip)</b>, updating from 0.1.x, and where recordings go</summary>
 
-Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://github.com/Hugelidus/pointcast/releases) and unzip it. Open `chrome://extensions` (`edge://extensions` in Edge), turn on *Developer mode*, choose *Load unpacked* and pick the unzipped folder. To build it yourself, see [CONTRIBUTING.md](CONTRIBUTING.md#try-it-locally).
+Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://github.com/Hugelidus/pointcast/releases) and unzip it. Open `chrome://extensions` (`edge://extensions` in Edge), turn on *Developer mode*, choose *Load unpacked* and pick the unzipped folder. To build it yourself, see [CONTRIBUTING.md](.github/CONTRIBUTING.md#try-it-locally).
 
 **Updating an unpacked 0.1.x?** Remove it and load 0.2 as a new extension, once. From 0.2 on, every build has the same extension id (the Chrome Web Store item's), so the id changes this one time: allow the microphone again, and the speech model downloads once more.
 
@@ -70,7 +70,7 @@ Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://git
   - on screen: button «Export» in «Orders» on `/`
 ```
 
-(From a real recording on [examples/react-dashboard](examples/react-dashboard), spoken in Spanish and translated here; selector, DOM path and styles lines trimmed. The app has a second «Export» button, in another component: the spec names this one.)
+(From a real recording on [dev/examples/react-dashboard](dev/examples/react-dashboard), spoken in Spanish and translated here; selector, DOM path and styles lines trimmed. The app has a second «Export» button, in another component: the spec names this one.)
 
 Your agent fetches the spec through its plugin, or you paste it. On React 19, Vue 3 and Svelte 5 dev builds, and Django templates with [pointcast-django](integrations/django/README.md), each element leads with its code: where that instance is used, which component defines it (marked when it is shared) and the line where its text or data lives. Other pages get the DOM description: selector, path, HTML and text.
 
@@ -120,7 +120,7 @@ Browsers: Chrome and Microsoft Edge. Brave, Opera, Vivaldi and Arc are Chromium 
 - **Allowlist, not blocklist.** Only a fixed set of HTML attributes is ever captured.
 - **A plain click is never captured.** Only Alt+click and text selection are; every other click reaches your app as if the extension weren't there.
 
-Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that verifies it: [docs/decisions.md](docs/decisions.md#d8-privacy). Security problems: report them privately ([SECURITY.md](SECURITY.md)).
+Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that verifies it: [docs/decisions.md](docs/decisions.md#d8-privacy). Security problems: report them privately ([SECURITY.md](.github/SECURITY.md)).
 
 ## FAQ
 
@@ -148,7 +148,7 @@ Now 0.3: Django templates, `pointcast doctor`; 0.2 sent recordings straight to a
 
 ## Contributing
 
-Bug reports, ideas and PRs are welcome: build and run it from source with [CONTRIBUTING.md](CONTRIBUTING.md). Questions and ideas: [Discussions](https://github.com/Hugelidus/pointcast/discussions). Please follow the [code of conduct](CODE_OF_CONDUCT.md).
+Bug reports, ideas and PRs are welcome: build and run it from source with [CONTRIBUTING.md](.github/CONTRIBUTING.md). Questions and ideas: [Discussions](https://github.com/Hugelidus/pointcast/discussions). Please follow the [code of conduct](.github/CODE_OF_CONDUCT.md).
 
 ## License
 

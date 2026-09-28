@@ -1,7 +1,7 @@
 # Security updates for npm dependencies are on in the repository settings (Dependabot alerts and
 # security updates). This file adds routine version updates for the CI's GitHub Actions only:
 # package upgrades are done by hand, because the plugins pin the CLI's exact version and
-# packages/cli/npm-shrinkwrap.json must be regenerated with them (CONTRIBUTING, Releasing).
+# packages/cli/npm-shrinkwrap.json must be regenerated with them (.github/CONTRIBUTING.md, Releasing).
 version: 2
 updates:
   - package-ecosystem: github-actions

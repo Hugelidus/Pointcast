@@ -67,6 +67,8 @@ export class Recorder {
         return Promise.resolve(this.#discard(message.id));
       case "capture-error":
         return Promise.resolve({ ok: this.#active?.log.addError(message.draft) ?? false });
+      case "capture-code":
+        return Promise.resolve({ ok: this.#active?.log.setCode(message.id, message.component, message.renderedBy) ?? false });
       case "recorder-undo":
         return Promise.resolve(this.#undo());
     }

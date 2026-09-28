@@ -1,4 +1,5 @@
 import type { CapturedErrorDraft, CapturedEventDraft } from "@pointcast/core";
+import type { FrameworkInfo } from "../lib/component-bridge";
 import { sendMessage, type CaptureEventResult } from "../messages";
 import { IDLE_STATE, type RecorderState } from "../recorder-state";
 import { watchStore } from "../state-store";
@@ -28,6 +29,14 @@ export async function sendDraft(draft: CapturedEventDraft): Promise<CaptureEvent
  */
 export function sendNote(id: string, note: string): void {
   sendMessage({ to: "offscreen", type: "capture-note", id, note }).catch(() => undefined);
+}
+
+/**
+ * The code chain of event `id`, read after the gesture from the dev server's source maps
+ * (Next.js, D9 note 2026-09-28). Fire and forget, like a note.
+ */
+export function sendCode(id: string, info: FrameworkInfo): void {
+  sendMessage({ to: "offscreen", type: "capture-code", id, component: info.component, renderedBy: info.renderedBy }).catch(() => undefined);
 }
 
 export function discardEvent(id: string): void {

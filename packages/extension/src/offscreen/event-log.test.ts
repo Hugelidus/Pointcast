@@ -125,3 +125,35 @@ describe("EventLog notes (typed mode, D12)", () => {
     expect(log.events[0]?.note).toHaveLength(2000);
   });
 });
+
+describe("EventLog code chains read after the gesture (Next.js, D9 note 2026-09-28)", () => {
+  const nextElement: ElementInfo = { ...element, component: { framework: "react", name: "NavLink" } };
+
+  it("adds the chain and the located component to an event captured without a chain", () => {
+    const log = new EventLog(0);
+    const { id } = log.add(draft(100, 100, { gesture: "point", element: nextElement }));
+    const component = { framework: "react", name: "NavLink", file: "components/nav-link.tsx", line: 13, column: 16 };
+    const renderedBy = [{ component: "NavLink", file: "components/sidebar.tsx", line: 13 }];
+    expect(log.setCode(id, component, renderedBy)).toBe(true);
+    expect(log.session()[0]?.element).toEqual({ ...nextElement, component, renderedBy });
+    // A chain is never replaced, not even by another answer for the same event.
+    expect(log.setCode(id, component, [{ file: "app/page.tsx" }])).toBe(false);
+    expect(log.session()[0]?.element.renderedBy).toEqual(renderedBy);
+  });
+
+  it("checks the page's answer like the bridge's: no absolute path, no library frame, nothing for a missing event", () => {
+    const log = new EventLog(0);
+    const { id } = log.add(draft(100, 100, { gesture: "point", element: nextElement }));
+    expect(log.setCode("e9", undefined, [{ file: "app/page.tsx" }])).toBe(false);
+    expect(log.setCode(id, { framework: "react", name: "NavLink" }, [{ file: "node_modules/next/dist/link.js" }])).toBe(false);
+    expect(log.setCode(id, undefined, [{ file: "C:/Users/me/shop/components/x.tsx", component: "X" }])).toBe(true);
+    expect(log.session()[0]?.element.renderedBy).toEqual([{ file: "components/x.tsx", component: "X" }]);
+  });
+
+  it("keeps an empty chain: the element's own line is its code", () => {
+    const log = new EventLog(0);
+    const { id } = log.add(draft(100, 100, { gesture: "point", element: nextElement }));
+    expect(log.setCode(id, { framework: "react", name: "OverviewPage", file: "app/page.tsx", line: 10 }, [])).toBe(true);
+    expect(log.session()[0]?.element).toMatchObject({ renderedBy: [], component: { file: "app/page.tsx", line: 10 } });
+  });
+});

@@ -96,6 +96,8 @@ When something is broken ("this button does nothing"), the element also lists wh
 
 Your agent fetches the spec through its plugin, or you paste it. On React 19, Vue 3 and Svelte 5 dev builds, and Django templates with [pointcast-django](integrations/django/README.md), each element leads with its code: where that instance is used, which component defines it (marked when it is shared) and the line where its text or data lives. Other pages get the DOM description: selector, path, HTML and text.
 
+**Next.js App Router** (`next dev`, Turbopack): Client and Server Components both get their chain (`used at:` the file and line, up to the page or layout), mapped through Next's own dev source maps. Through the MCP server or the CLI, which read your repo, text written in a component or in a data module it imports gets its `text at:`/`data at:` line; text computed at runtime gets none. The pasted spec has the chain without those lines, and `next dev --webpack` gets no chain ([what was measured](docs/eval/nextjs-2026-09-28.md)).
+
 <details>
 <summary>Where the code lines come from</summary>
 
@@ -163,7 +165,7 @@ Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that ver
 <summary><b>Known limitations of the beta</b></summary>
 
 - **Chromium browsers only**, desktop.
-- **The code pointer needs a dev build** of React, Vue 3 or Svelte 5, or a Django app in `DEBUG` with [pointcast-django](integrations/django/README.md). Production builds, Angular and other server-side templates get the DOM description only.
+- **The code pointer needs a dev build** of React, Vue 3 or Svelte 5, or a Django app in `DEBUG` with [pointcast-django](integrations/django/README.md). Production builds, Angular and other server-side templates get the DOM description only. On Next.js, only `next dev` with Turbopack (the default) gives the chain.
 - **Show in folder** works only for recordings Chrome's downloads saved; for one your MCP server stored, the popup names its folder instead.
 - **Shared multi-user computers:** another user could send recordings to your running MCP server, or receive yours while it is down. There, turn off *Send to a running pointcast MCP server* in the popup's Settings and start the server with `--no-handoff`.
 - **Port forwards:** a forward of local port 20547 (`ssh -L`, or an editor's automatic port forwarding) sends your recordings to the MCP server on the other machine, which is how to use one on a remote dev server; on a shared host it can be another user's. See the [CLI's README](packages/cli/README.md#receiving-recordings-from-the-extension).

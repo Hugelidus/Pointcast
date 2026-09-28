@@ -8,6 +8,7 @@
  *   content script ─ capture-event (draft) ───────────────────────────────────────────────────────▶ offscreen
  *   content script ─ capture-note / capture-discard (typed mode, D12) ─────────────────────────────▶ offscreen
  *   content script ─ capture-error (debug capture, D13) ──────────────────────────────────────────▶ offscreen
+ *   content script ─ capture-code (a chain read from source maps after the gesture, Next.js) ──────▶ offscreen
  *   service worker ─ ping (one tab) ──────────▶ content script
  *   offscreen ── POST 127.0.0.1:20547 (hello, session) ──▶ pointcast MCP server (D11)
  *
@@ -143,6 +144,12 @@ export type OffscreenMessage =
   | { to: "offscreen"; type: "capture-discard"; id: string }
   /** Debug capture (D13): something failed on a captured page, already redacted. Ignored when not recording. */
   | { to: "offscreen"; type: "capture-error"; draft: CapturedErrorDraft }
+  /**
+   * The code chain of event `id`, read after the gesture because it needed the dev server's
+   * source maps (Next.js, D9 note 2026-09-28). Page input: checked again by the recorder, and
+   * applied only to an event captured without a chain. Ignored when not recording.
+   */
+  | { to: "offscreen"; type: "capture-code"; id: string; component?: unknown; renderedBy?: unknown }
   | { to: "offscreen"; type: "recorder-undo" };
 
 /** Sent with chrome.tabs.sendMessage to the tab's top frame (sendToTab). */
@@ -210,6 +217,7 @@ interface ResponseByType {
   "capture-note": CaptureChangeResult;
   "capture-discard": CaptureChangeResult;
   "capture-error": CaptureChangeResult;
+  "capture-code": CaptureChangeResult;
   "recorder-undo": RecorderUndoResult;
   ping: { alive: true };
 }

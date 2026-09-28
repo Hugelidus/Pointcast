@@ -1,6 +1,25 @@
 import { isLibraryPath, projectRelativePath, type CodeFrame, type ComponentInfo } from "@pointcast/core";
-import { COMPONENT_ATTRIBUTE, COMPONENT_REQUEST_EVENT, type FrameworkInfo } from "./component-bridge";
+import {
+  COMPONENT_ATTRIBUTE,
+  COMPONENT_REFINED_EVENT,
+  COMPONENT_REFINE_EVENT,
+  COMPONENT_REQUEST_EVENT,
+  type FrameworkInfo,
+} from "./component-bridge";
 import { composedParent } from "./dom";
+import {
+  mappedKind,
+  nextBasePath,
+  projectRootOf,
+  reactCallSite,
+  serverFile,
+  sourceFile,
+  sourceMapUrl,
+  stackUrls,
+  type MappedKind,
+  type StackFrame,
+} from "./react-stack";
+import { originalPosition, parseSourceMap, type SourceMap } from "./source-map";
 
 /**
  * MAIN-world half of the component bridge (protocol in component-bridge.ts). Runs in the page's
@@ -115,10 +134,14 @@ function reactName(type: unknown, depth = 0): string | undefined {
  * name ("OrdersTable") from a minified one ("t"). File and line come from `_debugSource`, which
  * React up to 18 fills from the JSX dev transform; React 19 dropped it, so only the name remains.
  */
-function readReact(el: Element): ComponentInfo | undefined {
+function readReact(el: Element, mapping: Mapping): ComponentInfo | undefined {
   const hostFiber = fiberOf(el);
   if (hostFiber === undefined || !("_debugOwner" in hostFiber)) return undefined;
   const source = asObject(hostFiber._debugSource);
+  if (source === undefined) {
+    const mapped = readMappedReact(hostFiber, { ...mapping, root: rootFinder(hostFiber) });
+    if (mapped !== undefined) return mapped;
+  }
   let fiber: Loose = asObject(hostFiber.return);
   for (let depth = 0; fiber !== undefined && depth < 50; depth++) {
     const name = reactName(fiber.type);
@@ -135,6 +158,131 @@ function readReact(el: Element): ComponentInfo | undefined {
     fiber = asObject(fiber.return);
   }
   return undefined;
+}
+
+// ------------------------------------------------- React 19 under Next.js (react-stack.ts)
+
+/**
+ * How React 19 stacks are mapped to source for one request (D9 note 2026-09-28). The same page
+ * is read twice: synchronously at the gesture, with no maps (`maps` undefined: names only), and
+ * then asynchronously with the maps fetched from the page's own dev server (refineFrameworkInfo).
+ */
+interface Mapping {
+  /** The page's origin: only its own chunks are mapped, and maps are only fetched from it. */
+  origin: string;
+  /** Next.js's base path, when the page is a Next.js page (nextBasePath). */
+  basePath: string | undefined;
+  /** Source maps by URL: undefined = not fetched yet, null = none (404, not a map). */
+  maps?: (url: string) => SourceMap | null | undefined;
+  /** The project root (react-stack.ts projectRootOf), found once per request when first needed. */
+  root: () => string | undefined;
+  /** Set when a chain ended at a call site that could not be mapped (not at its outermost owner). */
+  state?: { stopped: boolean };
+}
+
+/** Thrown while reading a chain that needs a source map not fetched yet (`url`). */
+class NeedMap {
+  constructor(readonly url: string | undefined) {}
+}
+
+type Located = { kind: "app"; file: string; line: number; column: number } | { kind: "library"; file: string } | { kind: "unmapped" };
+
+/** `_debugStack` of a fiber; `debugStack` of a Server Component's ReactComponentInfo. */
+function stackOf(node: Loose): string | undefined {
+  return str(asObject(node?._debugStack)?.stack) ?? str(asObject(node?.debugStack)?.stack);
+}
+
+/**
+ * A Server Component has no fiber: React 19 gives its client children a ReactComponentInfo
+ * (`{ name, env: "Server", owner, debugStack }`) as `_debugOwner`.
+ */
+function isServerInfo(node: Loose): boolean {
+  return node !== undefined && typeof node.env === "string" && !("tag" in node);
+}
+
+function ownerName(owner: Loose): string | undefined {
+  if (owner === undefined) return undefined;
+  return reactName(owner.type) ?? (isServerInfo(owner) ? str(owner.name) : undefined);
+}
+
+/** The next owner out: a fiber's `_debugOwner`, a Server Component info's `owner`. */
+function nextOwner(owner: NonNullable<Loose>): Loose {
+  return asObject(owner._debugOwner) ?? (isServerInfo(owner) ? asObject(owner.owner) : undefined);
+}
+
+/** A client chunk named after node_modules ("node_modules__pnpm_14ms__x._.js") is library code: not worth its map. */
+function isLibraryChunk(url: string): boolean {
+  try {
+    return /(^|\/)node_modules_/.test(new URL(url).pathname);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The source location of a call site in a Next.js chunk or a Server Component frame. Throws
+ * NeedMap when its map has not been fetched (or `maps` is undefined: names only). "unmapped" when
+ * the map is missing, has no segment there, or names a file this cannot vouch for: the chain stops
+ * there, so a later frame never takes the place of one that could not be read.
+ */
+function locate(site: StackFrame, kind: MappedKind, mapping: Mapping): Located {
+  if (kind === "next-chunk" && isLibraryChunk(site.url)) return { kind: "library", file: "node_modules/" };
+  const url = sourceMapUrl(site, kind, mapping.origin, mapping.basePath);
+  if (url === undefined) return { kind: "unmapped" };
+  const map = mapping.maps?.(url);
+  if (map === undefined) throw new NeedMap(mapping.maps === undefined ? undefined : url);
+  if (map === null) return { kind: "unmapped" };
+  const position = originalPosition(map, site.line, site.column);
+  const file = position === undefined ? undefined : sourceFile(position.source, mapping.root());
+  if (position === undefined || file === undefined) return { kind: "unmapped" };
+  return file.kind === "library" ? file : { kind: "app", file: file.file, line: position.line, column: position.column };
+}
+
+/** The mappable call site of a node's own stack, with its kind; undefined for older stacks (Vite). */
+function mappableSite(node: Loose, mapping: Mapping): { site: StackFrame; kind: MappedKind } | undefined {
+  const stack = stackOf(node);
+  const site = stack === undefined ? undefined : reactCallSite(stack);
+  const kind = site === undefined ? undefined : mappedKind(site.url, mapping.origin);
+  return site === undefined || kind === undefined ? undefined : { site, kind };
+}
+
+/**
+ * React 19 under Next.js: the component that wrote the element's JSX (its owner, a Server
+ * Component included) and, once maps are fetched, where: the element's own call site. Undefined
+ * for stacks this does not map (Vite serves source files, and keeps the older rules).
+ */
+function readMappedReact(hostFiber: NonNullable<Loose>, mapping: Mapping): ComponentInfo | undefined {
+  const own = mappableSite(hostFiber, mapping);
+  if (own === undefined) return undefined;
+  const name = ownerName(asObject(hostFiber._debugOwner));
+  if (mapping.maps === undefined) return name === undefined ? undefined : { framework: "react", name };
+  const located = locate(own.site, own.kind, mapping);
+  const where = located.kind === "app" ? { file: located.file, line: located.line, column: located.column } : {};
+  return name === undefined && located.kind !== "app" ? undefined : withoutUndefined<ComponentInfo>({ framework: "react", name, ...where });
+}
+
+/**
+ * The project root, from the first Server Component frame on the element's owner stacks (every
+ * App Router page has one: its root layout). Only read when a mapped source is absolute.
+ */
+function rootFinder(hostFiber: NonNullable<Loose>): () => string | undefined {
+  let found: { root: string | undefined } | undefined;
+  return () => {
+    if (found !== undefined) return found.root;
+    found = { root: undefined };
+    let node: Loose = hostFiber;
+    for (let depth = 0; node !== undefined && depth < MAX_CHAIN; depth++, node = nextOwner(node)) {
+      for (const url of stackUrls(stackOf(node) ?? "")) {
+        const file = url.startsWith("about://") ? serverFile(url) : undefined;
+        const root = file === undefined ? undefined : projectRootOf(file);
+        if (root !== undefined) {
+          found.root = root;
+          return root;
+        }
+      }
+    }
+    return undefined;
+  };
 }
 
 // ------------------------------------------------------------------------------- renderedBy
@@ -260,28 +408,107 @@ function stackFile(debugStack: unknown): string | undefined {
 /**
  * React: the owner chain (`_debugOwner`, the components whose render created each element),
  * each owner at the JSX that created it: `_debugSource` up to React 18, else `_debugStack`.
- * Lazy, because reading a `_debugStack` formats a stack trace.
+ * Under Next.js, the owners include Server Components (ReactComponentInfo, followed through
+ * `owner`), and a call site in a chunk or a Server Component frame is mapped through the dev
+ * server's source maps (locate). A call site that cannot be mapped ends the chain: the frames
+ * after it would otherwise move up into its place. Lazy, because reading a `_debugStack` formats a
+ * stack trace.
  */
-function* reactFrames(hostFiber: NonNullable<Loose>): Generator<RawFrame> {
+function* reactFrames(hostFiber: NonNullable<Loose>, mapping: Mapping): Generator<RawFrame> {
   let owner = asObject(hostFiber._debugOwner);
-  for (let depth = 0; owner !== undefined && depth < MAX_CHAIN; depth++, owner = asObject(owner._debugOwner)) {
-    const component = reactName(owner.type);
+  for (let depth = 0; owner !== undefined && depth < MAX_CHAIN; depth++, owner = nextOwner(owner)) {
+    const component = ownerName(owner);
     const source = asObject(owner._debugSource);
-    yield source !== undefined
-      ? { component, file: str(source.fileName), line: num(source.lineNumber), column: num(source.columnNumber) }
-      : { component, file: stackFile(owner._debugStack) };
+    if (source !== undefined) {
+      yield { component, file: str(source.fileName), line: num(source.lineNumber), column: num(source.columnNumber) };
+      continue;
+    }
+    const mappable = mappableSite(owner, mapping);
+    if (mappable === undefined) {
+      yield { component, file: stackFile(owner._debugStack ?? owner.debugStack) };
+      continue;
+    }
+    const located = locate(mappable.site, mappable.kind, mapping);
+    if (located.kind === "unmapped") {
+      if (mapping.state !== undefined) mapping.state.stopped = true;
+      return;
+    }
+    yield located.kind === "app"
+      ? { component, file: located.file, line: located.line, column: located.column }
+      : { component, file: located.file };
   }
 }
 
 /** The raw frames of the framework that rendered `el`; undefined when none did (in dev mode). */
-function framesOf(el: Element): Iterable<RawFrame> | undefined {
+function framesOf(el: Element, mapping: Mapping): Iterable<RawFrame> | undefined {
   const node = el as unknown as Record<string, unknown>;
   const vue = asObject(node.__vueParentComponent);
   if (vue !== undefined) return vueFrames(vue);
   const svelte = asObject(node.__svelte_meta);
   if (svelte !== undefined) return svelteFrames(svelte);
   const fiber = fiberOf(el);
-  if (fiber !== undefined && "_debugOwner" in fiber) return reactFrames(fiber);
+  if (fiber !== undefined && "_debugOwner" in fiber) return reactFrames(fiber, { ...mapping, root: rootFinder(fiber) });
+  return undefined;
+}
+
+/** Names only: no source map is fetched, and a chain that needs one is not read (NeedMap). */
+function namesOnly(el: Element): Mapping {
+  const win = el.ownerDocument.defaultView;
+  const origin = win?.location.origin ?? "null";
+  const scripts = [...el.ownerDocument.querySelectorAll("script[src]")].map((script) => (script as HTMLScriptElement).src);
+  return { origin, basePath: nextBasePath(scripts, origin), root: () => undefined };
+}
+
+/** The walk of readRenderedBy; NeedMap goes through, any other throw means "not this framework". */
+function chainOf(el: Element, mapping: Mapping): CodeFrame[] | undefined {
+  for (let current: Element | null = el, depth = 0; current !== null && depth < 30; current = composedParent(current), depth++) {
+    try {
+      const frames = framesOf(current, mapping);
+      if (frames !== undefined) return appChain(frames);
+    } catch (error) {
+      if (error instanceof NeedMap) throw error;
+      // A getter in some framework's internals threw: treat it as "not this framework".
+    }
+  }
+  return undefined;
+}
+
+function componentOf(el: Element, mapping: Mapping): ComponentInfo | undefined {
+  for (let current: Element | null = el, depth = 0; current !== null && depth < 30; current = composedParent(current), depth++) {
+    try {
+      const info = readVue(current) ?? readSvelte(current) ?? readReact(current, mapping);
+      if (info !== undefined) return info;
+    } catch (error) {
+      if (error instanceof NeedMap) throw error;
+      // A getter in some framework's internals threw: treat it as "not this framework".
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Both answers of the bridge with one mapping. Under Next.js, an element whose owners give no app
+ * frame but whose own JSX was mapped to an app file (the markup of a page or layout, which the
+ * framework renders) gets `renderedBy: []`: the chain was read and is empty, so core's codeChain
+ * makes the element's own file:line a chain of one.
+ */
+function frameworkInfo(el: Element, base: Mapping): FrameworkInfo {
+  const mapping: Mapping = { ...base, state: { stopped: false } };
+  const component = componentOf(el, mapping);
+  let renderedBy = chainOf(el, mapping);
+  // Only when the owners were all read: a chain cut short by a map that failed is not "none".
+  if (renderedBy === undefined && !mapping.state?.stopped && mapping.maps !== undefined && component?.framework === "react" && component.file !== undefined && component.line !== undefined) {
+    const fiber = nearestFiber(el);
+    if (fiber !== undefined && asObject(fiber._debugSource) === undefined && mappableSite(fiber, mapping) !== undefined) renderedBy = [];
+  }
+  return { ...(component !== undefined ? { component } : {}), ...(renderedBy !== undefined ? { renderedBy } : {}) };
+}
+
+function nearestFiber(el: Element): NonNullable<Loose> | undefined {
+  for (let current: Element | null = el, depth = 0; current !== null && depth < 30; current = composedParent(current), depth++) {
+    const fiber = fiberOf(current);
+    if (fiber !== undefined && "_debugOwner" in fiber) return fiber;
+  }
   return undefined;
 }
 
@@ -290,50 +517,128 @@ function framesOf(el: Element): Iterable<RawFrame> | undefined {
 /**
  * The app-owned component instances that rendered `el` (ElementInfo.renderedBy), read at the
  * element or its nearest ancestor that a framework rendered. Best effort: undefined when there
- * is no dev data or no app frame, never an error.
+ * is no dev data or no app frame, never an error. Synchronous: a chain that needs source maps
+ * (Next.js) is undefined here, and read by refineFrameworkInfo.
  */
 export function readRenderedBy(el: Element): CodeFrame[] | undefined {
-  for (let current: Element | null = el, depth = 0; current !== null && depth < 30; current = composedParent(current), depth++) {
-    try {
-      const frames = framesOf(current);
-      if (frames !== undefined) return appChain(frames);
-    } catch {
-      // A getter in some framework's internals threw: treat it as "not this framework".
-    }
+  try {
+    return chainOf(el, namesOnly(el));
+  } catch {
+    return undefined;
   }
-  return undefined;
 }
 
 /** The component that rendered `el` or its nearest rendered ancestor, from any framework. */
 export function readComponent(el: Element): ComponentInfo | undefined {
-  for (let current: Element | null = el, depth = 0; current !== null && depth < 30; current = composedParent(current), depth++) {
-    try {
-      const info = readVue(current) ?? readSvelte(current) ?? readReact(current);
-      if (info !== undefined) return info;
-    } catch {
-      // A getter in some framework's internals threw: treat it as "not this framework".
-    }
+  try {
+    return componentOf(el, namesOnly(el));
+  } catch {
+    return undefined;
   }
-  return undefined;
+}
+
+/** The synchronous answer: what needs no source map (names only under Next.js). */
+export function readFrameworkInfo(el: Element): FrameworkInfo {
+  const mapping = namesOnly(el);
+  try {
+    return frameworkInfo(el, mapping);
+  } catch {
+    // NeedMap: a Next.js chain. Its component is still named (readMappedReact needs no map for that).
+    const component = readComponent(el);
+    return component !== undefined ? { component } : {};
+  }
+}
+
+/** All the source maps of one refinement share this budget; the page's own dev server answers in ms. */
+export const REFINE_BUDGET_MS = 3_000;
+/** A chain reads at most this many maps: one per chunk its call sites are in. */
+const MAX_MAPS = 16;
+/** A map larger than this is not read (Next's own runtime chunks are a few MB). */
+const MAX_MAP_CHARS = 30_000_000;
+
+/**
+ * The answer with source maps (D9 note 2026-09-28, Next.js): the chain is read, each time it
+ * needs a map not fetched yet, that map is fetched from the page's own origin and the chain read
+ * again. Within REFINE_BUDGET_MS; past it, or on any failure, the maps not fetched count as
+ * missing, which ends the chain where they were needed (never a frame out of place). Only paths
+ * relative to the project and line numbers come out: the absolute paths in Server Component
+ * frames are only sent back to the dev server that wrote them.
+ */
+export async function refineFrameworkInfo(el: Element, fetchFn: typeof fetch, budgetMs = REFINE_BUDGET_MS): Promise<FrameworkInfo> {
+  const base = namesOnly(el);
+  const maps = new Map<string, SourceMap | null>();
+  const mapping: Mapping = { ...base, maps: (url) => maps.get(url) };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), budgetMs);
+  try {
+    for (let round = 0; round <= MAX_MAPS; round++) {
+      try {
+        return frameworkInfo(el, mapping);
+      } catch (error) {
+        if (!(error instanceof NeedMap) || error.url === undefined) throw error;
+        maps.set(error.url, round === MAX_MAPS || controller.signal.aborted ? null : await fetchMap(error.url, fetchFn, controller.signal));
+      }
+    }
+    return readFrameworkInfo(el);
+  } catch {
+    return readFrameworkInfo(el);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchMap(url: string, fetchFn: typeof fetch, signal: AbortSignal): Promise<SourceMap | null> {
+  try {
+    const response = await fetchFn(url, { signal, cache: "no-store", credentials: "same-origin" });
+    if (!response.ok) {
+      void response.body?.cancel().catch(() => undefined);
+      return null;
+    }
+    const text = await response.text();
+    return text.length > MAX_MAP_CHARS ? null : (parseSourceMap(text) ?? null);
+  } catch {
+    return null;
+  }
 }
 
 const INSTALLED = Symbol.for("pointcast.componentBridge");
+/** A refine request's nonce: the isolated side's, echoed back. */
+const MAX_NONCE = 64;
 
 /** Answers component requests from the isolated content script; installing twice is a no-op. */
 export function installComponentBridge(win: Window): void {
   const flags = win as unknown as Record<symbol, boolean>;
   if (flags[INSTALLED]) return;
   flags[INSTALLED] = true;
+  // Taken now, at document_start: before the app, or debug capture (page-errors-main.ts), wraps
+  // it, so fetching a source map is neither reported as the page's request nor seen by the app.
+  const pageFetch = typeof win.fetch === "function" ? win.fetch.bind(win) : undefined;
   win.addEventListener(
     COMPONENT_REQUEST_EVENT,
     (event) => {
       // composedPath()[0] is the element even inside an open shadow root; target is retargeted.
       const el = event.composedPath()[0] as Element | undefined;
       if (el === undefined || typeof el.setAttribute !== "function") return;
-      const answer: FrameworkInfo = { component: readComponent(el), renderedBy: readRenderedBy(el) };
+      const answer = readFrameworkInfo(el);
       if (answer.component !== undefined || answer.renderedBy !== undefined) {
         el.setAttribute(COMPONENT_ATTRIBUTE, JSON.stringify(answer));
       }
+    },
+    true,
+  );
+  // The asynchronous request (component-bridge.ts requestRefinedFrameworkInfo): the answer comes
+  // back as a CustomEvent on window whose detail is a JSON string, which both worlds can read.
+  win.addEventListener(
+    COMPONENT_REFINE_EVENT,
+    (event) => {
+      const el = event.composedPath()[0] as Element | undefined;
+      const nonce = (event as CustomEvent<unknown>).detail;
+      if (el === undefined || typeof el.setAttribute !== "function" || typeof nonce !== "string" || nonce.length > MAX_NONCE) return;
+      const answer = pageFetch === undefined ? Promise.resolve(readFrameworkInfo(el)) : refineFrameworkInfo(el, pageFetch);
+      void answer.then((info) => {
+        const EventClass = (win as unknown as { CustomEvent?: typeof CustomEvent }).CustomEvent ?? CustomEvent;
+        win.dispatchEvent(new EventClass(COMPONENT_REFINED_EVENT, { detail: JSON.stringify({ nonce, info }) }));
+      });
     },
     true,
   );

@@ -20,6 +20,15 @@ import { isLibraryPath, projectRelativePath, type CodeFrame, type ComponentInfo 
  */
 export const COMPONENT_REQUEST_EVENT = "pointcast:component-request";
 export const COMPONENT_ATTRIBUTE = "data-pointcast-component";
+/**
+ * The asynchronous request (Next.js, D9 note 2026-09-28): its chain needs source maps, which the
+ * MAIN world fetches from the page's own dev server. The isolated side dispatches
+ * `CustomEvent(COMPONENT_REFINE_EVENT, { detail: <nonce> })` on the element; the MAIN world answers
+ * with `CustomEvent(COMPONENT_REFINED_EVENT, { detail: <JSON of { nonce, info: FrameworkInfo }> })`
+ * on window. Strings cross between the worlds; the answer is parsed like the attribute.
+ */
+export const COMPONENT_REFINE_EVENT = "pointcast:component-refine";
+export const COMPONENT_REFINED_EVENT = "pointcast:component-refined";
 
 const MAX_NAME = 80;
 const MAX_FILE = 300;
@@ -83,6 +92,8 @@ const MAX_RAW_FRAMES = 100;
  */
 export function parseRenderedBy(raw: unknown): CodeFrame[] | undefined {
   if (!Array.isArray(raw)) return undefined;
+  // Read and empty (a Next.js page's own markup: core's codeChain uses the element's own file:line).
+  if (raw.length === 0) return [];
   const frames: CodeFrame[] = [];
   for (const item of raw.slice(0, MAX_RAW_FRAMES)) {
     if (frames.length === MAX_FRAMES) break;
@@ -132,4 +143,42 @@ export function requestFrameworkInfo(el: Element): FrameworkInfo {
   if (json === null) return {};
   el.removeAttribute(COMPONENT_ATTRIBUTE);
   return parseFrameworkInfo(json);
+}
+
+/** How long the isolated side waits for a refined answer (the MAIN world's budget is 3 s). */
+export const REFINE_TIMEOUT_MS = 4_000;
+
+/**
+ * Asks the MAIN world again, asynchronously, for what needs source maps (a Next.js chain,
+ * framework-main.ts refineFrameworkInfo). Resolves to the parsed answer, or {} when nobody answers
+ * in time (no MAIN-world script, a production page).
+ */
+export function requestRefinedFrameworkInfo(el: Element, timeoutMs = REFINE_TIMEOUT_MS): Promise<FrameworkInfo> {
+  const win = el.ownerDocument.defaultView;
+  if (win === null) return Promise.resolve({});
+  const nonce = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  return new Promise((resolve) => {
+    const done = (info: FrameworkInfo) => {
+      win.removeEventListener(COMPONENT_REFINED_EVENT, onAnswer, true);
+      clearTimeout(timer);
+      resolve(info);
+    };
+    const onAnswer = (event: Event) => {
+      const detail = (event as CustomEvent<unknown>).detail;
+      if (typeof detail !== "string" || detail.length > 20_000) return;
+      let data: unknown;
+      try {
+        data = JSON.parse(detail);
+      } catch {
+        return;
+      }
+      if (typeof data !== "object" || data === null || (data as { nonce?: unknown }).nonce !== nonce) return;
+      done(parseFrameworkInfo(JSON.stringify((data as { info?: unknown }).info ?? {})));
+    };
+    const timer = setTimeout(() => done({}), timeoutMs);
+    win.addEventListener(COMPONENT_REFINED_EVENT, onAnswer, true);
+    // The element's own realm's CustomEvent: jsdom test windows and the page are separate realms.
+    const EventClass = win.CustomEvent ?? CustomEvent;
+    el.dispatchEvent(new EventClass(COMPONENT_REFINE_EVENT, { detail: nonce, bubbles: false, composed: true }));
+  });
 }

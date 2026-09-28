@@ -468,3 +468,28 @@ describe("server templates (pointcast-django, D9 note 2026-09-28)", () => {
     ]);
   });
 });
+
+describe("a Next.js page's own markup (renderedBy: [], D9 note 2026-09-28)", () => {
+  const h1: ElementInfo = {
+    tag: "h1",
+    text: "Overview",
+    selector: "h1",
+    selectorUnique: true,
+    path: "main › h1",
+    html: "<h1>Overview</h1>",
+    component: { framework: "react", name: "OverviewPage", file: "app/page.tsx", line: 10, column: 7 },
+    renderedBy: [],
+    resolved: [{ kind: "text", file: "app/page.tsx", line: 10, via: "repo", snippet: "<h1>Overview</h1>" }],
+  };
+
+  it("is used where it is written: there is no instance further out", () => {
+    expect(codeFirstLines(h1)).toEqual(["used at: `app/page.tsx:10`", "text at: `app/page.tsx:10` (same as used at)"]);
+    expect(codePointerLines(h1)).toEqual(["code: `<h1>` at `app/page.tsx:10`", "text at: `app/page.tsx:10`"]);
+  });
+
+  it("renders as before without renderedBy", () => {
+    const { renderedBy: _chain, resolved: _resolved, ...old } = h1;
+    expect(codeFirstLines(old)).toEqual([]);
+    expect(codePointerLines(old)).toEqual([]);
+  });
+});

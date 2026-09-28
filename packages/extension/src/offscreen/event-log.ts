@@ -6,6 +6,7 @@ import {
   type CapturedEvent,
   type CapturedEventDraft,
 } from "@pointcast/core";
+import { parseComponentInfo, parseRenderedBy } from "../lib/component-bridge";
 
 /**
  * Errors kept while recording (D13). More than the session keeps (SESSION_ERRORS_MAX): each
@@ -67,6 +68,28 @@ export class EventLog {
     const cleaned = cleanNote(note);
     if (cleaned === undefined) delete event.note;
     else event.note = cleaned;
+    return true;
+  }
+
+  /**
+   * The code chain of event `id` read after the gesture (Next.js: it needed the dev server's
+   * source maps, D9 note 2026-09-28). Page input, so checked by the bridge's parsers again. Only
+   * for an event captured without a chain: a chain read at the gesture is never replaced. The
+   * component is replaced only by one that names its file (the gesture's has the name alone).
+   * False when there is no such event, or nothing to add.
+   */
+  setCode(id: string, component: unknown, renderedBy: unknown): boolean {
+    const event = this.#events.find((e) => e.id === id);
+    if (!event || event.element.renderedBy !== undefined) return false;
+    const chain = parseRenderedBy(renderedBy);
+    const info = parseComponentInfo(component);
+    const betterComponent = info?.file !== undefined && event.element.component?.file === undefined ? info : undefined;
+    if (chain === undefined && betterComponent === undefined) return false;
+    event.element = {
+      ...event.element,
+      ...(betterComponent !== undefined ? { component: betterComponent } : {}),
+      ...(chain !== undefined ? { renderedBy: chain } : {}),
+    };
     return true;
   }
 

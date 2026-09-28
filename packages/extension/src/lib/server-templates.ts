@@ -83,7 +83,7 @@ export function enclosingTemplates(el: Element): OpenTemplate[] {
 export function templateInfo(el: Element): FrameworkInfo {
   const templates = enclosingTemplates(el);
   const renderedBy = parseRenderedBy(templates.map(({ file, name }) => ({ file, ...(name ? { component: name } : {}) })));
-  if (renderedBy === undefined) return {};
+  if (renderedBy === undefined || renderedBy.length === 0) return {};
   const innermost: CodeFrame = renderedBy[0];
   const component: ComponentInfo | undefined = parseComponentInfo({
     framework: TEMPLATE_FRAMEWORK,

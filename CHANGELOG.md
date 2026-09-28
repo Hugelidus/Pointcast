@@ -9,6 +9,10 @@
 - Session format: events and `session.json` gain an optional `errors` list (`schemaVersion` stays 2). `pointcast process`, `get_session` and `get_element` read and render them; older sessions and readers are unaffected.
 - Playground: `dev/playground/errors.html`, a page of broken buttons.
 
+**Code pointer: library code stays out of the spec** ([D9](docs/decisions.md#d9-source-mapping))
+- The `find:` line names a library component by its package, never by its node_modules path: ``component `TabItem` (svelte, package `flowbite-svelte`)`` instead of ``… in `node_modules/.pnpm/flowbite-svelte@…/dist/tabs/TabItem.svelte:42` ``. Older sessions render this way too.
+- Library wrappers (Radix's Primitive, Slot, SlotClone, Presence, Portal…) are skipped before the chain's cap of 3 frames, so the places go to your app's own components, in capture (React, Vue, the bridge) and in rendering.
+
 ## 0.4.0 (2026-09-28)
 
 **Typed mode: type instead of talking** ([D12](docs/decisions.md#d12-typed-mode))

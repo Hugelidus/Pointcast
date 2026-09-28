@@ -31,12 +31,27 @@ export interface ChainFrame {
 /** At most this many app-owned frames (Stage 0). */
 export const MAX_CHAIN_FRAMES = 3;
 
-/** Library and generated code: never a place the agent should edit. */
-export const NOT_APP_CODE =/(^|\/)(node_modules|\.vite|\.svelte-kit)\//;
+/**
+ * Library and generated code: never a place the agent should edit. Tested on forward-slash paths:
+ * node_modules, pnpm's store (".pnpm/"), Vite's and SvelteKit's generated folders, and a bundler
+ * chunk named after its flattened node_modules path
+ * ("_next/static/chunks/node_modules_@radix-ui_react-slot_dist_index_mjs.js").
+ */
+export const NOT_APP_CODE = /(^|\/)((node_modules|\.pnpm|\.vite|\.svelte-kit)\/|node_modules_)/;
+
+/**
+ * True for a library or generated file (NOT_APP_CODE). Test the path as captured, not its
+ * cleanPath: projectRelativePath cuts an absolute node_modules path down to "package/…", which no
+ * longer says it is a library.
+ */
+export function isLibraryPath(file: string): boolean {
+  return NOT_APP_CODE.test(file.replace(/\\/g, "/"));
+}
 
 /**
  * `renderedBy` normalized, innermost first:
- * - frames in node_modules, .vite or .svelte-kit are dropped; their package names the next frame
+ * - library and generated frames (isLibraryPath) are dropped before the cap, so wrappers never take
+ *   the app's places; the nearest dropped frame's package names the next frame
  *   ("flowbite-svelte `<TabItem>`"), as does a library `element.component`;
  * - when renderedBy starts at a component instance and app-owned dev data gives the element's own
  *   `file:line` (`element.component`, e.g. Svelte's loc), that location goes first, as in Stage 0.
@@ -56,10 +71,14 @@ export function codeChain(element: ElementInfo): ChainFrame[] {
 
   const own = element.component;
   const ownFile = typeof own?.file === "string" && own.file !== "" ? cleanPath(own.file) : undefined;
-  const ownPackage = ownFile === undefined ? undefined : libraryPackage(ownFile);
+  const ownLibrary = typeof own?.file === "string" && own.file !== "" && isLibraryPath(own.file);
+  const ownPackage = ownLibrary ? libraryPackage(own?.file as string) : undefined;
 
-  const raw: { file: string; line?: number; component?: string; host?: boolean; snippet?: string }[] = given.map((frame) => ({
+  const raw: { file: string; library?: boolean; pkg?: string; line?: number; component?: string; host?: boolean; snippet?: string }[] = given.map((frame) => ({
     file: cleanPath(frame.file),
+    // On the captured path: cleanPath cuts an absolute node_modules path down to "package/…".
+    library: isLibraryPath(frame.file),
+    pkg: libraryPackage(frame.file),
     line: positiveInteger(frame.line),
     component: typeof frame.component === "string" && frame.component !== "" ? frame.component : undefined,
     snippet: typeof frame.snippet === "string" && frame.snippet.trim() !== "" ? frame.snippet : undefined,
@@ -68,15 +87,18 @@ export function codeChain(element: ElementInfo): ChainFrame[] {
   // file-only component can be the component that renders a slot, not where the tag is written.
   const ownLine = positiveInteger(own?.line);
   const startsAtInstance = raw[0].component !== undefined && raw[0].component !== element.tag;
-  if (startsAtInstance && ownFile !== undefined && ownLine !== undefined && !NOT_APP_CODE.test(ownFile) && ownFile !== raw[0].file) {
+  if (startsAtInstance && ownFile !== undefined && ownLine !== undefined && !ownLibrary && ownFile !== raw[0].file) {
     raw.unshift({ file: ownFile, line: ownLine, host: true });
   }
 
   const chain: ChainFrame[] = [];
   let droppedPackage: string | undefined;
   for (const frame of raw) {
-    if (NOT_APP_CODE.test(frame.file)) {
-      droppedPackage = libraryPackage(frame.file) ?? droppedPackage;
+    // Skipped before the cap below, so library wrappers (Radix's Primitive, Slot, SlotClone,
+    // Presence, Portal…) never take the places of the app's own frames. Only the nearest dropped
+    // frame names the next one: an earlier wrapper's package may be another library's.
+    if (frame.library) {
+      droppedPackage = frame.pkg;
       continue;
     }
     if (chain.length > 0 && chain[chain.length - 1].file === frame.file) {

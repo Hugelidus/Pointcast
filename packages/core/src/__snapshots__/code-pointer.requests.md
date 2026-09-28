@@ -18,7 +18,7 @@ Change only the referenced elements, and only as asked. If something is ambiguou
 > Esta [a] pestaña debería salir abierta por defecto.
 
 - [a] button «Top customers» in «Statistics this month · Show information» on `/`
-  - find: `#s3` · component `TabItem` (svelte) in `node_modules/.pnpm/flowbite-svelte@1.28.1_rollup@4.53.2_svelte@5.43.10_tailwindcss@4.1.17/node_modules/flowbite-svelte/dist/tabs/TabItem.svelte:42`
+  - find: `#s3` · component `TabItem` (svelte, package `flowbite-svelte`)
   - code: flowbite-svelte `<TabItem>` at `src/lib/Stats.svelte:55` ← `<Stats>` at `src/routes/utils/dashboard/Dashboard.svelte:113` ← `<Dashboard>` at `src/routes/(sidebar)/+page.svelte:14`
   - text at: `src/routes/utils/dashboard/Dashboard.svelte:79`
   - in: `main › ul[role=tablist] › li[role=presentation][2] › button#s3`
@@ -29,7 +29,7 @@ Change only the referenced elements, and only as asked. If something is ambiguou
 > Esta [a] tarjeta está repetida, borrala.
 
 - [a] h5 «Users» on `/`
-  - find: component `Heading` (svelte) in `node_modules/.pnpm/flowbite-svelte@1.28.1_rollup@4.53.2_svelte@5.43.10_tailwindcss@4.1.17/node_modules/flowbite-svelte/dist/typography/heading/Heading.svelte:14`
+  - find: component `Heading` (svelte, package `flowbite-svelte`)
   - code: flowbite-svelte `<Heading>` at `src/lib/ProductMetricCard.svelte:11` ← `<ProductMetricCard>` at `src/routes/utils/dashboard/Dashboard.svelte:133` ← `<Dashboard>` at `src/routes/(sidebar)/+page.svelte:14`
   - in: `main › h5`
 
@@ -38,7 +38,7 @@ Change only the referenced elements, and only as asked. If something is ambiguou
 > El [a] subtítulo de sales de Yswick, cambia lo por ventas de la semana.
 
 - [a] p «Sales this week» in «$45,385» (selected) on `/`
-  - find: component `P` (svelte) in `node_modules/.pnpm/flowbite-svelte@1.28.1_rollup@4.53.2_svelte@5.43.10_tailwindcss@4.1.17/node_modules/flowbite-svelte/dist/typography/paragraph/P.svelte:27`
+  - find: component `P` (svelte, package `flowbite-svelte`)
   - code: flowbite-svelte `<P>` at `src/lib/ChartWidget.svelte:19` ← `<ChartWidget>` at `src/routes/utils/dashboard/Dashboard.svelte:112` ← `<Dashboard>` at `src/routes/(sidebar)/+page.svelte:14`
   - text at: `src/routes/utils/dashboard/Dashboard.svelte:112`
   - in: `main › p`

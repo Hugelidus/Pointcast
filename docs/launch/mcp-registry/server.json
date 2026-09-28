@@ -1,0 +1,52 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Hugelidus/pointcast",
+  "title": "Pointcast",
+  "description": "Talk and Alt+click on your web app: your agent gets the exact elements and the code behind them.",
+  "websiteUrl": "https://github.com/Hugelidus/pointcast",
+  "repository": {
+    "url": "https://github.com/Hugelidus/pointcast",
+    "source": "github",
+    "id": "1391168726",
+    "subfolder": "packages/cli"
+  },
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/Hugelidus/pointcast/main/docs/launch/store/icon-128.png",
+      "mimeType": "image/png",
+      "sizes": ["128x128"]
+    }
+  ],
+  "version": "0.3.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "pointcast",
+      "version": "0.3.1",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "POINTCAST_DIR",
+          "description": "Folder the recordings are read from and stored in. Default: <Downloads>/pointcast.",
+          "format": "filepath",
+          "isRequired": false
+        },
+        {
+          "name": "POINTCAST_HANDOFF",
+          "description": "Set to off to stop receiving recordings from the extension on 127.0.0.1:20547 (shared multi-user computers).",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

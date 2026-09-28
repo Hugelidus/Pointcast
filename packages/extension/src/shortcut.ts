@@ -14,7 +14,7 @@ export const TOGGLE_RECORDING_COMMAND = "toggle-recording";
  * table holds more than its help page lists. Alt+Shift+R was the first choice and is listed
  * nowhere, yet Chrome 153 on Windows refused it, as it refused Alt+Shift+P, C and X, while it
  * assigned Alt+Shift+S, E, O, Y, K, 0 and 9 (found by loading the built extension in Playwright's
- * Chromium and reading chrome.commands.getAll). e2e/shortcut.spec.ts fails if a later Chrome
+ * Chromium and reading chrome.commands.getAll). dev/e2e/shortcut.spec.ts fails if a later Chrome
  * takes this key too. Chrome also requires Ctrl or Alt in a shortcut and rejects Ctrl+Alt.
  *
  * It is only a suggestion either way: Chrome leaves the command unbound when the keys are taken

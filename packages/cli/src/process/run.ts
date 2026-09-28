@@ -61,7 +61,7 @@ export interface ProcessResult {
  * the extension already have it, and may have no audio at all), fuse and
  * render it, and write session.md (or return the Markdown for the caller to print). This is
  * the function both `pointcast process` and its tests call — index.ts only parses argv and
- * prints, so the fast test (fixtures/sessions/e2e-es, committed words.json) can exercise the
+ * prints, so the fast test (dev/fixtures/sessions/e2e-es, committed words.json) can exercise the
  * whole pipeline without ever constructing a transcription engine.
  */
 export async function runProcess(options: ProcessOptions): Promise<ProcessResult> {

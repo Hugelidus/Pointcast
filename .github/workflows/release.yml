@@ -2,7 +2,7 @@ name: Release
 
 # Pushing a tag vX.Y.Z builds everything a release ships and opens a DRAFT GitHub release with it.
 # Nothing is published: the owner reviews the draft, publishes the CLI to npm by hand (it needs
-# their 2FA), then publishes the draft (CONTRIBUTING.md, Releasing).
+# their 2FA), then publishes the draft (.github/CONTRIBUTING.md, Releasing).
 on:
   push:
     tags: ["v*"]

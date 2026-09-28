@@ -83,7 +83,7 @@ export function pointcastConfig({ store }: { store: boolean }) {
         extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
       },
       // Cross-origin isolation gives extension pages SharedArrayBuffer, which multi-threaded WASM
-      // needs; without it Whisper runs on one thread (spikes/in-browser-whisper, D1 note).
+      // needs; without it Whisper runs on one thread (dev/spikes/in-browser-whisper, D1 note).
       cross_origin_embedder_policy: { value: "require-corp" },
       cross_origin_opener_policy: { value: "same-origin" },
       // Record/Stop without opening the popup; the service worker handles it (background/shortcut.ts).

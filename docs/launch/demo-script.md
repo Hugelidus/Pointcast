@@ -2,12 +2,12 @@
 
 Purpose: show the whole loop — record, talk + point at two elements, stop, and Claude Code applying it with `/pointcast` — in one glance, for the top of the README. Silent GIF (no audio track), captions carry the narration.
 
-Why the React example and not the playground: what sets Pointcast apart is voice + several elements + **the line of code behind each one**. The playground is static HTML, so its spec has no code lines; `examples/react-dashboard` is a Vite dev build of React 19, so the spec leads with `text at: src/…:line`, and it has the ambiguity pointing removes (two «View report» links, two «Export» buttons; see its [SCENARIOS.md](../../examples/react-dashboard/SCENARIOS.md), scenarios 1 and 3).
+Why the React example and not the playground: what sets Pointcast apart is voice + several elements + **the line of code behind each one**. The playground is static HTML, so its spec has no code lines; `dev/examples/react-dashboard` is a Vite dev build of React 19, so the spec leads with `text at: src/…:line`, and it has the ambiguity pointing removes (two «View report» links, two «Export» buttons; see its [SCENARIOS.md](../../dev/examples/react-dashboard/SCENARIOS.md), scenarios 1 and 3).
 
 Recording setup:
 
 - `pnpm example:react` (http://127.0.0.1:5174), Chrome at 1280×800, extension popup pinned to the toolbar.
-- Claude Code with the plugin installed (`claude plugin marketplace add Hugelidus/pointcast`, `claude plugin install pointcast@pointcast`), started in `examples/react-dashboard`, so the MCP server resolves the code lines in that folder and receives the recording directly (no downloads).
+- Claude Code with the plugin installed (`claude plugin marketplace add Hugelidus/pointcast`, `claude plugin install pointcast@pointcast`), started in `dev/examples/react-dashboard`, so the MCP server resolves the code lines in that folder and receives the recording directly (no downloads).
 - Make one short recording beforehand, off camera, so the speech model is already downloaded and Stop takes seconds. Record at 2x speed where noted so the whole thing reads in ~30 s; cut dead air.
 
 | Time | Screen | Action | Caption (burned in) |

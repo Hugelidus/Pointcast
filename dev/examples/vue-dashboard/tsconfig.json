@@ -1,0 +1,14 @@
+{
+  // typescript is pinned to 5.x in this package's own package.json (unlike the rest of the repo):
+  // vue-tsc cannot yet resolve typescript@7's rewritten package exports
+  // (ERR_PACKAGE_PATH_NOT_EXPORTED on "typescript/lib/tsc").
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "preserve",
+    "types": ["vite/client"]
+  },
+  "include": ["src"]
+}

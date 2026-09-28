@@ -210,7 +210,7 @@ describe("itemLabel: the item a short value belongs to", () => {
     return describeElement(document.querySelector(css) as Element, options).itemLabel;
   };
 
-  // examples/react-dashboard's sidebar, as React renders it: no whitespace between the spans.
+  // dev/examples/react-dashboard's sidebar, as React renders it: no whitespace between the spans.
   const SIDEBAR = `<div id="root"><nav aria-label="Main"><ul>
     <li><a href="/orders"><span>Orders</span></a></li>
     <li><a href="/messages"><span>Messages</span><span class="badge">3</span></a></li>

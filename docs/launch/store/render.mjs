@@ -6,7 +6,7 @@
 //   node docs/launch/store/render.mjs 1 3 promo-small  # only these (a number is a screenshot)
 //
 // The pages are served from the repository root on 127.0.0.1 (they read src/spec-example.md and
-// the logo in scripts/icon/, which file:// pages cannot fetch) and rendered by headless Chromium
+// the logo in dev/scripts/icon/, which file:// pages cannot fetch) and rendered by headless Chromium
 // at device scale 1. Fonts come from Google Fonts; offline, the system fallbacks are used.
 import { readFile, readdir } from "node:fs/promises";
 import { createServer } from "node:http";

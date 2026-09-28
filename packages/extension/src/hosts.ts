@@ -3,7 +3,7 @@
  * `matches` and for `host_permissions`, so the extension never touches other sites.
  *
  * A pattern without a port matches every port, which is what a dev server needs
- * (5173, 3000, 8080, ...). Verified by e2e/hosts.spec.ts on ports 5511 and 5512.
+ * (5173, 3000, 8080, ...). Verified by dev/e2e/hosts.spec.ts on ports 5511 and 5512.
  * `*.localhost` also matches plain `localhost`; it is listed explicitly for readability.
  * `*://` means http and https.
  */

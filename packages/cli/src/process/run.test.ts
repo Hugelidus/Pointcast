@@ -7,17 +7,17 @@ import { CliError } from "../errors";
 import { runProcess } from "./run";
 
 /**
- * `fixtures/sessions/e2e-es`'s `words.json` was produced by a real run of the local engine
+ * `dev/fixtures/sessions/e2e-es`'s `words.json` was produced by a real run of the local engine
  * (`Xenova/whisper-base`) against its committed `audio.wav` (see this package's README-less
  * history in the task report; regenerate with
- * `pnpm --filter pointcast start -- transcribe fixtures/sessions/e2e-es --language es`).
+ * `pnpm --filter pointcast start -- transcribe dev/fixtures/sessions/e2e-es --language es`).
  * Because it is already there, `runProcess` below never has to construct a transcription
  * engine — `--force` is what's needed to exercise that path, and that is the slow test
  * (run.slow.test.ts), which really loads a model and is skipped unless POINTCAST_SLOW=1.
  */
-const FIXTURE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../fixtures/sessions/e2e-es");
+const FIXTURE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../dev/fixtures/sessions/e2e-es");
 
-describe("runProcess against fixtures/sessions/e2e-es (no model loaded)", () => {
+describe("runProcess against dev/fixtures/sessions/e2e-es (no model loaded)", () => {
   let sessionDir: string;
 
   beforeEach(() => {
@@ -131,13 +131,13 @@ describe("runProcess against fixtures/sessions/e2e-es (no model loaded)", () => 
 });
 
 /**
- * `fixtures/sessions/e2e-es-v2` is e2e-es as the extension saves it since format v2
+ * `dev/fixtures/sessions/e2e-es-v2` is e2e-es as the extension saves it since format v2
  * (session-format.md): schemaVersion 2, words.json from in-browser transcription, no audio.
  * Hand-made from e2e-es (same events and words), so it must render the very same Markdown.
  */
 const V2_FIXTURE_DIR = resolve(FIXTURE_DIR, "../e2e-es-v2");
 
-describe("runProcess against fixtures/sessions/e2e-es-v2 (format v2, no audio)", () => {
+describe("runProcess against dev/fixtures/sessions/e2e-es-v2 (format v2, no audio)", () => {
   let sessionDir: string;
 
   beforeEach(() => {

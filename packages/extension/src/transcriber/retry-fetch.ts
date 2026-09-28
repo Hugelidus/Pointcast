@@ -13,7 +13,7 @@ export interface RetryOptions {
 /**
  * Wraps fetch so a 429 (Too Many Requests) is waited out and retried instead of failing the
  * model download. Hugging Face rate-limits anonymous downloads now and then; the spike met it
- * once on a single file (spikes/in-browser-whisper/worker.js). Honors Retry-After in seconds.
+ * once on a single file (dev/spikes/in-browser-whisper/worker.js). Honors Retry-After in seconds.
  * Any other status, and network errors, go back to the caller unchanged.
  */
 export function retryOn429(fetchFn: Fetch, options: RetryOptions = {}): Fetch {

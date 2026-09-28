@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import fixtureSession from "../../../fixtures/sessions/e2e-es/session.json";
-import fixtureWords from "../../../fixtures/sessions/e2e-es/words.json";
+import fixtureSession from "../../../dev/fixtures/sessions/e2e-es/session.json";
+import fixtureWords from "../../../dev/fixtures/sessions/e2e-es/words.json";
 import { renderMarkdown } from "./render";
 import type { CapturedEvent, ElementInfo, SessionFile, Word, WordsFile } from "./schema";
 
@@ -185,7 +185,7 @@ Pages by full URL: \`http://localhost:5173/orders\` · \`http://localhost:5173/s
   });
 
   it("says which item a short value belongs to, in both layouts", () => {
-    // The Messages badge of examples/react-dashboard, as captured and resolved.
+    // The Messages badge of dev/examples/react-dashboard, as captured and resolved.
     const badge = el("span", "3", {
       context: "Main",
       itemLabel: "Messages",

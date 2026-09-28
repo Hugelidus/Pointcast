@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        This project deliberately avoids speculative options and abstractions (see [CONTRIBUTING.md](https://github.com/Hugelidus/pointcast/blob/main/CONTRIBUTING.md)): the simplest version that solves your actual, concrete problem is what we're after. For a bigger change, agree on the approach here before opening a PR. Open-ended ideas fit better in [Discussions](https://github.com/Hugelidus/pointcast/discussions).
+        This project deliberately avoids speculative options and abstractions (see [CONTRIBUTING.md](https://github.com/Hugelidus/pointcast/blob/main/.github/CONTRIBUTING.md)): the simplest version that solves your actual, concrete problem is what we're after. For a bigger change, agree on the approach here before opening a PR. Open-ended ideas fit better in [Discussions](https://github.com/Hugelidus/pointcast/discussions).
   - type: textarea
     id: problem
     attributes:

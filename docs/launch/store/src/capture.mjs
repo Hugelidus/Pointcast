@@ -1,16 +1,16 @@
 // Captures the raw, real screenshots the store images are composed from, with the e2e build of
-// the extension on examples/react-dashboard, and the spec that recording produced.
+// the extension on dev/examples/react-dashboard, and the spec that recording produced.
 //
 //   node docs/launch/store/src/capture.mjs --wav <narration.wav> --words <narration.words.json> --out <dir>
 //
 // The narration is src/narration.json synthesized to a file with Windows SAPI (never played):
-//   powershell -File scripts/tts/generate.ps1 -ScriptJson <copy of narration.json in a temp dir>
+//   powershell -File dev/scripts/tts/generate.ps1 -ScriptJson <copy of narration.json in a temp dir>
 // The compositions use, from <dir>: rec-export.png, popup-rec-export.png, pill-processing-NN.png
 // (one with the dot lit), pill-done.png, popup-done.png, remote-page.png, popup-remote.png (copied
 // into src/raw/), and session.md (src/spec-example.md). The pill positions in screenshot-1/2.html
 // assume VIEWPORT below.
 //
-// Same approach as eval/record.mjs: headless Chromium, muted, the narration WAV as the fake
+// Same approach as dev/eval/record.mjs: headless Chromium, muted, the narration WAV as the fake
 // microphone, each Alt+click at the start of its word, Stop after one play-through. The e2e build
 // (pnpm --filter @pointcast/extension build:e2e) records clipboard writes and notifications instead
 // of performing them and loads Whisper from a local server (port 5541). Downloads go to a
@@ -26,7 +26,7 @@ import { chromium } from "@playwright/test";
 
 const REPO_ROOT = path.resolve(fileURLToPath(new URL("../../../..", import.meta.url)));
 const EXTENSION_DIR = path.join(REPO_ROOT, "packages", "extension", ".output", "chrome-mv3-e2e");
-const EXAMPLE_DIR = path.join(REPO_ROOT, "examples", "react-dashboard");
+const EXAMPLE_DIR = path.join(REPO_ROOT, "dev", "examples", "react-dashboard");
 const APP = "http://127.0.0.1:5174";
 const MODEL_PORT = 5541;
 const MODEL_ID = "Xenova/whisper-base";
@@ -217,7 +217,7 @@ function killTree(pid) {
   else process.kill(pid);
 }
 
-/** transformers.js' model cache, served to the e2e build as playwright.config.ts does. */
+/** transformers.js' model cache, served to the e2e build as dev/playwright.config.ts does. */
 function serveModel() {
   const fromTranscribe = createRequire(path.join(REPO_ROOT, "packages", "transcribe", "package.json"));
   const cacheDir = path.join(path.dirname(fromTranscribe.resolve("@huggingface/transformers")), "..", ".cache");
@@ -312,7 +312,7 @@ async function launch(tempDir, downloadsDir) {
       "--enable-unsafe-extension-debugging",
     ],
   });
-  // As e2e/support/fixtures.ts: downloads go back to Chrome only once the profile's folder is proven temporary.
+  // As dev/e2e/support/fixtures.ts: downloads go back to Chrome only once the profile's folder is proven temporary.
   const settings = await context.newPage();
   await settings.goto("chrome://settings/downloads");
   const shown = (await settings.locator("#defaultDownloadPath").innerText()).trim();

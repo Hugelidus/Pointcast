@@ -5,14 +5,14 @@ import { describe, expect, it } from "vitest";
 import { resolveWithRepo } from "./local";
 
 /**
- * The scenarios of examples/react-dashboard and examples/vue-dashboard (their SCENARIOS.md): each
+ * The scenarios of dev/examples/react-dashboard and dev/examples/vue-dashboard (their SCENARIOS.md): each
  * element as the extension captures it (React 19 frames name files only; Vue's also give the
  * element's own component file), resolved against the example's source through route 1.
  * SCENARIOS.md lists these locations, so a change to the resolver or to an example that moves one
  * fails here instead of making it wrong.
  */
 
-const EXAMPLES = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../examples");
+const EXAMPLES = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../dev/examples");
 
 interface Example {
   root: string;

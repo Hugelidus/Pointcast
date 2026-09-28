@@ -50,7 +50,7 @@ const MERGE_GAP_MS = 1000;
 /**
  * A phrase from KNOWN_HALLUCINATIONS is dropped only when it lies at least this far from any
  * speech the VAD heard. Whisper's word times run late at the end of a phrase: the real
- * "Gracias." closing fixtures/audio/es-2min.wav (said at 150.85 s) is timed 151.19-151.79 s,
+ * "Gracias." closing dev/fixtures/audio/es-2min.wav (said at 150.85 s) is timed 151.19-151.79 s,
  * mostly after the VAD's speech ends, and a rule based on overlap alone dropped it.
  */
 const SPEECH_TOLERANCE_MS = 500;

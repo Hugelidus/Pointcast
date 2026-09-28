@@ -111,4 +111,9 @@ describe("parseCommandLine", () => {
     expect(() => parseCommandLine(["issue"])).toThrow(/issue needs --repo owner\/name/);
     expect(() => parseCommandLine(["issue", "--repo", "o/r", "--dry-run", "--open"])).toThrow(/either --dry-run or --open/);
   });
+  it("parses doctor and its flags", () => {
+    expect(parseCommandLine(["doctor"])).toEqual({ command: "doctor" });
+    expect(parseCommandLine(["doctor", "--dir", "base", "--online", "--json"])).toEqual({ command: "doctor", dir: "base", online: true, json: true });
+    expect(() => parseCommandLine(["doctor", "somewhere"])).toThrow(CliError);
+  });
 });

@@ -6,6 +6,7 @@ import { unreliableTimes, type WordsFile } from "@pointcast/core";
 import { parseCommandLine, USAGE, type CliCommand } from "./args";
 import { readAudioSamples } from "./audio/read-audio";
 import { resolveAudioTarget } from "./audio-target";
+import { defaultDoctorDependencies, formatDoctorReport, runDoctor } from "./doctor/doctor";
 import { CliError } from "./errors";
 import { githubToken, repoLabel } from "./github/api";
 import { runIssue } from "./github/issue";
@@ -71,6 +72,19 @@ async function main(): Promise<void> {
     }
     case "issue":
       return runIssueCommand(command);
+    case "doctor": {
+      const report = await runDoctor(
+        {
+          ...(command.dir !== undefined ? { dirFlag: fromUserCwd(command.dir) } : {}),
+          ...(process.env.POINTCAST_DIR ? { envDir: fromUserCwd(process.env.POINTCAST_DIR) } : {}),
+          online: command.online === true,
+        },
+        defaultDoctorDependencies(VERSION),
+      );
+      console.log(command.json ? JSON.stringify(report, null, 2) : formatDoctorReport(report));
+      process.exitCode = report.ok ? 0 : 1;
+      return;
+    }
   }
 }
 

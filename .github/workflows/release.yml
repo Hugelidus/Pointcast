@@ -1,0 +1,134 @@
+name: Release
+
+# Pushing a tag vX.Y.Z builds everything a release ships and opens a DRAFT GitHub release with it.
+# Nothing is published: the owner reviews the draft, publishes the CLI to npm by hand (it needs
+# their 2FA), then publishes the draft (CONTRIBUTING.md, Releasing).
+on:
+  push:
+    tags: ["v*"]
+
+# Only what `gh release create` needs. No id-token, no packages: npm publish stays manual.
+permissions:
+  contents: write
+
+jobs:
+  draft:
+    name: draft release
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Before installing anything: a mistyped tag should fail in seconds.
+      - name: Check the tag matches the package versions
+        run: |
+          version="${TAG#v}"
+          extension="$(node -p 'require("./packages/extension/package.json").version')"
+          cli="$(node -p 'require("./packages/cli/package.json").version')"
+          echo "tag $TAG, extension $extension, CLI $cli"
+          if [ "$version" != "$extension" ] || [ "$version" != "$cli" ]; then
+            echo "::error::Tag $TAG does not match packages/extension/package.json ($extension) and packages/cli/package.json ($cli). Bump both, then tag again."
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      # Reads the pnpm version to install from package.json's "packageManager" field.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # npm-shrinkwrap.json out of date (shrinkwrap.test.ts), or a plugin / Gemini manifest whose
+      # version or pointcast@<version> pin disagrees with the CLI's (plugin.test.ts,
+      # gemini-extension.test.ts): all three would ship a release that installs the wrong thing.
+      - name: Check the shrinkwrap and the version pins
+        run: pnpm vitest run packages/cli/src/shrinkwrap.test.ts packages/cli/src/plugin.test.ts packages/cli/src/gemini-extension.test.ts
+
+      - name: Build the CLI
+        run: pnpm --filter pointcast build
+
+      # Both zip commands build the extension first (wxt zip).
+      - name: Zip the extension (release zip, with the manifest key)
+        run: pnpm zip
+
+      - name: Zip the extension (store zip, without the key)
+        run: pnpm --filter @pointcast/extension zip:store
+
+      - name: Pack the CLI
+        run: |
+          mkdir -p "$RUNNER_TEMP/release"
+          cd packages/cli
+          pnpm pack --pack-destination "$RUNNER_TEMP/release"
+
+      - name: Collect the assets and write SHA256SUMS.txt
+        run: |
+          out="$RUNNER_TEMP/release"
+          cp "packages/extension/.output/pointcast-$VERSION-chrome.zip" "$out/"
+          cd "$out"
+          test -f "pointcast-$VERSION.tgz" || { echo "::error::pnpm pack did not write pointcast-$VERSION.tgz"; ls -la; exit 1; }
+          # The tarball must carry the shrinkwrap: npx installs exactly those versions (shrinkwrap.mjs).
+          tar -tzf "pointcast-$VERSION.tgz" | grep -qx 'package/npm-shrinkwrap.json' || { echo "::error::the CLI tarball has no npm-shrinkwrap.json"; exit 1; }
+          sha256sum "pointcast-$VERSION-chrome.zip" "pointcast-$VERSION.tgz" > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      # The store zip goes to the Chrome Web Store and Edge Add-ons by hand, never on the release
+      # (it has no manifest key, so an unpacked install of it gets a random id).
+      - name: Upload the store zip (workflow artifact only)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pointcast-${{ env.VERSION }}-chrome-store
+          path: packages/extension/.output/pointcast-${{ env.VERSION }}-chrome-store.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Write the release notes
+        run: |
+          notes="$RUNNER_TEMP/notes.md"
+          # This version's CHANGELOG.md section ("## 0.2.1 (date)"), without its heading.
+          changes="$(awk -v v="$VERSION" '
+            /^## / { if (found) exit; if (index($0, "## " v " ") == 1 || $0 == "## " v) { found = 1; next } }
+            found { print }
+          ' CHANGELOG.md)"
+          if [ -z "${changes//[[:space:]]/}" ]; then
+            echo "::warning::CHANGELOG.md has no section for $VERSION: write the notes in the draft."
+          fi
+          {
+            echo "> **Draft: before publishing it**"
+            echo "> 1. Publish the CLI to npm first, so the \`pointcast@$VERSION\` pin in the plugins resolves:"
+            echo ">    download \`pointcast-$VERSION.tgz\` from this draft, check it against \`SHA256SUMS.txt\`"
+            echo ">    (\`sha256sum -c SHA256SUMS.txt --ignore-missing\`), then \`npm publish ./pointcast-$VERSION.tgz\`."
+            echo "> 2. Check the assets and these notes, delete this block, and publish the release."
+            echo ">    Keep at least 2 assets: Gemini CLI installs a lone asset as the extension."
+            echo "> 3. Upload the store zip (the \`pointcast-$VERSION-chrome-store\` artifact of this workflow run) to the stores."
+            echo
+            echo "$changes"
+          } > "$notes"
+          cat "$notes"
+
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "::error::A release for $TAG already exists. Delete it (or its draft) to build it again."
+            exit 1
+          fi
+          cd "$RUNNER_TEMP/release"
+          assets=("pointcast-$VERSION-chrome.zip" "pointcast-$VERSION.tgz" SHA256SUMS.txt)
+          # Never a lone asset: gemini extensions install would install it instead of the source.
+          [ "${#assets[@]}" -ge 2 ] || { echo "::error::a release needs 0 or at least 2 assets"; exit 1; }
+          gh release create "$TAG" "${assets[@]}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft \
+            --verify-tag \
+            --title "pointcast $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md"

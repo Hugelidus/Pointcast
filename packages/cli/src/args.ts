@@ -46,6 +46,14 @@ export type CliCommand =
       /** create: open the issue through the API; dry-run: print it; open: prefilled issues/new URL. */
       mode: "create" | "dry-run" | "open";
       format?: RenderFormat;
+    }
+  | {
+      command: "doctor";
+      dir?: string;
+      /** --online: also compare the version with the latest on npm (no network otherwise). */
+      online?: true;
+      /** --json: machine-readable report on stdout. */
+      json?: true;
     };
 
 /**
@@ -75,6 +83,8 @@ export function parseCommandLine(argv: readonly string[], env: Record<string, st
         ref: { type: "string" },
         "dry-run": { type: "boolean", default: false },
         open: { type: "boolean", default: false },
+        online: { type: "boolean", default: false },
+        json: { type: "boolean", default: false },
         help: { type: "boolean", short: "h", default: false },
         version: { type: "boolean", short: "v", default: false },
       },
@@ -158,6 +168,14 @@ export function parseCommandLine(argv: readonly string[], env: Record<string, st
         mode: values["dry-run"] ? "dry-run" : values.open ? "open" : "create",
         ...(values.format !== undefined ? { format: values.format } : {}),
       };
+    case "doctor":
+      if (target !== undefined) throw new CliError(`doctor takes no arguments, got "${target}". Use --dir for the sessions folder.`);
+      return {
+        command,
+        ...(values.dir !== undefined ? { dir: values.dir } : {}),
+        ...(values.online ? { online: true } : {}),
+        ...(values.json ? { json: true } : {}),
+      };
     default:
       return { command: "usage", exitCode: 1 };
   }
@@ -186,13 +204,17 @@ export const USAGE = [
   "                                         127.0.0.1, so they skip Chrome's downloads.",
   "  issue [session-dir] --repo owner/name  File the spec as a GitHub issue, with code locations",
   "                                         resolved in that repo and linked to its source.",
+  "  doctor                                 Check this machine's setup (Node.js, the sessions",
+  "                                         folder, the MCP server receiving recordings, local",
+  "                                         transcription, the clipboard), with a fix for each",
+  "                                         problem. Read-only; exits 1 when something needed fails.",
   "",
   "Options:",
   "  --engine <local|openai>  Transcription backend (default: local)",
   "  --model <id>             Model id (engine-specific; default per engine)",
   "  --language <code>        Spoken language, e.g. es, en (default: POINTCAST_LANGUAGE, else detected)",
   "  --threads <n>            ONNX thread count (local engine only)",
-  "  --dir <path>             process/mcp/issue: folder to find sessions in",
+  "  --dir <path>             process/mcp/issue/doctor: folder to find sessions in",
   "  --force                  process: re-transcribe even if words.json exists",
   "  --stdout                 process: write the Markdown to stdout instead of session.md",
   "  --no-copy                process: do not copy the Markdown to the clipboard",
@@ -210,6 +232,8 @@ export const USAGE = [
   "  --dry-run                issue: print the title and body instead of creating the issue",
   "  --open                   issue: print (and open) a prefilled github.com/…/issues/new link instead",
   "                           of creating it through the API; needs no token",
+  "  --online                 doctor: also compare the version with the latest on npm",
+  "  --json                   doctor: print the report as JSON",
   "  -h, --help               Show this help",
   "  -v, --version            Show the version",
   "",

@@ -23,6 +23,16 @@ In a [typed-mode evaluation on four apps](docs/eval/results-2026-09-28-batching.
 
 ## Quick start
 
+**One command, in your project** (Node.js ≥ 22.12):
+
+```bash
+npx pointcast@latest setup
+```
+
+It finds your coding agents (Claude Code, Codex, Gemini CLI, Cursor) and, after asking you, adds Pointcast to each one; says what your stack needs (Django: [pointcast-django](integrations/django/README.md); React, Vue, Svelte: nothing); tells you how to add the browser extension; and ends with `pointcast doctor`. Each change shows the exact command or file first. `--dry-run` only shows the plan, `--yes` skips the questions ([D14](docs/decisions.md#d14-one-setup-command)).
+
+**Or by hand:**
+
 **1. Add the extension.** The Chrome Web Store listing is in review; meanwhile, [load the release zip](#manual-install).
 
 **2. Connect your agent** (optional: it fetches your latest recording itself and resolves each element to its line in your repository):

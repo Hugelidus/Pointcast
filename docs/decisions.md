@@ -559,6 +559,39 @@ Files are made short and project-relative: `http://localhost:5173/src/OrdersTabl
 
 **Tests.** `lib/page-errors-main.test.ts` (jsdom: errors, rejections, console, fetch and XHR failures, the page's own behaviour preserved, no recursion, caps, the flag, restoring), `content/page-errors.test.ts` (redaction), `offscreen/event-log.test.ts`, `core/src/page-errors.test.ts` (windows, merging, bounds, rendering in all formats, unchanged without errors), and `dev/e2e/page-errors.spec.ts` on `dev/playground/errors.html` (typed and voice mode, a page reloaded during the recording, the quiet gesture, the setting off).
 
+## D14. One setup command
+
+*2026-09-28, CLI 0.6.0 (unreleased).* **Problem.** Installing Pointcast meant finding your own row in a table first: a plugin for Claude Code, the same plugin with other commands for Codex, an extension for Gemini CLI, a JSON file for Cursor, `pointcast-django` for a Django project, and the browser extension for everyone. The user had to adapt to their stack, when the stack was already on their machine for Pointcast to see.
+
+**Choice.** `npx pointcast@latest setup`, run in the project, looks, says what it found and what it would do, and does each step only after a yes:
+
+1. **Agents.** It looks for Claude Code (`claude` on PATH), Codex (`codex`), Gemini CLI (`gemini`) and Cursor (a `.cursor/` folder in the project, or `cursor` on PATH). For each one found it reads the agent's own files to see whether pointcast is already there, and otherwise sets it up the documented way:
+   - Claude Code: `claude plugin marketplace add Hugelidus/pointcast`, then `claude plugin install pointcast@pointcast`. Already set up: the plugin in `plugins/installed_plugins.json` under `~/.claude` (or `CLAUDE_CONFIG_DIR`), or a `pointcast` MCP server in `~/.claude.json` (user scope, or this project's local scope) or in the project's `.mcp.json`.
+   - Codex: `codex plugin marketplace add Hugelidus/pointcast`, then `codex plugin add pointcast@pointcast`. Already set up: `[plugins."pointcast@pointcast"]` or `[mcp_servers.pointcast]` in `config.toml` under `CODEX_HOME` (default `~/.codex`).
+   - Gemini CLI: `gemini extensions install https://github.com/Hugelidus/pointcast`. Already set up: `~/.gemini/extensions/pointcast/`, or a `pointcast` server in `~/.gemini/settings.json` or the project's `.gemini/settings.json`.
+   - Cursor: merges a `pointcast` server into the project's `.cursor/mcp.json` (`npx -y pointcast@<this CLI's exact version> mcp --repo ${workspaceFolder}`), keeping every other server and key. An entry with another pin is updated (old and new are shown); a `pointcast` entry in `~/.cursor/mcp.json` counts as set up; a file that is not valid JSON is left alone, and the entry to add by hand is printed.
+   - The marketplace step fails when the marketplace is already added. That is not an error when the install after it succeeds.
+2. **Stack.** A Django project (`manage.py`, or a `settings.py` with `INSTALLED_APPS` in the project or one folder down) gets the two `pointcast-django` steps printed, the `pip install` line and the `INSTALLED_APPS` line under `DEBUG`, or "already in INSTALLED_APPS". A `package.json` with React, Vue, Svelte, Vite or Next gets one line saying nothing is needed: dev builds of React 19, Vue 3 and Svelte 5 expose the component chain, and the MCP server resolves the lines in the project whatever the dev server.
+3. **Browser extension.** The install steps are printed (release zip, *Load unpacked*), as in the README. No browser is opened.
+4. **Doctor.** After the steps, `pointcast doctor`'s checks run and end the output, followed by one summary line.
+
+**Consent.**
+- On a terminal each step asks `y/N` (default no); `--yes` accepts every step; `--dry-run` prints the plan only. Without a terminal (an agent running it, CI) and without `--yes`, it is a dry run and says so, so nothing changes by accident. `--json` prints the plan, each step's outcome and the doctor report as one JSON document; nobody can answer a prompt there, so `--json` without `--yes` is a dry run too.
+- Every step shows the exact command it runs, or the exact file and content it writes, before asking. Nothing else is written: the agents' own config is changed only by the agents' own commands, and the project only in `.cursor/mcp.json`.
+- **A dry run has no side effects.** It reads files and PATH, and does not run doctor (whose receiver check says hello on the handoff port): it names it as the last step instead.
+- Python settings are never edited. `INSTALLED_APPS` is code, often split across files or conditional on more than `DEBUG`, and a wrong edit breaks the app; printing two lines costs the user one paste. Installing with pip is left out too: which Python and which virtualenv is the user's call.
+
+**Plugins rather than `claude mcp add`** for Claude Code, Codex and Gemini: the plugin (the extension for Gemini) brings the MCP server *and* the `/pointcast` command that applies a recording, and it is what the README recommends. Its `pointcast@X` pin is the one on the repository's main branch, which is the latest release (the release flow bumps it), the same version as `npx pointcast@latest setup`. Registering only the MCP server, pinned by hand, stays in the manual instructions. Cursor has no plugin to install from a command, so it gets the MCP server pinned to this CLI's exact version.
+
+**How.** `packages/cli/src/setup/`: `plan.ts` (detection and the plan, from an injected PATH lookup and reads under the given project and home folders), `run.ts` (prompts, runs, writes, reports) and `system.ts` (the real PATH lookup, process runner and prompt). PATH lookup honours `PATHEXT` on Windows, so `cursor.cmd` counts. On Windows the agents are usually `.cmd` shims, which Node cannot spawn without a shell: commands run through the shell there, and every argument is a fixed token from this code, never user input. No new dependency.
+
+**Rejected.**
+- *Editing the agents' config files directly* (`~/.claude.json`, `config.toml`): their formats change between versions, and a half-written file breaks the user's agent. The agents' commands own them.
+- *`claude mcp list` or `gemini extensions list` to detect*: they start every configured MCP server to check it, slow and noisy. The files are enough, and when the guess is wrong the agent's own command says it is already installed.
+- *Opening the browser at the extension's page*: a window the user did not ask for.
+
+**Tests.** `setup/plan.test.ts` and `setup/run.test.ts`, with temporary project and home folders, a fake PATH lookup and an injected command runner: no agent is ever run and no real `~/.claude`, `~/.codex`, `~/.gemini` or `~/.cursor` is read. They cover detection, "already set up", the Cursor merge and its invalid-JSON case, the Django and frontend hints, consent (declined, `--yes`, a non-terminal dry run, `--json`), the Windows shell rule and the failed marketplace step.
+
 ## Out of scope for Phase 1
 
 iframes, shadow DOM and canvas content; a UI to configure hosts beyond enabling the current site (D8 note 2026-09-27); MCP server; Phase 2 source injectors; Firefox. (Transcription inside the extension was pulled forward on 2026-09-27: D1, D2 and D6 notes.)

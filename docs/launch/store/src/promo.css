@@ -1,0 +1,43 @@
+/* Shared look of the promo tiles and the GitHub social preview (brand: see scripts/icon). */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=JetBrains+Mono:wght@400;600&display=swap");
+
+:root {
+  --ink: #120f2d;
+  --violet: #7c3aed;
+  --pink: #ec4899;
+  --soft: #c9c3f5;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  font-family: Inter, system-ui, sans-serif;
+  color: #fff;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(124, 58, 237, 0.55), transparent 45%),
+    radial-gradient(circle at 92% 95%, rgba(236, 72, 153, 0.45), transparent 50%),
+    var(--ink);
+  overflow: hidden;
+}
+
+.brand { display: flex; align-items: center; }
+.brand img { display: block; filter: drop-shadow(0 10px 30px rgba(124, 58, 237, 0.45)); }
+.name { font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+.tagline { color: var(--soft); font-weight: 500; line-height: 1.35; }
+.tagline b { color: #fff; font-weight: 700; }
+
+.spec {
+  font-family: "JetBrains Mono", Consolas, monospace;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  white-space: pre;
+  color: #e9e6ff;
+}
+.spec .h { color: #fff; font-weight: 600; }
+.spec .q { color: var(--soft); }
+.spec .k { background: linear-gradient(90deg, #a78bfa, #f472b6); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600; }
+.spec .p { color: #8f89c9; }

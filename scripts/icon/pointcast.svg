@@ -1,33 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <!--
-    pointcast icon: "point + speak" as a pointer inside a record dot.
-    - Solid red circle stands for the recording (the popup's own record accent).
-    - Bold near-black cursor arrow, outlined in white, sits fully inside the
-      circle and "points" at it.
-    Palette: #dc2626 (record red), #111827 (near-black cursor), #ffffff (thin
-    halo around the cursor) — 3 colors, no gradients, no text.
-
-    Design history, for whoever regenerates this: an earlier version used two
-    overlapping outlined shapes (a speech bubble + a cursor clicking its
-    corner). At 16px the two outlines met at the overlap and turned into a
-    gray/white smudge with no clean edges (not enough pixels to resolve two
-    strokes crossing each other). Nesting the cursor entirely *inside* one
-    solid shape fixes this two ways: (1) only one shape needs an outline at
-    all, so there's no seam to lose in anti-aliasing, and (2) the cursor's
-    contrast now only has to hold against the red fill, not against the
-    toolbar background directly — so legibility stops depending on whether
-    the toolbar theme is light or dark. The circle itself reads fine on both
-    themes because red (unlike near-black or white alone) has good contrast
-    against both light and dark toolbar grays.
-  -->
-
-  <circle cx="64" cy="66" r="54" fill="#dc2626" />
-
-  <polygon
-    fill="#111827"
-    stroke="#ffffff"
-    stroke-width="4"
-    stroke-linejoin="round"
-    points="58,54 92,104 108,80"
-  />
+<defs>
+<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#7C3AED"/>
+<stop offset="1" stop-color="#EC4899"/>
+</linearGradient>
+</defs>
+<rect width="128" height="128" rx="30" fill="url(#g)"/>
+<path d="M45.31 52.59 A17 17 0 0 1 62.31 35.59" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+<path d="M31.31 52.59 A31 31 0 0 1 62.31 21.59" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+<path d="M0 0 L0 46 L12 35 L20.5 54 L29 50 L20.5 31.5 L36 31.5 Z" transform="translate(62.31 52.59) scale(1.08)" fill="#fff" stroke="#fff" stroke-width="2.78" stroke-linejoin="round"/>
 </svg>

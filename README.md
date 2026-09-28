@@ -1,6 +1,10 @@
+<img src="scripts/icon/pointcast.svg" width="88" height="88" alt="" align="left">
+
 # pointcast
 
-**Narrate UI changes while you point. Your coding agent gets the exact elements.**
+**Narrate UI changes while you point. Your coding agent gets the exact elements, and the code behind them.**
+
+<br clear="left">
 
 [![CI](https://github.com/Hugelidus/pointcast/actions/workflows/ci.yml/badge.svg)](https://github.com/Hugelidus/pointcast/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Hugelidus/pointcast?include_prereleases&label=beta)](https://github.com/Hugelidus/pointcast/releases)
@@ -85,7 +89,7 @@ pointcast's angle: DOM-level precision **and** narration **and** many elements p
 
 ## Install
 
-**1. The Chrome extension.** Download `pointcast-0.1.0-chrome.zip` from [Releases](https://github.com/Hugelidus/pointcast/releases) and unzip it. In Chrome, open `chrome://extensions`, turn on *Developer mode*, choose *Load unpacked* and pick the unzipped folder. (A Chrome Web Store listing comes after the beta. To build it yourself, see [Try it locally](#try-it-locally).)
+**1. The Chrome extension.** Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://github.com/Hugelidus/pointcast/releases) and unzip it. In Chrome, open `chrome://extensions`, turn on *Developer mode*, choose *Load unpacked* and pick the unzipped folder. (The Chrome Web Store listing is in review. To build it yourself, see [Try it locally](#try-it-locally).)
 
 pointcast runs on `localhost`, `127.0.0.1`, `[::1]`, `*.localhost` and `*.test` out of the box. For any other site (staging, a preview deployment), open the popup there and press **Enable on `<host>`** — Chrome asks for access to that host only.
 
@@ -122,7 +126,7 @@ npx pointcast mcp                # MCP server: list_sessions, get_session, get_e
 - **Allowlist, not blocklist.** Only a fixed set of HTML attributes is ever captured; anything unforeseen is excluded by default.
 - **A plain click never fires while pointcast is on.** Only Alt+click and text selection are captured; every other click reaches your app exactly as if the extension weren't there.
 
-Full rationale and the canary test that verifies it: [docs/decisions.md](docs/decisions.md#d8-privacy).
+Privacy policy: [PRIVACY.md](PRIVACY.md). Full rationale and the canary test that verifies it: [docs/decisions.md](docs/decisions.md#d8-privacy).
 
 ## FAQ
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## Extension 0.1.1 (2026-09-28)
+
+- New logo, drawn for every size: a pointer casting voice waves ("point" + "cast"), with a simplified 16 px version for the toolbar.
+- Prepared for the Chrome Web Store: listing, screenshots, promo tiles and a [privacy policy](PRIVACY.md). The CLI is unchanged (0.1.0).
+
 ## 0.1.0 — public beta (2026-09-27)
 
 The first public release. Chrome extension, CLI and MCP server (`pointcast` on npm), and a Claude Code plugin.

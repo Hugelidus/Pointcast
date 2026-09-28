@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>pointcast marquee promo tile (1400x560)</title>
+<link rel="stylesheet" href="promo.css">
+<style>
+  body { width: 1400px; height: 560px; display: flex; align-items: center; justify-content: space-between; padding: 0 80px; }
+  .left { display: flex; flex-direction: column; gap: 30px; max-width: 610px; }
+  .brand { gap: 26px; }
+  .name { font-size: 84px; }
+  .tagline { font-size: 30px; }
+  .spec { font-size: 17px; line-height: 1.75; padding: 30px 34px; }
+</style>
+</head>
+<body>
+  <div class="left">
+    <div class="brand"><img src="../../../../scripts/icon/pointcast.svg" width="128" height="128" alt=""><span class="name">pointcast</span></div>
+    <div class="tagline"><b>Talk and point at your web app.</b><br>Your coding agent gets the exact elements and the code behind them.</div>
+  </div>
+<!-- The Revenue card's «View report» from a real recording on examples/react-dashboard (README). -->
+<div class="spec"><span class="h">## Request 1</span>
+
+<span class="q">&gt; This [a] should take you to the reports page.</span>
+
+- [a] «View report» → code:
+  - <span class="k">used at:</span> src/pages/Dashboard.tsx — &lt;StatCard&gt;
+  - <span class="k">text at:</span> src/pages/Dashboard.tsx:11
+  - <span class="p">within:</span>  &lt;Dashboard&gt; in src/App.tsx
+  - <span class="p">on screen:</span> a «View report» in «Revenue»</div>
+</body>
+</html>

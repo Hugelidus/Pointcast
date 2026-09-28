@@ -1,8 +1,14 @@
 #!/usr/bin/env node
-// Renders the pointcast toolbar icon from scripts/icon/pointcast.svg into
+// Renders the pointcast icon from scripts/icon/pointcast.svg into
 // packages/extension/public/icon/{16,32,48,128}.png using the repo's own
 // Playwright Chromium (headless), so the icon can be regenerated any time
 // without a separate image-processing dependency.
+//
+// 16 px uses scripts/icon/pointcast-16.svg: the same mark with one thicker arc,
+// since two arcs blur into one at that size. 128 px draws the mark at 96 px with
+// 16 px of transparent padding, as Chrome and the Chrome Web Store expect for
+// the 128 icon; it is also written to docs/launch/store/icon-128.png, the
+// store listing's icon.
 //
 // WXT auto-detects public/icon/<size>.png and wires it into the manifest's
 // `icons` map and the toolbar action icon — no manifest edits needed.
@@ -18,7 +24,7 @@
 //     not part of the extension build.
 
 import { chromium } from "@playwright/test";
-import { readFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, readFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -32,17 +38,22 @@ function pngDataUri(filePath) {
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "..", "..");
-const svgPath = path.join(here, "pointcast.svg");
 const outDir = path.join(repoRoot, "packages", "extension", "public", "icon");
+const storeIcon = path.join(repoRoot, "docs", "launch", "store", "icon-128.png");
 const sizes = [16, 32, 48, 128];
 
-const svgMarkup = readFileSync(svgPath, "utf8");
+const svgMarkup = readFileSync(path.join(here, "pointcast.svg"), "utf8");
+const smallSvgMarkup = readFileSync(path.join(here, "pointcast-16.svg"), "utf8");
+
+/** Transparent padding around the mark, per icon size. */
+const PADDING = { 128: 16 };
 
 function iconPageHtml(sizePx) {
+  const padding = PADDING[sizePx] ?? 0;
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     html, body { margin: 0; padding: 0; background: transparent; }
-    svg { display: block; width: ${sizePx}px; height: ${sizePx}px; }
-  </style></head><body>${svgMarkup}</body></html>`;
+    svg { display: block; width: ${sizePx - 2 * padding}px; height: ${sizePx - 2 * padding}px; margin: ${padding}px; }
+  </style></head><body>${sizePx === 16 ? smallSvgMarkup : svgMarkup}</body></html>`;
 }
 
 async function renderIcons(browser) {
@@ -57,6 +68,9 @@ async function renderIcons(browser) {
     written.push(outPath);
   }
   await page.close();
+  mkdirSync(path.dirname(storeIcon), { recursive: true });
+  copyFileSync(path.join(outDir, "128.png"), storeIcon);
+  written.push(storeIcon);
   return written;
 }
 

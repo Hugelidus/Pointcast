@@ -1,0 +1,12 @@
+{
+  "voice": "Microsoft Zira Desktop",
+  "language": "en",
+  "rate": -1,
+  "narration": [
+    "This should take you to a full report page instead of only showing the text.",
+    { "breakMs": 1500 },
+    "This number is wrong because there should be five new messages.",
+    { "breakMs": 1500 },
+    "And this button should export the order status as well as the list."
+  ]
+}

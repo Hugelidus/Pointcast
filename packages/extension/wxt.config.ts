@@ -47,7 +47,7 @@ export default defineConfig({
   imports: false,
   manifest: {
     name: "pointcast",
-    description: "Record your voice and the DOM elements you point at on your local app.",
+    description: "Talk and point at your web app: your coding agent gets a spec with the exact elements and the code behind them.",
     // storage: state machine in chrome.storage.session (D6), settings in chrome.storage.local.
     // offscreen: the only long-lived context that can hold a MediaRecorder (D6), and the one
     // that transcribes, fuses and copies the Markdown (D1 note 2026-09-27).

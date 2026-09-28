@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>pointcast store screenshot 2: stop and paste</title>
+<link rel="stylesheet" href="store.css">
+<style>
+  .browser { left: 56px; top: 274px; width: 676px; }
+  /* The captures are 1120x780 CSS px at 2x. */
+  .page { width: 676px; height: 470.8px; }
+
+  /* raw/popup-done.png cropped below "Copy again · Show in folder" (376 of its 535 CSS px), at 1.4x. */
+  .popup { left: 800px; top: 190px; width: 364px; height: 526px; }
+  .popup img { width: 364px; }
+
+  /* The in-page pill through one recording: the three states, from the real captures, at 1.36x. */
+  .states { position: absolute; left: 56px; top: 184px; width: 676px; display: flex; align-items: flex-start; justify-content: space-between; }
+  .state { display: flex; flex-direction: column; gap: 8px; }
+  .state .slot { height: 50px; display: flex; align-items: center; }
+  .state b { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .state .zoom { background-size: 1523.2px 1060.8px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.16); }
+  /* Device-pixel boxes of the pill in each capture (right 2216, bottom 1536), times 0.68. */
+  .rec { width: 77.5px; height: 34px; border-radius: 17px; background-image: url("raw/rec-export.png"); background-position: -1429.4px -1010.5px; }
+  .processing { width: 185px; height: 49px; border-radius: 13.6px; background-image: url("raw/pill-processing-06.png"); background-position: -1321.9px -995.5px; }
+  .done { width: 314px; height: 34px; border-radius: 17px; background-image: url("raw/pill-done.png"); background-position: -1192.7px -1010.5px; }
+  .arrow { margin-top: 42px; color: var(--soft); }
+</style>
+</head>
+<body>
+  <div class="header">
+    <span class="step">2 · Stop</span>
+    <h1 class="headline">Stop: the spec is on your <em>clipboard</em> in seconds</h1>
+    <p class="subline">Your voice is transcribed on your machine. The page and the popup say when it's copied.</p>
+  </div>
+  <!-- LOGO: scripts/icon/pointcast.svg -->
+  <div class="brand"><img src="../../../../scripts/icon/pointcast.svg" alt=""><span>pointcast</span></div>
+
+  <div class="states">
+    <div class="state"><b>Recording</b><div class="slot"><div class="zoom rec"></div></div></div>
+    <svg class="arrow" width="40" height="16" viewBox="0 0 40 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h34M30 2l6 6-6 6"/></svg>
+    <div class="state"><b>Stop · processing</b><div class="slot"><div class="zoom processing"></div></div></div>
+    <svg class="arrow" width="40" height="16" viewBox="0 0 40 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h34M30 2l6 6-6 6"/></svg>
+    <div class="state"><b>Done</b><div class="slot"><div class="zoom done"></div></div></div>
+  </div>
+
+  <div class="browser">
+    <div class="bar">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div class="url">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#7a7596" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.2v4M8 4.8v.1" stroke-linecap="round"/></svg>
+        127.0.0.1:5174
+      </div>
+      <div class="ext"><img src="../../../../scripts/icon/pointcast.svg" alt=""></div>
+    </div>
+    <!-- Real capture: the same recording right after processing ended (pill bottom right). -->
+    <img class="page" src="raw/pill-done.png" alt="">
+  </div>
+
+  <!-- Real capture: the popup after that Stop: copied, saved, timing, code pointer. -->
+  <div class="popup"><img src="raw/popup-done.png" alt=""></div>
+</body>
+</html>

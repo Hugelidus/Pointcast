@@ -1,70 +1,90 @@
-# Chrome Web Store listing (draft)
+# Chrome Web Store listing
 
-Not submitted yet — Phase 1 ships as a loadable zip (README install option A). This is the draft for when the listing goes up.
+Everything the [developer dashboard](https://chrome.google.com/webstore/devconsole) asks for, tab by tab, ready to paste. Images are in [store/](store/) (regenerate them with `node docs/launch/store/render.mjs`; the icon with `node scripts/icon/render.mjs`).
 
-## Short description (≤ 132 chars)
+## Package
 
-```
-Narrate UI changes while you Alt+click or select elements. Get a Markdown spec your coding agent can act on — transcribed locally.
-```
-(131 chars)
+Upload `pointcast-<version>-chrome.zip` (`pnpm zip`, in `packages/extension/.output/`; also attached to each [GitHub release](https://github.com/Hugelidus/pointcast/releases)).
 
-## Long description
+The store's summary line is the manifest's `description` (`packages/extension/wxt.config.ts`), not a form field:
 
 ```
-pointcast turns "make this sortable and move this next to that" into something your coding agent can actually use.
+Talk and point at your web app: your coding agent gets a spec with the exact elements and the code behind them.
+```
 
-Press Record and talk about the UI change you want, the way you normally would. Alt+click or select whatever you're
-talking about as you say it — pointing never triggers the page's own action, so Alt+click on "Delete" never deletes.
-Press Stop: pointcast transcribes your voice locally in the browser (no audio leaves your machine), lines up your
-words with the elements you pointed at, and copies a Markdown spec to your clipboard — one request per sentence,
-each with the DOM selector, a readable element path, and the source file/line when your dev build exposes it. Paste
-it into Claude Code, Cursor, or any coding agent.
+## Store listing
+
+**Description:**
+
+```
+Talk about the UI change you want while you Alt+click the parts of your web app you mean. pointcast turns it into a Markdown spec your coding agent can act on: what you said, the exact elements you pointed at, and the code behind each one.
+
+HOW IT WORKS
+1. Press Record and talk, the way you would to a colleague: "this should take you to the reports page", "this button should export the order status".
+2. Alt+click (or select) whatever you are talking about as you say it. Pointing never triggers the page: Alt+click on "Delete" never deletes.
+3. Press Stop. A few seconds later the spec is on your clipboard: one request per sentence, each with the elements you pointed at while saying it. Paste it into Claude Code, Cursor or any coding agent.
+
+IT POINTS AT THE CODE
+On development builds of React, Vue 3 and Svelte 5, each element leads with its code: where that instance is used, and the line of its text or data in your source, quoted. Your agent goes straight to the right line instead of searching the codebase. With the companion Claude Code plugin, your agent fetches the recording itself and resolves it in your repository.
+
+PRIVATE BY DEFAULT
+- Your voice is transcribed on your device: Whisper runs inside the extension. No account, no server, no API key.
+- Works on local development hosts (localhost, 127.0.0.1, *.localhost, *.test) out of the box. Any other site needs your explicit opt-in, one site at a time.
+- Password fields and other sensitive inputs are never captured. On non-local sites, text that looks like personal data (emails, phone numbers, tokens) is redacted.
+- Open source (MIT): https://github.com/Hugelidus/pointcast
 
 WHY POINTING HELPS
-An independent evaluation across three real open-source codebases (React, Vue, Svelte) found that giving a coding
-agent the same spoken request with pointing data raised correct-element identification from 78% to 89%, concentrated
-exactly where plain narration is ambiguous: duplicate buttons, identical cards, shared components. Full methodology
-and numbers are published in the project's repository.
+In an evaluation on three real open-source dashboards (React, Vue, Svelte), pointing raised the share of requests where the agent found the right element from 78% to 89%, exactly where words alone are ambiguous: two "Export" buttons, identical cards, shared components. Pointing at the code then cut the tokens the agent spent finding the elements by more than half. Methods and numbers are in the repository.
 
-PRIVACY BY DESIGN
-- Runs only on local development hosts (localhost, 127.0.0.1, *.localhost, *.test) out of the box. Any other site
-  needs an explicit, one-host-at-a-time opt-in from the popup — pointcast never asks for access to "all sites."
-- Audio and transcription stay on your device by default (a local Whisper model runs inside the extension). No
-  account, no server, no API key required.
-- Password fields and other sensitive inputs are never captured. On sites you explicitly enable, text that looks
-  like personal data (emails, phone numbers, tokens in URLs) is redacted automatically.
-- Only a fixed allowlist of HTML attributes is ever captured — nothing unforeseen leaks through.
-- Open source (MIT) — read exactly what it does: <GitHub link>.
-
-WHO IT'S FOR
-Developers who use an AI coding agent for UI work and are tired of re-explaining which element they mean.
-
-Phase 1: Chrome only. Source-location mapping today covers what your dev build already exposes (e.g. React/Vue/
-Svelte in development); a broader Phase 2 is in progress.
+This is a beta: feedback and bug reports are welcome at https://github.com/Hugelidus/pointcast/issues
+The first recording downloads the speech model once (about 291 MB).
 ```
 
-## Permission justifications (single purpose + each permission)
+- **Category:** Developer Tools
+- **Language:** English
+- **Store icon:** `store/icon-128.png`
+- **Screenshots (1280x800):** `store/screenshot-1.png` … `store/screenshot-4.png`
+- **Small promo tile (440x280):** `store/promo-small.png`
+- **Marquee promo tile (1400x560):** `store/promo-marquee.png`
+- **Homepage URL:** https://github.com/Hugelidus/pointcast
+- **Support URL:** https://github.com/Hugelidus/pointcast/issues
 
-**Single purpose statement:**
-> Records the user's voice and the on-page elements they explicitly point at (Alt+click or text selection) on their own local development site, and turns that into a text spec for a coding assistant. No data leaves the user's device by default.
+## Privacy practices
 
-| Permission | Why pointcast needs it |
+**Single purpose:**
+
+```
+Records the user's voice and the elements of their own web app that they explicitly point at (Alt+click or text selection), and turns them into a text spec for a coding assistant, with the source code location of each element when the app is a development build.
+```
+
+**Permission justifications:**
+
+| Permission | Justification |
 |---|---|
-| `storage` | Holds the recording state machine (idle/recording/processing) in `chrome.storage.session` so it survives the service worker being suspended, and user settings (language, keep-audio, notifications) in `chrome.storage.local`. |
-| `offscreen` | MV3 service workers cannot use `MediaRecorder` or hold a long-lived audio session. The offscreen document is the only extension context that can access the microphone and stay alive for the whole recording. |
-| `downloads` | Saving the session (`session.md`, `session.json`, `words.json`) is the only way an extension can write files to disk; they're written under a `pointcast/` subfolder of the browser's own Downloads folder, at the user's request when they press Stop. |
-| `scripting` | Injects the capture content script into tabs that were already open before the extension was installed, updated or reloaded (Chrome does not do this automatically), and registers the script on sites the user has explicitly enabled via "Enable on \<host\>". Never runs on a site the user hasn't opted into. |
-| `notifications` | Optional (user setting, off is fine): tells the user recording finished processing when they've looked away from the tab. |
-| `alarms` | Used only as a timeout safety net: if the browser suspends the extension mid-processing, an alarm (which can wake a suspended worker, unlike `setTimeout`) ends a stuck state and saves what was recorded so far. |
-| `unlimitedStorage` | The local Whisper model (~291 MB) is cached in the browser's Cache API after first download so it isn't re-downloaded every session. |
-| `activeTab` | Lets the popup read the current tab's URL only when the user opens the popup, so it can offer "Enable on \<host\>" for that specific site. Grants no access to any other tab. |
-| `host_permissions` (localhost/127.0.0.1/*.localhost/*.test) | Capture and the on-page indicator run on local dev hosts by default, with no extra prompt, since that's pointcast's core use case (recording your own app while you develop it). |
-| `optional_host_permissions` (`*://*/*`: http/https, any host) | Granted per-site, one host at a time, only when the user clicks "Enable on \<host\>" in the popup — for staging servers or preview deployments. Chrome prompts the user before granting; removing it is one click ("Remove \<host\>"). Nothing is requested at install time. |
+| `storage` | Keeps the recording state (idle, recording, processing) in chrome.storage.session so it survives the service worker being suspended, and the user's settings (language, keep audio, notifications) in chrome.storage.local. |
+| `offscreen` | MV3 service workers cannot record audio. The offscreen document holds the microphone recording from Record to Stop and runs the local speech-to-text model. |
+| `downloads` | Saves each recording's files (session.md, session.json, words.json) under a pointcast folder in the user's Downloads folder when they press Stop. It is the only way an extension can write files to disk. |
+| `scripting` | Injects the capture script into tabs that were already open when the extension was installed or updated, and registers it on the sites the user enables one by one from the popup. It never runs on a site the user has not enabled. |
+| `notifications` | Tells the user when a recording has been processed and copied, if they looked away. Can be turned off in the settings. |
+| `alarms` | A safety timeout: if the browser suspends the extension while a recording is processed, an alarm ends the stuck state and saves what was recorded. |
+| `unlimitedStorage` | Caches the local speech model (about 291 MB) so it is downloaded only once. |
+| `activeTab` | Lets the popup read the current tab's address when the user opens it, to show whether that tab is captured and offer "Enable on <site>" for it. |
+| Host permissions: `localhost`, `127.0.0.1`, `[::1]`, `*.localhost`, `*.test` | The core use: recording the user's own app while they develop it. The capture script and the on-page recording indicator run on these local development hosts only. |
+| Optional host permission: `*://*/*` | Not requested at install. Granted one site at a time, only when the user presses "Enable on <site>" in the popup (for a staging server or a preview deployment); Chrome asks the user first, and "Remove <site>" revokes it. |
 
-## Privacy practices tab (data usage disclosure)
+**Remote code:** No, I am not using remote code. (The speech model downloaded from Hugging Face is data: model weights. All code, including the ONNX Runtime WebAssembly, ships in the package.)
 
-- **Does this extension collect or transmit personal data?** No, by default. Audio and DOM data are processed and stored locally on the user's device. The optional CLI feature `--engine openai` (used outside the extension, from the command line) can send audio to an OpenAI-compatible endpoint the user configures — this is not part of the extension's default behavior and requires an explicit flag and API key.
-- **Is data sold to third parties?** No.
-- **Is data used for purposes unrelated to the extension's core functionality?** No.
-- **Is data used to determine creditworthiness or for lending?** No.
+**Data usage** — nothing is transmitted to the developer or third parties, but the extension handles, on the user's device:
+- **Website content** (the text and HTML of the elements the user points at);
+- **User activity** (the Alt+clicks and text selections that point at them);
+- **Personal communications** (the user's voice, transcribed locally).
+
+Declare these three, then certify: not sold or transferred to third parties; not used for purposes unrelated to the single purpose; not used for creditworthiness or lending.
+
+**Privacy policy URL:** https://github.com/Hugelidus/pointcast/blob/main/PRIVACY.md
+
+## Distribution
+
+- **Visibility:** *Unlisted* during the beta (installable by anyone with the link, not listed in search); switch to *Public* later.
+- **Regions:** all.
+- **Price:** free.

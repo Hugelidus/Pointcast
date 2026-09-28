@@ -1,0 +1,128 @@
+/* Shared look of the Chrome Web Store screenshots (1280x800). Same brand tokens as promo.css. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+:root {
+  --ink: #120f2d;
+  --light: #f7f5ff;
+  --violet: #7c3aed;
+  --pink: #ec4899;
+  --gradient: linear-gradient(135deg, #7c3aed, #ec4899);
+  --soft: #c9c3f5;
+  --muted: #8f89c9;
+  --line: rgba(255, 255, 255, 0.12);
+  --chrome: #ebe8f5;
+  --chrome-text: #4b4766;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+
+body {
+  position: relative;
+  width: 1280px;
+  height: 800px;
+  overflow: hidden;
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+  color: #fff;
+  background:
+    radial-gradient(circle at 8% 6%, rgba(124, 58, 237, 0.5), transparent 42%),
+    radial-gradient(circle at 96% 104%, rgba(236, 72, 153, 0.42), transparent 48%),
+    var(--ink);
+}
+
+/* ---------------------------------------------------------------- header */
+
+.header { position: absolute; left: 56px; top: 44px; right: 260px; }
+.step {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--gradient);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.headline {
+  margin: 14px 0 0;
+  font-size: 40px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+.headline em {
+  font-style: normal;
+  background: linear-gradient(90deg, #a78bfa, #f472b6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.subline { margin: 10px 0 0; font-size: 18px; line-height: 1.4; color: var(--soft); font-weight: 500; }
+
+/* The logo, top right. */
+.brand { position: absolute; top: 44px; right: 56px; display: flex; align-items: center; gap: 10px; }
+.brand img { display: block; width: 34px; height: 34px; filter: drop-shadow(0 6px 18px rgba(124, 58, 237, 0.45)); }
+.brand span { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; }
+
+/* ---------------------------------------------------------------- browser window */
+
+.browser {
+  position: absolute;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+.browser .bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 40px;
+  padding: 0 14px;
+  background: var(--chrome);
+}
+.browser .dots { display: flex; gap: 7px; }
+.browser .dots i { width: 11px; height: 11px; border-radius: 50%; background: #cdc8df; }
+.browser .url {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--chrome-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+.browser .url svg { flex: none; }
+.browser .ext {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+.browser .ext.active { background: #d9d3ee; }
+.browser .ext img { width: 18px; height: 18px; display: block; }
+.browser .page { display: block; }
+
+/* ---------------------------------------------------------------- the extension popup */
+
+.popup {
+  position: absolute;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(18, 15, 45, 0.18);
+}
+.popup img { display: block; }
+
+/* A region of a real screenshot at 1:1 device pixels (the captures are 2x): a 2x zoom. */
+.zoom {
+  background-repeat: no-repeat;
+  background-size: 2240px 1560px;
+}
+
+.note { color: var(--muted); font-size: 13px; font-weight: 500; }

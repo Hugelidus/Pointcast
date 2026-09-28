@@ -8,6 +8,8 @@
 
 [![CI](https://github.com/Hugelidus/pointcast/actions/workflows/ci.yml/badge.svg)](https://github.com/Hugelidus/pointcast/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Hugelidus/pointcast?include_prereleases&label=beta)](https://github.com/Hugelidus/pointcast/releases)
+[![npm](https://img.shields.io/npm/v/pointcast?label=npm)](https://www.npmjs.com/package/pointcast)
+[![npm downloads](https://img.shields.io/npm/dm/pointcast)](https://www.npmjs.com/package/pointcast)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > **Public beta (0.2).** Chrome and other Chromium browsers on desktop, developed and tested on Windows; macOS and Linux should work but are untested. Bug reports and feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
@@ -158,7 +160,7 @@ npx -y pointcast@0.2 mcp         # MCP server: list_sessions, get_session, get_e
 - **Allowlist, not blocklist.** Only a fixed set of HTML attributes is ever captured; anything unforeseen is excluded by default.
 - **A plain click never fires while pointcast is on.** Only Alt+click and text selection are captured; every other click reaches your app exactly as if the extension weren't there.
 
-Privacy policy: [PRIVACY.md](PRIVACY.md). Full rationale and the canary test that verifies it: [docs/decisions.md](docs/decisions.md#d8-privacy).
+Privacy policy: [PRIVACY.md](PRIVACY.md). Full rationale and the canary test that verifies it: [docs/decisions.md](docs/decisions.md#d8-privacy). Security problems: report them privately ([SECURITY.md](SECURITY.md)).
 
 ## FAQ
 

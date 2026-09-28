@@ -30,7 +30,9 @@ describe.skipIf(process.env.POINTCAST_SLOW !== "1")("runProcess --force (real lo
   });
 
   // Do-not-disturb: at most 4 ONNX threads, whatever the core count.
-  const base = { engine: "local", force: true, threads: 4, toStdout: false } as const;
+  // Classic format: its inline markers show where each event was anchored in the transcript (the
+  // default "requests" format has no times, so these checks predate it).
+  const base = { engine: "local", force: true, threads: 4, toStdout: false, format: "classic" } as const;
 
   it("transcribes with a forced language and anchors both 'esto' markers", { timeout: 120_000 }, async () => {
     const sessionDir = scratchSession();

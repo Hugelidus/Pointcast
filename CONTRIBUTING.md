@@ -6,7 +6,7 @@ Thanks for considering it. pointcast is an early public beta (0.2; the original 
 
 - **Bug or small fix?** Open a PR directly.
 - **New feature or behavior change?** Open an issue first so we can agree on the approach — this project deliberately avoids speculative options and abstractions; the simplest robust version that meets the goal wins.
-- **Questions or ideas?** Open an [issue](https://github.com/Hugelidus/pointcast/issues).
+- **Questions or ideas?** [Discussions](https://github.com/Hugelidus/pointcast/discussions). **Security problems:** privately, see [SECURITY.md](SECURITY.md).
 
 ## Setup
 

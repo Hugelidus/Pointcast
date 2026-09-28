@@ -1,4 +1,4 @@
-import type { Word } from "@pointcast/core";
+import type { TimeSpan, Word } from "@pointcast/core";
 import { SAMPLE_RATE } from "./chunks";
 import { dropReemittedWords } from "./monotonic";
 
@@ -77,8 +77,19 @@ export function findCut(samples: Float32Array, from: number): number | undefined
  */
 export function joinSegments(segments: readonly { startSample: number; words: readonly Word[] }[]): Word[] {
   const words = segments.flatMap(({ startSample, words }) => {
-    const offsetMs = Math.round((startSample * 1000) / SAMPLE_RATE);
+    const offsetMs = offset(startSample);
     return words.map((word) => ({ ...word, start: word.start + offsetMs, end: word.end + offsetMs }));
   });
   return dropReemittedWords(words);
+}
+
+/** The pieces' unreliable stretches (WordsFile.unreliable), shifted onto the recording's time line. */
+export function joinUnreliable(segments: readonly { startSample: number; unreliable?: readonly TimeSpan[] }[]): TimeSpan[] {
+  return segments.flatMap(({ startSample, unreliable = [] }) =>
+    unreliable.map((span) => ({ start: span.start + offset(startSample), end: span.end + offset(startSample) })),
+  );
+}
+
+function offset(startSample: number): number {
+  return Math.round((startSample * 1000) / SAMPLE_RATE);
 }

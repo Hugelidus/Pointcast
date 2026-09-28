@@ -227,4 +227,17 @@ export interface WordsFile {
   /** ISO 639-1 code, e.g. "es". */
   language?: string;
   words: Word[];
+  /**
+   * Stretches of the recording whose transcript looked unreliable (the engine looped on a
+   * phrase or produced words with impossible times) and was left out of `words`. Absent when
+   * nothing was dropped, and in files written before 2026-09-28. Renderers mention them, so the
+   * agent knows something may have been said there.
+   */
+  unreliable?: TimeSpan[];
+}
+
+/** A stretch of the recording, relative to t0. */
+export interface TimeSpan {
+  start: Ms;
+  end: Ms;
 }

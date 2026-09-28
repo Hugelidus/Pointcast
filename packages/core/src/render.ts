@@ -64,8 +64,12 @@ export function renderMarkdown(
   const opts: RenderOptions = { ...DEFAULT_RENDER_OPTIONS, ...options };
   const fuseOptions = { deictics: deicticsForLanguage(words.language), ...opts.fuse };
   const { placements } = fuse(session.events, words.words, fuseOptions);
+  const note = unreliableNote(words);
   if (opts.format === "requests") {
-    return `${renderRequests(session.events, words.words, placements, opts).join("\n\n")}\n`;
+    const blocks = renderRequests(session.events, words.words, placements, opts);
+    // After the title and the preamble, before the first request.
+    if (note) blocks.splice(2, 0, note);
+    return `${blocks.join("\n\n")}\n`;
   }
 
   const eventsById = new Map<string, CapturedEvent>(session.events.map((e) => [e.id, e]));
@@ -74,6 +78,7 @@ export function renderMarkdown(
 
   const blocks = [
     ...header(session, words),
+    ...(note ? [note] : []),
     "## Transcript",
     ...renderTranscript(words.words, eventsById, placements, opts),
     "## Appendix",
@@ -106,6 +111,31 @@ function header(session: SessionFile, words: WordsFile): string[] {
       'An id like "e2 ×5" means the same element was pointed at 5 times — the Appendix lists every one. ' +
       'The time becomes a range ("00:26–00:29") when a marker\'s events span more than 1 s.',
   ];
+}
+
+/**
+ * One line saying where the transcript was dropped as unreliable (WordsFile.unreliable), so the
+ * agent knows the user may have said something there and can ask, instead of acting on a
+ * request that silently lacks part of what was said. Undefined when nothing was dropped.
+ */
+function unreliableNote(words: WordsFile): string | undefined {
+  const times = unreliableTimes(words);
+  if (!times) return undefined;
+  return `_Note: the transcript around ${times} looked unreliable (the speech-to-text repeated itself or invented words) and was dropped; something said there may be missing._`;
+}
+
+/**
+ * WordsFile.unreliable as text, "00:15–00:30 and 01:02–01:05", or undefined when there is none.
+ * The extension's popup words its warning with it too.
+ */
+export function unreliableTimes(words: Pick<WordsFile, "unreliable">): string | undefined {
+  const spans = words.unreliable ?? [];
+  if (spans.length === 0) return undefined;
+  const times = spans.map(({ start, end }) => {
+    const [from, to] = [formatClock(start), formatClock(end)];
+    return from === to ? from : `${from}–${to}`;
+  });
+  return times.length === 1 ? times[0] : `${times.slice(0, -1).join(", ")} and ${times.at(-1)}`;
 }
 
 /** "2026-09-26T16:30:05.123Z" -> "2026-09-26 16:30 UTC". Anything unexpected is shown as is. */

@@ -24,6 +24,14 @@ describe("validateWordsFile", () => {
       validateWordsFile({ schemaVersion: 1, engine: "x", words: [{ text: "hi" }] }, "words.json"),
     ).toThrowError(/words\[0\]\.start/);
   });
+
+  it("keeps the optional unreliable stretches, and checks them", () => {
+    const file = { schemaVersion: 1, engine: "x", words: [], unreliable: [{ start: 15_000, end: 30_000 }] };
+    expect(validateWordsFile(file, "words.json").unreliable).toEqual([{ start: 15_000, end: 30_000 }]);
+    expect(validateWordsFile({ ...file, unreliable: undefined }, "words.json")).not.toHaveProperty("unreliable");
+    expect(() => validateWordsFile({ ...file, unreliable: [{ start: 1 }] }, "words.json")).toThrowError(/unreliable\[0\]\.end/);
+    expect(() => validateWordsFile({ ...file, unreliable: "no" }, "words.json")).toThrowError(/unreliable/);
+  });
 });
 
 describe("readWordsFileIfPresent / writeWordsFile", () => {

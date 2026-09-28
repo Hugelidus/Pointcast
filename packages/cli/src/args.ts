@@ -54,6 +54,17 @@ export type CliCommand =
       online?: true;
       /** --json: machine-readable report on stdout. */
       json?: true;
+    }
+  | {
+      command: "setup";
+      /** --repo: the project to set up (default: the current directory). */
+      repo?: string;
+      /** --yes: accept every step without asking. */
+      yes?: true;
+      /** --dry-run: print the plan only. */
+      dryRun?: true;
+      /** --json: machine-readable plan and outcome on stdout. */
+      json?: true;
     };
 
 /**
@@ -85,6 +96,7 @@ export function parseCommandLine(argv: readonly string[], env: Record<string, st
         open: { type: "boolean", default: false },
         online: { type: "boolean", default: false },
         json: { type: "boolean", default: false },
+        yes: { type: "boolean", short: "y", default: false },
         help: { type: "boolean", short: "h", default: false },
         version: { type: "boolean", short: "v", default: false },
       },
@@ -176,6 +188,15 @@ export function parseCommandLine(argv: readonly string[], env: Record<string, st
         ...(values.online ? { online: true } : {}),
         ...(values.json ? { json: true } : {}),
       };
+    case "setup":
+      if (target !== undefined) throw new CliError(`setup takes no arguments, got "${target}". Use --repo for the project folder.`);
+      return {
+        command,
+        ...(values.repo !== undefined ? { repo: values.repo } : {}),
+        ...(values.yes ? { yes: true } : {}),
+        ...(values["dry-run"] ? { dryRun: true } : {}),
+        ...(values.json ? { json: true } : {}),
+      };
     default:
       return { command: "usage", exitCode: 1 };
   }
@@ -194,6 +215,11 @@ export const USAGE = [
   "Usage: pointcast <command> [options]",
   "",
   "Commands:",
+  "  setup                                  Set pointcast up in this project: finds your coding agents",
+  "                                         (Claude Code, Codex, Gemini CLI, Cursor) and adds",
+  "                                         pointcast's MCP server to each, says what your stack needs",
+  "                                         (Django, React, Vue, Svelte) and how to add the browser",
+  "                                         extension, then runs doctor. Asks before each change.",
   "  transcribe <session-dir | file.wav>   Write words.json from audio.",
   "  process [session-dir]                 Transcribe (if needed), fuse and render session.md.",
   "                                         Default session-dir: the latest session in",
@@ -225,15 +251,18 @@ export const USAGE = [
   "  --format <classic|requests>  process/issue: Markdown style passed to the renderer (default: requests)",
   "  --layout <code-first|dom-first>  process: where an element's code is known, lead with it",
   "                           (code-first, default) or with the on-screen element (dom-first)",
-  "  --repo <path>            process/mcp: project folder to resolve code locations in",
+  "  --repo <path>            process/mcp: project folder to resolve code locations in;",
+  "                           setup: the project to set up",
   "                           (default: the current directory, when the recording's files are there)",
   "  --repo <owner/name>      issue: GitHub repository to resolve in and file the issue in",
   "  --ref <branch|tag|sha>   issue: version of the repository to read (default: its default branch)",
-  "  --dry-run                issue: print the title and body instead of creating the issue",
+  "  --dry-run                issue: print the title and body instead of creating the issue;",
+  "                           setup: print the plan and change nothing (also without a terminal)",
+  "  -y, --yes                setup: do every step without asking",
   "  --open                   issue: print (and open) a prefilled github.com/…/issues/new link instead",
   "                           of creating it through the API; needs no token",
   "  --online                 doctor: also compare the version with the latest on npm",
-  "  --json                   doctor: print the report as JSON",
+  "  --json                   doctor/setup: print the report as JSON (setup: a dry run without --yes)",
   "  -h, --help               Show this help",
   "  -v, --version            Show the version",
   "",

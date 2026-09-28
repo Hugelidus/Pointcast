@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0 (unreleased)
+
+**`pointcast setup`: one command, whatever your agent and stack** ([D14](docs/decisions.md#d14-one-setup-command))
+- `npx pointcast@latest setup`, run in your project, finds Claude Code, Codex, Gemini CLI and Cursor and adds Pointcast to each one its documented way: the plugin for Claude Code and Codex, the extension for Gemini CLI, the MCP server (pinned to the CLI's exact version) in the project's `.cursor/mcp.json` for Cursor, merged with the servers already there. Agents that already have it are skipped.
+- It says what your stack needs: the `pointcast-django` install line and the `INSTALLED_APPS` line for a Django project (your Python files are never edited), and that React, Vue and Svelte dev builds need nothing. It prints how to add the browser extension, then runs `pointcast doctor`.
+- Asks `y/N` before each change and shows the exact command or file first. `--yes` accepts all, `--dry-run` shows the plan only, `--json` reports for agents. Without a terminal and without `--yes` it is a dry run.
+
 ## 0.5.0 (2026-09-28)
 
 Extension, CLI and integrations at 0.5.0.

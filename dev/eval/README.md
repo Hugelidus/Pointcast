@@ -100,6 +100,7 @@ One UI change per task, recorded with the extension in typed mode, three variant
 
 - `tasks.json`: the four apps (the three above plus mdn/django-locallibrary-tutorial, run from a clone outside the repo with the settings in `django/`), 16 tasks with gesture, note, the A writer's intent and the ground truth (the `grade.mjs` rules).
 - `record.mjs` (typed recordings, handoff off), `prepare.mjs` (B specs, C's MCP configs, prompt hashes), `write-a.mjs` (A requests; the screenshot goes inside the message), `run.mjs` (the runs, stream-json), `grade.mjs` (accuracy, tokens, tool calls, searches before the first ground-truth read), `claude.mjs` (the `claude -p` runner with a cost ledger and a stop-loss).
+- `batching.json` + `batching.mjs` (subcommands record, prepare, write-a, run, grade): the batching follow-up, sets of 6 changes per app delivered 1-by-1, 2-by-2 and all-6 in variants A and C, one typed recording per run ([results](../../docs/eval/results-2026-09-28-batching.md)).
 - Differences from the runs above: no `--safe-mode` (it disables MCP), auto memory off through `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` instead.
 - Windows: inside a worktree the path to shadcn-admin's pnpm store gets too long for Node (`ERR_PACKAGE_IMPORT_NOT_DEFINED` from vitest when Vite loads its config). Install it with `pnpm install --frozen-lockfile --ignore-workspace --config.virtual-store-dir-max-length=40`.
 

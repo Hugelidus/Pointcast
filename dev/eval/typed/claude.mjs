@@ -34,8 +34,8 @@ export const cleanEnv = () => Object.fromEntries(Object.entries(process.env).fil
  * One `claude -p` run with stream-json output (every event saved to streamFile when given).
  * Returns the final `result` event (the object --output-format json prints) or undefined.
  */
-export async function runClaude({ args, prompt, cwd, streamFile, outDir, label, env = {} }) {
-  if (spentUsd(outDir) >= STOP_BEFORE_USD) throw new Error(`stop-loss: ${spentUsd(outDir).toFixed(2)} USD spent, not starting ${label}`);
+export async function runClaude({ args, prompt, cwd, streamFile, outDir, label, env = {}, stopBeforeUsd = STOP_BEFORE_USD }) {
+  if (spentUsd(outDir) >= stopBeforeUsd) throw new Error(`stop-loss: ${spentUsd(outDir).toFixed(2)} USD spent, not starting ${label}`);
   const started = Date.now();
   const { code, stderr, result } = await new Promise((resolve) => {
     const child = spawn(findClaude(), args, { cwd, env: { ...cleanEnv(), ...env }, windowsHide: true });

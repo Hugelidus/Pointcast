@@ -116,4 +116,17 @@ describe("parseCommandLine", () => {
     expect(parseCommandLine(["doctor", "--dir", "base", "--online", "--json"])).toEqual({ command: "doctor", dir: "base", online: true, json: true });
     expect(() => parseCommandLine(["doctor", "somewhere"])).toThrow(CliError);
   });
+
+  it("parses setup and its flags", () => {
+    expect(parseCommandLine(["setup"])).toEqual({ command: "setup" });
+    expect(parseCommandLine(["setup", "--repo", "app", "--yes", "--dry-run", "--json"])).toEqual({
+      command: "setup",
+      repo: "app",
+      yes: true,
+      dryRun: true,
+      json: true,
+    });
+    expect(parseCommandLine(["setup", "-y"])).toEqual({ command: "setup", yes: true });
+    expect(() => parseCommandLine(["setup", "somewhere"])).toThrow(CliError);
+  });
 });

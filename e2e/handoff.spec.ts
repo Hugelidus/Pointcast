@@ -2,6 +2,7 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:f
 import os from "node:os";
 import path from "node:path";
 import type { Page } from "@playwright/test";
+import { displayPath } from "../packages/cli/src/handoff/store";
 import { EXTENSION_ID } from "../packages/core/src/handoff";
 import { startFakeReceiver } from "./support/fake-receiver";
 import { expect, test } from "./support/fixtures";
@@ -200,13 +201,9 @@ test("fallbacks: setting off makes no request; a refusing server gets a warning;
   }
 });
 
-/**
- * The folder as the receiver reports it (handoff/store.ts displayPath): "~" for the home folder,
- * so the OS user name never reaches chrome.storage.session, which content scripts can read (D8).
- */
+/** The folder as the receiver reports it: its own displayPath ("~" inside home, "…" plus the last two segments outside it), so the OS user name never reaches chrome.storage.session (D8). */
 function shownAs(folder: string): string {
-  const relative = path.relative(os.homedir(), folder);
-  return relative.startsWith("..") || path.isAbsolute(relative) ? folder : path.join("~", relative);
+  return displayPath(folder);
 }
 
 async function storedSettings(popup: Page): Promise<Record<string, unknown> | undefined> {

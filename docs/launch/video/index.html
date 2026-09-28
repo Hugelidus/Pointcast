@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pointcast demo animation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!--
+  A deterministic 1600x900 animation: timeline.js draws any instant with window.renderAt(t) (seconds),
+  so render.mjs can step it frame by frame. Opened in a normal browser, it plays in a loop;
+  index.html#t=3.2 shows one instant. Served from the repository root (render.mjs does it): it reads
+  the logo from dev/scripts/icon/ and the real source files of dev/examples/react-dashboard.
+-->
+<div id="stage">
+
+  <!-- Title and end card: the lockup is shared, so the end card turns back into the title (the loop seam). -->
+  <div class="lockup" id="lockup"><img src="../../../dev/scripts/icon/pointcast.svg" alt=""><span>Pointcast</span></div>
+  <div class="card-line" id="tag1">Talk and <em class="g">point.</em></div>
+  <div class="card-line" id="tag2">Your coding agent gets the <em class="g">exact code.</em></div>
+  <div class="card-line" id="agents">Claude Code<i>·</i>Codex<i>·</i>Gemini CLI<i>·</i>Cursor</div>
+  <div class="card-line" id="url"><span>github.com/Hugelidus/pointcast</span></div>
+
+  <!-- Scene headers, store-screenshot style. -->
+  <div class="hdr" id="h1"><span class="step">1 · Record</span><h1>Talk while you <em class="g">Alt+click</em></h1></div>
+  <div class="hdr" id="h2"><span class="step">2 · Stop</span><h1>Stop: the spec is <em class="g">copied</em></h1></div>
+  <div class="hdr" id="h3"><span class="step">3 · Spec</span><h1>Each sentence becomes a <em class="g">request</em></h1></div>
+  <div class="hdr" id="h4"><span class="step">4 · Code</span><h1>Each element leads to its <em class="g">line of code</em></h1></div>
+  <div class="brand" id="brand"><img src="../../../dev/scripts/icon/pointcast.svg" alt=""><span>Pointcast</span></div>
+
+  <!-- The example app (dev/examples/react-dashboard), rebuilt from its source with its own CSS. -->
+  <div id="browser">
+    <div class="bar">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div class="url">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#7a7596" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.2v4M8 4.8v.1" stroke-linecap="round"/></svg>
+        127.0.0.1:5174
+      </div>
+      <div class="ext"><img src="../../../dev/scripts/icon/pointcast.svg" alt=""></div>
+    </div>
+    <div class="viewport">
+      <div class="app">
+        <nav class="sidebar" aria-label="Main">
+          <div class="sidebar-brand">Acme Store</div>
+          <ul class="nav-list">
+            <li><a class="nav-item nav-item-active"><span>Dashboard</span></a></li>
+            <li><a class="nav-item"><span>Orders</span></a></li>
+            <li><a class="nav-item"><span>Customers</span></a></li>
+            <li><a class="nav-item"><span>Messages</span><span class="badge" id="t-badge">3</span></a></li>
+            <li><a class="nav-item"><span>Settings</span></a></li>
+          </ul>
+        </nav>
+        <main class="content">
+          <header class="header-bar"><h1>Dashboard</h1><div class="header-actions"><span class="header-user">Ana Ríos</span></div></header>
+          <div class="stat-grid">
+            <section class="stat-card"><h3>Revenue</h3><p class="stat-subtitle">Last 30 days</p><p class="stat-value">$12,340</p><a class="stat-link" id="t-report">View report</a></section>
+            <section class="stat-card"><h3>Orders</h3><p class="stat-subtitle">Last 30 days</p><p class="stat-value">128</p><a class="stat-link">View report</a></section>
+          </div>
+          <section class="chart-card"><h3>Sales this week</h3><svg class="sales-chart" id="chart" viewBox="0 0 378 120"></svg></section>
+        </main>
+      </div>
+      <div class="pill rec" id="pill-rec"><span class="dot"></span>REC</div>
+      <div class="pill processing" id="pill-proc"><span class="dot"></span><span id="proc-text">Processing… ~0:03</span><div class="pbar"><div class="fill" id="proc-fill"></div></div></div>
+      <div class="pill done" id="pill-done"><span class="glyph">✓</span>Copied · sent to your agent</div>
+    </div>
+  </div>
+
+  <div class="flash" id="flash1"></div>
+  <div class="flash" id="flash2"></div>
+
+  <div class="bubble" id="b1">
+    <div class="tail"></div>
+    <div class="who"><svg width="13" height="16" viewBox="0 0 12 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="1" width="6" height="9" rx="3"/><path d="M1 8a5 5 0 0 0 10 0M6 13v2"/></svg>You say<span class="wave"><i></i><i></i><i></i><i></i></span></div>
+    <div class="said" id="said1"></div>
+  </div>
+  <div class="bubble" id="b2">
+    <div class="tail"></div>
+    <div class="who"><svg width="13" height="16" viewBox="0 0 12 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="1" width="6" height="9" rx="3"/><path d="M1 8a5 5 0 0 0 10 0M6 13v2"/></svg>You say<span class="wave"><i></i><i></i><i></i><i></i></span></div>
+    <div class="said" id="said2"></div>
+  </div>
+
+  <div class="ripple" id="ripple"></div>
+  <div id="altkey"><span class="key">Alt</span></div>
+  <svg id="cursor" viewBox="0 0 20 28" aria-hidden="true"><path d="M1.5 1.5v21l5.2-5 3.6 8.3 3.6-1.6-3.6-8.1h7.2z" fill="#fff" stroke="#120f2d" stroke-width="1.6" stroke-linejoin="round"/></svg>
+  <div id="stopkeys"><b>Stop</b><span class="key">Alt</span><span class="plus">+</span><span class="key">Shift</span><span class="plus">+</span><span class="key">S</span></div>
+
+  <!-- The spec: the real format (docs/launch/store/src/spec-example.md), with this recording's words. -->
+  <div id="doc">
+    <div class="doc-head"><span class="ok">✓</span>Copied: the spec your agent reads</div>
+    <div class="spec">
+      <div class="ln" id="L0"><span class="h1"># UI change requests</span></div>
+      <div class="gap"></div>
+      <div class="ln" id="L1"><span class="h">## Request 1</span></div>
+      <div class="ln q" id="L2"><span class="gt">&gt; </span><span class="words">This<span class="mk" id="mk1"> [a]</span> should take you to the reports page.</span></div>
+      <div class="ln" id="L3">- <span class="mk2">[a]</span> «View report» → code:</div>
+      <div class="ln" id="L4">  - <span class="k">text at:</span> <span class="loc" id="loc1">src/pages/Dashboard.tsx:11</span></div>
+      <div class="gap"></div>
+      <div class="ln" id="L5"><span class="h">## Request 2</span></div>
+      <div class="ln q" id="L6"><span class="gt">&gt; </span><span class="words">And this<span class="mk" id="mk2"> [a]</span> should say five.</span></div>
+      <div class="ln" id="L7">- <span class="mk2">[a]</span> «3» → code:</div>
+      <div class="ln" id="L8">  - <span class="k">data at:</span> <span class="loc" id="loc2">src/data/nav.ts:16</span></div>
+    </div>
+  </div>
+
+  <div class="fly" id="fly1"></div>
+  <div class="fly" id="fly2"></div>
+
+  <!-- The real files, fetched from dev/examples/react-dashboard at load. -->
+  <div id="editor">
+    <div class="pane"><div class="tab"><b></b>src/pages/Dashboard.tsx</div><div class="code" id="code1"></div></div>
+    <div class="pane"><div class="tab"><b></b>src/data/nav.ts</div><div class="code" id="code2"></div></div>
+  </div>
+
+  <svg id="arrows" width="1600" height="900" aria-hidden="true">
+    <defs>
+      <linearGradient id="ag" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <g id="arrow1"><path class="shaft" fill="none" stroke="url(#ag)" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/><path class="head" fill="#f472b6"/><circle class="spark" r="7" fill="#fff" filter="url(#glow)"/></g>
+    <g id="arrow2"><path class="shaft" fill="none" stroke="url(#ag)" stroke-width="4" stroke-linecap="round" filter="url(#glow)"/><path class="head" fill="#f472b6"/><circle class="spark" r="7" fill="#fff" filter="url(#glow)"/></g>
+  </svg>
+</div>
+<script src="timeline.js"></script>
+</body>
+</html>

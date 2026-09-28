@@ -84,6 +84,28 @@ export function isTextOpaque(el: Element, options: SensitivityOptions): boolean 
   );
 }
 
+function hasWordAtEdge(
+  node: Node,
+  fromStart: boolean,
+  options: SensitivityOptions,
+  budget = { remaining: 128 },
+): boolean {
+  // This is only a boundary hint; do not scan a large subtree just to add a separator.
+  if (budget.remaining-- <= 0) return false;
+  if (node.nodeType === TEXT_NODE) {
+    const text = (node as Text).data;
+    const trimmed = fromStart ? text.trimStart() : text.trimEnd();
+    const character = fromStart ? Array.from(trimmed)[0] : Array.from(trimmed).at(-1);
+    return character !== undefined && /[\p{L}\p{N}]/u.test(character);
+  }
+  if (node.nodeType !== ELEMENT_NODE) return false;
+  const el = node as Element;
+  if (isTextOpaque(el, options)) return false;
+  const children = Array.from(el.childNodes);
+  if (!fromStart) children.reverse();
+  return children.some((child) => hasWordAtEdge(child, fromStart, options, budget));
+}
+
 /**
  * Visible text of `root`, whitespace-collapsed and cut to `max` characters.
  * Walks the DOM instead of using innerText so it can skip sensitive subtrees and form
@@ -111,7 +133,22 @@ export function visibleText(root: Element, options: SensitivityOptions, max: num
     }
     const separated = !INLINE_TAGS.has(el.localName);
     if (separated) pieces.push(" ");
-    for (const child of Array.from(el.childNodes)) visit(child);
+    const children = Array.from(el.childNodes);
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      const previous = children[i - 1];
+      if (
+        child?.nodeType === ELEMENT_NODE &&
+        previous?.nodeType === ELEMENT_NODE &&
+        INLINE_TAGS.has((child as Element).localName) &&
+        INLINE_TAGS.has((previous as Element).localName) &&
+        hasWordAtEdge(previous, false, options) &&
+        hasWordAtEdge(child, true, options)
+      ) {
+        pieces.push(" ");
+      }
+      if (child !== undefined) visit(child);
+    }
     if (separated) pieces.push(" ");
   };
 

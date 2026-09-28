@@ -50,7 +50,7 @@ npx -y pointcast@0.6.0 mcp
 
 Any other agent: paste the spec from the clipboard. (In Windows PowerShell 5.1, run each `&&` half on its own line.)
 
-**3. Record** on your app on `localhost`: press **Record**, talk while you **Alt+click** things, press **Stop**.
+**3. Record** on your app on `localhost`: press **Record**, talk while you **Alt+click** things (**⌥ Option+click** on macOS), press **Stop**.
 
 **Rather type than talk?** Pick **⌨️ Typed** above Record in the popup. Each Alt+click then opens a small box next to the element: type what should change, press Enter (Esc drops that gesture). No microphone, no speech model, and Stop gives you the spec at once.
 
@@ -72,8 +72,8 @@ Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://git
 
 ## How it works
 
-1. **Record.** Press Record in the extension (or Alt+Shift+S) and talk while you use your app.
-2. **Point.** Alt+click or select text on whatever you are talking about. The Alt+click never reaches your app.
+1. **Record.** Press Record in the extension (or Alt+Shift+S, ⌥⇧S on macOS) and talk while you use your app.
+2. **Point.** Alt+click (⌥ Option+click on macOS) or select text on whatever you are talking about. The Alt+click never reaches your app.
 3. **Stop.** Your voice is transcribed on your machine, and each sentence becomes a request with the elements you pointed at while saying it (in **Typed** mode, each note you typed becomes a request with its element):
 
 ```markdown

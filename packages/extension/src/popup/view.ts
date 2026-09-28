@@ -4,6 +4,7 @@ import { LOCAL_HOSTS } from "../hosts";
 import type { TabCapture } from "../messages";
 import { errorDetailOf } from "../processing/failure";
 import { processingView, SPEECH_MODEL_MB } from "../processing/progress";
+import { pointGestureName } from "../platform";
 import { isTyped, type RecorderState } from "../recorder-state";
 
 /**
@@ -245,11 +246,12 @@ export function modeView(state: RecorderState, settingsMode: InputMode): ModeVie
   };
 }
 
-/** How to point, in the mode the next (or current) recording uses. */
-export function pointingHint(mode: InputMode): string {
+/** How to point, in the mode the next (or current) recording uses; ⌥ Option+click on macOS. */
+export function pointingHint(mode: InputMode, mac = false): string {
+  const gesture = pointGestureName(mac);
   return mode === "typed"
-    ? "Alt+click or select text, then type what should change."
-    : "Alt+click or select text to point.";
+    ? `${gesture} or select text, then type what should change.`
+    : `${gesture} or select text to point.`;
 }
 
 /** Where the last session is, on one line: a label, then the folder in the code font. */

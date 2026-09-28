@@ -25,7 +25,9 @@ test("typed mode: two notes, one cancelled with Esc, the app never sees the typi
     .toMatchObject({ inputMode: "typed" });
   await popup.reload();
   await expect(popup.locator('#mode input[value="typed"]')).toBeChecked();
-  await expect(popup.locator("#pointing")).toHaveText("Alt+click or select text, then type what should change.");
+  // The key as the keyboard labels it: Chrome maps Alt to Option on macOS (src/platform.ts).
+  const gesture = process.platform === "darwin" ? "⌥ Option+click" : "Alt+click";
+  await expect(popup.locator("#pointing")).toHaveText(`${gesture} or select text, then type what should change.`);
   // No microphone, no speech model: nothing to announce before the first recording.
   await expect(popup.locator("#first-run")).toBeHidden();
 

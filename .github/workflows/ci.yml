@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -71,12 +71,13 @@ jobs:
   # The whole suite, on pull requests only (main already passed it in its PR), split in three
   # parallel shards. It catches what local runs on one OS miss (a Linux-only path bug in 0.2.0).
   e2e:
-    name: e2e (${{ matrix.shard }}/3)
+    name: e2e (${{ matrix.os }}, ${{ matrix.shard }}/3)
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         shard: [1, 2, 3]
     steps:
       - name: Checkout
@@ -103,7 +104,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules/.pnpm/@huggingface+transformers@*/node_modules/@huggingface/transformers/.cache
-          key: whisper-base-${{ hashFiles('pnpm-lock.yaml') }}
+          key: whisper-base-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Download the Whisper model
         run: node dev/scripts/download-model.mjs
@@ -118,7 +119,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.shard }}
+          name: playwright-report-${{ matrix.os }}-${{ matrix.shard }}
           path: dev/playwright-report/
           if-no-files-found: ignore
           retention-days: 7
@@ -127,7 +128,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.shard }}
+          name: test-results-${{ matrix.os }}-${{ matrix.shard }}
           path: dev/test-results/
           if-no-files-found: ignore
           retention-days: 7

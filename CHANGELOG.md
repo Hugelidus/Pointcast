@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0 (unreleased)
+
+**macOS and Linux: tested in CI, Option+click named as such**
+- The end-to-end suite now runs in CI on macOS and Windows as well as Linux (Chromium, headless), and the unit tests on all three.
+- On macOS the popup says **⌥ Option+click** instead of Alt+click (Chrome maps Alt to Option there; the gesture is the same). `pointcast setup` and the README mention it too.
+- New e2e test (`dev/e2e/alt-click-defaults.spec.ts`): while recording, Alt/Option+click on a link, a link with `download`, a submit `<button>`, an `<input type=submit>` and links inside open and closed shadow roots only points. Nothing is followed, downloaded or submitted, and Alt+middle-click opens no tab. A control run without recording shows Chrome downloading the link, and downloading the form's response too. The typed-mode note box is checked with Alt/Option still held when it opens, and with Option+Enter.
+
 ## 0.6.0 (2026-09-28)
 
 Extension, CLI and integrations at 0.6.0. The CLI package now declares `mcpName` (`io.github.Hugelidus/pointcast`) for the MCP Registry.

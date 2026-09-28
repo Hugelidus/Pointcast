@@ -301,3 +301,33 @@ em.g {
 /* Scene 6's place and size of the spec (DOC6 in timeline.js). */
 #doc3 { left: 50px; top: 196px; }
 #editor3 { left: 700px; top: 178px; width: 840px; opacity: 0; }
+
+/* ---------------------------------------------------------------- the jump (shared.js Jump) */
+
+/* The element's HTML as the browser has it, greyed and struck through as --grey goes 0 → 1, then an
+   arrow to the line of source that makes it. */
+.jmp { left: 0; top: 0; }
+.jmp > * { position: absolute; }
+.jmp-cap { margin: 0 0 14px 4px; font-size: 22px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.jmp-src .jmp-cap { color: var(--soft); }
+.jmp-card {
+  display: inline-block; padding: 20px 28px; border-radius: 16px;
+  background: rgba(255, 255, 255, calc(0.08 - 0.04 * var(--grey, 0)));
+  border: 1.5px dashed rgba(255, 255, 255, calc(0.3 - 0.14 * var(--grey, 0)));
+}
+.jmp-code { font: 500 var(--html-size)/1.45 var(--mono); white-space: pre; color: rgb(calc(233 - 126 * var(--grey, 0)), calc(230 - 129 * var(--grey, 0)), calc(255 - 107 * var(--grey, 0))); }
+.jmp-l { position: relative; }
+.jmp-l span { position: relative; }
+.jmp-strike {
+  position: absolute; left: -8px; right: -8px; top: 52%; height: 5px; margin-top: -2.5px; border-radius: 3px;
+  background: linear-gradient(90deg, #f472b6, #ec4899); box-shadow: 0 0 14px rgba(236, 72, 153, 0.6);
+  transform: scaleX(0); transform-origin: 0 50%;
+}
+.jmp-src .pane .tab { height: 56px; font-size: 22px; color: #fff; }
+.jmp-src .pane .tab b { width: 12px; height: 12px; }
+.jmp-at { color: #f472b6; font-weight: 700; margin-left: -10px; }
+.jmp-src .code { font-size: var(--code-size); line-height: var(--code-line); padding: 10px 0 12px; }
+.jmp-src .code .row { height: var(--code-line); }
+.jmp-src .code .num { width: 64px; }
+.code .mark { position: relative; border-radius: 6px; box-shadow: 0 0 0 calc(2px * var(--m, 0)) rgba(244, 114, 182, calc(0.9 * var(--m, 0))), 0 0 22px rgba(236, 72, 153, calc(0.55 * var(--m, 0))); background: rgba(236, 72, 153, calc(0.18 * var(--m, 0))); }
+.jmp-arrow { left: 0; top: 0; overflow: visible; pointer-events: none; }

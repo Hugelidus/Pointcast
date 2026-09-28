@@ -1,6 +1,6 @@
 {
   "name": "pointcast",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Apply a pointcast recording (what you said while pointing at your web app) as code changes: the pointcast MCP server plus a pointcast skill.",
   "author": {
     "name": "Hugelidus",

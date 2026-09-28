@@ -26,6 +26,20 @@ export type Ms = number;
  */
 export type Gesture = "point" | "click" | "select";
 
+/**
+ * How the user said what they wanted (since extension 0.4.0).
+ * - voice: they spoke; the transcript (words.json) carries the request and the events are placed in it.
+ * - typed: they typed a note for each gesture (`CapturedEvent.note`); there is no audio and no
+ *   words.json, and every noted event is a request of its own.
+ */
+export type InputMode = "voice" | "typed";
+
+/**
+ * Longest note kept, in characters (UTF-16 code units, like .length). A note is a sentence or
+ * a paragraph about one element; a cap keeps a pasted log from bloating the spec.
+ */
+export const NOTE_MAX_CHARS = 2000;
+
 /** Location in the app's source code, read from an attribute such as data-source="src/App.tsx:12:5". */
 export interface SourceRef {
   file: string;
@@ -92,6 +106,9 @@ export interface ElementInfo {
    * most 3, read from the framework's dev-mode data. Each frame is where that instance is written
    * (its call site), so the agent lands on the right copy of a shared component. Library and
    * generated frames are never included. Absent without dev metadata and in older sessions.
+   * Server-rendered pages (since 2026-09-28): the templates around the element, read from the
+   * dev-only `<!-- pointcast:begin file="…" name="…" -->` comments pointcast-django writes, each
+   * `{ file, component: <template name> }` without a line; `component.framework` is then "django".
    */
   renderedBy?: CodeFrame[];
   /**
@@ -99,6 +116,26 @@ export interface ElementInfo {
    * dev server or GitHub). Only unambiguous matches are listed; absent when nothing was resolved.
    */
   resolved?: ResolvedLocation[];
+  /**
+   * Since 2026-09-28. When the one `resolved` location is a data literal with a property key
+   * (`customer: "Marco Peña"`), the line of the component or template that renders that key
+   * (`<td>{order.customer}</td>`), found exactly once in the innermost searched file that renders
+   * it at all. Absent when there is no key, no rendering or more than one (D9 note 2026-09-28).
+   */
+  shownBy?: ShownByLocation;
+}
+
+/** `ElementInfo.shownBy`: the line that renders the value `resolved` points at. */
+export interface ShownByLocation {
+  /** The property key of the data literal, e.g. "customer". */
+  key: string;
+  /** Project-relative path of the component or template. */
+  file: string;
+  line: number;
+  /** Where the source was read, as in `ResolvedLocation.via`. */
+  via: "repo" | "dev-server" | "github";
+  /** The source at `line`, as in `CodeFrame.snippet`; never for a sensitive element. */
+  snippet?: string;
 }
 
 /** One app-owned component instance in `ElementInfo.renderedBy`. */
@@ -180,7 +217,78 @@ export interface CapturedEvent {
   url: string;
   element: ElementInfo;
   selection?: SelectionInfo;
+  /**
+   * Typed sessions only: what the user typed about this gesture, trimmed, with line breaks
+   * kept, at most NOTE_MAX_CHARS. The user's own words, not page content, so it is not redacted
+   * (D12). Absent when they saved the gesture without a note, and in voice sessions.
+   */
+  note?: string;
+  /**
+   * Debug capture (D13, since extension 0.5.0): the page errors from a window around this gesture
+   * (ERROR_WINDOW_BEFORE_MS before its start to ERROR_WINDOW_AFTER_MS after its end), deduplicated,
+   * at most EVENT_ERRORS_MAX. Absent when there were none, when the setting was off, and in older
+   * sessions.
+   */
+  errors?: CapturedError[];
 }
+
+/**
+ * What went wrong on the page (D13):
+ * - error: an uncaught exception (window "error" event);
+ * - rejection: an unhandled promise rejection;
+ * - console-error / console-warn: the page called console.error / console.warn;
+ * - network: a fetch or XMLHttpRequest answered with a status of 400 or more, or failed.
+ */
+export type CapturedErrorKind = "error" | "rejection" | "console-error" | "console-warn" | "network";
+
+/** A failed request, without its query values, fragment, headers or bodies (D13). */
+export interface CapturedRequest {
+  /** Upper case, e.g. "POST". */
+  method: string;
+  /**
+   * The path, e.g. "/api/export"; with its host ("api.example.com/v1/orders") when it is not the
+   * page's origin. Query parameter names are kept, their values never ("/api/orders?status&page").
+   */
+  url: string;
+  /** The HTTP status; 0 when the request failed without an answer (network error, CORS, timeout). */
+  status: number;
+}
+
+/** One page error captured while recording (D13). Page content: redacted like the page text on enabled sites. */
+export interface CapturedError {
+  kind: CapturedErrorKind;
+  /** When it happened, relative to t0 (the first time, when `count` merged repeats). */
+  t: Ms;
+  /** One line, at most ERROR_MESSAGE_MAX_CHARS, e.g. "TypeError: x is undefined" or "POST /api/export → 500". */
+  message: string;
+  /** Where it was thrown or logged, project-relative: "src/components/OrdersTable.tsx:31:7". */
+  source?: string;
+  /** The first stack frames (at most ERROR_STACK_MAX), e.g. "OrdersTable (src/components/OrdersTable.tsx:31:7)". */
+  stack?: string[];
+  /** kind "network" only. */
+  request?: CapturedRequest;
+  /** How many times the same error happened within the window; absent means once. */
+  count?: number;
+}
+
+/** A CapturedError as sent by the content script, before the recorder makes its time relative to t0. */
+export type CapturedErrorDraft = Omit<CapturedError, "t" | "count"> & {
+  /** Epoch ms (Date.now()) when it happened. */
+  at: number;
+};
+
+/** Longest error message kept (D13), in characters. */
+export const ERROR_MESSAGE_MAX_CHARS = 300;
+/** Stack frames kept per error (D13). */
+export const ERROR_STACK_MAX = 3;
+/** Errors listed under one gesture (D13). */
+export const EVENT_ERRORS_MAX = 5;
+/** Errors kept in `SessionFile.errors` (D13): the most recent ones. */
+export const SESSION_ERRORS_MAX = 50;
+/** An error belongs to a gesture from this long before it started (D13)… */
+export const ERROR_WINDOW_BEFORE_MS = 5000;
+/** …to this long after it ended. */
+export const ERROR_WINDOW_AFTER_MS = 3000;
 
 /** Contents of session.json. */
 export interface SessionFile {
@@ -206,6 +314,17 @@ export interface SessionFile {
     userAgent: string;
   };
   events: CapturedEvent[];
+  /**
+   * How the requests were given (InputMode). Absent means "voice": every session recorded
+   * before typed mode existed. A typed session has no audio and no words.json.
+   */
+  inputMode?: InputMode;
+  /**
+   * Debug capture (D13, since extension 0.5.0): every page error captured while recording, in time
+   * order, at most SESSION_ERRORS_MAX (the most recent). Each event's own `errors` are picked from
+   * these. Absent when there were none, when the setting was off, and in older sessions.
+   */
+  errors?: CapturedError[];
 }
 
 /** One transcribed word. */

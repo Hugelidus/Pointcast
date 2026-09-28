@@ -195,6 +195,19 @@ describe("click capture (plan step 5, revised 2026-09-26: plain clicks are no lo
     expect(drafts).toEqual([]);
   });
 
+  it("ignores pointcast's own UI inside a shadow root too: an Alt+click in the note box records nothing", () => {
+    const { win, drafts, doc } = setup();
+    const host = doc.createElement("div");
+    host.setAttribute(UI_ATTRIBUTE, "note");
+    // Open, so composedPath()[0] is the textarea itself, as a click inside it is seen from window.
+    host.attachShadow({ mode: "open" }).innerHTML = "<div><textarea></textarea></div>";
+    doc.body.append(host);
+    const area = host.shadowRoot!.querySelector("textarea")!;
+    expect(click(win, area, { altKey: true })).toBe(true);
+    mouse(win, area, "dblclick");
+    expect(drafts).toEqual([]);
+  });
+
   it("stops recording and cancelling after stop()", () => {
     const { win, drafts, doc, q, stop } = setup();
     stop();

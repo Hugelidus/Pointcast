@@ -1,4 +1,4 @@
-import { projectRelativePath, type CodeFrame, type ComponentInfo } from "@pointcast/core";
+import { isLibraryPath, projectRelativePath, type CodeFrame, type ComponentInfo } from "@pointcast/core";
 import { COMPONENT_ATTRIBUTE, COMPONENT_REQUEST_EVENT, type FrameworkInfo } from "./component-bridge";
 import { composedParent } from "./dom";
 
@@ -153,11 +153,12 @@ interface RawFrame {
 const MAX_FRAMES = 3;
 /** How far any framework's chain is followed; real chains are far shorter. */
 const MAX_CHAIN = 100;
-/** Library, pre-bundled (Vite's dependency cache) and generated code: not the app's own source. */
-const NOT_APP_FILE = /(^|[\\/])(node_modules|\.vite|\.svelte-kit)[\\/]/;
-
+/**
+ * Library, pre-bundled (Vite's dependency cache) and generated code is not the app's own source.
+ * Core's rule (resolve/chain.ts), so capture and rendering agree on what a library frame is.
+ */
 function isAppFile(file: string | undefined): file is string {
-  return file !== undefined && !NOT_APP_FILE.test(file);
+  return file !== undefined && !isLibraryPath(file);
 }
 
 /**
@@ -197,8 +198,12 @@ function vueFrames(owner: NonNullable<Loose>): RawFrame[] {
   for (let k = instances.length - 1; k >= 0; k--) {
     const instance = instances[k] as NonNullable<Loose>;
     const writtenIn = str(asObject(asObject(asObject(instance.vnode)?.ctx)?.type)?.__file);
-    frames[k] = { component: vueName(asObject(instance.type)), file: isAppFile(writtenIn) ? writtenIn : ancestorFile };
     const own = str(asObject(instance.type)?.__file);
+    // A library component created by library code (reka-ui's Primitive inside its own
+    // DropdownMenuItem, a Presence, a Teleport wrapper) has no app source: the stand-in would
+    // name a file it is not written in, and would take one of the 3 places from the app's frames.
+    const standIn = isAppFile(own) ? ancestorFile : undefined;
+    frames[k] = { component: vueName(asObject(instance.type)), file: isAppFile(writtenIn) ? writtenIn : standIn };
     if (isAppFile(own)) ancestorFile = own;
   }
   return frames;

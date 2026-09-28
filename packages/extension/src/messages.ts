@@ -6,6 +6,8 @@
  *   content script ─ get-state ───────────────▶ service worker ◀── event-count ───────────────────── offscreen
  *                                               service worker ◀── processing-progress / -done ──── offscreen
  *   content script ─ capture-event (draft) ───────────────────────────────────────────────────────▶ offscreen
+ *   content script ─ capture-note / capture-discard (typed mode, D12) ─────────────────────────────▶ offscreen
+ *   content script ─ capture-error (debug capture, D13) ──────────────────────────────────────────▶ offscreen
  *   service worker ─ ping (one tab) ──────────▶ content script
  *   offscreen ── POST 127.0.0.1:20547 (hello, session) ──▶ pointcast MCP server (D11)
  *
@@ -21,7 +23,7 @@
  * "Receiving end does not exist": that is how the service worker detects one (D6).
  */
 import { browser } from "wxt/browser";
-import type { CapturedEventDraft } from "@pointcast/core";
+import type { CapturedErrorDraft, CapturedEventDraft, InputMode } from "@pointcast/core";
 import type { TranscriptionProgress } from "@pointcast/transcribe";
 import type { E2eRecord } from "./e2e-record";
 import type { RecorderState } from "./recorder-state";
@@ -101,6 +103,8 @@ export interface ProcessingResult {
   language?: string;
   /** Transcription failed; the session and its audio were still saved. */
   error?: string;
+  /** The raw text behind `error`, for the popup's "Details" (processing/failure.ts). */
+  errorDetail?: string;
   /** Worked, with something the user should know (audio problems, a language fallback, no copy). */
   warning?: string;
   /**
@@ -118,8 +122,11 @@ export interface ProcessingResult {
 }
 
 export type OffscreenMessage =
-  /** `language`: the popup's choice at Record, for live transcription; undefined means detect it. */
-  | { to: "offscreen"; type: "recorder-start"; language?: string }
+  /**
+   * `language`: the popup's choice at Record, for live transcription; undefined means detect it.
+   * `inputMode` "typed" (D12): no microphone, no transcription; absent means voice.
+   */
+  | { to: "offscreen"; type: "recorder-start"; language?: string; inputMode?: InputMode }
   /**
    * extensionVersion travels with the message: offscreen documents cannot read the manifest.
    * sessionId is chosen by the service worker, which can check the downloads history for a
@@ -127,6 +134,15 @@ export type OffscreenMessage =
    */
   | { to: "offscreen"; type: "recorder-stop"; extensionVersion: string; sessionId: string; options: ProcessingOptions }
   | { to: "offscreen"; type: "capture-event"; draft: CapturedEventDraft }
+  /**
+   * Typed mode (D12): the note typed so far for event `id` (the id capture-event answered), sent
+   * while the user types and when they save; an empty note removes it. Ignored when not recording.
+   */
+  | { to: "offscreen"; type: "capture-note"; id: string; note: string }
+  /** Typed mode (D12): the user cancelled the note box (Esc), which removes its gesture, as Undo does. */
+  | { to: "offscreen"; type: "capture-discard"; id: string }
+  /** Debug capture (D13): something failed on a captured page, already redacted. Ignored when not recording. */
+  | { to: "offscreen"; type: "capture-error"; draft: CapturedErrorDraft }
   | { to: "offscreen"; type: "recorder-undo" };
 
 /** Sent with chrome.tabs.sendMessage to the tab's top frame (sendToTab). */
@@ -166,6 +182,9 @@ export type RecorderUndoResult = {
 /** `id` is the event id assigned by the recorder ("e1", ...). Rejected when not recording. */
 export type CaptureEventResult = { accepted: true; id: string } | { accepted: false };
 
+/** Whether the recorder found event `id` of the current recording (capture-note, capture-discard). */
+export type CaptureChangeResult = { ok: boolean };
+
 /** Whether pointcast can capture in a tab. */
 export type TabCapture =
   /** A live content script runs in the tab: it follows the recording. */
@@ -188,6 +207,9 @@ interface ResponseByType {
   "recorder-start": RecorderStartResult;
   "recorder-stop": RecorderStopResult;
   "capture-event": CaptureEventResult;
+  "capture-note": CaptureChangeResult;
+  "capture-discard": CaptureChangeResult;
+  "capture-error": CaptureChangeResult;
   "recorder-undo": RecorderUndoResult;
   ping: { alive: true };
 }

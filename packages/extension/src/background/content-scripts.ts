@@ -43,10 +43,14 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+/**
+ * The reasons below complete the popup's "Pointcast could not attach to it (…)", so they are
+ * lowercase phrases without a period, in the user's words rather than "content script".
+ */
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`The tab did not answer within ${ms / 1000} s.`)), ms);
+    timer = setTimeout(() => reject(new Error(`the page did not respond within ${ms / 1000} s`)), ms);
   });
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
@@ -111,7 +115,7 @@ export function createTabAttacher(access: TabAccess, timeoutMs = ATTACH_TIMEOUT_
 const chromeTabs: TabAccess = {
   async ping(tabId) {
     const answer = await sendToTab(tabId, { to: "content", type: "ping" });
-    if (!answer?.alive) throw new Error("The content script did not answer.");
+    if (!answer?.alive) throw new Error("the page did not respond");
   },
   async inject(tabId) {
     // The very files the manifest lists for entrypoints/framework.content.ts and content.ts. WXT

@@ -1,4 +1,4 @@
-import { projectRelativePath, type CodeFrame, type ComponentInfo } from "@pointcast/core";
+import { isLibraryPath, projectRelativePath, type CodeFrame, type ComponentInfo } from "@pointcast/core";
 
 /**
  * Isolated-world half of the component bridge.
@@ -73,13 +73,23 @@ export function parseComponentInfo(raw: unknown): ComponentInfo | undefined {
   return info.name !== undefined || info.file !== undefined ? info : undefined;
 }
 
-/** Same rules for `renderedBy`: at most 3 frames, each with a file, names and positions only. */
+/** How many raw frames are looked at, at most: the attribute is untrusted page input. */
+const MAX_RAW_FRAMES = 100;
+
+/**
+ * Same rules for `renderedBy`: at most 3 frames, each with an app file, names and positions only.
+ * Frames without a file or in library code (node_modules…) are skipped before the cap, so library
+ * wrappers never take the places of the app's own frames.
+ */
 export function parseRenderedBy(raw: unknown): CodeFrame[] | undefined {
   if (!Array.isArray(raw)) return undefined;
   const frames: CodeFrame[] = [];
-  for (const item of raw.slice(0, MAX_FRAMES)) {
+  for (const item of raw.slice(0, MAX_RAW_FRAMES)) {
+    if (frames.length === MAX_FRAMES) break;
     if (typeof item !== "object" || item === null) continue;
     const data = item as Record<string, unknown>;
+    // Tested before safeFile, whose projectRelativePath cuts an absolute node_modules path to "package/…".
+    if (typeof data.file === "string" && isLibraryPath(data.file)) continue;
     const file = safeFile(data.file);
     if (file === undefined) continue;
     const frame: CodeFrame = { file };

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getSession, listSessions, resolveSessionDirById } from "./sessions";
 
-const FIXTURE_WITH_WORDS = join(__dirname, "../../../../fixtures/sessions/e2e-es-v2");
+const FIXTURE_WITH_WORDS = join(__dirname, "../../../../dev/fixtures/sessions/e2e-es-v2");
 
 function minimalSession(id: string) {
   return JSON.stringify({

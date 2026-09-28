@@ -1,0 +1,10 @@
+# Blank issues stay allowed: a short, clear report is better than none. Questions go to Discussions,
+# and security problems to private reporting, so neither ends up as a public issue.
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/Hugelidus/pointcast/discussions
+    about: Ask how something works, or float an idea before it becomes a feature request.
+  - name: Security problem
+    url: https://github.com/Hugelidus/pointcast/security/advisories/new
+    about: Report it privately (see .github/SECURITY.md), not as a public issue.

@@ -25,9 +25,10 @@ Where the code is known, an element starts with it: prefer its "used at", "text 
   - used at: `src/lib/Stats.svelte:55` — `<TabItem class="w-full">`
   - defined in: package `flowbite-svelte`
   - text at: `src/routes/utils/dashboard/Dashboard.svelte:79` — `tab2Title: 'Top customers'`
+  - shown by: `src/lib/Stats.svelte:57` — `{tab2Title}`
   - within: `<Stats>` at `src/routes/utils/dashboard/Dashboard.svelte:113` ← `<Dashboard>` at `src/routes/(sidebar)/+page.svelte:14`
   - on screen: button «Top customers» in «Statistics this month · Show information» on `/`
-  - find: `#s3` · component `TabItem` (svelte) in `node_modules/.pnpm/flowbite-svelte@1.28.1_rollup@4.53.2_svelte@5.43.10_tailwindcss@4.1.17/node_modules/flowbite-svelte/dist/tabs/TabItem.svelte:42`
+  - find: `#s3` · component `TabItem` (svelte, package `flowbite-svelte`)
   - in: `main › ul[role=tablist] › li[role=presentation][2] › button#s3`
   - html: `<button type="button" role="tab" id="s3" aria-controls="tab-panel-s1">Top customers</button>`
 
@@ -40,7 +41,7 @@ Where the code is known, an element starts with it: prefer its "used at", "text 
   - defined in: package `flowbite-svelte`
   - within: `<ProductMetricCard>` at `src/routes/utils/dashboard/Dashboard.svelte:133` ← `<Dashboard>` at `src/routes/(sidebar)/+page.svelte:14`
   - on screen: h5 «Users» on `/`
-  - find: component `Heading` (svelte) in `node_modules/.pnpm/flowbite-svelte@1.28.1_rollup@4.53.2_svelte@5.43.10_tailwindcss@4.1.17/node_modules/flowbite-svelte/dist/typography/heading/Heading.svelte:14`
+  - find: component `Heading` (svelte, package `flowbite-svelte`)
   - in: `main › h5`
 
 ## Request 4
@@ -53,7 +54,7 @@ Where the code is known, an element starts with it: prefer its "used at", "text 
   - text at: `src/routes/utils/dashboard/Dashboard.svelte:112` — `<ChartWidget value={12.5} {chartOptions} title="$45,385" subtitle="Sales this week" />`
   - within: `<ChartWidget>` at `src/routes/utils/dashboard/Dashboard.svelte:112` ← `<Dashboard>` at `src/routes/(sidebar)/+page.svelte:14`
   - on screen: p «Sales this week» in «$45,385» (selected) on `/`
-  - find: component `P` (svelte) in `node_modules/.pnpm/flowbite-svelte@1.28.1_rollup@4.53.2_svelte@5.43.10_tailwindcss@4.1.17/node_modules/flowbite-svelte/dist/typography/paragraph/P.svelte:27`
+  - find: component `P` (svelte, package `flowbite-svelte`)
   - in: `main › p`
 
 ## Appendix

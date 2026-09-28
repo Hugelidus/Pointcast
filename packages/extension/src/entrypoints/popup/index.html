@@ -10,38 +10,51 @@
 <body>
   <main>
     <header>
-      <strong class="brand"><img src="/icon/32.png" alt="" width="16" height="16">pointcast</strong>
+      <strong class="brand"><img src="/icon/32.png" alt="" width="16" height="16">Pointcast</strong>
       <span id="status" class="status" data-status="idle">Idle</span>
     </header>
-    <dl class="stats">
-      <div><dt>Time</dt><dd id="elapsed">00:00</dd></div>
+    <dl id="stats" class="stats" hidden>
+      <div><dt>Time</dt><dd id="elapsed">0:00</dd></div>
       <div><dt>Events</dt><dd id="events">0</dd></div>
     </dl>
-    <p id="last-event" class="last-event" role="status" hidden></p>
-    <p id="tab-status" class="tab-status" data-tone="muted" role="status">Checking this tab…</p>
-    <section id="site" class="site" hidden>
-      <button id="site-toggle" type="button" class="secondary"></button>
-      <p id="site-note" class="hint"></p>
-    </section>
-    <button id="toggle" type="button" class="record">Record</button>
-    <button id="undo" type="button" class="secondary" hidden>Undo last gesture</button>
-    <section id="progress" class="progress" hidden>
-      <p id="progress-text" class="progress-text" role="status"></p>
-      <div class="bar"><div id="progress-fill" class="fill"></div></div>
+    <p id="last-event" class="last-event" hidden></p>
+    <p id="meta" class="meta" hidden></p>
+    <!-- The countdown changes every second, so it is not a live region: #live announces the stage. -->
+    <section id="progress" class="progress" tabindex="-1" hidden>
+      <p id="progress-text" class="progress-text"></p>
+      <div id="progress-bar" class="bar" role="progressbar" aria-labelledby="progress-text" aria-valuemin="0" aria-valuemax="100"><div id="progress-fill" class="fill"></div></div>
       <p id="progress-detail" class="hint"></p>
     </section>
-    <p id="message" class="message" role="status" hidden></p>
+    <p id="message" class="message" hidden></p>
+    <details id="details" class="details" hidden><summary>Details</summary><code id="details-text"></code></details>
     <div id="result" class="result" hidden>
-      <p id="result-timing" class="hint" hidden></p>
+      <div id="where" class="where" hidden><span id="where-label"></span><code id="where-path" class="path"></code></div>
+      <p id="warning" class="message warning" hidden><span id="warning-lead" class="lead"></span> <span id="warning-body" class="body"></span></p>
+      <p id="result-meta" class="meta" hidden></p>
       <p id="result-code" class="hint" hidden></p>
-      <div class="actions">
+      <div id="actions" class="actions">
         <button id="copy-again" type="button" class="secondary">Copy again</button>
         <button id="show-folder" type="button" class="secondary">Show in folder</button>
+        <button id="copy-path" type="button" class="secondary">Copy path</button>
       </div>
     </div>
-    <p class="hint">Only Alt+click and text selection are recorded; plain clicks are not. Stop copies the Markdown for your agent.</p>
-    <p id="shortcut" class="hint" hidden></p>
-    <p id="undo-shortcut" class="hint" hidden></p>
+    <hr id="result-rule" hidden>
+    <p id="tab-status" class="tab-status" data-tone="muted">Checking this tab…</p>
+    <!-- Right above the button it is about (Allow microphone, or the first Record). -->
+    <p id="first-run" class="callout" hidden><strong id="first-run-title"></strong><span id="first-run-text"></span></p>
+    <section id="site" class="site" hidden>
+      <button id="site-toggle" type="button" class="primary"></button>
+      <p id="site-note" class="hint"></p>
+    </section>
+    <!-- Speak, or type a note for each gesture (D12). Remembered; a recording keeps its mode. -->
+    <fieldset id="mode" class="mode">
+      <legend class="sr-only">How to describe the changes</legend>
+      <label><input type="radio" name="mode" value="voice" checked><span><span aria-hidden="true">🎤</span> Voice</span></label>
+      <label><input type="radio" name="mode" value="typed"><span><span aria-hidden="true">⌨️</span> Typed</span></label>
+    </fieldset>
+    <button id="toggle" type="button" class="record">Record</button>
+    <button id="undo" type="button" class="secondary" hidden>Undo last gesture</button>
+    <p id="hints" class="hint"><span id="pointing">Alt+click or select text to point.</span><span id="shortcut" hidden></span></p>
     <details class="settings">
       <summary>Settings</summary>
       <label>Language
@@ -49,8 +62,13 @@
       </label>
       <label class="check"><input id="keep-audio" type="checkbox"> Keep audio (saves audio.wav)</label>
       <label class="check"><input id="notify" type="checkbox"> Notify when done</label>
-      <label class="check"><input id="handoff" type="checkbox"> Send to a running pointcast MCP server (no downloads)</label>
+      <label class="check"><input id="handoff" type="checkbox"> Send to your agent's Pointcast MCP server (no downloads)</label>
+      <label class="check" title="Uncaught errors, console errors and warnings, and failed requests (method, path and status only) around each gesture. Redacted like the page text on sites you enabled."><input id="capture-errors" type="checkbox"> Capture console and network errors</label>
     </details>
+    <!-- Always in the page, so screen readers announce what is written into them (a live region
+         that appears together with its text is often not read). -->
+    <p id="live" class="sr-only" role="status"></p>
+    <p id="live-alert" class="sr-only" role="alert"></p>
   </main>
   <script type="module" src="./main.ts"></script>
 </body>

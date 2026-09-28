@@ -12,6 +12,7 @@ Where the code is known, an element starts with it: prefer its "used at", "text 
   - used at: `src/components/layout/nav-group.tsx:62` — `return <Badge className='rounded-full px-1 py-0 text-xs'>{children}</Badge>`
   - defined in: `src/components/ui/badge.tsx` (shared — do not change it unless asked)
   - data at: `src/components/layout/data/sidebar-data.ts:73` — `url: '/chats', badge: '3', icon: MessagesSquare,`
+  - shown by: `src/components/layout/nav-group.tsx:77` — `{item.badge && <NavBadge>{item.badge}</NavBadge>}`
   - within: `<NavGroup>` at `src/components/layout/app-sidebar.tsx:28`
   - on screen: span «3» on `/`
   - find: component `Badge` (react)

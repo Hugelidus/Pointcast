@@ -1,11 +1,11 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { estimateTokens, fuse, renderMarkdown, type SessionFile, type WordsFile } from "@pointcast/core";
+import { estimateTokens, fuse, isTypedSession, renderMarkdown, TYPED_SESSION_WORDS, type SessionFile, type WordsFile } from "@pointcast/core";
 import { CliError } from "../errors";
 import { listSessionDirs, resolveSessionsBase, type ResolveSessionsBaseOptions } from "../process/discover";
 import { mismatchWarning, resolveWithRepo } from "../resolve/local";
 import { readSessionFile } from "../process/session-file";
-import { formatFusionSummary, summarizeFusion } from "../process/summary";
+import { formatFusionSummary, formatTypedSummary, summarizeFusion } from "../process/summary";
 import { readWordsFileIfPresent } from "../process/words-file";
 
 /** What `list_sessions` reports for one session — enough to pick one, not its full contents. */
@@ -102,7 +102,8 @@ export async function getSession(sessionDir: string, options: RepoOption = {}): 
   const session = await readSessionFile(sessionDir);
   const local = options.repo ? await resolveWithRepo(session, options.repo.root, options.repo) : undefined;
   const warning = local?.status === "mismatch" ? mismatchWarning(local) : undefined;
-  const words = await readWordsFileIfPresent(sessionDir);
+  // A typed session (D12) renders from its notes: it never has a words.json, and needs none.
+  const words = isTypedSession(session) ? TYPED_SESSION_WORDS : await readWordsFileIfPresent(sessionDir);
   if (local?.status === "resolved" && words !== undefined) {
     const markdown = renderMarkdown(local.session, words);
     return {
@@ -111,7 +112,7 @@ export async function getSession(sessionDir: string, options: RepoOption = {}): 
       rendered: true,
       chars: markdown.length,
       tokens: estimateTokens(markdown),
-      summaryLine: formatFusionSummary(summarizeFusion(fuse(session.events, words.words).placements)),
+      summaryLine: summaryLineOf(session, words),
     };
   }
   return { ...(await getStoredSession(sessionDir, session, words)), ...(warning ? { warning } : {}) };
@@ -144,8 +145,7 @@ async function getStoredSession(sessionDir: string, session: SessionFile, words:
   }
 
   const markdown = existing ?? renderMarkdown(session, words);
-  const { placements } = fuse(session.events, words.words);
-  const summaryLine = formatFusionSummary(summarizeFusion(placements));
+  const summaryLine = summaryLineOf(session, words);
 
   if (existing === undefined) {
     // Cache it like `process` does, so a second call (or a later `pointcast process`) does not
@@ -163,4 +163,10 @@ async function getStoredSession(sessionDir: string, session: SessionFile, words:
     tokens: estimateTokens(markdown),
     summaryLine,
   };
+}
+
+/** What `process` prints too: fusion's counts, or the notes' for a typed session (D12). */
+function summaryLineOf(session: SessionFile, words: WordsFile): string {
+  if (isTypedSession(session)) return formatTypedSummary(session);
+  return formatFusionSummary(summarizeFusion(fuse(session.events, words.words).placements));
 }

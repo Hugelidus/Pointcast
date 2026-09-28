@@ -36,7 +36,7 @@ describe("savedLocationText", () => {
   it("names the Downloads folder, or the folder a pointcast MCP server reported", () => {
     expect(savedLocationText("2026-09-28_10-15-00")).toBe("Saved to Downloads/pointcast/2026-09-28_10-15-00/");
     expect(savedLocationText("2026-09-28_10-15-00", "~/Downloads/pointcast/2026-09-28_10-15-00")).toBe(
-      "Saved by the pointcast MCP server to ~/Downloads/pointcast/2026-09-28_10-15-00",
+      "Saved by the Pointcast MCP server to ~/Downloads/pointcast/2026-09-28_10-15-00",
     );
   });
 });

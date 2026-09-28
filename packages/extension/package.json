@@ -1,6 +1,6 @@
 {
   "name": "@pointcast/extension",
-  "version": "0.2.1",
+  "version": "0.6.0",
   "private": true,
   "description": "pointcast Chrome extension: records voice and pointed DOM elements.",
   "type": "module",

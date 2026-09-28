@@ -2,27 +2,27 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>pointcast store screenshot 2: stop and paste</title>
+<title>Pointcast store screenshot 2: stop and paste</title>
 <link rel="stylesheet" href="store.css">
 <style>
   .browser { left: 56px; top: 274px; width: 676px; }
   /* The captures are 1120x780 CSS px at 2x. */
   .page { width: 676px; height: 470.8px; }
 
-  /* raw/popup-done.png cropped below "Copy again · Show in folder" (376 of its 535 CSS px), at 1.4x. */
-  .popup { left: 800px; top: 190px; width: 364px; height: 526px; }
-  .popup img { width: 364px; }
+  /* raw/popup-done.png, all of it (260x414 CSS px) at 1.35x: the result now leads the popup. */
+  .popup { left: 806px; top: 200px; width: 351px; }
+  .popup img { width: 351px; }
 
   /* The in-page pill through one recording: the three states, from the real captures, at 1.36x. */
   .states { position: absolute; left: 56px; top: 184px; width: 676px; display: flex; align-items: flex-start; justify-content: space-between; }
   .state { display: flex; flex-direction: column; gap: 8px; }
-  .state .slot { height: 50px; display: flex; align-items: center; }
+  .state .slot { height: 52px; display: flex; align-items: center; }
   .state b { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .state .zoom { background-size: 1523.2px 1060.8px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.16); }
-  /* Device-pixel boxes of the pill in each capture (right 2216, bottom 1536), times 0.68. */
-  .rec { width: 77.5px; height: 34px; border-radius: 17px; background-image: url("raw/rec-export.png"); background-position: -1429.4px -1010.5px; }
-  .processing { width: 185px; height: 49px; border-radius: 13.6px; background-image: url("raw/pill-processing-06.png"); background-position: -1321.9px -995.5px; }
-  .done { width: 314px; height: 34px; border-radius: 17px; background-image: url("raw/pill-done.png"); background-position: -1192.7px -1010.5px; }
+  /* Device-pixel boxes of the pill in each capture, border included (right 2216, bottom 1536), times 0.68. */
+  .rec { width: 84.3px; height: 36.7px; border-radius: 18.4px; background-image: url("raw/rec-export.png"); background-position: -1422.6px -1007.8px; }
+  .processing { width: 197.2px; height: 51.7px; border-radius: 13.6px; background-image: url("raw/pill-processing-05.png"); background-position: -1309.7px -992.8px; }
+  .done { width: 278.8px; height: 42.2px; border-radius: 13.6px; background-image: url("raw/pill-done.png"); background-position: -1228.1px -1002.3px; }
   .arrow { margin-top: 42px; color: var(--soft); }
 </style>
 </head>
@@ -32,8 +32,8 @@
     <h1 class="headline">Stop: the spec is on your <em>clipboard</em> in seconds</h1>
     <p class="subline">Your voice is transcribed on your machine. The page and the popup say when it's copied.</p>
   </div>
-  <!-- LOGO: scripts/icon/pointcast.svg -->
-  <div class="brand"><img src="../../../../scripts/icon/pointcast.svg" alt=""><span>pointcast</span></div>
+  <!-- LOGO: dev/scripts/icon/pointcast.svg -->
+  <div class="brand"><img src="../../../../dev/scripts/icon/pointcast.svg" alt=""><span>Pointcast</span></div>
 
   <div class="states">
     <div class="state"><b>Recording</b><div class="slot"><div class="zoom rec"></div></div></div>
@@ -50,7 +50,7 @@
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#7a7596" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.2v4M8 4.8v.1" stroke-linecap="round"/></svg>
         127.0.0.1:5174
       </div>
-      <div class="ext"><img src="../../../../scripts/icon/pointcast.svg" alt=""></div>
+      <div class="ext"><img src="../../../../dev/scripts/icon/pointcast.svg" alt=""></div>
     </div>
     <!-- Real capture: the same recording right after processing ended (pill bottom right). -->
     <img class="page" src="raw/pill-done.png" alt="">

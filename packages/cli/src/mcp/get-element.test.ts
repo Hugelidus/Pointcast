@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getElement } from "./get-element";
 
-const FIXTURE = join(__dirname, "../../../../fixtures/sessions/e2e-es-v2");
+const FIXTURE = join(__dirname, "../../../../dev/fixtures/sessions/e2e-es-v2");
 
 describe("getElement", () => {
   let dir: string;

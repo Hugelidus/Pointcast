@@ -3,6 +3,8 @@ import { elementKey, elementText, eventText, formatClock, fullSource } from "./d
 import type { Placement } from "./fuse";
 import { trimHtml } from "./html-trim";
 import { codeSpan, escapeMarkdown, fencedBlock, inlineText, oneLine, truncate } from "./markdown";
+import { EVENT_ERRORS_HEADING, eventErrorLines } from "./page-errors";
+import { isLibraryPath } from "./resolve/chain";
 import type { CapturedEvent, ElementInfo, Word } from "./schema";
 import { splitWord } from "./word-text";
 
@@ -49,7 +51,8 @@ export function renderAppendix(
     lines.push(
       `- selector: ${codeSpan(element.selector)} (${element.selectorUnique ? "unique" : "not unique"})`,
     );
-    if (element.source) {
+    // Never a node_modules path: an agent must not open or edit library code (searchHints too).
+    if (element.source && !isLibraryPath(element.source.file)) {
       const distance = element.source.distance;
       const ancestor = distance > 0 ? ` (ancestor +${distance})` : "";
       lines.push(`- source: ${codeSpan(fullSource(element.source))}${ancestor}`);
@@ -100,6 +103,9 @@ function eventLines(
   if (selection?.end) {
     lines.push(`- ${event.id} selection ends in: ${describeBound(selection.end)}`);
   }
+  // Debug capture (D13): nothing when nothing failed around this gesture.
+  const errors = eventErrorLines(event);
+  if (errors.length > 0) lines.push(`- ${event.id} ${EVENT_ERRORS_HEADING}`, ...errors.map((error) => `  - ${error}`));
   return lines;
 }
 

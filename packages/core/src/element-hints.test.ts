@@ -78,6 +78,38 @@ describe("searchHints", () => {
     expect(joined).not.toContain("hugob");
     expect(joined).toContain("component `Toolbar` (vue) in `src/components/Toolbar.vue:8`");
   });
+
+  // An agent must never open or edit node_modules: a library component is named by its package,
+  // never by its path, in any of the forms dev builds report it (old sessions included).
+  it("names a library component by its package, never by its node_modules path", () => {
+    const pnpm = "node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_react@19.1.0/node_modules/@radix-ui/react-primitive/dist/index.mjs";
+    const hint = (file: string, framework = "react", name = "Primitive.button") =>
+      searchHints(el({ component: { framework, name, file, line: 38 } }));
+    expect(hint(pnpm)).toEqual(["component `Primitive.button` (react, package `@radix-ui/react-primitive`)"]);
+    expect(hint("node_modules/.pnpm/flowbite-svelte@1.28.1/node_modules/flowbite-svelte/dist/tabs/TabItem.svelte", "svelte", "TabItem")).toEqual([
+      "component `TabItem` (svelte, package `flowbite-svelte`)",
+    ]);
+    // Absolute (projectRelativePath alone would print "flowbite-svelte/dist/…") and Windows separators.
+    expect(hint("C:\\Users\\hugob\\app\\node_modules\\flowbite-svelte\\dist\\tabs\\TabItem.svelte", "svelte", "TabItem")).toEqual([
+      "component `TabItem` (svelte, package `flowbite-svelte`)",
+    ]);
+    // Vite's dependency cache, and a chunk whose package cannot be told: "library".
+    expect(hint("node_modules/.vite/deps/@radix-ui_react-slot.js?v=9f1c", "react", "Slot")).toEqual([
+      "component `Slot` (react, package `@radix-ui/react-slot`)",
+    ]);
+    expect(hint("_next/static/chunks/node_modules_@radix-ui_react-slot_dist_index_mjs_1a2b._.js", "react", "Slot")).toEqual([
+      "component `Slot` (react, library)",
+    ]);
+    // A source attribute pointing into a library is dropped; app paths are untouched.
+    const withSource = searchHints(
+      el({
+        component: { framework: "react", name: "Button", file: "src/components/ui/button.tsx", line: 31 },
+        source: { file: pnpm, line: 38, attribute: "data-source", distance: 1 },
+      }),
+    );
+    expect(withSource).toEqual(["component `Button` (react) in `src/components/ui/button.tsx:31`"]);
+    expect(withSource.join(" ")).not.toMatch(/node_modules|\.pnpm/);
+  });
 });
 
 describe("stylesLine", () => {

@@ -1,4 +1,14 @@
-import { projectMatch, renderMarkdown, resolveSession, type RenderFormat, type SessionFile, type WordsFile } from "@pointcast/core";
+import {
+  cleanNote,
+  isTypedSession,
+  projectMatch,
+  renderMarkdown,
+  resolveSession,
+  TYPED_SESSION_WORDS,
+  type RenderFormat,
+  type SessionFile,
+  type WordsFile,
+} from "@pointcast/core";
 import { CliError } from "../errors";
 import { readSessionFile } from "../process/session-file";
 import { readWordsFileIfPresent } from "../process/words-file";
@@ -63,7 +73,8 @@ export async function runIssue(options: IssueOptions): Promise<IssueResult> {
     );
   }
   const session = await readSessionFile(options.sessionDir);
-  const words = await readWordsFileIfPresent(options.sessionDir);
+  // A typed session (D12) renders from its notes and has no words.json.
+  const words = isTypedSession(session) ? TYPED_SESSION_WORDS : await readWordsFileIfPresent(options.sessionDir);
   if (words === undefined) {
     throw new CliError(`${options.sessionDir} has no words.json yet. Run "pointcast process ${options.sessionDir}" first.`);
   }
@@ -117,7 +128,8 @@ function throwIfFailed(reader: GitHubReader): void {
 async function linkTargets(session: SessionFile, chainFiles: readonly string[], reader: GitHubReader): Promise<Map<string, string>> {
   const files = new Set(chainFiles);
   for (const event of session.events) {
-    for (const location of event.element.resolved ?? []) {
+    const shownBy = event.element.shownBy === undefined ? [] : [event.element.shownBy];
+    for (const location of [...(event.element.resolved ?? []), ...shownBy]) {
       const file = normalizeProjectPath(location.file);
       if (file !== undefined) files.add(file);
     }
@@ -152,12 +164,14 @@ export function linkCodeLocations(markdown: string, linkFor: (file: string, line
     .join("\n");
 }
 
-/** The first spoken sentence, at most ~80 characters; the session id when nothing was said. */
+/**
+ * The first spoken sentence (the first typed note, in a typed session), at most ~80 characters;
+ * the session id when nothing was said or noted.
+ */
 export function issueTitle(session: SessionFile, words: WordsFile): string {
   const spaced = words.words.some((word) => /^\s/.test(word.text));
-  const spoken = words.words
-    .map((word) => word.text)
-    .join(spaced ? "" : " ")
+  const firstNote = session.events.map((event) => cleanNote(event.note)).find((note) => note !== undefined);
+  const spoken = (isTypedSession(session) ? (firstNote ?? "") : words.words.map((word) => word.text).join(spaced ? "" : " "))
     .replace(/\s+/g, " ")
     .trim();
   const sentence = spoken.split(/(?<=[.!?])\s/)[0] ?? "";

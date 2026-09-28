@@ -1,0 +1,50 @@
+<!DOCTYPE html><!-- pointcast:begin file="templates/base.html" name="base.html" -->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Productos</title>
+</head>
+<body>
+  <nav>
+    <a href="/pim/">Productos</a>
+    <a href="/ventas/">Ventas</a>
+  </nav>
+  <main id="content">
+    <!-- pointcast:begin file="templates/pim/list.html" name="pim/list.html" -->
+<section id="products">
+  <h1>Catálogo de productos</h1>
+  
+  <table>
+    <thead><tr><th>SKU</th><th>Nombre</th><th>Estado</th><th></th></tr></thead>
+    <tbody id="rows">
+      
+        <!-- pointcast:begin file="templates/pim/partials/row.html" name="pim/partials/row.html" --><tr id="product-A-100">
+  <td>A-100</td>
+  <td>Silla Nórdica</td>
+  <td><!-- pointcast:begin file="pim/templates/pim/partials/status.html" name="pim/partials/status.html" --><span class="badge">Activo</span><!-- pointcast:end file="pim/templates/pim/partials/status.html" -->
+</td>
+  <td><button hx-post="/pim/A-100/archive/" hx-target="closest tr" hx-swap="outerHTML">Archivar</button></td>
+</tr><!-- pointcast:end file="templates/pim/partials/row.html" -->
+
+      
+        <!-- pointcast:begin file="templates/pim/partials/row.html" name="pim/partials/row.html" --><tr id="product-B-200">
+  <td>B-200</td>
+  <td>Mesa Roble</td>
+  <td><!-- pointcast:begin file="pim/templates/pim/partials/status.html" name="pim/partials/status.html" --><span class="badge">Inactivo</span><!-- pointcast:end file="pim/templates/pim/partials/status.html" -->
+</td>
+  <td><button hx-post="/pim/B-200/archive/" hx-target="closest tr" hx-swap="outerHTML">Archivar</button></td>
+</tr><!-- pointcast:end file="templates/pim/partials/row.html" -->
+
+      
+    </tbody>
+  </table>
+  <p class="hint">Añade productos desde el importador
+</p>
+  
+  <p class="total">Total: 2 productos</p>
+  <button type="button" hx-get="/pim/export/">Exportar CSV</button>
+</section><!-- pointcast:end file="templates/pim/list.html" -->
+
+  </main>
+</body>
+</html><!-- pointcast:end file="templates/base.html" -->

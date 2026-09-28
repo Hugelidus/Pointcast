@@ -2,12 +2,14 @@ import { defineContentScript } from "wxt/utils/define-content-script";
 import { createCaptureController } from "../content/capture-controller";
 import { flashElement } from "../content/flash";
 import { createIndicator, followWithPill } from "../content/indicator";
-import { followState, sendDraft } from "../content/recorder-link";
+import { createNoteBox } from "../content/note-box";
+import { createPageErrors } from "../content/page-errors";
+import { discardEvent, followState, sendDraft, sendError, sendNote } from "../content/recorder-link";
 import { createUndoFeedback } from "../content/undo-feedback";
 import { isLocalDevUrl, LOCAL_HOST_MATCHES } from "../hosts";
 import { isCapturableUrl } from "../sites";
 import { listenFor } from "../messages";
-import { isRecording } from "../recorder-state";
+import { capturesErrors, isRecording, isTyped } from "../recorder-state";
 import { watchStore } from "../state-store";
 
 /**
@@ -23,7 +25,7 @@ import { watchStore } from "../state-store";
  * whether the older one is an orphan from before an extension reload or a second copy of this
  * same instance; refusing to start here would leave the page with no live copy at all. The
  * service worker avoids injecting a second copy in the first place: it injects only where no
- * copy answers its ping. Both cases are covered by e2e/extension-reload.spec.ts.
+ * copy answers its ping. Both cases are covered by dev/e2e/extension-reload.spec.ts.
  */
 export default defineContentScript({
   // Local development hosts only (D8); see hosts.ts for how ports are matched. Enabled sites
@@ -37,23 +39,37 @@ export default defineContentScript({
       notice: (text) => pill.notice(text),
       isVisible: () => document.visibilityState === "visible",
     });
+    // Typed mode (D12): each gesture opens a box for its note. Created before capture can start:
+    // its window listener then runs before capture's, so a click inside the box is the box's own
+    // and a press that ends up pointing again is seen before capture cancels it (note-box.ts).
+    const notes = createNoteBox(document, { setNote: sendNote, discard: discardEvent });
+    let typed = false;
     const capture = createCaptureController(document, {
-      // Fire and forget: the recorder answers asynchronously, and waiting would delay the
-      // app's reaction to the click. A rejected draft (recording just stopped) is dropped;
-      // an accepted one is remembered so Undo can flash its element.
-      send: (draft, target) =>
-        void sendDraft(draft).then((result) => {
-          if (result.accepted) undo.remember(result.id, target);
-        }),
+      // Not awaited: the recorder answers asynchronously, and waiting would delay the app's
+      // reaction to the click. A rejected draft (recording just stopped) is dropped; an accepted
+      // one is remembered so Undo can flash its element.
+      send: (draft, target) => {
+        const accepted = sendDraft(draft).then((result) => {
+          if (!result.accepted) return undefined;
+          undo.remember(result.id, target);
+          return result.id;
+        });
+        if (typed) notes.open(accepted, target);
+      },
       flash: (target) => flashElement(target),
       // PRIVACY (D8 note 2026-09-27): a site the user enabled is not their own dev build, so
       // text that looks like personal data (emails, phone numbers...) is redacted as well.
       options: { redactPersonalData: !isLocalDevUrl(location.href) },
     });
-    // Invalidated when a newer copy starts (see above). The page is released first: those two
+    // Debug capture (D13): what fails on the page while recording, from the MAIN-world hook
+    // (framework.content.ts), redacted like the page's text on an enabled site.
+    const pageErrors = createPageErrors(window, { send: sendError, redactPersonalData: !isLocalDevUrl(location.href) });
+    // Invalidated when a newer copy starts (see above). The page is released first: those
     // calls only touch the DOM, so they cannot fail in an orphaned copy.
     ctx.onInvalidated(() => {
       capture.stop();
+      pageErrors.stop();
+      notes.dispose();
       pill.stop();
     });
 
@@ -66,10 +82,14 @@ export default defineContentScript({
       if (isRecording(state)) {
         // A new recording: event ids restart at e1.
         if (!recording) undo.reset();
+        typed = isTyped(state);
         capture.start();
       } else {
         capture.stop();
+        notes.close();
       }
+      if (capturesErrors(state) && state.t0 !== undefined) pageErrors.start(state.t0);
+      else pageErrors.stop();
       recording = isRecording(state);
       pill.update(state);
     });
@@ -84,11 +104,16 @@ export default defineContentScript({
       }
     };
     const unwatch = watchStore((changes) => {
-      if (changes.undone) undo.undone(changes.undone);
+      if (changes.undone) {
+        notes.undone(changes.undone.id);
+        undo.undone(changes.undone);
+      }
       // The user removed this site (popup, or Chrome's "Site access" menu). Chrome keeps this
       // script running until the page reloads, so it releases the page itself (D8 note).
       if (changes.sites && !isCapturableUrl(location.href, changes.sites)) {
         capture.stop();
+        pageErrors.stop();
+        notes.dispose();
         pill.stop();
         disconnect();
       }

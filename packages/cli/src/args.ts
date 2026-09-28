@@ -46,6 +46,25 @@ export type CliCommand =
       /** create: open the issue through the API; dry-run: print it; open: prefilled issues/new URL. */
       mode: "create" | "dry-run" | "open";
       format?: RenderFormat;
+    }
+  | {
+      command: "doctor";
+      dir?: string;
+      /** --online: also compare the version with the latest on npm (no network otherwise). */
+      online?: true;
+      /** --json: machine-readable report on stdout. */
+      json?: true;
+    }
+  | {
+      command: "setup";
+      /** --repo: the project to set up (default: the current directory). */
+      repo?: string;
+      /** --yes: accept every step without asking. */
+      yes?: true;
+      /** --dry-run: print the plan only. */
+      dryRun?: true;
+      /** --json: machine-readable plan and outcome on stdout. */
+      json?: true;
     };
 
 /**
@@ -75,6 +94,9 @@ export function parseCommandLine(argv: readonly string[], env: Record<string, st
         ref: { type: "string" },
         "dry-run": { type: "boolean", default: false },
         open: { type: "boolean", default: false },
+        online: { type: "boolean", default: false },
+        json: { type: "boolean", default: false },
+        yes: { type: "boolean", short: "y", default: false },
         help: { type: "boolean", short: "h", default: false },
         version: { type: "boolean", short: "v", default: false },
       },
@@ -158,6 +180,23 @@ export function parseCommandLine(argv: readonly string[], env: Record<string, st
         mode: values["dry-run"] ? "dry-run" : values.open ? "open" : "create",
         ...(values.format !== undefined ? { format: values.format } : {}),
       };
+    case "doctor":
+      if (target !== undefined) throw new CliError(`doctor takes no arguments, got "${target}". Use --dir for the sessions folder.`);
+      return {
+        command,
+        ...(values.dir !== undefined ? { dir: values.dir } : {}),
+        ...(values.online ? { online: true } : {}),
+        ...(values.json ? { json: true } : {}),
+      };
+    case "setup":
+      if (target !== undefined) throw new CliError(`setup takes no arguments, got "${target}". Use --repo for the project folder.`);
+      return {
+        command,
+        ...(values.repo !== undefined ? { repo: values.repo } : {}),
+        ...(values.yes ? { yes: true } : {}),
+        ...(values["dry-run"] ? { dryRun: true } : {}),
+        ...(values.json ? { json: true } : {}),
+      };
     default:
       return { command: "usage", exitCode: 1 };
   }
@@ -176,6 +215,11 @@ export const USAGE = [
   "Usage: pointcast <command> [options]",
   "",
   "Commands:",
+  "  setup                                  Set pointcast up in this project: finds your coding agents",
+  "                                         (Claude Code, Codex, Gemini CLI, Cursor) and adds",
+  "                                         pointcast's MCP server to each, says what your stack needs",
+  "                                         (Django, React, Vue, Svelte) and how to add the browser",
+  "                                         extension, then runs doctor. Asks before each change.",
   "  transcribe <session-dir | file.wav>   Write words.json from audio.",
   "  process [session-dir]                 Transcribe (if needed), fuse and render session.md.",
   "                                         Default session-dir: the latest session in",
@@ -186,13 +230,17 @@ export const USAGE = [
   "                                         127.0.0.1, so they skip Chrome's downloads.",
   "  issue [session-dir] --repo owner/name  File the spec as a GitHub issue, with code locations",
   "                                         resolved in that repo and linked to its source.",
+  "  doctor                                 Check this machine's setup (Node.js, the sessions",
+  "                                         folder, the MCP server receiving recordings, local",
+  "                                         transcription, the clipboard), with a fix for each",
+  "                                         problem. Read-only; exits 1 when something needed fails.",
   "",
   "Options:",
   "  --engine <local|openai>  Transcription backend (default: local)",
   "  --model <id>             Model id (engine-specific; default per engine)",
   "  --language <code>        Spoken language, e.g. es, en (default: POINTCAST_LANGUAGE, else detected)",
   "  --threads <n>            ONNX thread count (local engine only)",
-  "  --dir <path>             process/mcp/issue: folder to find sessions in",
+  "  --dir <path>             process/mcp/issue/doctor: folder to find sessions in",
   "  --force                  process: re-transcribe even if words.json exists",
   "  --stdout                 process: write the Markdown to stdout instead of session.md",
   "  --no-copy                process: do not copy the Markdown to the clipboard",
@@ -203,13 +251,18 @@ export const USAGE = [
   "  --format <classic|requests>  process/issue: Markdown style passed to the renderer (default: requests)",
   "  --layout <code-first|dom-first>  process: where an element's code is known, lead with it",
   "                           (code-first, default) or with the on-screen element (dom-first)",
-  "  --repo <path>            process/mcp: project folder to resolve code locations in",
+  "  --repo <path>            process/mcp: project folder to resolve code locations in;",
+  "                           setup: the project to set up",
   "                           (default: the current directory, when the recording's files are there)",
   "  --repo <owner/name>      issue: GitHub repository to resolve in and file the issue in",
   "  --ref <branch|tag|sha>   issue: version of the repository to read (default: its default branch)",
-  "  --dry-run                issue: print the title and body instead of creating the issue",
+  "  --dry-run                issue: print the title and body instead of creating the issue;",
+  "                           setup: print the plan and change nothing (also without a terminal)",
+  "  -y, --yes                setup: do every step without asking",
   "  --open                   issue: print (and open) a prefilled github.com/…/issues/new link instead",
   "                           of creating it through the API; needs no token",
+  "  --online                 doctor: also compare the version with the latest on npm",
+  "  --json                   doctor/setup: print the report as JSON (setup: a dry run without --yes)",
   "  -h, --help               Show this help",
   "  -v, --version            Show the version",
   "",

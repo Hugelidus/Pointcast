@@ -1,6 +1,6 @@
 # Chrome Web Store listing
 
-Everything the [developer dashboard](https://chrome.google.com/webstore/devconsole) asks for, tab by tab, ready to paste. Images are in [store/](store/) (regenerate them with `node docs/launch/store/render.mjs`; the icon with `node scripts/icon/render.mjs`).
+Everything the [developer dashboard](https://chrome.google.com/webstore/devconsole) asks for, tab by tab, ready to paste. Images are in [store/](store/) (regenerate them with `node docs/launch/store/render.mjs`; the icon with `node dev/scripts/icon/render.mjs`).
 
 ## Package
 
@@ -24,12 +24,12 @@ Talk and point at your web app: your coding agent gets a spec with the exact ele
 Talk about the UI change you want while you Alt+click the parts of your web app you mean. pointcast turns it into a Markdown spec your coding agent can act on: what you said, the exact elements you pointed at, and the code behind each one.
 
 HOW IT WORKS
-1. Press Record and talk, the way you would to a colleague: "this should take you to the reports page", "this button should export the order status".
+1. Press Record and talk, the way you would to a colleague: "this should take you to the reports page", "this button should export the order status". Prefer typing? Switch to Typed mode and write a short note next to each element instead.
 2. Alt+click (or select) whatever you are talking about as you say it. Pointing never triggers the page: Alt+click on "Delete" never deletes.
 3. Press Stop. A few seconds later the spec is on your clipboard: one request per sentence, each with the elements you pointed at while saying it. Paste it into Claude Code, Cursor or any coding agent.
 
 IT POINTS AT THE CODE
-On development builds of React, Vue 3 and Svelte 5, each element leads with its code: where that instance is used, and the line of its text or data in your source, quoted. Your agent goes straight to the right line instead of searching the codebase. With the companion plugins for Claude Code, Codex and Gemini CLI, your agent fetches the recording itself and resolves it in your repository; while it runs, recordings go straight to it instead of your Downloads folder.
+On development builds of React, Vue 3 and Svelte 5, and on Django templates with the companion pointcast-django package, each element leads with its code: where that instance is used, and the line of its text or data in your source, quoted. Your agent goes straight to the right line instead of searching the codebase. With the companion plugins for Claude Code, Codex and Gemini CLI, your agent fetches the recording itself and resolves it in your repository; while it runs, recordings go straight to it instead of your Downloads folder. It can also carry the errors around the moment you pointed (a failed request, a console error) when you turn that setting on, so the agent knows what actually broke, not just which element.
 
 PRIVATE BY DEFAULT
 - Your voice is transcribed on your device: Whisper runs inside the extension. No account, no server, no API key.
@@ -38,10 +38,10 @@ PRIVATE BY DEFAULT
 - Open source (MIT): https://github.com/Hugelidus/pointcast
 
 WHY POINTING HELPS
-In an evaluation on three real open-source dashboards (React, Vue, Svelte), pointing raised the share of requests where the agent found the right element from 78% to 89%, exactly where words alone are ambiguous: two "Export" buttons, identical cards, shared components. Pointing at the code then cut the tokens the agent spent finding the elements by more than half. Methods and numbers are in the repository.
+In an evaluation on three real open-source dashboards (React, Vue, Svelte), pointing raised the share of requests where the agent found the right element from 78% to 89%, exactly where words alone are ambiguous: two "Export" buttons, identical cards, shared components. A follow-up evaluation measured a full recording of six changes against the same six changes typed by hand: 96% accuracy against 85%, with 24% fewer input tokens and 75% fewer searches. Methods and numbers are in the repository.
 
 This is a beta: feedback and bug reports are welcome at https://github.com/Hugelidus/pointcast/issues
-The first recording downloads the speech model once (about 291 MB).
+The first recording downloads the speech model once (about 294 MB).
 ```
 
 - **Category:** Developer Tools
@@ -71,7 +71,7 @@ Records the user's voice and the elements of their own web app that they explici
 | `scripting` | Injects the capture script into tabs that were already open when the extension was installed or updated, and registers it on the sites the user enables one by one from the popup. It never runs on a site the user has not enabled. |
 | `notifications` | Tells the user when a recording has been processed and copied, if they looked away. Can be turned off in the settings. |
 | `alarms` | A safety timeout: if the browser suspends the extension while a recording is processed, an alarm ends the stuck state and saves what was recorded. |
-| `unlimitedStorage` | Caches the local speech model (about 291 MB) so it is downloaded only once. |
+| `unlimitedStorage` | Caches the local speech model (about 294 MB) so it is downloaded only once. |
 | `activeTab` | Lets the popup read the current tab's address when the user opens it, to show whether that tab is captured and offer "Enable on <site>" for it. |
 | Host permissions: `localhost`, `127.0.0.1`, `[::1]`, `*.localhost`, `*.test` | The core use: recording the user's own app while they develop it. The capture script and the on-page recording indicator run on these local development hosts only. The extension also uses `127.0.0.1` to hand a recording to the user's own pointcast MCP server (the companion command-line tool, running on the same computer) instead of downloading it. |
 | Optional host permission: `*://*/*` | Not requested at install. Granted one site at a time, only when the user presses "Enable on <site>" in the popup (for a staging server or a preview deployment); Chrome asks the user first, and "Remove <site>" revokes it. |

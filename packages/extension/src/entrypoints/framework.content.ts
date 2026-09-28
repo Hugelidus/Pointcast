@@ -1,17 +1,22 @@
 import { defineContentScript } from "wxt/utils/define-content-script";
 import { LOCAL_HOST_MATCHES } from "../hosts";
 import { installComponentBridge } from "../lib/framework-main";
+import { installPageErrors } from "../lib/page-errors-main";
 
 /**
- * Runs in the page's MAIN world, where framework dev data on DOM nodes (Vue, Svelte, React) is
- * visible; the capture content script runs in the isolated world and cannot see it. This script
- * only answers the synchronous DOM-event request described in lib/component-bridge.ts, reading
- * names and file positions on demand; it holds no state and talks to no extension API (MAIN-world
- * scripts have none).
+ * Runs in the page's MAIN world, where framework dev data on DOM nodes (Vue, Svelte, React) and the
+ * page's own errors, console and network are visible; the capture content script runs in the
+ * isolated world and sees neither. MAIN-world scripts have no extension API, so this script only
+ * talks to the isolated one through DOM events:
+ * - the component bridge (lib/component-bridge.ts) answers a synchronous request with names and
+ *   file positions read on demand; it holds no state;
+ * - debug capture (lib/page-errors-main.ts, D13) hooks the page's errors, console.error/warn,
+ *   fetch and XMLHttpRequest only while a recording with that setting runs, and reports what
+ *   fails.
  *
- * document_start so the listener exists before the first gesture; the framework data itself is
- * read at request time, long after the app has rendered. Same hosts as content.ts; user-enabled
- * sites register it dynamically next to the capture script.
+ * document_start so the listeners exist before the first gesture, and so a page loaded during a
+ * recording is hooked before its first request. Same hosts as content.ts; user-enabled sites
+ * register it dynamically next to the capture script.
  */
 export default defineContentScript({
   matches: [...LOCAL_HOST_MATCHES],
@@ -19,5 +24,6 @@ export default defineContentScript({
   runAt: "document_start",
   main() {
     installComponentBridge(window);
+    installPageErrors(window);
   },
 });

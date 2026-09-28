@@ -7,6 +7,7 @@ Effective 28 September 2026. It covers the pointcast Chrome extension, the `poin
 ## What the extension handles, and where it stays
 
 - **Your voice.** The microphone is recorded only between Record and Stop. The recording is transcribed on your device, inside the extension (Whisper runs in the browser). The audio is then discarded, unless you turn on *Keep audio* in the settings, or pointcast needs it to redo the transcription (the spoken language was uncertain, or transcription failed). In those cases it is saved as `audio.wav` in the recording's folder on your computer.
+- **Your typed notes.** In Typed mode the microphone is never opened; what you type in Pointcast's note box is kept, as you wrote it, with the element it is about, in the same files as the rest of the recording. The page you are testing does not receive those keystrokes, and its scripts cannot read or change what is in the box. One limit: a script the page set up to watch every key on the whole window before Pointcast started in that tab still sees the keys you type, as it would anywhere on that page. On your own dev build that is your own code; on a site you enabled, keep that in mind before typing anything private into a note.
 - **The elements you point at.** Only when you Alt+click or select text on a page where pointcast is active: local development hosts (`localhost`, `127.0.0.1`, `*.localhost`, `*.test`), or a site you enabled yourself, one at a time. For each element pointcast keeps:
   - its visible text;
   - a CSS selector and its position in the page;
@@ -16,6 +17,12 @@ Effective 28 September 2026. It covers the pointcast Chrome extension, the `poin
   - the names and file paths of the components that rendered it, when the page is a development build that exposes them.
 
   Password fields and other sensitive inputs are never captured. On sites that are not local development hosts, text that looks like personal data (email addresses, phone numbers, card and bank account numbers, tokens) is redacted, and secrets in URLs are removed.
+- **What fails on the page while you record** (*Capture console and network errors* in the settings, on by default). Only between Record and Stop, and only on the pages pointcast captures, it keeps, with the time each happened:
+  - uncaught errors and unhandled promise rejections: the message, the file and line where they happened (a path inside your project, never your computer's), and the first three stack lines;
+  - what the page writes with `console.error` and `console.warn`, as one line of at most 300 characters;
+  - requests the page made that failed or were answered with an error status (400 or more): the method, the path, the names of its query parameters and the status.
+
+  It never keeps a request or response body, a header, a cookie, or the value of a query parameter or of a URL fragment. Wherever the value of a password or other sensitive field on the page appears in a message, it is replaced by `[redacted]`. On sites that are not local development hosts, personal data in these messages and paths is redacted as it is in the page text. The errors from a few seconds around each element you point at are written next to it in the spec; the recording's last 50 are kept in its `session.json`. Turn the setting off and pages are not watched at all. Outside a recording nothing is watched either way.
 - **Your app's source code (development builds only).** When you press Stop, the extension may read the source files of the components you pointed at from the page's own development server (the same origin as the page) to find the exact lines. They are read into memory only. The spec keeps file paths, line numbers and the one source line of each location it found.
 - **The result.** The spec is copied to your clipboard, and the recording is saved as files on your computer: by Chrome's downloads in `Downloads/pointcast/<recording>/`, or, when a pointcast MCP server runs on your computer, by that server in its sessions folder (request 3 below). Nothing is uploaded.
 - **Settings and state** are kept in the browser's extension storage on your device.
@@ -24,7 +31,7 @@ Effective 28 September 2026. It covers the pointcast Chrome extension, the `poin
 
 The extension makes only these requests:
 
-1. **Once, to download the speech models** (`Xenova/whisper-base`, about 291 MB, and the voice activity detector `onnx-community/silero-vad`, about 2 MB) from Hugging Face, which are then kept in the browser's cache. No data of yours is sent with it. As with any download, Hugging Face sees ordinary request information such as your IP address.
+1. **Once, to download the speech models** (`Xenova/whisper-base`, about 294 MB, and the voice activity detector `onnx-community/silero-vad`, about 2 MB) from Hugging Face, which are then kept in the browser's cache. No data of yours is sent with it. As with any download, Hugging Face sees ordinary request information such as your IP address.
 2. **To the page's own development server**, to read source files as described above.
 3. **To a pointcast MCP server on your own computer** (`http://127.0.0.1:20547`), only while *Send to a running pointcast MCP server* is on in the settings (the default). After Stop it sends a short, empty hello; when a pointcast MCP server answers, it sends it the recording's files. This request never leaves your computer, unless you forward that port to another machine yourself (for example `ssh -L 20547:127.0.0.1:20547`, or an editor's automatic port forwarding for a remote workspace): the recording then goes through the forward to the pointcast MCP server on that machine. A program on that port that is not pointcast only ever receives the empty hello.
 

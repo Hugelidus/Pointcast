@@ -1,6 +1,15 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { SCHEMA_VERSION, type CapturedEvent, type ElementInfo, type SessionFile } from "@pointcast/core";
+import {
+  EVENT_ERRORS_MAX,
+  parseCapturedErrors,
+  SCHEMA_VERSION,
+  SESSION_ERRORS_MAX,
+  type CapturedError,
+  type CapturedEvent,
+  type ElementInfo,
+  type SessionFile,
+} from "@pointcast/core";
 import { CliError } from "../errors";
 
 /**
@@ -55,6 +64,11 @@ export function validateSessionFile(value: unknown, sourceLabel: string): Sessio
   if (typeof recorder.extensionVersion !== "string") fail("recorder.extensionVersion", "must be a string");
   if (typeof recorder.userAgent !== "string") fail("recorder.userAgent", "must be a string");
 
+  // Absent means voice: every session before typed mode (D12).
+  if (obj.inputMode !== undefined && obj.inputMode !== "voice" && obj.inputMode !== "typed") {
+    fail("inputMode", 'must be "voice" or "typed" when present');
+  }
+
   if (!Array.isArray(obj.events)) fail("events", "must be an array");
   const events = (obj.events as unknown[]).map((event, index) => validateEvent(event, index, fail));
 
@@ -68,7 +82,18 @@ export function validateSessionFile(value: unknown, sourceLabel: string): Sessio
     ...(obj.audio === undefined ? {} : { audio: obj.audio as SessionFile["audio"] }),
     recorder: recorder as SessionFile["recorder"],
     events,
+    ...(obj.inputMode === undefined ? {} : { inputMode: obj.inputMode as SessionFile["inputMode"] }),
+    ...optionalErrors(obj.errors, SESSION_ERRORS_MAX),
   };
+}
+
+/**
+ * Debug capture (D13): `errors` is optional page output, bounded again here. Lenient on purpose:
+ * a malformed entry is dropped, never the session, since the errors only add context.
+ */
+function optionalErrors(value: unknown, max: number): { errors?: CapturedError[] } {
+  const errors = parseCapturedErrors(value, max);
+  return errors === undefined ? {} : { errors };
 }
 
 function validateAudio(value: unknown, fail: (field: string, expected: string) => never): void {
@@ -111,6 +136,7 @@ function validateEvent(
   if (typeof event.url !== "string") fail(at("url"), "must be a string");
 
   const element = validateElement(event.element, at("element"), fail);
+  if (event.note !== undefined && typeof event.note !== "string") fail(at("note"), "must be a string when present");
 
   return {
     id: event.id as string,
@@ -120,6 +146,8 @@ function validateEvent(
     url: event.url as string,
     element,
     selection: event.selection as CapturedEvent["selection"],
+    ...(event.note === undefined ? {} : { note: event.note as string }),
+    ...optionalErrors(event.errors, EVENT_ERRORS_MAX),
   };
 }
 

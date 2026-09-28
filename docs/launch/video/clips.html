@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pointcast clips</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="clips.css">
+</head>
+<body>
+<!--
+  The short clips (README GIFs), one per ?clip=: hero, typed, batch, mcp, errors. Like index.html,
+  clips.js draws any instant with window.renderAt(t), so render.mjs can step it frame by frame, and
+  each clip ends exactly where it starts, so it loops without a seam. Served from the repository
+  root (render.mjs does it): it reads the logo and the real source of dev/examples/react-dashboard.
+  clips.html?clip=hero#t=7 holds one instant.
+-->
+<div id="stage"></div>
+<script src="shared.js"></script>
+<script src="clips.js"></script>
+</body>
+</html>

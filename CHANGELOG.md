@@ -1,5 +1,89 @@
 # Changelog
 
+## 0.7.0 (unreleased)
+
+**`shown by:` — where a value from data is displayed** ([D9 note 2026-09-28](docs/decisions.md#d9-source-mapping))
+- When an element's text comes from a data literal (`customer: "Marco Peña"`), the spec now also says which line renders that field: `shown by: src/components/OrdersTable.tsx:38` — `<td>{order.customer}</td>`. `text at:` / `data at:` still point at the value, for changing it; `shown by:` points at the markup, for changing how it is shown (link it, format it, badge it).
+- Recognizes `{x.key}`, `{key}`, `{x?.key}` and `{@html x.key}` (React, Svelte) and `{{ x.key }}` with filters (Vue, Django, Jinja) as element content, in the component files already searched, innermost first. No key, no such rendering, or two of them: no line. Nothing else in the spec changes.
+- New optional session field `element.shownBy` ([session-format.md](docs/session-format.md#elementinfo)), also returned by the MCP `get_element` tool and linked by `pointcast issue`. The `/pointcast` skill and Gemini command say when to use the line.
+
+**macOS and Linux: tested in CI, Option+click named as such**
+- The end-to-end suite now runs in CI on macOS and Windows as well as Linux (Chromium, headless): Linux and macOS on every pull request, Windows on `main` after a merge, all three by hand (`workflow_dispatch`). The unit tests run on all three. The README no longer calls macOS and Linux untested.
+- Two tests fixed for macOS and Windows runners: the note-box test moved the caret with End, which macOS does not do (⌘↓ does), and GitHub's Windows runners get more room in the gesture-timing check, which measures the test harness, not Pointcast.
+- On macOS the popup says **⌥ Option+click** instead of Alt+click (Chrome maps Alt to Option there; the gesture is the same). `pointcast setup` and the README mention it too.
+- New e2e test (`dev/e2e/alt-click-defaults.spec.ts`): while recording, Alt/Option+click on a link, a link with `download`, a submit `<button>`, an `<input type=submit>` and links inside open and closed shadow roots only points. Nothing is followed, downloaded or submitted, and Alt+middle-click opens no tab. A control run without recording shows Chrome downloading the link, and downloading the form's response too. The typed-mode note box is checked with Alt/Option still held when it opens, and with Option+Enter.
+
+## 0.6.0 (2026-09-28)
+
+Extension, CLI and integrations at 0.6.0. The CLI package now declares `mcpName` (`io.github.Hugelidus/pointcast`) for the MCP Registry.
+
+**`pointcast setup`: one command, whatever your agent and stack** ([D14](docs/decisions.md#d14-one-setup-command))
+- `npx pointcast@latest setup`, run in your project, finds Claude Code, Codex, Gemini CLI and Cursor and adds Pointcast to each one its documented way: the plugin for Claude Code and Codex, the extension for Gemini CLI, the MCP server (pinned to the CLI's exact version) in the project's `.cursor/mcp.json` for Cursor, merged with the servers already there. Agents that already have it are skipped.
+- It says what your stack needs: the `pointcast-django` install line and the `INSTALLED_APPS` line for a Django project (your Python files are never edited), and that React, Vue and Svelte dev builds need nothing. It prints how to add the browser extension, then runs `pointcast doctor`.
+- Asks `y/N` before each change and shows the exact command or file first. `--yes` accepts all, `--dry-run` shows the plan only, `--json` reports for agents. Without a terminal and without `--yes` it is a dry run.
+
+## 0.5.0 (2026-09-28)
+
+Extension, CLI and integrations at 0.5.0.
+
+**Debug capture: the errors around what you point at** ([D13](docs/decisions.md#d13-debug-capture))
+- While you record, Pointcast keeps what fails on the page: uncaught errors and unhandled rejections (message, file:line, first stack lines), `console.error` and `console.warn`, and requests that fail or answer 400+ (method, path, status). When you point at something broken, the spec lists the errors from 5 s before to 3 s after, under the element: ``- network: `POST /api/export` → 500 (0.6 s before)``, ``- uncaught: `TypeError: …` at `src/OrdersTable.tsx:31` ``. Nothing is added when nothing failed.
+- Works in voice and typed mode, on local dev hosts and on sites you enabled, and on pages loaded during the recording. The page is only hooked while recording, and its behaviour is unchanged.
+- Privacy: never a request or response body, a header or a query value; sensitive field values are replaced everywhere; on enabled sites personal data is redacted as in the page text. Popup → Settings → *Capture console and network errors* (on by default) turns it off. See [PRIVACY.md](PRIVACY.md).
+- Session format: events and `session.json` gain an optional `errors` list (`schemaVersion` stays 2). `pointcast process`, `get_session` and `get_element` read and render them; older sessions and readers are unaffected.
+- Playground: `dev/playground/errors.html`, a page of broken buttons.
+
+**Code pointer: library code stays out of the spec** ([D9](docs/decisions.md#d9-source-mapping))
+- The `find:` line names a library component by its package, never by its node_modules path: ``component `TabItem` (svelte, package `flowbite-svelte`)`` instead of ``… in `node_modules/.pnpm/flowbite-svelte@…/dist/tabs/TabItem.svelte:42` ``. Older sessions render this way too.
+- Library wrappers (Radix's Primitive, Slot, SlotClone, Presence, Portal…) are skipped before the chain's cap of 3 frames, so the places go to your app's own components, in capture (React, Vue, the bridge) and in rendering.
+
+## 0.4.0 (2026-09-28)
+
+**Typed mode: type instead of talking** ([D12](docs/decisions.md#d12-typed-mode))
+- The popup has a **🎤 Voice / ⌨️ Typed** choice above Record, remembered for the next recordings. Typed never opens the microphone: no permission page, no speech model download, no audio.
+- While recording in Typed mode the pill says **● Notes**, and each Alt+click (or text selection) opens a small note box next to the element: Enter saves, Shift+Enter starts a new line, Esc drops that gesture, a click outside saves what you typed (or drops an empty box), and pointing at the next element (Alt+click or a selection) saves the open one. Keys typed into the box never reach your app, and its scripts cannot read the note. The box also works inside modal dialogs and focus-trapped panels.
+- Stop turns the notes into the spec right away, with the same result as a voice recording: copied, sent to your agent's MCP server or saved to Downloads, and announced in the popup. Each note becomes a request (`> This button should export only the filtered orders. [a]`) followed by its element and code pointer as before.
+- Session format: `session.json` gains an optional `inputMode` (`"typed"`) and events an optional `note`. Both are optional, so older sessions and readers are unaffected. A typed session has no `words.json` or audio; `pointcast process`, `get_session` and `pointcast issue` render it from its notes without transcribing.
+
+## 0.3.0 (2026-09-28)
+
+Extension, CLI and integrations at 0.3.0.
+
+**Django templates get the code pointer** ([integrations/django](integrations/django/README.md))
+- `pointcast-django`, one line in `INSTALLED_APPS` under `DEBUG`: in development it marks each rendered template (includes, HTMX partials, blocks inherited from a base template) with invisible HTML comments. It never changes production output, JSON, text emails, attributes or `<title>`, and never writes an absolute path.
+- The extension reads the markers when you Alt+click, and the resolver finds the element's text in its template: `text at: templates/pim/partials/row.html:42`. It searches the innermost template first, prefers the hit in the element's own tag, and ignores `<script>`, attribute values, template comments and `{% if %}` operands. On a real 1,358-template Django + HTMX app it placed ~94 % of sampled elements on their exact line, with no wrong answer; the rest stay silent.
+
+**CLI**
+- `pointcast doctor`: checks your setup in a few lines (Node, the sessions folder, whether an MCP server is receiving recordings, local transcription, the Linux clipboard) and says how to fix each problem. `--json` for agents, `--online` to compare with npm.
+- Releases are built by CI from a version tag, as a draft with the zip, the CLI package and checksums ([CONTRIBUTING](.github/CONTRIBUTING.md)).
+
+## Extension 0.2.2 (2026-09-28)
+
+A usability pass on everything the extension says and shows. The CLI and the integrations are unchanged (0.2.1).
+
+**Popup**
+- A result reads as a result: a success headline ("Copied. Paste it into your agent."), then where it went on its own line (Downloads › pointcast, or your agent's Pointcast MCP server, with the whole folder on hover and a *Copy path* button), then the audio length and the number of events. A warning is its own amber block and never looks like an error; an error says in its first sentence what failed and what to do, with the raw message folded under *Details*.
+- The first recording is announced before it happens: while the microphone is not allowed, the main button is *Allow microphone* and opens the permission page; while the speech model was never downloaded, a notice says the first recording downloads it once (294 MB, one figure everywhere). After Stop, a first run reads "Preparing…" instead of a made-up estimate.
+- While a recording is processed, Record, the tab line and the site section step aside; the Time and Events cards show only while recording, and every duration reads m:ss.
+- Gestures are named in words: "Last: link “View report”", "Undone: column header “Quantity”", the same in the popup and in the page.
+- On a remote site that is not enabled, *Enable on <host>* is the first step and Record says the tab won't be captured.
+- New look: ink and violet brand colours, stronger contrast in light and dark, violet for processing and amber for warnings only; the shortcuts are drawn as keys.
+- Screen readers hear each change of stage, headline, warning or error once (never the countdown); the progress bar is a progressbar; the focus stays on a usable control when the one pressed goes away.
+
+**In the page**
+- The pill says where the recording went ("✓ Copied · saved to Downloads" or "sent to your agent"), shows a warning in amber and a failure with ✗, and says so when Record failed (for example a denied microphone).
+- New pill style (ink background, one coloured glyph), a violet capture ring instead of the error red, and `prefers-reduced-motion` is honoured.
+
+**Failures you can act on**
+- Known transcription failures (the model download, not enough memory, too long) come out as one sentence that says what to do, and every one says that the events and audio are saved. The notification carries that sentence only.
+- A failed Record shows "!" on the toolbar icon, and a denied microphone opens the permission page, which now brings you back to the tab you came from. The permission page is rebuilt: numbered steps when the microphone is blocked, *Check again*, *Back to my app*.
+- Fixed: a retried report could download a session's files twice. Fixed: when the service worker could not take the processed recording, the popup stayed on "Processing…" for up to 10 minutes; after five tries (about 30 s) it now says what was kept (the Markdown on the clipboard, or the files with your agent's MCP server).
+- Plain words instead of internal ones in every message, "Pointcast" written the same way everywhere, and every Whisper language named in the language menu.
+
+**Repository**
+- The README is rewritten around a one-line install per agent (Claude Code, Codex, Gemini CLI, Cursor and any MCP client) and the evaluation numbers, each linked to its report; setup and development moved to CONTRIBUTING.md.
+- A code of conduct (Contributor Covenant 2.1), issue forms instead of Markdown templates, and a demo script built on the React example.
+
 ## 0.2.1 (2026-09-28)
 
 CLI 0.2.1, extension 0.2.1 and the integrations at 0.2.1.

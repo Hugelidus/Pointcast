@@ -1,37 +1,81 @@
-# LinkedIn posts (CV angle: shipped an open-source dev tool end to end — problem framing, evaluation methodology, MV3/browser-ML engineering)
+# LinkedIn posts
 
-Placeholders: `<GitHub link>`, `<your name>` — fill in before posting. Adjust "I" claims if this becomes a joint/team post.
+Two versions of one post: Spanish first (your network), English second (post it as a separate post a day or two later, or skip it). The angle is the build-and-measure story, for your career: a problem, how it was evaluated, what the evaluation taught, and the result.
 
----
+How to post:
 
-## English
-
-Over the last few weeks I designed, built and evaluated **pointcast**, an open-source Chrome extension that lets you narrate UI changes to an AI coding agent while pointing at the exact elements you mean — instead of typing "this button" and hoping the agent guesses right.
-
-What made this an interesting build, beyond the product idea:
-
-- **I didn't assume it worked — I measured it.** Before writing any launch copy, I ran a controlled evaluation across three real open-source codebases (React, Vue and Svelte admin dashboards), comparing a coding agent's accuracy at identifying the right UI element with vs. without the pointing data. Result: 78% → 89% accuracy, concentrated exactly where ambiguity is highest (duplicate buttons, shared components). I also measured where a plain hand-written description still wins (96%, fewer tokens) — an honest evaluation reports what *doesn't* favor your own tool, too.
-- **Local machine-learning in the browser, in production constraints.** Getting Whisper (via transformers.js/ONNX) to run inside a Chrome MV3 extension's offscreen document — with no server, no API key, audio never leaving the device — meant solving real constraints: WASM compilation under MV3's content-security policy, cross-origin isolation for multi-threading, serving model runtime files from the extension itself instead of a CDN (which MV3 forbids). Fully documented with the numbers behind every default: 43 s to transcribe 152 s of speech, 92.8% word accuracy, and why WebGPU was *not* the answer on this hardware.
-- **A real algorithmic core.** Fusing a spoken transcript with pointing gestures separated in time is a sequence-alignment problem — solved with dynamic programming (closer in spirit to `diff` than to nearest-neighbor matching), because greedy matching provably picks the wrong pairing in common cases.
-- **Every non-obvious decision is documented**, including what was rejected and why — the kind of design log I'd want from anyone I hand a codebase to.
-
-It's MIT licensed and Phase 1 of a longer roadmap (source-location mapping, broader framework support next). If you build with AI coding agents and this problem is familiar, I'd love feedback.
-
-<GitHub link>
+- **Upload the video natively** (`docs/launch/video/out/pointcast-demo.mp4`, ~27.5 s, no sound; LinkedIn plays it muted and inline). The short hero GIF (`pointcast-hero.gif`, 9.6 s) works too if you'd rather keep it snappy. A link in the post body lowers its reach, so the repository link goes in the **first comment**, posted right away by you. The post says so in its last line.
+- No more than 3–5 hashtags, at the end.
+- Tag nobody who hasn't agreed to it. The colleague who tested it can be thanked by name only if they're happy with that; the app itself is never named.
 
 ---
 
 ## Español
 
-En las últimas semanas diseñé, construí y evalué **pointcast**, una extensión de Chrome de código abierto que permite narrar cambios de interfaz a un agente de IA mientras señalas exactamente el elemento del que hablas — en vez de escribir "este botón" y confiar en que el agente adivine bien.
+Trabajando con agentes de programación, me encontraba siempre con el mismo problema: le escribes "haz que esto se pueda ordenar y pon esto al lado de aquello", y el agente no sabe qué es "esto". Así que acabas escribiendo un segundo mensaje explicándolo.
 
-Lo que hizo de este proyecto algo interesante más allá de la idea de producto:
+Construí Pointcast para resolverlo: una extensión de Chrome y Edge en la que hablas (o escribes una nota, si no puedes hablar) mientras haces Alt+clic en los elementos de tu aplicación. Al parar, cada frase se convierte en una petición, y cada elemento señalado llega al agente (Claude Code, Codex, Gemini CLI o Cursor) con la línea de código que hay detrás — no el HTML, la línea que lo genera. La voz se transcribe en el propio navegador; nada sale del ordenador.
 
-- **No asumí que funcionaba: lo medí.** Antes de escribir cualquier texto de lanzamiento, ejecuté una evaluación controlada sobre tres proyectos reales de código abierto (dashboards en React, Vue y Svelte), comparando la precisión de un agente de codificación al identificar el elemento correcto, con y sin los datos de señalización. Resultado: 78% → 89% de precisión, concentrado justo donde la ambigüedad es mayor (botones duplicados, componentes compartidos). También medí dónde una descripción escrita a mano sigue ganando (96%, menos tokens) — una evaluación honesta también reporta lo que no favorece a tu propia herramienta.
-- **Machine learning local en el navegador, con restricciones de producción.** Conseguir que Whisper (vía transformers.js/ONNX) corra dentro de un documento offscreen de una extensión Chrome MV3 — sin servidor, sin API key, sin que el audio salga nunca del dispositivo — implicó resolver restricciones reales: compilación de WASM bajo la política de seguridad de contenido de MV3, aislamiento de origen cruzado para multihilo, y servir los archivos del runtime del modelo desde la propia extensión en vez de un CDN (que MV3 prohíbe). Todo documentado con los números detrás de cada decisión: 43 s para transcribir 152 s de audio, 92.8% de precisión por palabra, y por qué WebGPU no fue la respuesta en este hardware.
-- **Un núcleo algorítmico real.** Fusionar una transcripción hablada con gestos de señalización separados en el tiempo es un problema de alineación de secuencias — resuelto con programación dinámica (más parecido a `diff` que a un simple vecino más cercano), porque el emparejamiento voraz falla de forma demostrable en casos comunes.
-- **Cada decisión no evidente está documentada**, incluyendo qué se descartó y por qué — el tipo de registro de diseño que a mí me gustaría recibir al heredar un código.
+Lo que más he aprendido no ha sido construirlo, sino medirlo:
 
-Es de licencia MIT y es la Fase 1 de una hoja de ruta más larga (mapeo de ubicación de código fuente, más frameworks). Si trabajas con agentes de codificación con IA y este problema te suena familiar, me encantaría recibir feedback.
+• Antes de publicar nada, monté una evaluación sobre tres dashboards reales de código abierto (React, Vue y Svelte): la misma petición hablada, con y sin señalar. Señalando, el agente acertó el elemento el 89 % de las veces, frente al 78 % sin señalar.
 
-<enlace a GitHub>
+• La evaluación también dijo lo que no quería oír: una descripción escrita con cuidado seguía ganando (96 %), y señalar no ahorraba tokens. Lo publiqué igual.
+
+• Ese resultado marcó el siguiente paso: darle al agente el archivo y la línea exactos. Con eso, los tokens que gastaba en encontrar los elementos bajaron a menos de la mitad.
+
+• Un compañero lo probó en su proyecto Django real y ahí no llegaba al código: las plantillas del servidor no dicen de dónde viene cada elemento. Un paquete para Django lo resuelve, marcando las plantillas solo en desarrollo. En una app Django + HTMX de unas 1.300 plantillas, colocó ~94 % de los elementos de muestra en su línea exacta, y ninguno en una línea equivocada.
+
+• Una grabación real trae varios cambios a la vez, no uno. Repetí la comparación con seis cambios en una sola grabación: el agente acertó el código el 96 % de las veces frente al 85 % del mismo pedido escrito a mano, con un 24 % menos de tokens y un 75 % menos de búsquedas. Con un cambio cada vez también acierta más (96 % frente a 84 %), pero no gasta menos: el ahorro está en agruparlos. En tiempo, mi estimación (no medida) para seis cambios: ~15 min pidiéndolos de uno en uno frente a ~5 min con una grabación de 2 minutos.
+
+• Desde entonces añadí lo que pedían los primeros usuarios: un modo escrito para cuando no se puede hablar, y que la grabación recoja los errores de consola y de red de los segundos alrededor de cada elemento señalado, para que el agente sepa no solo qué botón sino por qué no hacía nada.
+
+• La regla que más ha pesado en el diseño: si no está seguro, no dice nada. Una línea que falta le cuesta al agente una búsqueda; una línea equivocada le cuesta un cambio en el sitio equivocado.
+
+Es código abierto (MIT), está en beta pública y los informes de evaluación, con sus límites, están en el repositorio. Si trabajas con agentes en interfaces web, me encantaría saber dónde falla en tu proyecto.
+
+Enlace al repositorio en el primer comentario
+
+#OpenSource #DesarrolloWeb #IA #Django #DeveloperTools
+
+**Primer comentario:**
+
+```
+Repositorio, vídeo e informes de evaluación: https://github.com/Hugelidus/pointcast
+```
+
+---
+
+## English
+
+Working with coding agents, I kept running into the same problem: you type "make this sortable and put this next to that", and the agent has no idea what "this" is. So you write a second message explaining it.
+
+I built Pointcast to fix that: a Chrome and Edge extension where you talk (or type a note, if you can't) while you Alt+click the elements of your app. At Stop, each sentence becomes a request, and each element you pointed at reaches the agent (Claude Code, Codex, Gemini CLI or Cursor) with the line of code behind it — not the HTML, the line that makes it. Your voice is transcribed in the browser; nothing leaves your machine.
+
+What taught me the most wasn't building it, it was measuring it:
+
+• Before publishing anything, I ran an evaluation on three real open-source dashboards (React, Vue and Svelte): the same spoken request, with and without pointing. With pointing, the agent picked the right element 89% of the time, against 78% without.
+
+• The evaluation also told me what I didn't want to hear: a carefully written description still won (96%), and pointing saved no tokens. I published that too.
+
+• That result set the next step: give the agent the exact file and line. With it, the tokens the agent spent finding the elements fell by more than half.
+
+• A colleague tried it on their real Django project, and there it couldn't reach the code: server templates don't say where each element comes from. A small Django package fixes that, marking templates in development only. On a Django + HTMX app with about 1,300 templates, it placed ~94% of sampled elements on their exact line, and none on a wrong one.
+
+• A real recording usually carries several changes, not one. I re-ran the comparison with six changes in a single recording: the agent got the right code 96% of the time against 85% for the same six changes typed by hand, at 24% fewer tokens and 75% fewer searches. With one change at a time it is still more accurate (96% vs. 84%), but not cheaper: the saving is in batching them. In time, my rough estimate (not measured) for six changes: ~15 min asking one by one vs. ~5 min with one 2-minute recording.
+
+• Since then I've added what early users asked for: a typed mode for when talking isn't an option, and a setting that carries the console and network errors around each pointed element, so the agent knows not just which button but why it did nothing.
+
+• The rule that shaped the design most: when it isn't sure, it says nothing. A missing line costs the agent a search; a wrong line costs an edit in the wrong place.
+
+It's open source (MIT), in public beta, and the evaluation reports, limits included, are in the repository. If you use agents on web UIs, I'd love to hear where it breaks on your project.
+
+Repository link in the first comment
+
+#OpenSource #WebDevelopment #AI #Django #DeveloperTools
+
+**First comment:**
+
+```
+Repository, video and evaluation reports: https://github.com/Hugelidus/pointcast
+```

@@ -164,12 +164,24 @@ describe("processSession", () => {
     const result = await processSession(job({ warnings: ["The microphone stopped by itself."] }), d);
     expect(names(result.files)).toEqual(["session.json", "audio.wav"]);
     expect((await json<SessionFile>(result.files, "session.json")).audio?.file).toBe("audio.wav");
-    expect(result.error).toBe(
-      "Could not transcribe: Transcription took too long and was stopped. The events and the audio were saved in the " +
-        'session folder, so "pointcast process" can finish it. The microphone stopped by itself.',
-    );
+    expect(result.error).toBe("Transcription took too long and was stopped: try a shorter recording. Your events and audio are saved.");
+    expect(result.errorDetail).toMatch(/^Transcription took too long and was stopped\.\n.*"pointcast process" can transcribe it/);
+    // Kept apart from the error: the error line is the one thing to act on.
+    expect(result.warning).toBe("The microphone stopped by itself.");
     expect(result.markdown).toBeUndefined();
     expect(d.copy).not.toHaveBeenCalled();
+  });
+
+  it("turns a model download failure into a sentence that says what to do, keeping the raw text as the detail", async () => {
+    const raw = 'Could not locate file: "https://huggingface.co/Xenova/whisper-base/resolve/main/config.json".';
+    const d: ProcessorDeps = { transcribe: async () => Promise.reject(new Error(raw)), copy: vi.fn() };
+    const result = await processSession(job(), d);
+    expect(result.error).toBe(
+      "Could not download the speech model: check your internet connection, then record again. Your events and audio are saved.",
+    );
+    expect(result.error).not.toContain("http");
+    expect(result.errorDetail?.startsWith(raw)).toBe(true);
+    expect(result.warning).toBeUndefined();
   });
 
   it("keeps the events and the raw recording when the audio could not be decoded", async () => {
@@ -178,7 +190,8 @@ describe("processSession", () => {
     const result = await processSession(job({ audio: { decoded: false, raw, durationMs: 4_000, error: "Unable to decode" } }), d);
     expect(names(result.files)).toEqual(["session.json", "audio.webm"]);
     expect(await result.files[1]?.blob.text()).toBe("webm bytes");
-    expect(result.error).toMatch(/could not be converted \(Unable to decode\).*ffmpeg -i audio\.webm/);
+    expect(result.error).toBe("The audio could not be converted, so nothing was transcribed. Your events and the raw recording are saved.");
+    expect(result.errorDetail).toMatch(/^Unable to decode\n.*ffmpeg -i audio\.webm/);
     expect((await json<SessionFile>(result.files, "session.json")).events).toHaveLength(1);
     expect(d.transcribe).not.toHaveBeenCalled();
   });
@@ -189,5 +202,42 @@ describe("processSession", () => {
     expect(d.transcribe).not.toHaveBeenCalled();
     expect(result).toMatchObject({ copied: true, audioMs: 0 });
     expect(result.timings).toBeUndefined();
+  });
+});
+
+describe("processSession of a typed session (D12)", () => {
+  const typedJob = (extra: Partial<ProcessingJob> = {}) =>
+    job({
+      events: [{ ...event, note: "Sort by this column" }],
+      audio: { decoded: false, typed: true, durationMs: 8_000 },
+      ...extra,
+    });
+
+  it("renders the notes at once: no transcription, no audio, no words.json, no timings", async () => {
+    const d = deps();
+    const result = await processSession(typedJob(), d);
+
+    expect(d.transcribe).not.toHaveBeenCalled();
+    expect(names(result.files)).toEqual(["session.md", "session.json"]);
+    expect(result.markdown).toContain("> Sort by this column [a]\n\n- [a] th «Quantity» on `/`");
+    expect(d.copy).toHaveBeenCalledWith(result.markdown);
+    expect(result).toMatchObject({ copied: true, audioMs: 8_000 });
+    expect(result.timings).toBeUndefined();
+    expect(result.language).toBeUndefined();
+    const session = await json<SessionFile>(result.files, "session.json");
+    expect(session).toMatchObject({ inputMode: "typed", durationMs: 8_000, schemaVersion: 2 });
+    expect(session.audio).toBeUndefined();
+    expect(session.events[0]?.note).toBe("Sort by this column");
+  });
+
+  it("resolves the code pointers and still saves when the clipboard fails", async () => {
+    const d = deps();
+    d.copy.mockRejectedValue(new Error("Document is not focused"));
+    const resolveCode = vi.fn(async (session: SessionFile) => ({ session, note: "Code pointer: 1 location found." }));
+    const result = await processSession(typedJob(), { ...d, resolveCode });
+    expect(resolveCode).toHaveBeenCalledOnce();
+    expect(result).toMatchObject({ copied: false, code: "Code pointer: 1 location found." });
+    expect(result.warning).toMatch(/Copy again/);
+    expect(names(result.files)).toEqual(["session.md", "session.json"]);
   });
 });

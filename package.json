@@ -13,11 +13,11 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "typecheck": "pnpm -r run typecheck",
-    "playground": "http-server playground -a 127.0.0.1 -p 5500 -c-1",
+    "playground": "http-server dev/playground -a 127.0.0.1 -p 5500 -c-1",
     "example:react": "pnpm --filter example-react-dashboard dev",
     "example:vue": "pnpm --filter example-vue-dashboard dev",
-    "e2e": "pnpm --filter @pointcast/extension build:e2e && playwright test",
-    "e2e:edge": "pnpm --filter @pointcast/extension build:e2e && playwright test --config playwright.edge.config.ts",
+    "e2e": "pnpm --filter @pointcast/extension build:e2e && playwright test --config dev/playwright.config.ts",
+    "e2e:edge": "pnpm --filter @pointcast/extension build:e2e && playwright test --config dev/playwright.edge.config.ts",
     "pointcast": "pnpm --filter pointcast start"
   },
   "devDependencies": {
@@ -28,5 +28,10 @@
     "jsdom": "^30.1.1",
     "typescript": "^7.0.2",
     "vitest": "^5.0.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild@<0.28.1": "^0.28.1"
+    }
   }
 }

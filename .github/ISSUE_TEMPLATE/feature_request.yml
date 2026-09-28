@@ -1,0 +1,28 @@
+name: Feature request
+description: Suggest an addition or a change in behavior
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This project deliberately avoids speculative options and abstractions (see [CONTRIBUTING.md](https://github.com/Hugelidus/pointcast/blob/main/.github/CONTRIBUTING.md)): the simplest version that solves your actual, concrete problem is what we're after. For a bigger change, agree on the approach here before opening a PR. Open-ended ideas fit better in [Discussions](https://github.com/Hugelidus/pointcast/discussions).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do that Pointcast doesn't support today? A concrete example beats an abstract description.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What would solve it. If it touches a decision in docs/decisions.md, say which one and why you'd change it.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Have you found a workaround? Would a CLI or MCP option do it instead of a new UI element?

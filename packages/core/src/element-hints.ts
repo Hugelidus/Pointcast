@@ -2,6 +2,7 @@ import { elementText, fullSource } from "./describe";
 import { trimHtml } from "./html-trim";
 import { codeSpan, escapeMarkdown, oneLine } from "./markdown";
 import { projectRelativePath } from "./paths";
+import { isLibraryPath, libraryPackage } from "./resolve/chain";
 import type { ElementInfo } from "./schema";
 
 /** Longest label worth quoting as a grep key; longer ones are prose, not identifiers. */
@@ -73,13 +74,24 @@ export function searchHints(element: ElementInfo): string[] {
 
   const component = element.component;
   if (component?.name) {
-    const line = component.line === undefined ? "" : `:${component.line}`;
-    // Defense in depth (D8): normalizes to a project-relative path even for a session recorded
-    // before capture did it, since component.file is dev-build data the extension only reads.
-    const where = component.file ? ` in ${codeSpan(`${projectRelativePath(component.file)}${line}`)}` : "";
-    hints.push(`component ${codeSpan(component.name)} (${escapeMarkdown(component.framework)})${where}`);
+    // pointcast-django's markers name a template, not a component (D9 note 2026-09-28).
+    const kind = component.framework === "django" ? "template" : "component";
+    const framework = escapeMarkdown(component.framework);
+    if (component.file && isLibraryPath(component.file)) {
+      // A library component: its node_modules path is no place for an agent to open or edit,
+      // so it is named by its package, as the code pointer does (D9), and never by that path.
+      const pkg = libraryPackage(component.file);
+      hints.push(`${kind} ${codeSpan(component.name)} (${framework}, ${pkg === undefined ? "library" : `package ${codeSpan(pkg)}`})`);
+    } else {
+      const line = component.line === undefined ? "" : `:${component.line}`;
+      // Defense in depth (D8): normalizes to a project-relative path even for a session recorded
+      // before capture did it, since component.file is dev-build data the extension only reads.
+      const where = component.file ? ` in ${codeSpan(`${projectRelativePath(component.file)}${line}`)}` : "";
+      hints.push(`${kind} ${codeSpan(component.name)} (${framework})${where}`);
+    }
   }
-  if (element.source) {
+  // A source attribute pointing into a library says nothing the agent can act on (see above).
+  if (element.source && !isLibraryPath(element.source.file)) {
     const distance = element.source.distance;
     hints.push(
       `source ${codeSpan(fullSource(element.source))}${distance > 0 ? ` (ancestor +${distance})` : ""}`,

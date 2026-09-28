@@ -1,12 +1,34 @@
-import type { CapturedEvent, CapturedEventDraft } from "@pointcast/core";
+import {
+  attachErrors,
+  cleanNote,
+  parseCapturedErrorDraft,
+  type CapturedError,
+  type CapturedEvent,
+  type CapturedEventDraft,
+} from "@pointcast/core";
 
 /**
- * Turns drafts from content scripts into session events: ids e1, e2, ... in arrival order,
- * and times relative to t0 (docs/session-format.md "Time").
+ * Errors kept while recording (D13). More than the session keeps (SESSION_ERRORS_MAX): each
+ * gesture picks its own from all of these at Stop, so an early gesture keeps its errors even when
+ * later ones fill the session's list.
+ */
+export const MAX_LOGGED_ERRORS = 200;
+
+/**
+ * Turns drafts from content scripts into session events: ids in arrival order, and times
+ * relative to t0 (docs/session-format.md "Time").
+ *
+ * While recording, an id names one gesture for good: it is never reused or moved, even when an
+ * earlier gesture is removed (Undo, a note box cancelled with Esc). Pages hold on to the ids they
+ * were given (an open note box in another tab, Undo's flash), and a renumbered id would make them
+ * write a note onto, or cancel, a different gesture. The session gets gapless ids e1..eN only when
+ * it is built at Stop (session()).
  */
 export class EventLog {
   readonly #t0: number;
   readonly #events: CapturedEvent[] = [];
+  readonly #errors: CapturedError[] = [];
+  #nextId = 1;
 
   constructor(t0: number) {
     this.#t0 = t0;
@@ -17,7 +39,7 @@ export class EventLog {
     // still gets the later id, which matches the order the user finished pointing.
     const tStart = this.#relative(draft.atStart);
     const event: CapturedEvent = {
-      id: `e${this.#events.length + 1}`,
+      id: `e${this.#nextId++}`,
       gesture: draft.gesture,
       tStart,
       // A malformed draft must not produce an interval that ends before it starts.
@@ -30,16 +52,66 @@ export class EventLog {
     return event;
   }
 
-  /**
-   * Removes and returns the last event (Undo), or undefined when there is none. The next event
-   * reuses its id, so ids stay e1..eN without gaps, as docs/session-format.md expects.
-   */
+  /** Removes and returns the last event (Undo), or undefined when there is none. */
   removeLast(): CapturedEvent | undefined {
     return this.#events.pop();
   }
 
+  /**
+   * Typed mode (D12): sets the note of event `id`, cleaned (trimmed, capped at NOTE_MAX_CHARS);
+   * a blank note removes it. False when there is no such event (undone meanwhile).
+   */
+  setNote(id: string, note: string): boolean {
+    const event = this.#events.find((e) => e.id === id);
+    if (!event) return false;
+    const cleaned = cleanNote(note);
+    if (cleaned === undefined) delete event.note;
+    else event.note = cleaned;
+    return true;
+  }
+
+  /**
+   * Removes event `id` (a note box cancelled with Esc, D12) and returns it, or undefined when
+   * there is none. It is nearly always the last event, but a gesture in another tab may have come
+   * after it; that one keeps its id (see above).
+   */
+  remove(id: string): CapturedEvent | undefined {
+    const index = this.#events.findIndex((e) => e.id === id);
+    if (index < 0) return undefined;
+    return this.#events.splice(index, 1)[0];
+  }
+
+  /** The events so far, with the ids pages know them by (possibly with gaps). */
   get events(): readonly CapturedEvent[] {
     return this.#events;
+  }
+
+  /**
+   * Debug capture (D13): something failed on a captured page. Checked and bounded again (the
+   * content script built it from page input); one from before t0 is dropped. Only the most
+   * recent MAX_LOGGED_ERRORS are kept, so an error loop cannot grow the log without end.
+   */
+  addError(draft: unknown): boolean {
+    const parsed = parseCapturedErrorDraft(draft);
+    if (parsed === undefined || parsed.at < this.#t0) return false;
+    const { at, ...fields } = parsed;
+    this.#errors.push({ ...fields, t: this.#relative(at) });
+    if (this.#errors.length > MAX_LOGGED_ERRORS) this.#errors.splice(0, this.#errors.length - MAX_LOGGED_ERRORS);
+    return true;
+  }
+
+  /**
+   * The events for the session, renumbered e1..eN without gaps as docs/session-format.md expects,
+   * each with the errors around it (D13).
+   */
+  session(): CapturedEvent[] {
+    const events = this.#events.map((event, i) => ({ ...event, id: `e${i + 1}` }));
+    return attachErrors(events, this.#errors).events;
+  }
+
+  /** SessionFile.errors (D13): the most recent errors, in time order; undefined when there were none. */
+  errors(): CapturedError[] | undefined {
+    return attachErrors([], this.#errors).errors;
   }
 
   /**

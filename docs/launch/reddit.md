@@ -1,89 +1,160 @@
 # Reddit posts
 
-General notes: post the same core content, adjust framing per subreddit's norms. Read each sub's rules before posting (self-promotion limits, flair requirements) — this is a draft, not a submit button.
+One post per subreddit, each written for that community. They are drafts, not a submit button: read the sidebar rules the same day you post (they change), pick the flair the sub asks for, and stay in the thread for the first hours.
+
+What the rules usually are, from memory, **not re-checked for this draft**:
+
+- **r/ClaudeAI:** projects are welcome with the project flair (look for one like *Built with Claude* or *Showcase*); some flairs ask you to say how Claude was involved and whether the project is free. Pointcast is free and MIT; say it.
+- **r/ChatGPTCoding:** tools are fine if you are open that it's yours and it's free; low-effort promotion is removed.
+- **r/webdev:** your own projects go in **Showoff Saturday** posts only (Saturdays, with that flair). So the r/webdev post goes out on the first Saturday after launch, not on launch day.
+- **r/django:** project posts are fine when they are useful to Django developers; lead with the Django part.
+
+For every post: upload `docs/launch/video/out/pointcast-demo.mp4` (~27.5 s, no sound) as the post's video where the sub allows video, or put the link in the first line; the short hero GIF (`pointcast-hero.gif`, 9.6 s) is a fallback where a sub won't take video. Reddit prefers the video natively uploaded to a link to GitHub. Don't cross-post the same text on the same day; space them out (see [launch-plan.md](launch-plan.md)).
+
+Links used below:
+
+- Repository: https://github.com/Hugelidus/pointcast
+- Video: https://github.com/Hugelidus/pointcast/blob/main/docs/launch/video/out/pointcast-demo.mp4
+- Eval: https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-27.md
+- Code-pointer eval: https://github.com/Hugelidus/pointcast/blob/main/docs/eval/stage0-code-pointer-2026-09-27.md
+- Django: https://github.com/Hugelidus/pointcast/tree/main/integrations/django
 
 ---
 
 ## r/ClaudeAI
 
-**Title:** I built a Chrome extension that turns "make this sortable" into a spec Claude Code can actually use
+**Title:** I made a Claude Code plugin that takes what you say while pointing at your app, and hands Claude the exact lines of code
 
 **Body:**
 
-If you use Claude Code (or Cursor, or any agent) for UI work, you've probably typed something like "make this table sortable and move this button next to that one" and then had to go back and clarify which element you meant, because the agent can't see your screen.
+The video shows the whole loop: talk, Alt+click two things, Stop, and each element comes with its line of code — not the HTML, the line that makes it.
 
-I built **pointcast**: a Chrome extension. Press Record, talk normally about the change you want, and Alt+click or select the element you're talking about as you say it. Press Stop — it transcribes locally in the browser (no audio leaves your machine), lines up your words with what you pointed at, and copies a Markdown spec ready to paste into Claude Code:
+I do a lot of UI work with Claude Code, and the most annoying part was the second message: "no, not that Export button, the one above the orders table". So I built Pointcast. You record yourself talking about the changes while you Alt+click the elements you mean (or type a short note instead, if you'd rather not talk). At Stop, the extension transcribes your voice in the browser (Whisper, nothing leaves your machine) and hands the recording straight to the plugin's MCP server. Then `/pointcast` in Claude Code fetches it:
 
 ```markdown
-## Request 1
-> This [a] should be sortable by quantity.
-- [a] th «Quantity» (selected) on `/index.html`
-  - in: `main › section#orders › table#orders-table › thead › tr › th[3]`
+## Request 2
+> And this [a] button should export only the filtered orders.
+- [a] «Export» → code:
+  - text at: `src/components/OrdersTable.tsx:22`
 ```
 
-I ran an eval before posting this instead of just vibes: on real React/Vue/Svelte admin dashboards, giving Claude (Sonnet, medium effort) the pointcast spec instead of the same spoken words without pointing raised correct-element identification from 78% to 89%, specifically on the ambiguous cases (duplicate buttons/cards, shared components). Numbers and methodology: [docs/eval](../eval/results-2026-09-27.md).
+Install:
 
-MIT licensed, Chrome only for now (Phase 1). Would love feedback from anyone doing a lot of UI iteration with Claude Code — especially where the pointing/transcription gets it wrong.
+```bash
+claude plugin marketplace add Hugelidus/pointcast && claude plugin install pointcast@pointcast
+```
 
-GitHub: <link>
+plus the Chrome/Edge extension (the Chrome Web Store listing is in review; the release zip works meanwhile).
 
----
+**Does it help, or is it just a nice demo?** I measured it with `claude -p` (Sonnet) on three open-source admin dashboards: with pointing, Claude picked the right element 89% of the time, against 78% with the same words and no pointing. A careful hand-written prompt still beats it on accuracy for a single change (96%): Pointcast is for when you'd rather talk and point than write that prompt. Where it does pay off is a real recording with several changes: read through the MCP server, six changes in one recording got the right code 96% of the time against 85% for the same six changes typed by hand, with 24% fewer tokens and 75% fewer searches. Reports, with their limits: [eval](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-27.md), [code pointer](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/stage0-code-pointer-2026-09-27.md), [batching](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-28-batching.md).
 
-## r/cursor
+How Claude was involved: I built it with Claude Code, and the evaluation runs Claude as the agent under test.
 
-**Title:** Point at the UI element while you talk to Cursor — Chrome extension that generates the spec
+Limits: code lines need a dev build (React 19, Vue 3, Svelte 5, Django in DEBUG); Chrome and Edge only; tested on Windows.
 
-**Body:**
+It's free and MIT, a beta. I'd like to know where it picks the wrong element or mishears you, on your own app.
 
-Cursor is great once it knows exactly which element you mean, but "this button" and "that card" are exactly the references it can't resolve from text alone. I built **pointcast** to fix that at the source: record your voice while you Alt+click or select the elements you're describing, and it hands you back a Markdown spec with each request paired to the exact selector, DOM path, and (when available) the component + `file:line`.
-
-Transcription is local (Whisper in the browser via transformers.js), nothing leaves your machine by default, and it only runs on localhost unless you explicitly enable a host.
-
-Ran a real evaluation (not just a demo) on three open-source dashboards to see if pointing actually helps vs. just describing things in words — it does, especially where there's ambiguity (duplicate buttons, shared components): 78% → 89% correct-element accuracy. Full write-up: [docs/eval](../eval/results-2026-09-27.md).
-
-MIT, open source, Phase 1 (Chrome only, source locations limited to what your dev build already exposes). Feedback welcome, especially from people iterating fast on UI with Cursor.
-
-GitHub: <link>
+https://github.com/Hugelidus/pointcast
 
 ---
 
-## r/webdev
+## r/ChatGPTCoding
 
-**Title:** Built a Chrome extension that fixes "make this bigger" ambiguity for AI coding agents — narrate + point, get a Markdown spec
+**Title:** Pointing beat describing: a local tool that turns "this button" into the file and line for your coding agent (with eval numbers)
 
 **Body:**
 
-Anyone who's tried directing an AI coding agent through UI changes has hit this: you say "make this table sortable" but the agent has no idea what "this" refers to. A screenshot doesn't fully solve it either — the agent still needs the actual DOM element and ideally the source file.
+Video (~27.5 s): https://github.com/Hugelidus/pointcast/blob/main/docs/launch/video/out/pointcast-demo.mp4
 
-**pointcast** is a Chrome extension (MIT licensed): Record, talk while you Alt+click or select the elements you mean, Stop — it transcribes your voice locally in the browser, aligns the words to your pointing gestures with a small DP alignment algorithm, and copies a Markdown spec with selector/DOM-path/source-location per element, grouped by request.
+Most of my UI prompts are deictic: "make this sortable", "move this next to that". Agents can't see "this". I built Pointcast (free, MIT, my project): a Chrome/Edge extension where you talk (or type a note, if you'd rather) while you Alt+click the elements you mean. At Stop you get one request per sentence, with each element's code location (`src/components/OrdersTable.tsx:22`) on React 19, Vue 3 and Svelte 5 dev builds and Django templates — the source line that makes the element, not its HTML.
 
-A few things that might interest this sub specifically:
-- **Selector algorithm** prioritizes test attributes → stable id → semantic attrs → CSS-module-safe classes → nth-of-type fallback, and explicitly filters out Tailwind/CSS-module hash noise, `data-v-*`, `_ngcontent-*`, Radix/MUI generated ids.
-- **Framework-agnostic capture**, with component name + `file:line` when your dev build exposes it (verified across React, Vue, Svelte during evaluation — had to fix a SvelteKit-specific visibility bug: `display: contents` wrappers made Chrome's `checkVisibility()` report everything as hidden).
-- Runs only on localhost by default; other sites are opt-in per host, with personal-data redaction turned on automatically once you do.
+It works with whatever agent you use:
 
-I ran a proper evaluation across React/Vue/Svelte admin dashboards before calling this "done": pointing raises correct-element identification from 78% to 89% over plain narration. Full numbers: [docs/eval](../eval/results-2026-09-27.md). Design rationale for the less obvious calls (fusion algorithm, HTML trimming, MV3 lifecycle gotchas) is all written down: [docs/decisions.md](../decisions.md).
+- Codex CLI: `codex plugin marketplace add Hugelidus/pointcast && codex plugin add pointcast@pointcast`
+- Gemini CLI: `gemini extensions install https://github.com/Hugelidus/pointcast`
+- Claude Code: plugin, `/pointcast`
+- Cursor / Windsurf / any MCP client: `npx -y pointcast@0.5 mcp`
+- Anything else: paste the spec from the clipboard
 
-GitHub: <link>
+What I measured (three open-source dashboards, 45 changes, same agent and prompt, only the request differs):
+
+| Request the agent got | Right element | Input tokens per run |
+|---|---|---|
+| Spoken words, no pointing | 78% | 105k |
+| Spoken words + pointing | 89% | 97k |
+| Pointing + code lines | 98% (44/45) | 40k |
+| Careful hand-written description | 96% | 65k |
+
+The code-lines row is a second run of the same harness on the same apps (pointing without code lines got 43/45 and 94k there), with code chains taken by a probe rather than the shipped extension, so read it as indicative; the reports say what they can and can't show ([eval](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-27.md), [code pointer](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/stage0-code-pointer-2026-09-27.md)). Small samples, one model (Sonnet).
+
+A follow-up ran the whole product end to end (typed notes, the MCP server, four apps including Django) with a recording of six changes at once: reading it through the MCP server got the right code 96% of the time against 85% for the same six changes typed by hand, at 24% fewer input tokens and 75% fewer searches. With one change per request it is still more accurate (96% vs. 84%), but not cheaper — the saving is in batching. In wall-clock terms, my rough estimate (not measured) for six UI changes is ~15 min asking one by one vs. ~5 min with one 2-minute recording; the accuracy and token numbers above are measured. [Full results](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-28-batching.md).
+
+Voice is transcribed locally in the browser (Whisper, with a voice activity detector so silence doesn't turn into invented sentences). Recordings go to a local MCP server, no cloud.
+
+Feedback welcome, especially failures: what did it point at, and what should it have said?
+
+https://github.com/Hugelidus/pointcast
 
 ---
 
-## r/LocalLLaMA
+## r/webdev (Showoff Saturday)
 
-**Title:** Running Whisper (transformers.js) inside an MV3 Chrome extension offscreen document — numbers and gotchas
+**Title:** [Showoff Saturday] Alt+click elements of your dev app while you talk; you get a spec with each element's line of code
 
 **Body:**
 
-Sharing this mostly for the local-inference-in-the-browser details, since the actual product (a UI-narration tool for coding agents, pointcast) is secondary here.
+Video (~27.5 s): https://github.com/Hugelidus/pointcast/blob/main/docs/launch/video/out/pointcast-demo.mp4
 
-Got `Xenova/whisper-base` fp32 running fully client-side inside a Chrome MV3 extension's offscreen document, no server, no API key:
+Pointcast is a Chrome/Edge extension for your local dev server. You record your voice (or switch to Typed mode and write a short note per element instead), Alt+click or select the elements you're talking about, and at Stop you get a Markdown spec: one request per sentence, each with the elements you pointed at and where they live in your source. It's meant for handing UI changes to a coding agent, but the spec reads fine for a human too.
 
-- 152 s of Spanish audio transcribes in **43 s** in the browser (4 WASM threads) vs. 26 s in Node — 1.7× slower, same words, same word-timing accuracy (92.8% word accuracy, median 165 ms / p90 265 ms word-start error against ground truth).
-- **WebGPU was *not* faster** on an RTX 3060 (Ampere): 51 s fp32 vs. 43 s WASM. `whisper-small` on WebGPU took 110 s. So WASM stays the default; the engine takes a `device` option per-machine.
-- MV3 specifics that took real debugging: `'wasm-unsafe-eval'` needed in `content_security_policy.extension_pages` for ONNX Runtime to compile WASM; the ORT `.wasm`/`.mjs` files must be **served by the extension itself**, not fetched from jsDelivr (MV3 forbids remote code) and `wasmPaths` must be a URL-prefix string, not the `{wasm, mjs}` object form (that form makes the library import a `blob:` URL, which extension pages refuse); cross-origin isolation (COOP/COEP in the manifest) is required to get `SharedArrayBuffer` and therefore multi-threaded WASM — without it you're on 1 thread.
-- q8 quantized weights loaded faster but were both slower to run (46 s) and less accurate (90.7%) than fp32 in this setup, so fp32 stayed the default in both the Node CLI and the browser.
-- Now transcribes **while recording**, cutting audio into 15–30 s pieces at quiet points (never mid-word) so only the last piece is left after Stop — cut latency on a 152 s recording from 27.2 s to 2.9 s after Stop, same accuracy.
+Some implementation details this sub might like:
 
-All measurements and the reasoning behind each default: [docs/decisions.md § D1](../decisions.md#d1-transcription--whisper-via-transformersjs-locally) and [spikes/in-browser-whisper](../../spikes/in-browser-whisper/). MIT licensed if anyone wants to reuse the transcription package (`packages/transcribe`, no `node:` imports, runs unchanged in Node or a browser worker).
+- **Where the line comes from.** React 19, Vue 3 and Svelte 5 expose component info in dev builds; the extension reads it, then fetches the component files from your Vite dev server (`/src/…?raw`, in memory, 2 s budget) and looks the element's text up in them. If the text is written more than once, it adds nothing. A wrong line is worse than no line, and a library's own code (Radix, shadcn/ui primitives) is skipped rather than resolved as if it were yours.
+- **Pointing never touches your app.** Alt+click is cancelled before the page sees it; plain clicks pass straight through and are never recorded.
+- **Privacy.** Local dev hosts only by default; other hosts are opt-in one at a time. Password and one-time-code fields are never captured, attributes come from an allowlist, and a canary test checks it.
+- **Whisper in an MV3 extension.** transformers.js in an offscreen document, with WASM threads (needs cross-origin isolation) and the ONNX runtime shipped in the package, since MV3 forbids remote code.
+- **Debug capture.** While recording, it also keeps the console errors and failed requests around the moment you pointed (a setting), so "this button does nothing" comes with the 500 or the exception that caused it.
 
-GitHub: <link>
+Limits: dev builds only for the code lines. With webpack or Next.js the pasted spec has the component chain but no line (the local MCP server still resolves it from your repo). Chromium only; macOS and Linux untested.
+
+Free, MIT. I'd love to hear where it breaks on your stack.
+
+https://github.com/Hugelidus/pointcast
+
+---
+
+## r/django
+
+**Title:** A dev-only Django app that makes the template name and line of any element on your page available to your coding agent
+
+**Body:**
+
+If you use a coding agent (Claude Code, Codex, Cursor…) on a Django project, you know the first step of every UI change: the agent greps for the template. On a project with hundreds of templates, includes and HTMX partials, that's slow and sometimes lands on the wrong one.
+
+`pointcast-django` is a small, dev-only app for Pointcast, a browser extension where you talk while you Alt+click elements of your page. With it, the element comes with its template and the line its text is on:
+
+```text
+- [a] «Archivar» → code:
+  - template: `templates/pim/partials/row.html`
+  - text at: `templates/pim/partials/row.html:5` — `<td><button hx-post="/pim/{{ product.sku }}/archive/" …>Archivar</button></td>`
+  - within: template `templates/pim/list.html` ← template `templates/base.html`
+```
+
+Setup is one line:
+
+```python
+if DEBUG:
+    INSTALLED_APPS += ["pointcast_django"]
+```
+
+How it works: while `DEBUG` is on, it wraps each project template's HTML output in two HTML comments naming the template (pages, `{% include %}`, blocks from `{% extends %}`, HTMX partials). It hooks `Template.compile_nodelist` and `BlockNode.render`; no middleware, no template edits. It never runs with `DEBUG` off, never touches JSON, text emails, attributes or `<title>`, never names templates outside your project, and never writes an absolute path. The tests check that the output is otherwise byte-identical to Django's.
+
+On a real ~1,300-template Django + HTMX app, a read-only dry run placed ~94% of sampled on-screen elements on their exact template line, with none wrong. The rest (text written twice in the same template, for example) get no line rather than a guess.
+
+Not covered yet: Jinja2 templates, and text built in views or translated with a msgid that differs from what's rendered. Django 4.2+.
+
+Install from the repo for now (`pip install "git+https://github.com/Hugelidus/pointcast#subdirectory=integrations/django"`; PyPI soon). Free, MIT.
+
+I'd like feedback from people with bigger or odder template setups: custom loaders, django-cotton, django-components, template fragments.
+
+Details: https://github.com/Hugelidus/pointcast/tree/main/integrations/django · video (React example, same idea): https://github.com/Hugelidus/pointcast/blob/main/docs/launch/video/out/pointcast-demo.mp4

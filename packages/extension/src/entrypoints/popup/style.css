@@ -1,30 +1,53 @@
+/*
+ * Brand (UX decision A): ink and violet, the colors of the store images and the icon. Red is
+ * reserved for recording and errors, amber for warnings, violet for everything else that asks
+ * for attention (primary buttons, focus, checkboxes, processing).
+ *
+ * Text tokens are kept apart from fill tokens: a color that works as a button background is often
+ * too light as text (WCAG 1.4.3, 4.5:1), and outlines need 3:1 (1.4.11), hence --border-strong.
+ */
 :root {
   --bg: #ffffff;
-  --fg: #202124;
-  --muted: #5f6368;
-  --border: #dadce0;
-  --rec: #d93025;
+  --fg: #1d1b2e;
+  --muted: #5b5775;           /* 7.0:1 on white */
+  --border: #e3e0ee;          /* decorative only: cards, dividers, the bar's track */
+  --border-strong: #8a86a3;   /* outlines of controls, 3.6:1 */
+  --surface: #f7f5ff;         /* callouts and paths */
+  --accent: #7c3aed;
+  --accent-fg: #ffffff;
+  --rec: #d93025;             /* the Record fill, with white text */
   --rec-fg: #ffffff;
-  --stop: #202124;
+  --rec-text: #c5221f;        /* "Recording" as text, 5.3:1 */
+  --stop: #1d1b2e;
   --stop-fg: #ffffff;
   --error: #b3261e;
+  --error-bg: #fce8e6;
   --ok: #188038;
-  --warning: #b06000;
-  --processing: #e37400;
+  --warning: #9a5300;         /* 5.6:1 on its own background */
+  --warning-bg: #fef4dd;
+  --processing: #6d28d9;      /* "Processing…" as text; was amber at 3.1:1 */
+  --processing-fill: #7c3aed;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #202124;
-    --fg: #e8eaed;
-    --muted: #9aa0a6;
-    --border: #3c4043;
-    --stop: #e8eaed;
-    --stop-fg: #202124;
+    --bg: #16132f;
+    --fg: #ecebf5;
+    --muted: #a9a4c9;
+    --border: #2c2850;
+    --border-strong: #7a74a6;
+    --surface: #211d42;
+    --accent: #7c3aed;
+    --rec-text: #f28b82;      /* #d93025 on ink was 3.4:1 */
+    --stop: #ecebf5;
+    --stop-fg: #16132f;
     --error: #f28b82;
+    --error-bg: rgba(242, 139, 130, 0.1);
     --ok: #81c995;
     --warning: #fdd663;
-    --processing: #fdd663;
+    --warning-bg: rgba(253, 214, 99, 0.09);
+    --processing: #c4b5fd;
+    --processing-fill: #a78bfa;
   }
 }
 
@@ -37,7 +60,9 @@ body {
   width: 260px;
   background: var(--bg);
   color: var(--fg);
-  font: 14px/1.4 system-ui, sans-serif;
+  /* Inter when installed, as in the store images; no web font is loaded (the popup must open at once). */
+  font: 14px/1.4 Inter, system-ui, sans-serif;
+  accent-color: var(--accent);
 }
 
 main { display: grid; gap: 12px; padding: 14px; }
@@ -48,13 +73,16 @@ header { display: flex; align-items: center; justify-content: space-between; }
 .brand img { display: block; }
 
 .status { font-size: 12px; color: var(--muted); }
-.status[data-status="recording"] { color: var(--rec); font-weight: 600; }
+.status[data-status="recording"] { color: var(--rec-text); font-weight: 600; }
 .status[data-status="processing"], .status[data-status="stopping"] { color: var(--processing); font-weight: 600; }
 
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
 .stats div { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
 .stats dt { font-size: 11px; color: var(--muted); }
 .stats dd { margin: 0; font-size: 20px; font-variant-numeric: tabular-nums; }
+
+/* Outside recording, the cards become one line: "0:12 of audio · 2 events". */
+.meta { margin: 0; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 button {
   width: 100%;
@@ -67,14 +95,54 @@ button {
 }
 button.record { background: var(--rec); color: var(--rec-fg); }
 button.stop { background: var(--stop); color: var(--stop-fg); }
-button:disabled { opacity: 0.5; cursor: default; }
+button.primary { background: var(--accent); color: var(--accent-fg); }
+button.secondary { padding: 6px; font-weight: 500; font-size: 12px; background: transparent; color: var(--fg); border: 1px solid var(--border-strong); }
+button:disabled, button[aria-disabled="true"] { opacity: 0.5; cursor: default; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* The progress panel takes the focus after Stop only so it is not lost; it is not a control. */
+.progress:focus { outline: none; }
 
-.message { margin: 0; font-size: 12px; word-break: break-word; }
-.message.error { color: var(--error); }
+/* The success headline, and the failure; a warning has its own element under the headline. */
+.message { margin: 0; font-size: 12px; overflow-wrap: anywhere; }
+.message.ok { color: var(--fg); font-weight: 600; font-size: 13px; }
+.message.ok::before { content: "✓ "; color: var(--ok); }
+.message.warning, .message.error { padding: 8px 10px; border-radius: 8px; border-left: 3px solid currentColor; }
+.message.warning { color: var(--warning); background: var(--warning-bg); }
+.message.warning .lead::before { content: "⚠ "; }
+.message.error { color: var(--error); background: var(--error-bg); }
+/* The same ✗ as the pill: the failure is not told apart by its red alone. */
+.message.error .lead::before { content: "✗ "; }
+.message .lead { font-weight: 600; }
+.message .body { color: var(--fg); }
+
+/* The raw text behind an error (a library message, a URL), folded: for a bug report, not to read. */
+.details { font-size: 11px; color: var(--muted); }
+.details summary { cursor: pointer; }
+.details code { display: block; margin-top: 4px; font: 10.5px/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Where the result is, on one line in the code font; the whole path is in its title. */
+.where { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
+.path {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 11px/1.5 "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color: var(--fg);
+  background: var(--surface);
+  border-radius: 6px;
+  padding: 3px 6px;
+}
 
 .hint { margin: 0; font-size: 11px; color: var(--muted); }
+#shortcut { display: block; }
+kbd { font: 10.5px ui-monospace, Consolas, monospace; padding: 0 3px; border: 1px solid var(--border-strong); border-radius: 3px; }
 
-/* The last captured element: "Last: button «Export» · Alt+click". */
+/* Before the first recording: the microphone and the one-time model download. */
+.callout { margin: 0; font-size: 12px; padding: 8px 10px; border-radius: 8px; background: var(--surface); }
+.callout strong { display: block; margin-bottom: 2px; }
+
+/* The last captured element: "Last: link “View report”". */
 .last-event { margin: 0; font-size: 12px; overflow-wrap: anywhere; }
 
 /* Whether the active tab is captured: a dot in the tone's color, then the text. */
@@ -92,14 +160,18 @@ button:disabled { opacity: 0.5; cursor: default; }
 .tab-status[data-tone="warning"] { color: var(--warning); }
 .tab-status[data-tone="error"] { color: var(--error); font-weight: 600; }
 
-/* After Stop: the estimate while processing, then the result buttons. */
+/* After Stop: the estimate while processing, then the result. */
 .progress { display: grid; gap: 6px; }
 .progress-text { margin: 0; font-size: 12px; font-weight: 600; }
-.bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
-.fill { height: 100%; width: 0; background: var(--processing); }
-.result { display: grid; gap: 6px; }
+.bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; box-shadow: inset 0 0 0 1px var(--border-strong); }
+.fill { height: 100%; width: 0; background: var(--processing-fill); }
+.result { display: grid; gap: 8px; }
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-button.secondary { padding: 6px; font-weight: 500; font-size: 12px; background: transparent; color: var(--fg); border: 1px solid var(--border); }
+/* One button left (e.g. only Copy again): full width instead of half a row. main.ts counts the
+   visible ones, since :only-child would also count the hidden buttons. */
+.actions[data-count="1"] { grid-template-columns: 1fr; }
+
+hr { border: 0; border-top: 1px solid var(--border); margin: 0; }
 
 /* "Enable on example.com" / "Remove example.com" for a remote site in the active tab. */
 .site { display: grid; gap: 6px; }
@@ -109,3 +181,26 @@ button.secondary { padding: 6px; font-weight: 500; font-size: 12px; background: 
 .settings label { display: grid; gap: 4px; margin-top: 8px; }
 .settings label.check { display: flex; gap: 6px; align-items: center; }
 .settings select { font: inherit; padding: 3px; }
+
+/* Voice / Typed (D12): two radios drawn as one segmented control; the native inputs keep the
+   arrow keys, the focus and the screen reader's "1 of 2". */
+.mode { display: grid; grid-template-columns: 1fr 1fr; margin: 0; padding: 2px; border: 1px solid var(--border-strong); border-radius: 8px; gap: 2px; }
+.mode label { position: relative; display: block; }
+.mode input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.mode label > span { display: block; padding: 5px 6px; border-radius: 6px; text-align: center; font-size: 12px; font-weight: 500; color: var(--muted); }
+.mode input:checked + span { background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+.mode input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mode input:disabled { cursor: default; }
+.mode input:disabled:not(:checked) + span { opacity: 0.5; }
+
+/* Read by screen readers, never drawn. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

@@ -2,7 +2,7 @@
   "mcpServers": {
     "pointcast": {
       "command": "npx",
-      "args": ["-y", "pointcast@0.2.1", "mcp"]
+      "args": ["-y", "pointcast@0.6.0", "mcp"]
     }
   }
 }

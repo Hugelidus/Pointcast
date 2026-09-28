@@ -39,6 +39,15 @@ export async function sessionIdsInHistory(base: string): Promise<Set<string>> {
   return ids;
 }
 
+/**
+ * Ids of the downloads Chrome lists inside Downloads/pointcast/<sessionId>/, for a repeated report
+ * of a session whose downloads were already started (commands.ts downloadOnce).
+ */
+export async function sessionDownloadIds(sessionId: string): Promise<number[]> {
+  const items = await browser.downloads.search({ filenameRegex: `[\\\\/]${SESSIONS_FOLDER}[\\\\/]${sessionId}[\\\\/]` });
+  return items.map((item) => item.id);
+}
+
 export type DownloadsOutcome = "in-progress" | "complete" | "failed";
 
 /**
@@ -51,8 +60,7 @@ export type DownloadsOutcome = "in-progress" | "complete" | "failed";
 export function turnOffAskWhereAdvice(): string {
   return (
     'Turn off "Ask where to save each file before downloading" in chrome://settings/downloads, or keep your ' +
-    "coding agent's pointcast MCP server running (with \"Send to a running pointcast MCP server\" on in Settings): " +
-    "recordings then skip Chrome's downloads."
+    "agent's Pointcast MCP server running, so recordings skip Chrome's downloads."
   );
 }
 
@@ -94,6 +102,6 @@ export async function checkDownloads(sessionId: string, ids: readonly number[]):
     outcome: "complete",
     warning:
       `Chrome asked where to save each file, so this session is not in Downloads/${SESSIONS_FOLDER}/${sessionId}/, ` +
-      `where "pointcast process" and the MCP server look for it. ${turnOffAskWhereAdvice()}`,
+      `where the MCP server and "pointcast process" look for it. ${turnOffAskWhereAdvice()}`,
   };
 }

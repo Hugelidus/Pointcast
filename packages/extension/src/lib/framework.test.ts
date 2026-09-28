@@ -250,6 +250,31 @@ describe("renderedBy (the app components that rendered the element)", () => {
     ]);
   });
 
+  // shadcn-vue on reka-ui: an item inside a dropdown. reka's own wrappers (Primitive, Presence,
+  // the content's layers) are created by reka's code; they have no app source and must not take
+  // one of the 3 places, or the chain never reaches the app's page.
+  it("Vue 3: skips library components created by library code before the 3-frame cap", () => {
+    const doc = page("<div>Log out</div>");
+    const app = instance({ __file: "src/App.vue" }, null);
+    const page_ = instance({ __name: "Settings", __file: "src/pages/Settings.vue" }, app);
+    const userNav = instance({ __name: "UserNav", __file: "src/components/UserNav.vue" }, page_);
+    const content = instance({ __name: "DropdownMenuContent", __file: "src/components/ui/dropdown-menu/DropdownMenuContent.vue" }, userNav);
+    const rekaContent = instance({ name: "DropdownMenuContent" }, content);
+    const presence = instance({ name: "Presence" }, rekaContent, rekaContent);
+    const layer = instance({ name: "Primitive" }, presence, presence);
+    const item = instance({ __name: "DropdownMenuItem", __file: "src/components/ui/dropdown-menu/DropdownMenuItem.vue" }, layer, userNav);
+    const rekaItem = instance({ name: "DropdownMenuItem" }, item);
+    const primitive = instance({ name: "Primitive" }, rekaItem, rekaItem);
+    setProp(el(doc, "div"), "__vueParentComponent", primitive);
+    // Before: `Primitive` in DropdownMenuItem.vue, then `Primitive` in DropdownMenuContent.vue as
+    // the third frame (stand-ins: files those wrappers are not written in).
+    expect(readRenderedBy(el(doc, "div"))).toEqual([
+      { component: "DropdownMenuItem", file: "src/components/ui/dropdown-menu/DropdownMenuItem.vue" },
+      { component: "DropdownMenuItem", file: "src/components/UserNav.vue" },
+      { component: "DropdownMenuContent", file: "src/components/ui/dropdown-menu/DropdownMenuContent.vue" },
+    ]);
+  });
+
   function OrdersPage(): null {
     return null;
   }
@@ -367,6 +392,38 @@ describe("renderedBy (the app components that rendered the element)", () => {
     ]);
   });
 
+  // A shadcn dropdown trigger (React 19 on Radix): Radix's wrappers are owners too. Their stacks
+  // are in node_modules, in whatever form the dev server serves it (pnpm store, a Turbopack chunk
+  // named after the flattened path); they are skipped before the cap.
+  it("React 19: skips Radix wrapper owners whose stack is only library code, before the cap", () => {
+    const doc = page("<button>Account</button>");
+    const owner = (name: string, url: string, parent: object | null) => ({
+      type: { displayName: name },
+      _debugOwner: parent,
+      _debugStack: debugStack(url),
+    });
+    const sidebar = owner("AppSidebar", "http://localhost:5173/src/components/layout/authenticated-layout.tsx:20:7", null);
+    const navUser = owner("NavUser", "http://localhost:5173/src/components/layout/app-sidebar.tsx:31:9", sidebar);
+    const trigger = owner("DropdownMenuTrigger", "http://localhost:5173/src/components/layout/nav-user.tsx:40:11", navUser);
+    const radixTrigger = owner("DropdownMenuTrigger", "http://localhost:5173/src/components/ui/dropdown-menu.tsx:12:3", trigger);
+    const slot = owner(
+      "Slot",
+      "http://localhost:3000/_next/static/chunks/node_modules_@radix-ui_react-slot_dist_index_mjs_1a2b._.js:61:20",
+      radixTrigger,
+    );
+    const primitive = owner(
+      "Primitive.button",
+      "http://localhost:5173/node_modules/.pnpm/@radix-ui+react-primitive@2.1.3/node_modules/@radix-ui/react-primitive/dist/index.mjs:38:9",
+      slot,
+    );
+    setProp(el(doc, "button"), "__reactFiber$x", { type: "button", _debugOwner: primitive });
+    expect(readRenderedBy(el(doc, "button"))).toEqual([
+      { component: "DropdownMenuTrigger", file: "src/components/ui/dropdown-menu.tsx" },
+      { component: "DropdownMenuTrigger", file: "src/components/layout/nav-user.tsx" },
+      { component: "NavUser", file: "src/components/layout/app-sidebar.tsx" },
+    ]);
+  });
+
   it("goes through the bridge into ElementInfo.renderedBy, next to component", () => {
     const doc = page("<p>hi</p>");
     setProp(el(doc, "p"), "__svelte_meta", {
@@ -480,13 +537,39 @@ describe("parseComponentInfo (the attribute is untrusted page input)", () => {
       { file: "src/routes.tsx", line: 0, column: 4 },
       "garbage",
       { file: "/home/hugo/app/src/main.tsx", line: 2.5 },
+      { component: "Fourth", file: "src/Fourth.tsx" },
     ]);
+    // Frames without a file do not count toward the cap.
     expect(frames).toEqual([
       { component: "B".repeat(80), file: "src/pages/Orders.tsx", line: 20, column: 7 },
       { file: "src/routes.tsx" },
+      { file: "src/main.tsx" },
     ]);
     expect(parseRenderedBy({ file: "src/A.vue" })).toBeUndefined();
     expect(parseRenderedBy([{ component: "X" }])).toBeUndefined();
+  });
+
+  // Radix-style wrappers must not take the 3 places: they are skipped before the cap, whatever
+  // form their node_modules path has (pnpm store, absolute, Vite deps, a flattened chunk name).
+  it("skips library frames before the 3-frame cap, so the app's own frames are kept", () => {
+    const radix = "node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_react@19.1.0/node_modules/@radix-ui/react-primitive/dist/index.mjs";
+    const frames = parseRenderedBy([
+      { component: "Primitive.button", file: radix, line: 38 },
+      { component: "SlotClone", file: "C:/Users/hugob/app/node_modules/@radix-ui/react-slot/dist/index.mjs", line: 61 },
+      { component: "Slot", file: "node_modules/.vite/deps/@radix-ui_react-slot.js?v=9f1c" },
+      { component: "Presence", file: "_next/static/chunks/node_modules_@radix-ui_react-presence_dist_index_mjs_abc._.js" },
+      { component: "DropdownMenuTrigger", file: "src/components/ui/dropdown-menu.tsx", line: 12 },
+      { component: "NavUser", file: "src/components/layout/nav-user.tsx", line: 40 },
+      { component: "AppSidebar", file: "src/components/layout/app-sidebar.tsx", line: 31 },
+      { component: "Portal", file: "node_modules\\@radix-ui\\react-portal\\dist\\index.mjs" },
+    ]);
+    expect(frames).toEqual([
+      { component: "DropdownMenuTrigger", file: "src/components/ui/dropdown-menu.tsx", line: 12 },
+      { component: "NavUser", file: "src/components/layout/nav-user.tsx", line: 40 },
+      { component: "AppSidebar", file: "src/components/layout/app-sidebar.tsx", line: 31 },
+    ]);
+    // Only library frames: no chain at all, never a library path.
+    expect(parseRenderedBy([{ component: "Slot", file: radix }])).toBeUndefined();
   });
 
   // PRIVACY (D8): the attribute is untrusted page input, written either by our own MAIN-world

@@ -124,7 +124,8 @@ describe("code pointer rendering", () => {
   it("renders the Stage 0 chain and the resolved lines in the dom-first layout, as before snippets existed", async () => {
     const resolved = await resolveSession(FLOWBITE_SESSION, memoryReader(FLOWBITE), "repo");
     const md = renderMarkdown(resolved, FLOWBITE_WORDS, { format: "requests", layout: "dom-first" });
-    // Unchanged since the code pointer was built: the snapshot file predates the code-first layout.
+    // Unchanged since the code pointer was built (the snapshot file predates the code-first layout),
+    // except for one added `shown by:` line (D9 note 2026-09-28): «Top customers» is `{tab2Title}`.
     await expect(md).toMatchFileSnapshot("__snapshots__/code-pointer.requests.md");
   });
 
@@ -221,6 +222,44 @@ describe("code pointer rendering", () => {
     expect(codePointerLines(chart)).toEqual([
       "code: recharts component at `src/features/dashboard/components/overview.tsx:57` ← `<Overview>` at `src/features/dashboard/index.tsx:168` ← `<OutletImpl>` at `src/components/layout/authenticated-layout.tsx:36`",
     ]);
+  });
+
+  // A shadcn dropdown trigger on Radix: the wrappers (Primitive, SlotClone, Slot, Presence, Portal)
+  // come first and outnumber the cap. They are skipped before it, whatever form their path has,
+  // so the 3 places go to the app's frames, and no node_modules path is printed.
+  it("skips Radix-style library wrappers before the 3-frame cap", () => {
+    const pnpm = "node_modules/.pnpm/@radix-ui+react-primitive@2.1.3_react@19.1.0/node_modules/@radix-ui/react-primitive/dist/index.mjs";
+    const trigger = el("button", "Account", {
+      component: { framework: "react", name: "Primitive.button", file: pnpm, line: 38 },
+      renderedBy: [
+        { component: "Primitive.button", file: pnpm, line: 38 },
+        { component: "SlotClone", file: "C:/Users/someone/app/node_modules/@radix-ui/react-slot/dist/index.mjs", line: 61 },
+        { component: "Slot", file: "node_modules/.vite/deps/@radix-ui_react-slot.js?v=9f1c" },
+        { component: "Presence", file: "_next/static/chunks/node_modules_@radix-ui_react-presence_dist_index_mjs_1a2b._.js" },
+        { component: "Portal", file: "node_modules\\@radix-ui\\react-portal\\dist\\index.mjs", line: 12 },
+        // Written by Radix's own DropdownMenuTrigger: its package names the next (app) frame.
+        {
+          component: "Primitive.button",
+          file: "node_modules/.pnpm/@radix-ui+react-dropdown-menu@2.1.15/node_modules/@radix-ui/react-dropdown-menu/dist/index.mjs",
+          line: 90,
+        },
+        { component: "DropdownMenuTrigger", file: "src/components/ui/dropdown-menu.tsx", line: 12 },
+        { component: "NavUser", file: "src/components/layout/app-sidebar.tsx", line: 31 },
+        { component: "AppSidebar", file: "src/components/layout/authenticated-layout.tsx", line: 20 },
+      ],
+    });
+    const lines = [...codePointerLines(trigger), ...codeFirstLines(trigger)];
+    expect(codePointerLines(trigger)).toEqual([
+      "code: @radix-ui/react-dropdown-menu `<DropdownMenuTrigger>` at `src/components/ui/dropdown-menu.tsx:12` ← `<NavUser>` at `src/components/layout/app-sidebar.tsx:31` ← `<AppSidebar>` at `src/components/layout/authenticated-layout.tsx:20`",
+    ]);
+    expect(lines.join("\n")).not.toMatch(/node_modules|\.pnpm|Primitive|Slot|Presence/);
+
+    // The nearest wrapper's package is unknown (a flattened chunk name): no package is named,
+    // never an earlier wrapper's.
+    const frames = trigger.renderedBy ?? [];
+    const presence = frames[3];
+    const unknown = { ...trigger, renderedBy: [...frames.slice(0, 5), presence, ...frames.slice(6)] };
+    expect(codePointerLines(unknown)[0]).toMatch(/^code: `<DropdownMenuTrigger>` at `src\/components\/ui\/dropdown-menu\.tsx:12` ← /);
   });
 
   it("adds nothing to elements recorded before renderedBy and resolved existed", () => {
@@ -325,6 +364,8 @@ describe("code-first layout (the requests default)", () => {
       "used at: `src/components/layout/nav-group.tsx:62` — `return <Badge className='rounded-full px-1 py-0 text-xs'>{children}</Badge>`",
       "defined in: `src/components/ui/badge.tsx` (shared — do not change it unless asked)",
       "data at: `src/components/layout/data/sidebar-data.ts:73` — `url: '/chats', badge: '3', icon: MessagesSquare,`",
+      // `badge: '3'` is rendered by `{item.badge}` once in nav-group.tsx (`{item.badge && …}` is no rendering).
+      "shown by: `src/components/layout/nav-group.tsx:77` — `{item.badge && <NavBadge>{item.badge}</NavBadge>}`",
       "within: `<NavGroup>` at `src/components/layout/app-sidebar.tsx:28`",
     ]);
   });
@@ -397,5 +438,65 @@ describe("code-first layout (the requests default)", () => {
     const md = renderMarkdown(plain, SHADCN_WORDS);
     expect(md).toBe(renderMarkdown(plain, SHADCN_WORDS, { layout: "dom-first" }));
     expect(md).not.toContain("used at");
+  });
+});
+
+describe("server templates (pointcast-django, D9 note 2026-09-28)", () => {
+  const STATUS = "pim/templates/pim/partials/status.html";
+  const badge: ElementInfo = {
+    tag: "span",
+    text: "Activo",
+    selector: "span.badge",
+    selectorUnique: false,
+    path: "main › table › span",
+    html: '<span class="badge">Activo</span>',
+    component: { framework: "django", name: "pim/partials/status.html", file: STATUS },
+    renderedBy: [
+      { file: STATUS, component: "pim/partials/status.html" },
+      { file: "templates/pim/partials/row.html", component: "pim/partials/row.html" },
+      { file: "templates/pim/list.html", component: "pim/list.html" },
+    ],
+    resolved: [{ kind: "text", file: STATUS, line: 1, via: "repo", snippet: '<span class="badge">{% if product.active %}Activo{% else %}Inactivo{% endif %}</span>' }],
+  };
+
+  it("names templates by their file, not as <components>", () => {
+    expect(codeFirstLines(badge)).toEqual([
+      `template: \`${STATUS}\``,
+      `text at: \`${STATUS}:1\` — \`<span class="badge">{% if product.active %}Activo{% else %}Inactivo{% endif %}</span>\``,
+      "within: template `templates/pim/partials/row.html` ← template `templates/pim/list.html`",
+    ]);
+    expect(codePointerLines(badge)).toEqual([
+      `code: template \`${STATUS}\` ← template \`templates/pim/partials/row.html\` ← template \`templates/pim/list.html\``,
+      `text at: \`${STATUS}:1\``,
+    ]);
+  });
+});
+
+describe("shown by (D9 note 2026-09-28)", () => {
+  const cell = el("td", "Marco Peña", {
+    component: { framework: "react", name: "OrdersTable" },
+    renderedBy: [{ component: "OrdersTable", file: "src/pages/Dashboard.tsx" }],
+    resolved: [{ kind: "text", file: "src/components/OrdersTable.tsx", line: 10, via: "repo", snippet: '{ id: "A-1041", customer: "Marco Peña" },' }],
+    shownBy: { key: "customer", file: "src/components/OrdersTable.tsx", line: 38, via: "repo", snippet: "<td>{order.customer}</td>" },
+  });
+
+  it("follows the text/data line in both layouts, with its snippet code-first only", () => {
+    expect(codeFirstLines(cell)).toEqual([
+      "used at: `src/pages/Dashboard.tsx` — `<OrdersTable>`",
+      'text at: `src/components/OrdersTable.tsx:10` — `{ id: "A-1041", customer: "Marco Peña" },`',
+      "shown by: `src/components/OrdersTable.tsx:38` — `<td>{order.customer}</td>`",
+    ]);
+    expect(codePointerLines(cell)).toEqual([
+      "code: `<OrdersTable>` in `src/pages/Dashboard.tsx`",
+      "text at: `src/components/OrdersTable.tsx:10`",
+      "shown by: `src/components/OrdersTable.tsx:38`",
+    ]);
+  });
+
+  it("quotes no source for a sensitive element, and skips a hand-edited shownBy that is no location", () => {
+    expect(codeFirstLines({ ...cell, sensitive: true })).toContain("shown by: `src/components/OrdersTable.tsx:38`");
+    const broken = { ...cell, shownBy: { key: "customer", file: "", line: 0 } } as unknown as ElementInfo;
+    expect(codeFirstLines(broken).some((line) => line.startsWith("shown by"))).toBe(false);
+    expect(codePointerLines(broken).some((line) => line.startsWith("shown by"))).toBe(false);
   });
 });

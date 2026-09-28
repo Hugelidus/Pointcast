@@ -1,4 +1,4 @@
-import { SESSIONS_FOLDER } from "@pointcast/core";
+import { SESSIONS_FOLDER, type InputMode } from "@pointcast/core";
 import type { ProcessingInfo } from "./processing/progress";
 
 /**
@@ -17,6 +17,17 @@ import type { ProcessingInfo } from "./processing/progress";
  */
 
 export type RecorderStatus = "idle" | "starting" | "recording" | "stopping" | "processing";
+
+/** What failed, so the popup and the pill can pick their words without parsing `error`. */
+export type ErrorKind =
+  /** Record found no microphone grant: the permission page was opened. */
+  | "microphone-denied"
+  /** Record failed for another reason (no microphone, the recorder did not answer…). */
+  | "start"
+  /** The session was saved, but its audio could not be transcribed. */
+  | "transcription"
+  /** Stopping or processing failed, or saving the files did. */
+  | "processing";
 
 /** How the last processing ended, for the popup's details and the in-page "copied" moment. */
 export interface LastResult {
@@ -37,12 +48,25 @@ export interface LastResult {
   processingMs: number;
   /** ProcessingResult.code: how the code pointers resolved against the dev server, in one line. */
   code?: string;
+  /** A typed session (D12): `audioMs` is how long the notes took, with no audio. */
+  typed?: boolean;
 }
 
 export interface RecorderState {
   status: RecorderStatus;
   /** Date.now() at the MediaRecorder start event; set while recording and stopping. */
   t0?: number;
+  /**
+   * The mode the current recording started in (Settings.inputMode, D12), from Record until it is
+   * saved: the pill says "Notes" and the page opens a note box for each gesture when "typed".
+   * Absent means voice, as in states written before 0.4.0.
+   */
+  inputMode?: InputMode;
+  /**
+   * Settings.captureErrors of the current recording (D13): captured pages forward what fails on
+   * them while recording. Absent means off, as in states written before 0.5.0.
+   */
+  captureErrors?: boolean;
   /** Folder name of the session being saved; known once the recorder has stopped. */
   sessionId?: string;
   /** chrome.downloads ids of the files being saved; the session ends when all complete. */
@@ -51,6 +75,15 @@ export interface RecorderState {
   lastSessionId?: string;
   /** Human-readable reason of the last failure, shown in the popup. */
   error?: string;
+  /** The raw text behind `error` (a library message, a URL), for the popup's folded "Details". */
+  errorDetail?: string;
+  /** What `error` is about; absent in states written before 0.2.2, so readers must not need it. */
+  errorKind?: ErrorKind;
+  /**
+   * Date.now() when Record failed. A failed start has no lastResult, so this is what lets the
+   * pill say so for ERROR_VISIBLE_MS (processing/progress.ts pillView).
+   */
+  startFailedAt?: number;
   /** Problem with a session that was still saved (e.g. audio kept only as the raw recording). */
   warning?: string;
   /** While stopping and processing: the stage and the time estimate the pill and popup show. */
@@ -116,12 +149,22 @@ export function parseState(value: unknown): RecorderState {
  */
 export function savedLocationText(sessionId: string, handedOffTo?: string): string {
   return handedOffTo !== undefined
-    ? `Saved by the pointcast MCP server to ${handedOffTo}`
+    ? `Saved by the Pointcast MCP server to ${handedOffTo}`
     : `Saved to Downloads/${SESSIONS_FOLDER}/${sessionId}/`;
 }
 
 export function isRecording(state: RecorderState): boolean {
   return state.status === "recording";
+}
+
+/** The current recording is typed (D12): notes instead of speech. */
+export function isTyped(state: RecorderState): boolean {
+  return state.inputMode === "typed";
+}
+
+/** The current recording keeps the page's errors (D13). */
+export function capturesErrors(state: RecorderState): boolean {
+  return state.status === "recording" && state.captureErrors === true && state.t0 !== undefined;
 }
 
 /**

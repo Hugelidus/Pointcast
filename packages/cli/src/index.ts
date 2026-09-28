@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { unreliableTimes, type WordsFile } from "@pointcast/core";
 import { parseCommandLine, USAGE, type CliCommand } from "./args";
 import { readAudioSamples } from "./audio/read-audio";
 import { resolveAudioTarget } from "./audio-target";
+import { defaultDoctorDependencies, formatDoctorReport, runDoctor } from "./doctor/doctor";
 import { CliError } from "./errors";
 import { githubToken, repoLabel } from "./github/api";
 import { runIssue } from "./github/issue";
@@ -14,6 +16,9 @@ import { copyMarkdownToClipboard } from "./process/clipboard";
 import { resolveSessionDir } from "./process/discover";
 import { runProcess } from "./process/run";
 import { runMcpServer } from "./mcp/server";
+import { planSetup } from "./setup/plan";
+import { resolveMode, runSetup } from "./setup/run";
+import { confirmOnTerminal, findOnPath, runCommand } from "./setup/system";
 import { describeResolution } from "./resolve/local";
 import { createEngine } from "./transcribe";
 import { VERSION } from "./version";
@@ -71,7 +76,57 @@ async function main(): Promise<void> {
     }
     case "issue":
       return runIssueCommand(command);
+    case "doctor": {
+      const report = await runDoctor(
+        {
+          ...(command.dir !== undefined ? { dirFlag: fromUserCwd(command.dir) } : {}),
+          ...(process.env.POINTCAST_DIR ? { envDir: fromUserCwd(process.env.POINTCAST_DIR) } : {}),
+          online: command.online === true,
+        },
+        defaultDoctorDependencies(VERSION),
+      );
+      console.log(command.json ? JSON.stringify(report, null, 2) : formatDoctorReport(report));
+      process.exitCode = report.ok ? 0 : 1;
+      return;
+    }
+    case "setup":
+      return runSetupCommand(command);
   }
+}
+
+/** D14: find the agents and the stack, then set up each one the user says yes to. */
+async function runSetupCommand(command: Extract<CliCommand, { command: "setup" }>): Promise<void> {
+  const json = command.json === true;
+  const { mode, reason } = resolveMode({
+    dryRun: command.dryRun === true,
+    yes: command.yes === true,
+    json,
+    interactive: process.stdin.isTTY === true && process.stdout.isTTY === true,
+  });
+  const plan = await planSetup({
+    version: VERSION,
+    repo: fromUserCwd(command.repo ?? "."),
+    home: os.homedir(),
+    env: process.env,
+    platform: process.platform,
+    which: (name) => findOnPath(name),
+  });
+  const report = await runSetup(plan, { mode, ...(reason !== undefined ? { modeReason: reason } : {}), json }, {
+    run: runCommand,
+    confirm: confirmOnTerminal,
+    writeFile: async (file, content) => {
+      await mkdir(path.dirname(file), { recursive: true });
+      await writeFile(file, content, "utf8");
+    },
+    doctor: () =>
+      runDoctor(
+        { ...(process.env.POINTCAST_DIR ? { envDir: fromUserCwd(process.env.POINTCAST_DIR) } : {}), online: false },
+        defaultDoctorDependencies(VERSION),
+      ),
+    print: (text) => console.log(text),
+  });
+  if (json) console.log(JSON.stringify(report, null, 2));
+  process.exitCode = report.ok ? 0 : 1;
 }
 
 /** Says which language was used when the user did not choose one, so a wrong guess is visible. */
@@ -124,7 +179,9 @@ async function runProcessCommand(command: Extract<CliCommand, { command: "proces
   });
   if (result.resolution) log(describeResolution(result.resolution, { explicit: command.repo !== undefined }));
 
-  if (result.transcribed) {
+  if (result.typed) {
+    log("typed session: rendered from its notes, nothing to transcribe");
+  } else if (result.transcribed) {
     logDetectedLanguage(command.language, result.words);
     log(`transcribed with ${result.words.engine} (${result.words.words.length} words)`);
     logUnreliable(result.words);

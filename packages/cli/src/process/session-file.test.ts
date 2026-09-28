@@ -24,6 +24,21 @@ function validSession(): Record<string, unknown> {
 }
 
 describe("validateSessionFile", () => {
+  it("keeps a typed session's inputMode and notes (D12), and rejects other values", () => {
+    const value: Record<string, unknown> = { ...validSession(), schemaVersion: 2, audio: undefined, inputMode: "typed" };
+    (value.events as Record<string, unknown>[])[0]!.note = "Export only the filtered rows";
+    const session = validateSessionFile(value, "session.json");
+    expect(session.inputMode).toBe("typed");
+    expect(session.events[0]?.note).toBe("Export only the filtered rows");
+    // Older sessions have neither: nothing is added.
+    const voice = validateSessionFile(validSession(), "session.json");
+    expect("inputMode" in voice).toBe(false);
+    expect("note" in voice.events[0]!).toBe(false);
+    expect(() => validateSessionFile({ ...value, inputMode: "keyboard" }, "session.json")).toThrow(/"inputMode"/);
+    (value.events as Record<string, unknown>[])[0]!.note = 3;
+    expect(() => validateSessionFile(value, "session.json")).toThrow(/events\[0\]\.note/);
+  });
+
   it("accepts a well-formed session.json", () => {
     const session = validateSessionFile(validSession(), "session.json");
     expect(session.id).toBe("2026-01-01_00-00-00");
@@ -83,6 +98,20 @@ describe("validateSessionFile", () => {
     const raw = validSession();
     raw.events = [{ id: "e1", gesture: "not-a-gesture", tStart: 0, tEnd: 0, url: "x", element: {} }];
     expect(() => validateSessionFile(raw, "session.json")).toThrowError(/events\[0\]\.gesture/);
+  });
+
+  it("keeps debug capture's errors (D13), bounded, and drops malformed ones without failing", () => {
+    const raw = validSession();
+    const error = { kind: "network", t: 5, message: "POST /api/export → 500", request: { method: "POST", url: "/api/export", status: 500 } };
+    (raw.events as Record<string, unknown>[])[0]!.errors = [error, { kind: "nope" }];
+    raw.errors = [error, "junk"];
+    const session = validateSessionFile(raw, "session.json");
+    expect(session.events[0]?.errors).toEqual([error]);
+    expect(session.errors).toEqual([error]);
+    raw.errors = "not a list";
+    expect(validateSessionFile(raw, "session.json")).not.toHaveProperty("errors");
+    delete raw.errors;
+    expect(validateSessionFile(validSession(), "session.json")).not.toHaveProperty("errors");
   });
 
   it("rejects a non-object root", () => {

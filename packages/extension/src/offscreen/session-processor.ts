@@ -1,5 +1,13 @@
-import { renderMarkdown, unreliableTimes, type CapturedEvent, type SessionFile, type WordsFile } from "@pointcast/core";
+import {
+  renderMarkdown,
+  unreliableTimes,
+  type CapturedError,
+  type CapturedEvent,
+  type SessionFile,
+  type WordsFile,
+} from "@pointcast/core";
 import type { ProcessingOptions, ProcessingResult } from "../messages";
+import { explainTranscriptionFailure } from "../processing/failure";
 import { languageName } from "../processing/settings";
 import type { TranscribeDone } from "../transcriber/protocol";
 import { samplesDurationMs, wavBlob } from "./audio";
@@ -21,12 +29,16 @@ export interface ProcessingJob {
   sessionId: string;
   t0: number;
   events: readonly CapturedEvent[];
+  /** Debug capture (D13): SessionFile.errors; each event already carries its own. */
+  errors?: readonly CapturedError[];
   extensionVersion: string;
   userAgent: string;
   audio:
     | { decoded: true; samples: Float32Array }
     /** The browser could not decode the recording: only the raw bytes and the wall-clock length. */
-    | { decoded: false; raw: Blob; durationMs: number; error: string };
+    | { decoded: false; typed?: false; raw: Blob; durationMs: number; error: string }
+    /** Typed mode (D12): nothing was recorded; the notes are in the events. Wall-clock length. */
+    | { decoded: false; typed: true; durationMs: number };
   /** Found while stopping, e.g. the microphone ended early. */
   warnings: string[];
   options: ProcessingOptions;
@@ -68,21 +80,26 @@ export async function processSession(job: ProcessingJob, deps: ProcessorDeps): P
       t0: job.t0,
       durationMs,
       events,
+      ...(job.errors ? { errors: job.errors } : {}),
       extensionVersion: job.extensionVersion,
       userAgent: job.userAgent,
       withAudio,
     });
 
+  if (!job.audio.decoded && job.audio.typed) {
+    return processTyped(job, job.audio.durationMs, deps, warnings);
+  }
   if (!job.audio.decoded) {
     const { raw, durationMs, error } = job.audio;
     return {
       files: [jsonFile(SESSION_FILE_NAME, session(true, durationMs)), { fileName: RAW_AUDIO_FILE_NAME, blob: raw }],
       copied: false,
       audioMs: durationMs,
-      error:
-        `The audio could not be converted (${error}), so nothing was transcribed. The events were saved, and the raw ` +
-        `recording is ${RAW_AUDIO_FILE_NAME}: convert it with "ffmpeg -i ${RAW_AUDIO_FILE_NAME} -ar 16000 -ac 1 ${AUDIO_FILE.file}", ` +
-        `then run "pointcast process".${joinWarnings(warnings)}`,
+      error: "The audio could not be converted, so nothing was transcribed. Your events and the raw recording are saved.",
+      errorDetail:
+        `${error}\nThe raw recording is ${RAW_AUDIO_FILE_NAME} in the session folder: convert it with ` +
+        `"ffmpeg -i ${RAW_AUDIO_FILE_NAME} -ar 16000 -ac 1 ${AUDIO_FILE.file}", then run "pointcast process".`,
+      ...joinedWarnings(warnings),
     };
   }
 
@@ -97,13 +114,16 @@ export async function processSession(job: ProcessingJob, deps: ProcessorDeps): P
     // Nothing to transcribe in an empty recording (Stop pressed right after Record).
     done = samples.length === 0 ? { words: emptyWords(), loadMs: 0, transcribeMs: 0 } : await deps.transcribe(samples, job.options);
   } catch (error) {
+    // A known failure (model download, memory, deadline) in words the user can act on; the raw
+    // message goes to the popup's Details (processing/failure.ts).
+    const { error: message, errorDetail } = explainTranscriptionFailure(rawMessage(error));
     return {
       files: [jsonFile(SESSION_FILE_NAME, session(true, audioMs)), audioFile()],
       copied: false,
       audioMs,
-      error:
-        `Could not transcribe: ${errorMessage(error)} The events and the audio were saved in the session folder, ` +
-        `so "pointcast process" can finish it.${joinWarnings(warnings)}`,
+      error: message,
+      errorDetail,
+      ...joinedWarnings(warnings),
     };
   }
 
@@ -154,6 +174,54 @@ export async function processSession(job: ProcessingJob, deps: ProcessorDeps): P
   };
 }
 
+/**
+ * Typed mode (D12): the notes are the requests, so Stop goes straight to the spec. Same result
+ * as a voice session (resolved code pointers, the clipboard, then the handoff or the downloads),
+ * without audio, words.json or timings: session.md and session.json only.
+ */
+async function processTyped(
+  job: ProcessingJob,
+  durationMs: number,
+  deps: ProcessorDeps,
+  warnings: string[],
+): Promise<ProcessedSession> {
+  const session = (events: readonly CapturedEvent[]) =>
+    buildSessionFile({
+      id: job.sessionId,
+      t0: job.t0,
+      durationMs,
+      events,
+      ...(job.errors ? { errors: job.errors } : {}),
+      extensionVersion: job.extensionVersion,
+      userAgent: job.userAgent,
+      withAudio: false,
+      inputMode: "typed",
+    });
+  const code = await resolveCode(deps, session(job.events));
+  const sessionFile = session(code.session.events);
+  const markdown = renderMarkdown(sessionFile, undefined);
+
+  let copied = true;
+  try {
+    await deps.copy(markdown);
+  } catch (error) {
+    copied = false;
+    warnings.push(`Could not copy to the clipboard (${rawMessage(error)}): use Copy again in the popup.`);
+  }
+  return {
+    // session.md first: "Show in folder" selects the first file.
+    files: [
+      { fileName: MARKDOWN_FILE_NAME, blob: new Blob([markdown], { type: "text/markdown" }) },
+      jsonFile(SESSION_FILE_NAME, sessionFile),
+    ],
+    markdown,
+    copied,
+    ...joinedWarnings(warnings),
+    ...(code.note ? { code: code.note } : {}),
+    audioMs: durationMs,
+  };
+}
+
 /** Without a resolver, or if it fails, the session stays as captured: the spec is never worse for it. */
 async function resolveCode(deps: ProcessorDeps, session: SessionFile): Promise<CodeResolution> {
   if (!deps.resolveCode) return { session };
@@ -173,16 +241,14 @@ function emptyWords(): WordsFile {
   return { schemaVersion: 1, engine: "none (empty recording)", words: [] };
 }
 
-function joinWarnings(warnings: string[]): string {
-  return warnings.length > 0 ? ` ${warnings.join(" ")}` : "";
+/**
+ * What was found while stopping (e.g. the microphone ended early) stays a warning next to the
+ * error, rather than being appended to it: the error line is the one thing to act on.
+ */
+function joinedWarnings(warnings: string[]): { warning?: string } {
+  return warnings.length > 0 ? { warning: warnings.join(" ") } : {};
 }
 
 function rawMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
-}
-
-/** The message as a sentence, so more text can follow it. */
-function errorMessage(error: unknown): string {
-  const message = rawMessage(error);
-  return /[.!?]$/.test(message) ? message : `${message}.`;
 }

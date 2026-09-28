@@ -2,7 +2,10 @@ export * from "./schema";
 export * from "./constants";
 export * from "./handoff";
 export { projectRelativePath } from "./paths";
+export { isLibraryPath } from "./resolve/chain";
 export { isShortValue } from "./describe";
+export { cleanNote, isTypedSession, TYPED_SESSION_WORDS } from "./notes";
+export { attachErrors, errorsAround, parseCapturedErrorDraft, parseCapturedErrors } from "./page-errors";
 export {
   DEFAULT_DEICTICS,
   DEICTICS_DE,
@@ -29,7 +32,9 @@ export {
   cachingReader,
   projectMatch,
   resolveElement,
+  resolveElementDetails,
   resolveSession,
+  type ElementResolution,
   type ProjectMatch,
   type SourceReader,
   type SourceVia,

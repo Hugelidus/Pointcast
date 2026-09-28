@@ -1,0 +1,67 @@
+name: Bug report
+description: Something doesn't work the way the README or docs/decisions.md says it should
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. A **security problem** goes privately to [SECURITY.md](https://github.com/Hugelidus/pointcast/blob/main/.github/SECURITY.md), not here.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part
+      multiple: true
+      options:
+        - Browser extension
+        - CLI (pointcast process / transcribe)
+        - MCP server (pointcast mcp)
+        - Claude Code plugin
+        - Codex plugin
+        - Gemini CLI extension
+        - Cursor / Windsurf / other MCP client
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Pointcast version
+      description: The extension's version (chrome://extensions) and, if you use it, `npx pointcast --version`.
+      placeholder: "extension 0.2.1, CLI 0.2.1"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and OS
+      placeholder: "Chrome 150, Windows 11"
+    validations:
+      required: true
+  - type: textarea
+    id: session
+    attributes:
+      label: Session, if relevant
+      description: |
+        If this is about a specific recording, attach `session.md` (and `session.json` if you are comfortable sharing it). **Check it for anything personal first**: sensitive fields and personal data should have been left out or redacted, but please verify before pasting.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Console errors (chrome://extensions → service worker → Inspect), logs, screenshots.

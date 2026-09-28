@@ -32,6 +32,8 @@ npx -p pointcast -p @huggingface/transformers pointcast process --force
 ## Commands
 
 ```
+pointcast setup                    Set pointcast up in this project: your coding agents, your
+                                   stack, the browser extension, then doctor. Asks first.
 pointcast process [session-dir]   Transcribe (if needed), fuse and render session.md.
                                    Default session-dir: the latest session in
                                    --dir / POINTCAST_DIR / <Downloads>/pointcast.
@@ -42,11 +44,47 @@ pointcast mcp                      Run a stdio MCP server exposing sessions read
                                    127.0.0.1, so they skip Chrome's downloads.
 pointcast issue [session-dir] --repo owner/name
                                    Experimental: file the spec as a GitHub issue, linked to the code.
+pointcast doctor                   Check this machine's setup, with a fix for each problem.
 ```
 
 `process` writes `session.md` next to the recording and copies it to the clipboard, ready to
 paste into a coding agent. Run `pointcast --help` for every flag (`--engine`, `--format`,
 `--stdout`, …).
+
+## Setting up
+
+```sh
+npx pointcast@latest setup
+```
+
+run in your project, looks for Claude Code, Codex, Gemini CLI (on PATH) and Cursor (a `.cursor`
+folder, or on PATH) and, for each one that does not have pointcast yet, shows what it would do and
+asks `y/N`: the plugin install commands for Claude Code and Codex, `gemini extensions install` for
+Gemini CLI, and for Cursor the `pointcast` server (pinned to this exact version) merged into the
+project's `.cursor/mcp.json`. It then says what your stack needs (the `pointcast-django` lines for
+a Django project, nothing for React, Vue or Svelte dev builds), how to add the browser extension,
+and runs `doctor`. It never edits your Python settings or an agent's config files itself.
+
+`--dry-run` prints the plan and changes nothing (and skips `doctor`); `--yes` does every step
+without asking; `--json` prints the plan and outcome for agents; `--repo <path>` sets it up for
+another folder. Without a terminal and without `--yes` it is a dry run.
+
+## Checking your setup
+
+```sh
+npx pointcast doctor
+```
+
+prints one line per check, with a fix under each problem: the Node.js version (22.12 or newer),
+the sessions folder it reads (`--dir` / `POINTCAST_DIR` / `<Downloads>/pointcast`) with how many
+recordings it holds and the newest one, whether a pointcast MCP server is receiving recordings
+from the extension on 127.0.0.1:20547 (and which version), whether `@huggingface/transformers`
+is installed for local transcription, and, on Linux, whether a clipboard tool (`wl-copy`, `xclip`
+or `xsel`) is there. It only reads: it says hello to the MCP server but never sends it a
+recording, and uses no network unless you add `--online`, which compares your version with the
+latest on npm. `--json` prints the same report for scripts. It exits with 1 only when something
+pointcast needs is broken (an old Node.js, a `--dir` or `POINTCAST_DIR` that does not exist);
+optional parts that are not set up are warnings.
 
 ## Code locations
 

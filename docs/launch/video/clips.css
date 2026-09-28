@@ -1,0 +1,60 @@
+/* The short clips (clips.html): what style.css does not already draw. Same tokens and pieces. */
+
+#stage.mini { width: 1280px; height: 800px; }
+#stage.mini .hdr { left: 44px; top: 30px; }
+#stage.mini .hdr h1 { font-size: 42px; margin-top: 10px; }
+#stage.mini .brand { right: 44px; top: 36px; }
+
+.bubble { left: 0; top: 0; }
+
+/* The hero's title over the jump. */
+.hero-title { left: 0; top: 150px; width: 100%; text-align: center; font-size: 64px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+
+/* A spec, abridged like the demo's (#doc): real lines of the rendered Markdown, some left out. */
+.specbox {
+  left: 0; top: 0;
+  padding: 18px 34px 24px;
+  border-radius: 18px;
+  background: #1a1640;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 60px rgba(124, 58, 237, 0.22);
+  opacity: 0;
+}
+.specbox .doc-head { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 20px; font-weight: 600; color: var(--muted); }
+.specbox .doc-head .ok { color: #34a853; font-weight: 800; }
+.specbox .spec { font-size: var(--fs, 24px); line-height: var(--lh, 40px); }
+.specbox .spec .ln { height: var(--lh, 40px); }
+.specbox .spec .gap { height: 10px; }
+.spec .bt { color: #6b6594; }
+.spec .err { color: #fda4af; }
+.spec .errln { position: relative; z-index: 0; }
+.spec .errln::before {
+  content: ""; position: absolute; left: -10px; right: -10px; top: 2px; bottom: 2px; border-radius: 8px; z-index: -1;
+  background: rgba(244, 63, 94, 0.16); box-shadow: 0 0 0 1.5px rgba(251, 113, 133, 0.75), 0 0 26px rgba(244, 63, 94, 0.35);
+  opacity: var(--hl, 0);
+}
+
+/* An agent in a terminal (generic: no particular product's look). */
+.term {
+  left: 0; top: 0; border-radius: 14px; overflow: hidden;
+  background: #0b0a1c; border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.5), 0 0 50px rgba(124, 58, 237, 0.14);
+}
+.term-bar { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; background: rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.term-bar i { width: 11px; height: 11px; border-radius: 50%; background: #3a355f; }
+.term-bar span { margin-left: 10px; font: 500 16px/1 var(--mono); color: var(--muted); }
+.term-body { padding: 12px 22px; font: 400 21px/33px var(--mono); color: #d9d5f5; }
+.term .tl { height: 33px; opacity: 0; white-space: pre; }
+.term .pr { color: #f472b6; font-weight: 700; }
+.term .caret { display: inline-block; width: 11px; height: 23px; vertical-align: -4px; background: #c4b5fd; margin-left: 2px; }
+.term .dotg { color: #34d399; }
+.term b { color: #fff; font-weight: 600; }
+.term .s { color: #a5e3b4; }
+.term .dim { color: #8f89c9; }
+.term .del { color: #fda4af; background: rgba(244, 63, 94, 0.12); }
+.term .add { color: #86efac; background: rgba(34, 197, 94, 0.12); }
+.term .del b, .term .add b { color: inherit; font-weight: 800; }
+
+/* The recording on its way to the MCP server. */
+.packet { left: 0; top: 0; display: flex; align-items: center; gap: 10px; padding: 8px 16px 8px 10px; border-radius: 999px; background: var(--gradient); box-shadow: 0 10px 30px rgba(236, 72, 153, 0.45); font-size: 19px; font-weight: 700; white-space: nowrap; opacity: 0; }
+.packet img { width: 26px; height: 26px; display: block; }

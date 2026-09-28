@@ -10,6 +10,7 @@ import {
 } from "../transcriber/client";
 import type { EngineConfig } from "../transcriber/protocol";
 import { decodeRecording } from "./audio";
+import { deliver } from "./deliver";
 import { resolveFromDevServer } from "./dev-server";
 import { handOff, publishFiles } from "./handoff";
 import { LiveTranscription } from "./live-transcription";
@@ -35,12 +36,15 @@ export async function runProcessing(job: ProcessingJob): Promise<void> {
     // A bug, not a transcription failure (those are handled in processSession): still end the
     // processing state now rather than at the service worker's timeout.
     const message = error instanceof Error ? error.message : String(error);
-    result = { files: [], copied: false, audioMs: 0, error: `Processing failed unexpectedly: ${message}` };
+    result = { files: [], copied: false, audioMs: 0, error: "Processing failed unexpectedly, so nothing was saved.", errorDetail: message };
   } finally {
     // Frees the live worker when nothing was transcribed (no audio); a no-op after finish().
     job.live?.cancel();
   }
-  await deliver(job.sessionId, result);
+  await deliver(job.sessionId, result, {
+    send: (sessionId, report) => sendMessage({ to: "background", type: "processing-done", sessionId, result: report }),
+    wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  });
 }
 
 async function processAndPublish(
@@ -102,20 +106,4 @@ function engineConfig(threads: number): EngineConfig {
     ...(MODEL_HOST ? { remoteHost: MODEL_HOST } : {}),
     ...(MODEL_PATH_TEMPLATE ? { remotePathTemplate: MODEL_PATH_TEMPLATE } : {}),
   };
-}
-
-/**
- * The service worker may be restarting just when processing ends; sending the message wakes it,
- * but a handler that failed answers nothing. Retried a few times: the handler is idempotent.
- */
-async function deliver(sessionId: string, result: ProcessingResult): Promise<void> {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    try {
-      const answer = await sendMessage({ to: "background", type: "processing-done", sessionId, result });
-      if (answer?.ok) return;
-    } catch (error) {
-      console.error("[pointcast] could not report the processed session", error);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1000 * 2 ** attempt));
-  }
 }

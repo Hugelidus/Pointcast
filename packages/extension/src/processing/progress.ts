@@ -1,4 +1,5 @@
-import type { RecorderState } from "../recorder-state";
+import { isTyped, type RecorderState } from "../recorder-state";
+import { firstSentence } from "./failure";
 import type { SpeedStats } from "./stats";
 
 /**
@@ -14,7 +15,7 @@ import type { SpeedStats } from "./stats";
 export type ProcessingStage =
   /** The recorder stops the microphone and decodes the audio. */
   | "stopping"
-  /** First run only: the model is downloaded (291 MB), shown in MB rather than as a time. */
+  /** First run only: the model is downloaded (SPEECH_MODEL_MB), shown in MB rather than as a time. */
   | "downloading-model"
   /** Model load (from the cache), language detection, transcription, fusion, rendering. */
   | "transcribing"
@@ -78,6 +79,9 @@ export function processingView(info: ProcessingInfo, now: number): ProgressView 
       return { text: "Saving…", fraction: MAX_FRACTION };
     case "stopping":
     case "transcribing": {
+      // On the first run, before the download reports, the time depends on a download of unknown
+      // size: any estimate would be made up (it said "~0:06" before a 294 MB download).
+      if (info.stage === "stopping" && info.firstRun) return { text: "Preparing…", fraction: 0 };
       const elapsed = Math.max(0, now - info.startedAt);
       const left = info.estimatedEnd - now;
       if (left <= 0) return { text: "Processing… almost done", fraction: MAX_FRACTION };
@@ -95,43 +99,71 @@ export function formatDuration(ms: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
-function megabytes(bytes: number): number {
+/** The one way sizes are written (MB = 10^6 bytes), so the popup and the pill never disagree. */
+export function megabytes(bytes: number): number {
   return Math.round(bytes / 1_000_000);
 }
 
-/** How long the in-page pill keeps the outcome after processing ended. */
+/**
+ * The first run's download, in megabytes() of the total the model files report (whisper-base,
+ * quantized encoder and merged decoder), for the popup's first-run note before any download report.
+ */
+export const SPEECH_MODEL_MB = 294;
+
+/** How long the in-page pill keeps the outcome after processing ended; failures and warnings stay longer. */
 export const DONE_VISIBLE_MS = 5_000;
 export const ERROR_VISIBLE_MS = 10_000;
 
-/** The in-page pill (content/indicator.ts): nothing, REC, processing, or the outcome for a moment. */
+/**
+ * The in-page pill (content/indicator.ts): nothing, REC, processing, or the outcome for a moment.
+ * `text` starts with the outcome's glyph ("✓", "✗"). The pill has room for one short line, so a
+ * problem only says that there is one and where to read it: the popup has the details.
+ */
 export type PillView =
-  | { kind: "recording" }
+  /** `typed`: a typed recording (D12), shown as "Notes" instead of "REC". */
+  | { kind: "recording"; typed?: boolean }
   | { kind: "processing"; text: string; fraction: number }
   | { kind: "done"; text: string }
+  /** Saved (and copied), with something the user should read in the popup. */
+  | { kind: "warning"; text: string }
   | { kind: "error"; text: string }
   /** A short message while recording, e.g. what Undo removed; drawn by followWithPill.notice. */
   | { kind: "notice"; text: string };
 
+const SEE_POPUP = "See the Pointcast popup.";
+
 export function pillView(state: RecorderState, now: number): PillView | null {
-  if (state.status === "recording") return { kind: "recording" };
+  if (state.status === "recording") return isTyped(state) ? { kind: "recording", typed: true } : { kind: "recording" };
   if ((state.status === "stopping" || state.status === "processing") && state.processing) {
     return { kind: "processing", ...processingView(state.processing, now) };
   }
-  if (state.status !== "idle" || !state.lastResult) return null;
+  if (state.status !== "idle") return null;
+  // A failed Record has no lastResult. With the keyboard shortcut the popup is closed, so the
+  // pill is where the user learns why nothing is recording.
+  if (state.error && state.startFailedAt !== undefined) {
+    if (now - state.startFailedAt >= ERROR_VISIBLE_MS) return null;
+    return {
+      kind: "error",
+      text:
+        state.errorKind === "microphone-denied"
+          ? "✗ Pointcast needs the microphone: allow it in the tab that just opened."
+          : `✗ Recording did not start. ${SEE_POPUP}`,
+    };
+  }
+  if (!state.lastResult) return null;
   const age = now - state.lastResult.finishedAt;
   if (state.error) {
-    return age < ERROR_VISIBLE_MS ? { kind: "error", text: `✗ ${firstSentence(state.error)} Details in the pointcast popup.` } : null;
+    if (age >= ERROR_VISIBLE_MS) return null;
+    // A library message (with a URL) cut at 100 characters helped nobody; the popup explains.
+    const text = state.errorKind === "transcription" ? "Could not transcribe." : firstSentence(state.error);
+    return { kind: "error", text: `✗ ${text} ${SEE_POPUP}` };
+  }
+  const copied = state.lastResult.copied;
+  if (state.warning) {
+    return age < ERROR_VISIBLE_MS ? { kind: "warning", text: `✓ ${copied ? "Copied" : "Saved"}, with a warning. ${SEE_POPUP}` } : null;
   }
   if (age >= DONE_VISIBLE_MS) return null;
-  return {
-    kind: "done",
-    text: state.lastResult.copied ? "✓ Copied — paste it into your agent" : "✓ Saved — copy it from the pointcast popup",
-  };
-}
-
-/** Errors can be long; the pill has room for one sentence. */
-function firstSentence(text: string): string {
-  const end = text.search(/[.!?](\s|$)/);
-  const sentence = end >= 0 ? text.slice(0, end + 1) : text;
-  return sentence.length > 100 ? `${sentence.slice(0, 99)}…` : sentence;
+  if (!copied) return { kind: "done", text: "✓ Saved · copy it from the Pointcast popup" };
+  // Where it went, so "paste it into your agent" is not the only hint: an MCP server handed it over.
+  return { kind: "done", text: `✓ Copied · ${state.lastResult.handedOffTo !== undefined ? "sent to your agent" : "saved to Downloads"}` };
 }

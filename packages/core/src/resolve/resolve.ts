@@ -1,7 +1,7 @@
 import { isShortValue } from "../describe";
 import { oneLine, truncate } from "../markdown";
-import type { CapturedEvent, CodeFrame, ElementInfo, ResolvedLocation, SessionFile } from "../schema";
-import { cleanPath, codeChain, NOT_APP_CODE } from "./chain";
+import type { CapturedEvent, CodeFrame, ElementInfo, ResolvedLocation, SessionFile, ShownByLocation } from "../schema";
+import { cleanPath, codeChain, isLibraryPath } from "./chain";
 
 /**
  * Resolves pointed elements to code locations: pure, with file access injected, so every route
@@ -12,6 +12,8 @@ import { cleanPath, codeChain, NOT_APP_CODE } from "./chain";
  * Two extensions (resolveElement; docs/decisions.md D9): the files defining the chain's
  * components, only where Stage 0 found nothing (rule 4), and a short value looked up through the
  * item it belongs to (rule 3b), which needs a field Stage 0's sessions did not have (itemLabel).
+ * On top of the locations, never changing them: the line that renders a data literal's key
+ * (`shownBy`, resolveElementDetails; D9 note 2026-09-28, "shown by").
  */
 
 /** Reads project source for the resolver. */
@@ -48,7 +50,13 @@ export type SourceVia = ResolvedLocation["via"];
  *    is defined, not a chain file: React 19 and Vue frames are where each instance is USED.
  *    Whatever 1-3 find on the chain alone stays exactly as Stage 0 found it (a location, or
  *    silence over a duplicate): definitions are read only where Stage 0 had nothing to go on.
- * Comments are not code: a literal in a comment is not a hit (withoutComments).
+ *    For server templates (isTemplateFile), the definitions are the templates the chain's
+ *    templates `{% include %}` by name (templateIncludes).
+ * For a chain of server templates, rule 1 also: searches the innermost template first and the
+ * rest of the chain only when it has no hit; ignores scripts, attribute values and `{% if %}`
+ * operands (onScreenLines); and breaks a tie by the element's tag (byElementTag).
+ * Comments are not code: a literal in a comment is not a hit (withoutComments; in templates also
+ * `{# #}` and `{% comment %}`, asTemplateCode).
  * Only those files and their direct imports are read: never a search of the whole project.
  * Each location carries its `snippet` (sourceSnippet), taken from the lines already read, except
  * for a sensitive element: its source line could hold the very text D8 keeps out of a session.
@@ -59,18 +67,148 @@ export async function resolveElement(
   via: SourceVia,
   selectedText?: string,
 ): Promise<ResolvedLocation[]> {
+  return (await resolveElementDetails(element, reader, via, selectedText)).resolved;
+}
+
+/** resolveElement's locations, plus the line that renders the value they point at (shownByOf). */
+export interface ElementResolution {
+  resolved: ResolvedLocation[];
+  shownBy?: ShownByLocation;
+}
+
+/**
+ * resolveElement, plus `shownBy` (D9 note 2026-09-28, "shown by"): when the one location is a
+ * data literal under a property key, the line that renders that key (shownByOf). `resolved` is
+ * exactly resolveElement's, and finding `shownBy` reads no file resolveElement did not read.
+ */
+export async function resolveElementDetails(
+  element: ElementInfo,
+  reader: SourceReader,
+  via: SourceVia,
+  selectedText?: string,
+): Promise<ElementResolution> {
   const cached = cachingReader(reader);
   const chain = new Map<string, string[]>();
   for (const file of chainFiles(element)) {
     const source = await cached.read(file);
     if (source !== undefined) chain.set(file, splitLines(source));
   }
-  if (chain.size === 0) return [];
+  if (chain.size === 0) return { resolved: [] };
   const text = selectedText ?? element.text;
-  const found = await lookup(element, text, chain, cached, via);
-  if (found !== undefined) return found;
-  const scope = await withDefinitions(element, chain, cached);
-  return scope.size > chain.size ? ((await lookup(element, text, scope, cached, via)) ?? []) : [];
+  let searched: Sources = chain;
+  let resolved = await lookup(element, text, chain, cached, via);
+  if (resolved === undefined) {
+    const scope = await withDefinitions(element, chain, cached);
+    searched = scope;
+    resolved = scope.size > chain.size ? ((await lookup(element, text, scope, cached, via)) ?? []) : [];
+  }
+  const shownBy = resolved.length === 1 ? await shownByOf(element, text, resolved[0], searched, cached, via) : undefined;
+  return shownBy === undefined ? { resolved } : { resolved, shownBy };
+}
+
+/**
+ * The line that renders the value at `location` ("shown by"), or undefined:
+ * 1. the location's line holds the element's text (or one of its phrases) as the value of exactly
+ *    one property, `customer: "Marco Peña"`, `"customer": "…"` or `badge: 3` -> that key. A value
+ *    that is no property (`<td>Export</td>`, `title="Sales Report"`), or two properties with it
+ *    on the line: nothing;
+ * 2. the files the lookup searched (`files`: the chain, or the chain plus the definitions for
+ *    rule 4), innermost first, and never the data modules: in the first one that renders that key
+ *    at all (renderingsOf), exactly one rendering -> that line. Two or more there: nothing, and no
+ *    further file.
+ * No file is read here: the location's file and `files` were all read by the lookup.
+ */
+async function shownByOf(
+  element: ElementInfo,
+  text: string,
+  location: ResolvedLocation,
+  files: Sources,
+  reader: SourceReader,
+  via: SourceVia,
+): Promise<ShownByLocation | undefined> {
+  const source = files.get(location.file) ?? (await reader.read(location.file).then((read) => (read === undefined ? undefined : splitLines(read))));
+  if (source === undefined) return undefined;
+  const key = propertyKey(codeLines(location.file, source)[location.line - 1] ?? "", text);
+  if (key === undefined) return undefined;
+  for (const [file, lines] of files) {
+    const found = renderingsOf(key, file, lines);
+    if (found.length === 0) continue;
+    if (found.length > 1) return undefined;
+    if (file === location.file && found[0] === location.line) return undefined;
+    const snippet = element.sensitive ? undefined : sourceSnippet(lines, found[0]);
+    return { key, file, line: found[0], via, ...(snippet === undefined ? {} : { snippet }) };
+  }
+  return undefined;
+}
+
+/**
+ * A property and its value, as written in an object literal or JSON: a key (bare or quoted) right
+ * after `{`, `,` or the line start, `:`, then a quoted string or a bare token (`3`, `true`).
+ * The `{`/`,` before a key keeps out a ternary's `? "a" : "b"`.
+ */
+const PROPERTY =
+  /(?:^|[{,])\s*(?:(["'])([A-Za-z_$][\w$-]*)\1|([A-Za-z_$][\w$]*))\s*:\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|`((?:\\.|[^`\\])*)`|([^\s,}\]"'`]+))/g;
+
+/** The key of the one property on `line` whose value is the element's text or one of its phrases. */
+export function propertyKey(line: string, text: string): string | undefined {
+  const values = new Set(phrases(text));
+  const keys: string[] = [];
+  for (const match of line.matchAll(PROPERTY)) {
+    const value = (match[4] ?? match[5] ?? match[6] ?? match[7] ?? "").replace(/\s+/g, " ").trim();
+    if (value.includes("${")) continue;
+    if (values.has(value)) keys.push(match[2] ?? match[3]);
+  }
+  return keys.length === 1 ? keys[0] : undefined;
+}
+
+/** `order.`, `row.order.`, `order?.`: the object path before a key, any depth, or none. */
+const OBJECT_PATH = "(?:[A-Za-z_$][\\w$]*\\??\\.)*";
+
+/**
+ * The 1-based line of every expression in `file` that renders `key` as element content, one entry
+ * per rendering:
+ * - `{{ x.key }}`, `{{ key }}`, `{{ x?.key }}`, with filters or pipes (`{{ x.key|upper }}`) and
+ *   Jinja's `{{- … -}}`: Vue, Django, Jinja, and any other file;
+ * - `{x.key}`, `{key}`, `{x?.key}`, Svelte's `{@html x.key}`: JSX and Svelte (not `.vue` or
+ *   templates, where a single brace is script, and not `${…}`).
+ * Never an attribute value (`key={o.id}`, `title="{{ x.key }}"`, `:title="…"`), an expression
+ * inside a tag on its line (Svelte's `<Row {customer} />`), or a single brace that reads as
+ * script: destructuring (`const { customer } =`), a call's argument, a shorthand property.
+ * Only these exact forms: `{format(x.key)}` or `{x.key.toUpperCase()}` render it too but are not
+ * counted, so a file with only those gives nothing. Comments are not code (withoutComments; in
+ * templates also `{# #}` and `{% comment %}`).
+ */
+export function renderingsOf(key: string, file: string, lines: readonly string[]): number[] {
+  const name = escapeRegExp(key);
+  const patterns = [new RegExp(`\\{\\{-?\\s*${OBJECT_PATH}${name}\\s*(?:\\|[^{}]*)?-?\\}\\}`, "g")];
+  const single = !isTemplateFile(file) && !/\.vue$/i.test(file);
+  if (single) patterns.push(new RegExp(`(?<![{$])\\{\\s*(?:@html\\s+)?${OBJECT_PATH}${name}\\s*\\}(?!\\})`, "g"));
+  const code = isTemplateFile(file) ? withoutComments(withoutTemplateHidden(lines)) : withoutComments(lines);
+  const found: number[] = [];
+  code.forEach((line, i) => {
+    if (/^\s*(import|export)\b/.test(line)) return;
+    patterns.forEach((pattern, p) => {
+      for (const match of line.matchAll(pattern)) {
+        const before = line.slice(0, match.index);
+        const after = line.slice(match.index + match[0].length);
+        if (/=\s*["']?\s*$/.test(before) || insideTag(before)) continue;
+        if (p === 1 && readsAsScript(before, after)) continue;
+        found.push(i + 1);
+      }
+    });
+  });
+  return found;
+}
+
+/** True when `before` (a line up to a match) has an opening tag that is not closed yet. */
+function insideTag(before: string): boolean {
+  const open = before.search(/<[A-Za-z][^<]*$/);
+  return open >= 0 && before.lastIndexOf(">") < open;
+}
+
+/** A single-brace match that is script, not markup: `const { a } =`, `f({ a })`, `[{ a }, …]`, `{ a };`. */
+function readsAsScript(before: string, after: string): boolean {
+  return /(?:[(,:?]|\b(?:const|let|var|return|function)|=>)\s*$/.test(before) || /^\s*[=,:;)]/.test(after);
 }
 
 /**
@@ -90,11 +228,21 @@ async function lookup(
   };
   const code = codeOf(files);
   const item = itemOf(element, text);
+  // Templates (D9 note 2026-09-28): the text is searched where it can be on screen, in the
+  // innermost template first (where the element's markup is written), with the tag filter.
+  const onScreen = new Map([...code].map(([file, lines]) => [file, isTemplateFile(file) ? onScreenLines(files.get(file) ?? []) : lines]));
+  const innermost = codeChain(element)[0];
+  const first = innermost?.template && onScreen.has(innermost.file) ? new Map([[innermost.file, onScreen.get(innermost.file)!]]) : undefined;
 
   for (const phrase of item === undefined ? phrases(text) : []) {
-    const hits = hitsIn(code, literalPattern(phrase));
+    const pattern = literalPattern(phrase);
+    let hits = first === undefined ? [] : hitsIn(first, pattern);
+    if (hits.length === 0) hits = hitsIn(onScreen, pattern);
     if (hits.length === 1) return at("text", hits[0], files);
-    if (hits.length > 1) return [];
+    if (hits.length > 1) {
+      const tagged = byElementTag(hits, onScreen, pattern, element.tag);
+      return tagged === undefined ? [] : at("text", tagged, files);
+    }
   }
 
   if (element.label) {
@@ -151,7 +299,7 @@ function linesNear(code: Sources, hit: Hit, pattern: RegExp): number[] {
 }
 
 /**
- * A copy of the session with `ElementInfo.resolved` set for every element that has a chain and
+ * A copy of the session with `ElementInfo.resolved` (and `shownBy`, resolveElementDetails) set for every element that has a chain and
  * whose chain files could be read, and a `snippet` on each `renderedBy` frame with a line whose
  * file was read (not for sensitive elements, D8); nothing is mutated, and snippets need no extra read. An element keeps what it had when
  * none of its chain files was readable (e.g. resolved earlier through another route), and loses
@@ -164,15 +312,18 @@ export async function resolveSession(session: SessionFile, reader: SourceReader,
       const files = chainFiles(event.element);
       const sources = await Promise.all(files.map((file) => cached.read(file)));
       if (sources.every((source) => source === undefined)) return event;
-      const resolved = await resolveElement(event.element, cached, via, event.selection?.text);
+      const { resolved, shownBy } = await resolveElementDetails(event.element, cached, via, event.selection?.text);
       const read = new Map<string, string[]>();
       files.forEach((file, i) => {
         const source = sources[i];
         if (source !== undefined) read.set(file, splitLines(source));
       });
-      const { resolved: _previous, ...element } = event.element;
+      const { resolved: _previous, shownBy: _previousShownBy, ...element } = event.element;
       if (Array.isArray(element.renderedBy) && !element.sensitive) element.renderedBy = withSnippets(element.renderedBy, read);
-      return { ...event, element: resolved.length > 0 ? { ...element, resolved } : element };
+      return {
+        ...event,
+        element: { ...element, ...(resolved.length > 0 ? { resolved } : {}), ...(shownBy === undefined ? {} : { shownBy }) },
+      };
     }),
   );
   return { ...session, events };
@@ -321,7 +472,212 @@ function splitLines(source: string): string[] {
 
 /** The same files with their comments blanked out (withoutComments): what the lookup searches. */
 function codeOf(files: Sources): Map<string, string[]> {
-  return new Map([...files].map(([file, lines]) => [file, withoutComments(lines)]));
+  return new Map([...files].map(([file, lines]) => [file, codeLines(file, lines)]));
+}
+
+/** A file's lines as the lookup searches them: comments out, and template tags as boundaries. */
+function codeLines(file: string, lines: readonly string[]): string[] {
+  return isTemplateFile(file) ? withoutComments(asTemplateCode(lines)) : withoutComments(lines);
+}
+
+/**
+ * Server-side template files (Django, Jinja; D9 note 2026-09-28): `.html`, `.htm`, `.djhtml`,
+ * `.jinja`, `.jinja2`, `.j2`. The chain names them when pointcast-django's markers are on the
+ * page. Their own comment syntax and tag delimiters are handled only here (asTemplateCode):
+ * `{#` opens a block in Svelte (`{#if}`), so never in `.svelte`, `.vue` or script files.
+ */
+export function isTemplateFile(file: string): boolean {
+  return /\.(html?|djhtml|jinja2?|j2)$/i.test(file);
+}
+
+/**
+ * What a template writes that is never on screen, so never the element pointed at: comments,
+ * `{#` … `#}` (Django: one line; Jinja: any) and `{% comment %}` … `{% endcomment %}` (Django),
+ * and the document title, `<title>` … `</title>` and `{% block title %}` … `{% endblock %}`.
+ * A title block usually repeats the page's heading (`{% block title %}Envios FBA{% endblock %}`
+ * and `<h1>Envios FBA</h1>`): searched, it would make the heading look written twice.
+ */
+const TEMPLATE_HIDDEN_START = /\{#|\{%-?\s*comment\b[^%]*%\}|\{%-?\s*block\s+title\s*-?%\}|<title\b[^>]*>/i;
+
+function hiddenEnd(start: string): RegExp {
+  if (start === "{#") return /#\}/;
+  if (/^<title/i.test(start)) return /<\/title\s*>/i;
+  return /comment/.test(start) ? /\{%-?\s*endcomment\s*-?%\}/ : /\{%-?\s*endblock\b[^%]*%\}/;
+}
+
+/**
+ * A template's lines as code, line for line: what is never on screen blanked out (comments and
+ * the title, TEMPLATE_HIDDEN_START) like withoutComments does for `<!-- -->`, and its tag
+ * delimiters turned into `<` and `>` of the same length (`{{` -> `<{`, `}}` -> `}>`, `{%` -> `<%`,
+ * `%}` -> `%>`). A literal next to a tag is then bounded like one next to an HTML tag: «Activo» in
+ * `{% if a %}Activo{% else %}`, «Pedidos (» in `Pedidos ({{ n }})`. Quoted literals inside tags
+ * (`{% translate "Guardar" %}`) keep their quotes.
+ */
+function asTemplateCode(lines: readonly string[]): string[] {
+  return withoutTemplateHidden(lines).map(delimitersAsTags);
+}
+
+/** The lines without what TEMPLATE_HIDDEN_START opens, line for line. */
+function withoutTemplateHidden(lines: readonly string[]): string[] {
+  let end: RegExp | undefined;
+  return lines.map((line) => {
+    let code = "";
+    let rest = line;
+    for (;;) {
+      if (end !== undefined) {
+        const close = end.exec(rest);
+        if (close === null) return code;
+        rest = ` ${rest.slice(close.index + close[0].length)}`;
+        end = undefined;
+      }
+      const start = TEMPLATE_HIDDEN_START.exec(rest);
+      if (start === null) return code + rest;
+      code += rest.slice(0, start.index);
+      end = hiddenEnd(start[0]);
+      rest = rest.slice(start.index + start[0].length);
+    }
+  });
+}
+
+/**
+ * A template's lines as rule 1 searches them for the element's text (D9 note 2026-09-28, second
+ * part): the code view (codeLines) minus what is never an element's visible text, blanked with
+ * spaces so lines and columns stay: `<script>` and `<style>` contents, quoted attribute values
+ * (`class="{% if a %}active{% endif %}"`, `title="…"`, `data-…`), and the quoted operands of
+ * `{% if %}`/`{% elif %}` (`{% if estado == 'enviada' %}`). `{% trans "Guardar" %}` and
+ * `{% blocktrans %}` keep their text. Labels and hrefs, which live in attributes, are still
+ * searched in the code view (rules 2 and 3).
+ */
+function onScreenLines(lines: readonly string[]): string[] {
+  const source = withoutComments(withoutTemplateHidden(lines)).join("\n");
+  const lower = source.toLowerCase();
+  const out = source.split("");
+  const blank = (from: number, to: number): void => {
+    for (let i = from; i < to; i++) if (out[i] !== "\n") out[i] = " ";
+  };
+  const templateEnd = (at: number): number => {
+    const close = source.indexOf(source[at + 1] === "%" ? "%}" : "}}", at + 2);
+    return close < 0 ? source.length : close + 2;
+  };
+  let inTag = false;
+  let tagName = "";
+  let closing = false;
+  let i = 0;
+  while (i < source.length) {
+    if (source[i] === "{" && (source[i + 1] === "%" || source[i + 1] === "{")) {
+      const end = templateEnd(i);
+      if (/^\{%-?\s*(el)?if\b/.test(source.slice(i, end))) {
+        for (const quoted of source.slice(i, end).matchAll(/(["'])[^"'\n]*\1/g)) blank(i + quoted.index, i + quoted.index + quoted[0].length);
+      }
+      i = end;
+      continue;
+    }
+    const char = source[i];
+    if (!inTag) {
+      const tag = char === "<" ? /^<(\/?)([a-zA-Z][\w-]*)/.exec(source.slice(i, i + 64)) : null;
+      if (tag !== null) {
+        inTag = true;
+        closing = tag[1] === "/";
+        tagName = tag[2].toLowerCase();
+        i += tag[0].length;
+      } else {
+        i++;
+      }
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      let j = i + 1;
+      while (j < source.length && source[j] !== char) j = source[j] === "{" && (source[j + 1] === "%" || source[j + 1] === "{") ? templateEnd(j) : j + 1;
+      if (j - i > MAX_ATTRIBUTE_CHARS) {
+        i++; // An unbalanced quote: not an attribute value to trust; leave the rest as it is.
+        continue;
+      }
+      blank(i + 1, j);
+      i = j + 1;
+      continue;
+    }
+    if (char === ">") {
+      inTag = false;
+      i++;
+      if (!closing && (tagName === "script" || tagName === "style")) {
+        const end = lower.indexOf(`</${tagName}`, i);
+        const stop = end < 0 ? source.length : end;
+        blank(i, stop);
+        i = stop;
+      }
+      continue;
+    }
+    i++;
+  }
+  return out.join("").split("\n").map(delimitersAsTags);
+}
+
+/** A quoted value longer than this is taken for a stray quote, not an attribute value. */
+const MAX_ATTRIBUTE_CHARS = 4000;
+
+/** Tags with no content: skipped when looking for the tag a text is written in. */
+const VOID_TAGS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
+
+/**
+ * The name of the HTML element a literal found at `at` in an on-screen line (onScreenLines) is
+ * written in, when that line shows it: the opening tag right before the literal, past template
+ * tags (`<span>{% if a %}Activo`), void and self-closing tags, and empty elements
+ * (`<a><i class="bi bi-plus"></i> Nuevo`). Undefined otherwise (the tag is on another line, a
+ * closing tag of a non-empty element comes first): then the tag filter does not apply.
+ */
+function enclosingTagName(line: string, at: number): string | undefined {
+  let before = line.slice(0, at);
+  for (;;) {
+    before = before.trimEnd();
+    if (before.endsWith("%>") || before.endsWith("}>")) {
+      const start = before.lastIndexOf(before.endsWith("%>") ? "<%" : "<{");
+      if (start < 0) return undefined;
+      before = before.slice(0, start);
+      continue;
+    }
+    if (!before.endsWith(">")) return undefined;
+    const start = before.lastIndexOf("<");
+    const tag = start < 0 ? null : /^<(\/?)([a-zA-Z][\w-]*)\b[^<>]*?(\/?)>$/.exec(before.slice(start));
+    if (tag === null) return undefined;
+    const name = tag[2].toLowerCase();
+    if (tag[1] === "/") {
+      const rest = before.slice(0, start).trimEnd();
+      const open = rest.lastIndexOf("<");
+      if (open < 0 || !new RegExp(`^<${name}\\b[^<>]*>$`, "i").test(rest.slice(open)) || rest.endsWith("/>")) return undefined;
+      before = rest.slice(0, open);
+      continue;
+    }
+    if (tag[3] === "/" || VOID_TAGS.has(name)) {
+      before = before.slice(0, start);
+      continue;
+    }
+    return name;
+  }
+}
+
+/**
+ * Rule 1's tie-break for templates (tag filter): of several hits of a literal, all in template
+ * files, the only one written in the element's own tag (`<th>Estado</th>` for a th, not the
+ * filter's `<label>Estado</label>`). Only when every hit's tag shows on its line and the literal
+ * is there once; else undefined, and the lookup stays silent as before.
+ */
+function byElementTag(hits: readonly Hit[], text: Sources, pattern: RegExp, tag: string): Hit | undefined {
+  const global = new RegExp(pattern.source, "g");
+  const matching: Hit[] = [];
+  for (const hit of hits) {
+    if (!isTemplateFile(hit.file)) return undefined;
+    const line = text.get(hit.file)?.[hit.line - 1] ?? "";
+    const found = [...line.matchAll(global)];
+    if (found.length !== 1) return undefined;
+    const name = enclosingTagName(line, found[0].index + found[0][1].length);
+    if (name === undefined) return undefined;
+    if (name === tag.toLowerCase()) matching.push(hit);
+  }
+  return matching.length === 1 ? matching[0] : undefined;
+}
+
+function delimitersAsTags(line: string): string {
+  return line.replace(/\{\{|\{%/g, (open) => `<${open[1]}`).replace(/\}\}|%\}/g, (close) => `${close[0]}>`);
 }
 
 /**
@@ -494,7 +850,7 @@ async function withDefinitions(element: ElementInfo, chain: Sources, reader: Sou
   };
 
   const own = typeof element.component?.file === "string" ? safePath(cleanPath(element.component.file)) : undefined;
-  if (own !== undefined && !NOT_APP_CODE.test(own)) add(await read([own]));
+  if (own !== undefined && !isLibraryPath(element.component?.file as string)) add(await read([own]));
   for (const { component: name, file } of codeChain(element)) {
     const lines = chain.get(file);
     const specifier = name === undefined || lines === undefined ? undefined : specifierOf(name, lines, "import");
@@ -506,7 +862,40 @@ async function withDefinitions(element: ElementInfo, chain: Sources, reader: Sou
     }
     add(definition);
   }
+  for (const candidates of templateIncludes(element, chain)) add(await read(candidates));
   return new Map([...definitions, ...chain]);
+}
+
+/** `{% include "pim/partials/status.html" %}` (Django, Jinja), as codeLines leaves it. */
+const INCLUDE = /[{<]%-?\s*include\s+["']([^"'\s]+)["']/g;
+
+/**
+ * Rule 4 for templates: the files a chain template includes by a literal name, as candidate
+ * paths per include. A name is looked up in the template folders the chain itself shows (its
+ * file minus its name: "templates/" for `templates/pim/list.html` named "pim/list.html"), then in
+ * "templates/" and in the app folder its first segment names ("pim/templates/pim/…", Django's
+ * APP_DIRS). An include rendered by pointcast-django is already a chain frame when it holds the
+ * element; this finds the text of one whose output is not HTML (a label, a status word), which
+ * gets no markers. `{% extends %}` adds nothing: the parent's markers already put it in the chain.
+ */
+function templateIncludes(element: ElementInfo, chain: Sources): string[][] {
+  const frames = codeChain(element).filter((frame) => isTemplateFile(frame.file));
+  const roots = new Set<string>();
+  for (const { component, file } of frames) {
+    if (component !== undefined && file.endsWith(`/${component}`)) roots.add(file.slice(0, -component.length));
+  }
+  roots.add("templates/");
+  const includes: string[][] = [];
+  for (const { file } of frames) {
+    const lines = chain.get(file);
+    if (lines === undefined) continue;
+    for (const [, name] of codeLines(file, lines).join("\n").matchAll(INCLUDE)) {
+      const app = name.includes("/") ? [`${name.split("/")[0]}/templates/${name}`] : [];
+      const paths = [...[...roots].map((root) => `${root}${name}`), ...app];
+      includes.push([...new Set(paths.flatMap((path) => safePath(path) ?? []))]);
+    }
+  }
+  return includes;
 }
 
 /** `import A from "…"`, `import { B, C as D } from "…"`, `import A, { B } from "…"`, `export { … } from "…"`. */

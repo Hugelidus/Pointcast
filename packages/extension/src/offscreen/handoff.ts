@@ -64,21 +64,30 @@ const NO_RECEIVER: HandoffOutcome = { kind: "no-receiver" };
  */
 const REQUEST: RequestInit = { method: "POST", credentials: "omit", redirect: "error", cache: "no-store" };
 
+/*
+ * Every warning starts with what happened ("Not sent to the Pointcast MCP server") and ends with
+ * what to do. Where the recording went instead (Chrome's downloads) is on the popup's success
+ * line already, so it is not repeated here.
+ */
+
+/** What the user can still do with a recording the agent will not find in its sessions folder. */
+const PASTE_INSTEAD = "Your agent won't find it there, so paste it instead.";
+
 /**
  * Agents run the server version their plugin or MCP config pins (`pointcast@0.2`), so updating
  * means updating that, not running `npx pointcast@latest` once (D11, pinned plugin versions).
  */
 const ANOTHER_VERSION =
-  "The pointcast MCP server on this computer speaks another version of the handoff: update your agent's " +
-  "pointcast plugin or extension (or the pointcast@ version in its MCP config) and this extension. " +
-  "Chrome's downloads saved this recording instead.";
+  "Not sent to the Pointcast MCP server: it runs another version. Update your agent's Pointcast plugin " +
+  "(or the pointcast@ version in its MCP config) and this extension.";
 
 function refused(warning: string): HandoffOutcome {
   return { kind: "refused", warning };
 }
 
+/** `reason` completes "Not sent to the Pointcast MCP server: …", e.g. "it did not answer in time". */
 function notTaken(reason: string): HandoffOutcome {
-  return refused(`The pointcast MCP server did not take this recording (${reason}), so Chrome's downloads saved it instead.`);
+  return refused(`Not sent to the Pointcast MCP server: ${reason}. ${PASTE_INSTEAD}`);
 }
 
 /**
@@ -91,10 +100,7 @@ export async function handOff(sessionId: string, files: readonly SessionFileBlob
   if (!ordered || !isSessionId(sessionId)) {
     // processSession and the service worker never produce these: a bug, but the recording is safe.
     const what = ordered ? `session id "${sessionId}"` : `files ${files.map((file) => file.fileName).join(", ")}`;
-    return refused(
-      `The recording was not sent to a pointcast MCP server (internal error: unexpected ${what}), ` +
-        "so Chrome's downloads saved it instead.",
-    );
+    return refused(`Not sent to the Pointcast MCP server: internal error (unexpected ${what}). ${PASTE_INSTEAD}`);
   }
 
   const hello = await sayHello(deps);
@@ -131,7 +137,7 @@ export async function handOff(sessionId: string, files: readonly SessionFileBlob
     if (stored) return { kind: "handed-off", dir: stored.dir };
     return notTaken(signal.aborted ? "it did not answer in time" : "it gave an unexpected answer");
   }
-  return notTaken(parseErrorAnswer(answer)?.message ?? `HTTP ${response.status}`);
+  return notTaken(`it refused this recording (${parseErrorAnswer(answer)?.message ?? `HTTP ${response.status}`})`);
 }
 
 /** "ready" when a pointcast MCP server that accepts this extension and speaks this protocol answered. */
@@ -157,8 +163,8 @@ async function sayHello(deps: HandoffDeps): Promise<HandoffOutcome | { kind: "re
   if (response.status === 403) {
     if (parseErrorAnswer(await readAnswer(response))?.error === "unknown-extension") {
       return refused(
-        `A pointcast MCP server is running but does not accept this build of the extension (id ${deps.extensionId}). ` +
-          `Chrome's downloads saved the recording instead. To accept it, set POINTCAST_EXTENSION_IDS=${deps.extensionId} for the server.`,
+        "Not sent to the Pointcast MCP server: it does not accept this build of the extension. " +
+          `Set POINTCAST_EXTENSION_IDS=${deps.extensionId} for the server.`,
       );
     }
     return NO_RECEIVER;
@@ -228,7 +234,7 @@ export async function publishFiles(
       outcome = await deps.handOff(sessionId, processed.files);
     } catch (error) {
       // handOff never throws; if a bug made it, the downloads below must still save the recording.
-      outcome = notTaken(error instanceof Error ? error.message : String(error));
+      outcome = notTaken(`internal error (${error instanceof Error ? error.message : String(error)})`);
     }
     if (outcome.kind === "handed-off") return { ...processed, files: [], handedOff: { dir: outcome.dir } };
     if (outcome.kind === "refused") warning = warning ? `${warning} ${outcome.warning}` : outcome.warning;

@@ -1,7 +1,7 @@
 /** getUserMedia failed because the extension origin has no microphone grant. */
 export class MicrophoneDeniedError extends Error {
   constructor() {
-    super("Microphone access is needed. Allow it in the page that just opened, then press Record again.");
+    super("Pointcast needs the microphone. Allow it in the tab that just opened, then press Record again.");
     this.name = "MicrophoneDeniedError";
   }
 }

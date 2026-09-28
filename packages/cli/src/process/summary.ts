@@ -1,4 +1,4 @@
-import type { Placement } from "@pointcast/core";
+import { cleanNote, type Placement, type SessionFile } from "@pointcast/core";
 
 export interface FusionSummary {
   total: number;
@@ -35,4 +35,14 @@ export function summarizeFusion(placements: readonly Placement[]): FusionSummary
 export function formatFusionSummary(summary: FusionSummary): string {
   const { total, deictic, time, standalone } = summary;
   return `${total} ${total === 1 ? "event" : "events"} (${deictic} deictic, ${time} time, ${standalone} standalone)`;
+}
+
+/**
+ * A typed session (D12) has no fusion to report: each note is tied to its gesture by the user.
+ * "3 events (2 with a note)".
+ */
+export function formatTypedSummary(session: Pick<SessionFile, "events">): string {
+  const total = session.events.length;
+  const noted = session.events.filter((event) => cleanNote(event.note) !== undefined).length;
+  return `${total} ${total === 1 ? "event" : "events"} (${noted} with a note)`;
 }

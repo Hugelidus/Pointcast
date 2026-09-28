@@ -59,7 +59,7 @@ pointcast only runs on local development hosts (localhost, 127.0.0.1, *.localhos
 1. Serve any web page locally, for example "npx http-server -p 8080" in a folder with an HTML file, and open http://localhost:8080.
 2. Open the pointcast toolbar popup and press Record; allow the microphone when asked.
 3. Talk while you Alt+click a few elements of the page, then press Stop.
-The first recording downloads the speech model once (about 291 MB, from huggingface.co); transcription runs on the device. The Markdown spec is then copied to the clipboard and saved under Downloads/pointcast/. No account, sign-in or server is needed.
+The first recording downloads the speech model once (about 294 MB, from huggingface.co); transcription runs on the device. The Markdown spec is then copied to the clipboard and saved under Downloads/pointcast/. No account, sign-in or server is needed.
 Source code (MIT): https://github.com/Hugelidus/pointcast
 ```
 

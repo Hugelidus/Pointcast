@@ -1,10 +1,12 @@
 name: CI
 
 # Pull requests, and main after a merge. Branch pushes and tags get no run of their own: their PR has one.
+# workflow_dispatch runs everything, e2e on all three OSes, on any branch (Actions tab or `gh workflow run`).
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 # Cancel a run that a newer push to the same branch/PR has superseded.
 concurrency:
@@ -21,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -45,15 +47,44 @@ jobs:
       - name: Test
         run: pnpm test
 
-  # The whole suite, on pull requests only (main already passed it in its PR), split in three
-  # parallel shards. It catches what local runs on one OS miss (a Linux-only path bug in 0.2.0).
-  e2e:
-    name: e2e (${{ matrix.shard }}/3)
-    if: github.event_name == 'pull_request'
+  # pointcast-django (integrations/django): a few seconds, on both supported Django lines.
+  django:
+    name: django (${{ matrix.django }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        django: ["4.2", "5.2"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Django
+        run: pip install "django~=${{ matrix.django }}.0"
+
+      - name: Test
+        run: python -m unittest discover -s integrations/django/tests
+
+  # The whole suite, split in three parallel shards per OS. It catches what local runs on one OS
+  # miss (a Linux-only path bug in 0.2.0; macOS moves the caret with Cmd+Down, not End).
+  # - Pull requests: Linux and macOS (most users are on macOS). Measured 2026-09-28: Linux shards
+  #   2-3.5 min, macOS 4-6.5 min, so a PR waits about 6.5 min.
+  # - main after a merge: Windows, whose shards take 6-7.5 min. Pointcast is developed on Windows,
+  #   where the suite runs locally before a PR, so this is the safety net that keeps it CI-tested
+  #   without making every PR wait longer.
+  # - workflow_dispatch: all three.
+  e2e:
+    name: ${{ matrix.os == 'ubuntu-latest' && format('e2e ({0}/3)', matrix.shard) || format('e2e ({0}, {1}/3)', matrix.os, matrix.shard) }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-latest","macos-latest"]' || github.event_name == 'push' && '["windows-latest"]' || '["ubuntu-latest","macos-latest","windows-latest"]') }}
         shard: [1, 2, 3]
     steps:
       - name: Checkout
@@ -75,28 +106,28 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       # The e2e suite serves Whisper to the extension from transformers.js' node_modules cache
-      # (playwright.config.ts): download it once per lockfile instead of on every run.
+      # (dev/playwright.config.ts): download it once per lockfile instead of on every run.
       - name: Cache the Whisper model
         uses: actions/cache@v4
         with:
           path: node_modules/.pnpm/@huggingface+transformers@*/node_modules/@huggingface/transformers/.cache
-          key: whisper-base-${{ hashFiles('pnpm-lock.yaml') }}
+          key: whisper-base-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Download the Whisper model
-        run: node scripts/download-model.mjs
+        run: node dev/scripts/download-model.mjs
 
       - name: Build the e2e extension
         run: pnpm --filter @pointcast/extension build:e2e
 
       - name: Run e2e tests
-        run: pnpm exec playwright test --shard=${{ matrix.shard }}/3
+        run: pnpm exec playwright test --config dev/playwright.config.ts --shard=${{ matrix.shard }}/3
 
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ matrix.shard }}
-          path: playwright-report/
+          name: playwright-report-${{ matrix.os }}-${{ matrix.shard }}
+          path: dev/playwright-report/
           if-no-files-found: ignore
           retention-days: 7
 
@@ -104,7 +135,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.shard }}
-          path: test-results/
+          name: test-results-${{ matrix.os }}-${{ matrix.shard }}
+          path: dev/test-results/
           if-no-files-found: ignore
           retention-days: 7

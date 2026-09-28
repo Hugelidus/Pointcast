@@ -1,49 +1,48 @@
 # X / Bluesky thread
 
-Same thread text works for both (trim to 300 chars per post for Bluesky if needed; X allows longer but shorter reads better).
+Six posts, each under 300 characters so the same text works on Bluesky (X allows more, but short reads better). Attach the 18 s video (`docs/launch/video/out/pointcast-demo.mp4`) natively to post 1; both platforms autoplay it muted. Plain text only (no backticks: neither platform renders Markdown). Links go in the last post only: posts with links get less reach on X, and the first post should be the video. Pin the thread to your profile for launch week.
 
 ---
 
-**1/**
-"Make *this* sortable and move *this* next to *that*" — that's how I actually talk about UI changes. My coding agent has no idea what "this" is.
+**1/** (with the video)
 
-So I built pointcast: Alt+click or select what you mean while you talk. It hands the agent the exact element.
+"Make this sortable and move this next to that." That's how I talk about UI changes. My coding agent has no idea what "this" is.
 
-🧵
+So I built Pointcast: talk while you Alt+click your web app, and your agent gets the exact elements and the lines of code behind them.
 
 **2/**
-Press Record → talk about the change → Alt+click / select the element you mean → Stop.
 
-pointcast transcribes your voice locally in the browser (Whisper, no audio leaves your machine), lines up the words with what you pointed at, copies a Markdown spec.
+Press Record, talk, Alt+click what you mean, press Stop.
+
+Each sentence becomes a request. Each element comes with its code: «Export» → src/components/OrdersTable.tsx:22.
+
+Voice is transcribed in the browser (Whisper). Nothing leaves your machine.
 
 **3/**
-```
-## Request 1
-> This [a] should be sortable by quantity.
-- [a] th «Quantity» (selected) on `/index.html`
-  - in: main › section#orders › table#orders-table › thead › tr › th[3]
-```
-Paste that into Claude Code / Cursor / any agent.
+
+Does pointing help, or is it a nice demo? I measured it on 3 open-source dashboards (React, Vue, Svelte).
+
+Same spoken request, with vs. without pointing: the agent picked the right element 89% vs. 78% of the time.
+
+A careful written prompt still won: 96%.
 
 **4/**
-Alt+click is cancelled before it hits the page (same convention as MCP Pointer) — pointing at "Delete" never deletes. Only Alt+click and text selection are captured; every other click passes straight through.
+
+Then the code lines: with file:line for each element, the tokens the agent spent finding them fell by more than half, and it opened the right file first.
+
+New in 0.3, Django templates: on a real ~1,300-template Django + HTMX app, ~94% of sampled elements on their exact line, 0 wrong.
 
 **5/**
-Did it actually help, or is it just a nice demo? I ran an eval: 3 real open-source dashboards (React/Vue/Svelte), same spoken request with vs. without pointing.
 
-Accuracy on picking the *right* element: 78% → 89%. Biggest gains exactly where two things look alike.
+The rule behind it: when it isn't sure, it says nothing. A missing line costs the agent a search; a wrong one costs a wrong edit.
+
+Limits: dev builds only (React 19, Vue 3, Svelte 5, Django), Chrome and Edge, a beta.
 
 **6/**
-A careful hand-written description still beats it (96%, fewer tokens) — expected. pointcast isn't trying to out-write a careful writer, it's removing the need to *be* one while you'd rather just point and talk.
 
-Full numbers + failure cases: [link to docs/eval]
+Works with Claude Code (/pointcast), Codex CLI, Gemini CLI, Cursor and any MCP client. Free and MIT.
 
-**7/**
-Runs on localhost by default, nowhere else unless you opt a specific host in. Password fields and (on enabled sites) anything that looks like personal data are redacted at capture — verified by a canary test, not just a promise.
+Tell me where it points at the wrong thing on your app.
 
-**8/**
-MIT licensed, TypeScript, every non-obvious design call written down with what was rejected and why: [link to docs/decisions.md]
-
-It's Phase 1 — Chrome only for now. Try it, break it, tell me where the pointing/transcription gets it wrong.
-
-⭐ [GitHub link]
+github.com/Hugelidus/pointcast
+Evals: github.com/Hugelidus/pointcast/tree/main/docs/eval

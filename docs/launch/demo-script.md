@@ -1,5 +1,7 @@
 # Demo GIF storyboard (~30 s)
 
+> The launch uses the animated explainer instead (18 s, «View report» and «Export», arrows to `Dashboard.tsx:11` and `OrdersTable.tsx:22`): [video/](video/README.md), `video/out/pointcast-demo.mp4` and `.gif`. This storyboard stays for a later screen recording of the real extension and Claude Code.
+
 Purpose: show the whole loop — record, talk + point at two elements, stop, and Claude Code applying it with `/pointcast` — in one glance, for the top of the README. Silent GIF (no audio track), captions carry the narration.
 
 Why the React example and not the playground: what sets Pointcast apart is voice + several elements + **the line of code behind each one**. The playground is static HTML, so its spec has no code lines; `dev/examples/react-dashboard` is a Vite dev build of React 19, so the spec leads with `text at: src/…:line`, and it has the ambiguity pointing removes (two «View report» links, two «Export» buttons; see its [SCENARIOS.md](../../dev/examples/react-dashboard/SCENARIOS.md), scenarios 1 and 3).

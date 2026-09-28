@@ -52,6 +52,12 @@ describe("describeElement on the playground", () => {
     expect(describeElement(q("#display-name"))).toMatchObject({ text: "", label: "Display name" });
   });
 
+  it("separates text from adjacent inline element siblings", () => {
+    document.body.innerHTML = '<a id="messages"><span>Messages</span><span>3</span></a>';
+
+    expect(describeElement(document.getElementById("messages") as Element).text).toBe("Messages 3");
+  });
+
   it("names landmarks without generated ids", () => {
     expect(describeElement(q('[aria-label="More actions"]')).path).toBe("main › section#orders › button«More actions»");
     expect(readablePath(q("#orders-table tbody tr:nth-child(3) button"))).toBe(

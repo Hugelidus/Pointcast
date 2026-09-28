@@ -6,7 +6,7 @@ it.
 
 The plugin contains:
 
-- **The pointcast MCP server** (`npx -y pointcast@0.3.0 mcp`), with read-only tools:
+- **The pointcast MCP server** (`npx -y pointcast@0.4.0 mcp`), with read-only tools:
   `list_sessions`, `get_session` and `get_element`. They find the recordings the pointcast
   extension saved (`<Downloads>/pointcast`, or `POINTCAST_DIR`) and resolve each pointed element
   to its line in this project's source.

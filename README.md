@@ -72,7 +72,7 @@ Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://git
 
 (From a real recording on [examples/react-dashboard](examples/react-dashboard), spoken in Spanish and translated here; selector, DOM path and styles lines trimmed. The app has a second «Export» button, in another component: the spec names this one.)
 
-Your agent fetches the spec through its plugin, or you paste it. On React 19, Vue 3 and Svelte 5 dev builds each element leads with its code: where that instance is used, which component defines it (marked when it is shared) and the line where its text or data lives. Other pages get the DOM description: selector, path, HTML and text.
+Your agent fetches the spec through its plugin, or you paste it. On React 19, Vue 3 and Svelte 5 dev builds, and Django templates with [pointcast-django](integrations/django/README.md), each element leads with its code: where that instance is used, which component defines it (marked when it is shared) and the line where its text or data lives. Other pages get the DOM description: selector, path, HTML and text.
 
 <details>
 <summary>Where the code lines come from</summary>
@@ -96,7 +96,7 @@ A coding agent can't see what "this" is in "make *this* sortable and move *this*
 | Captures | DOM element + narration | DOM element only | DOM element only | screen pixels + narration |
 | Narration | yes (local Whisper) | no | no | yes |
 | Multiple elements over time | yes, one spec per recording | one at a time | one at a time | tied to a screenshot |
-| Source location | React 19, Vue 3, Svelte 5 dev builds: the instance and the line of its text | React fiber (experimental) | React fiber | — |
+| Source location | React 19, Vue 3, Svelte 5 dev builds and Django templates: the instance and the line of its text | React fiber (experimental) | React fiber | — |
 | Audio leaves your machine | no (local by default) | n/a | n/a | depends on provider |
 | Works with | any framework | any | React only | any |
 
@@ -136,7 +136,7 @@ Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that ver
 <summary><b>Known limitations of the beta</b></summary>
 
 - **Chromium browsers only**, desktop.
-- **The code pointer needs a dev build** of React, Vue 3 or Svelte 5. Production builds, Angular and other frameworks get the DOM description only.
+- **The code pointer needs a dev build** of React, Vue 3 or Svelte 5, or a Django app in `DEBUG` with [pointcast-django](integrations/django/README.md). Production builds, Angular and other server-side templates get the DOM description only.
 - **Show in folder** works only for recordings Chrome's downloads saved; for one your MCP server stored, the popup names its folder instead.
 - **Shared multi-user computers:** another user could send recordings to your running MCP server, or receive yours while it is down. There, turn off *Send to a running pointcast MCP server* in the popup's Settings and start the server with `--no-handoff`.
 - **Port forwards:** a forward of local port 20547 (`ssh -L`, or an editor's automatic port forwarding) sends your recordings to the MCP server on the other machine, which is how to use one on a remote dev server; on a shared host it can be another user's. See the [CLI's README](packages/cli/README.md#receiving-recordings-from-the-extension).
@@ -144,7 +144,7 @@ Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that ver
 
 ## Roadmap
 
-Now 0.2: recordings go straight to a running MCP server; Claude Code, Codex and Gemini CLI integrations; Edge. Next: code lines from more dev servers (webpack, Next.js) and frameworks (Angular), readable GitHub issues from a recording, store listings, Firefox. Pick one up: [help wanted](https://github.com/Hugelidus/pointcast/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22). Considered and why: [docs/ideas.md](docs/ideas.md); design decisions: [docs/decisions.md](docs/decisions.md).
+Now 0.3: Django templates, `pointcast doctor`; 0.2 sent recordings straight to a running MCP server and added Claude Code, Codex and Gemini CLI integrations and Edge. Next: code lines from more dev servers (webpack, Next.js), frameworks (Angular) and server templates (Jinja, Rails, Laravel), readable GitHub issues from a recording, store listings, Firefox. Pick one up: [help wanted](https://github.com/Hugelidus/pointcast/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22). Considered and why: [docs/ideas.md](docs/ideas.md); design decisions: [docs/decisions.md](docs/decisions.md).
 
 ## Contributing
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 (2026-09-28)
+
+Extension, CLI and integrations at 0.3.0.
+
+**Django templates get the code pointer** ([integrations/django](integrations/django/README.md))
+- `pointcast-django`, one line in `INSTALLED_APPS` under `DEBUG`: in development it marks each rendered template (includes, HTMX partials, blocks inherited from a base template) with invisible HTML comments. It never changes production output, JSON, text emails, attributes or `<title>`, and never writes an absolute path.
+- The extension reads the markers when you Alt+click, and the resolver finds the element's text in its template: `text at: templates/pim/partials/row.html:42`. It searches the innermost template first, prefers the hit in the element's own tag, and ignores `<script>`, attribute values, template comments and `{% if %}` operands. On a real 1,358-template Django + HTMX app it placed ~94 % of sampled elements on their exact line, with no wrong answer; the rest stay silent.
+
+**CLI**
+- `pointcast doctor`: checks your setup in a few lines (Node, the sessions folder, whether an MCP server is receiving recordings, local transcription, the Linux clipboard) and says how to fix each problem. `--json` for agents, `--online` to compare with npm.
+- Releases are built by CI from a version tag, as a draft with the zip, the CLI package and checksums ([CONTRIBUTING](CONTRIBUTING.md)).
+
 ## Extension 0.2.2 (2026-09-28)
 
 A usability pass on everything the extension says and shows. The CLI and the integrations are unchanged (0.2.1).

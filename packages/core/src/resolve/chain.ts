@@ -20,6 +20,12 @@ export interface ChainFrame {
   line?: number;
   /** The source at `line`, from `CodeFrame.snippet` (set by the resolver). */
   snippet?: string;
+  /**
+   * True for a server-rendered template (pointcast-django's markers): the component is the
+   * template's name and the file ends with it ("pim/row.html" in "templates/pim/row.html").
+   * Rendered as "template `file`", not as a `<Component>`. Absent otherwise.
+   */
+  template?: true;
 }
 
 /** At most this many app-owned frames (Stage 0). */
@@ -90,6 +96,7 @@ export function codeChain(element: ElementInfo): ChainFrame[] {
       file: frame.file,
       ...(frame.line === undefined ? {} : { line: frame.line }),
       ...(frame.line === undefined || frame.snippet === undefined ? {} : { snippet: frame.snippet }),
+      ...(!host && isTemplateFrame(frame.file, frame.component) ? { template: true as const } : {}),
     });
     droppedPackage = undefined;
     if (chain.length === MAX_CHAIN_FRAMES) break;
@@ -125,6 +132,14 @@ export function libraryPackage(file: string): string | undefined {
 /** Project-relative (D8), forward slashes, without a leading "./" or "/". */
 export function cleanPath(file: string): string {
   return projectRelativePath(file).replace(/\\/g, "/").replace(/^(\.?\/)+/, "");
+}
+
+/**
+ * A frame from template markers (D9 note 2026-09-28): its name is a template name, a path with an
+ * extension that the file ends with. A framework component is never named like that.
+ */
+function isTemplateFrame(file: string, component: string | undefined): boolean {
+  return component !== undefined && /\.[a-z\d]+$/i.test(component) && (file === component || file.endsWith(`/${component}`));
 }
 
 function isFrame(value: unknown): value is CodeFrame {

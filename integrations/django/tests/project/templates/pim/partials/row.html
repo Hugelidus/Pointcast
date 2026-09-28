@@ -1,0 +1,6 @@
+<tr id="product-{{ product.sku }}">
+  <td>{{ product.sku }}</td>
+  <td>{{ product.name }}</td>
+  <td>{% include "pim/partials/status.html" %}</td>
+  <td><button hx-post="/pim/{{ product.sku }}/archive/" hx-target="closest tr" hx-swap="outerHTML">Archivar</button></td>
+</tr>

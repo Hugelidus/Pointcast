@@ -645,3 +645,140 @@ describe("snippets: the source lines the resolver already read", () => {
     ]);
   });
 });
+
+describe("server templates (pointcast-django's markers, D9 note 2026-09-28)", () => {
+  const LIST = "templates/pim/list.html";
+  const frames = (...files: string[]): CodeFrame[] => files.map((file) => ({ file, component: file.replace(/^.*?templates\//, "") }));
+
+  it("treats {# #} and {% comment %} as comments in a template, line for line", async () => {
+    const source = [
+      "{# Exportar CSV #}", // 1
+      "{% comment 'old' %}", // 2
+      "  <button>Exportar CSV</button>", // 3
+      "{% endcomment %}", // 4
+      "{#", // 5: Jinja's comments may span lines
+      "  Exportar CSV", // 6
+      "#}", // 7
+      '<button type="button">Exportar CSV</button>', // 8
+    ].join("\n");
+    const found = await resolveElement(el("button", "Exportar CSV", frames(LIST)), memoryReader({ [LIST]: source }), "repo");
+    expect(found).toEqual([{ kind: "text", file: LIST, line: 8, via: "repo", snippet: '<button type="button">Exportar CSV</button>' }]);
+  });
+
+  it("bounds a literal by template tags, and keeps quoted literals inside tags", async () => {
+    const reader = memoryReader({
+      [LIST]: '<span>{% if on %}Activo{% else %}Inactivo{% endif %}</span>\n<p>Pedidos ({{ n }})</p>\n{% translate "Guardar" %}',
+    });
+    expect((await resolveElement(el("span", "Activo", frames(LIST)), reader, "repo"))[0]?.line).toBe(1);
+    expect((await resolveElement(el("p", "Pedidos (12)", frames(LIST)), reader, "repo"))[0]?.line).toBe(2);
+    expect((await resolveElement(el("button", "Guardar", frames(LIST)), reader, "repo"))[0]?.line).toBe(3);
+  });
+
+  it("leaves Svelte's {#if} and {#each} alone: only template files get template comments", async () => {
+    const file = "src/lib/List.svelte";
+    const reader = memoryReader({ [file]: "{#each items as item}<li>Archive</li>{/each}" });
+    const found = await resolveElement(el("li", "Archive", [{ component: "List", file, line: 1 }]), reader, "repo");
+    expect(found).toEqual([{ kind: "text", file, line: 1, via: "repo", snippet: "{#each items as item}<li>Archive</li>{/each}" }]);
+  });
+
+  it("follows {% include %} by name only when the chain's templates have nothing (rule 4)", async () => {
+    const reader = memoryReader({
+      [LIST]: '<h1>Productos</h1>\n<p>{% include "pim/hint.html" %}</p>\n{# {% include "pim/old.html" %} #}',
+      "templates/pim/hint.html": "Sin productos",
+      "templates/pim/old.html": "Sin productos",
+    });
+    expect(await resolveElement(el("p", "Sin productos", frames(LIST)), reader, "repo")).toEqual([
+      { kind: "text", file: "templates/pim/hint.html", line: 1, via: "repo", snippet: "Sin productos" },
+    ]);
+    // The chain's own answer wins, and nothing more is read for it.
+    const chainOnly = memoryReader({ [LIST]: '<h1>Productos</h1>\n{% include "pim/hint.html" %}' });
+    expect(await resolveElement(el("h1", "Productos", frames(LIST)), chainOnly, "repo")).toHaveLength(1);
+    expect(chainOnly.reads).toEqual([LIST]);
+  });
+
+  it("looks an include up in the app's templates folder (APP_DIRS)", async () => {
+    const reader = memoryReader({
+      [LIST]: '<p>{% include "pim/partials/hint.html" %}</p>',
+      "pim/templates/pim/partials/hint.html": "Sin productos",
+    });
+    const found = await resolveElement(el("p", "Sin productos", frames(LIST)), reader, "repo");
+    expect(found[0]?.file).toBe("pim/templates/pim/partials/hint.html");
+  });
+
+  const ROW = "templates/pim/partials/row.html";
+  const locate = async (element: ElementInfo, files: Record<string, string>) =>
+    (await resolveElement(element, memoryReader(files), "repo")).map(({ file, line }) => `${file}:${line}`);
+
+  it("searches the innermost template first, then the rest of the chain", async () => {
+    const files = { [ROW]: "<tr>\n  <td><span>Archivado</span></td>\n</tr>", [LIST]: '<select><option value="a">Archivado</option></select>' };
+    expect(await locate(el("span", "Archivado", frames(ROW, LIST)), files)).toEqual([`${ROW}:2`]);
+    // Nothing in the innermost template: the rest of the chain, as before.
+    expect(await locate(el("h1", "Productos", frames(ROW, LIST)), { [ROW]: "<tr></tr>", [LIST]: "<h1>Productos</h1>" })).toEqual([`${LIST}:1`]);
+    // Twice in the innermost template: silence, the outer templates are not consulted.
+    expect(await locate(el("span", "Archivado", frames(ROW, LIST)), { ...files, [ROW]: "<span>Archivado</span>\n<span>Archivado</span>\n" })).toEqual([]);
+  });
+
+  it("keeps Stage 0's whole-chain search for component chains", async () => {
+    const files = { "src/Row.svelte": "<span>Archivado</span>", "src/List.svelte": "<option>Archivado</option>" };
+    const element = el("span", "Archivado", [
+      { component: "Row", file: "src/Row.svelte", line: 1 },
+      { component: "List", file: "src/List.svelte", line: 1 },
+    ]);
+    expect(await locate(element, files)).toEqual([]);
+  });
+
+  it("breaks a tie by the element's tag when every hit shows its tag (tag filter)", async () => {
+    const source = [
+      '<label class="form-label">Estado</label>', // 1: the filter
+      "<table><thead><tr>", // 2
+      '  <th>SKU</th><th class="x">Estado</th>', // 3: the column
+      "</tr></thead></table>", // 4
+      '<span class="badge">{% if a %}<i class="bi bi-check"></i> Activo{% endif %}</span>', // 5
+      "<th>Activo</th>", // 6
+    ].join("\n");
+    expect(await locate(el("th", "Estado", frames(LIST)), { [LIST]: source })).toEqual([`${LIST}:3`]);
+    expect(await locate(el("label", "Estado", frames(LIST)), { [LIST]: source })).toEqual([`${LIST}:1`]);
+    // Past a template tag and an empty <i>.
+    expect(await locate(el("span", "Activo", frames(LIST)), { [LIST]: source })).toEqual([`${LIST}:5`]);
+  });
+
+  it("stays silent when the tag filter cannot tell (same tag twice, a tag on another line)", async () => {
+    expect(await locate(el("th", "Fecha", frames(LIST)), { [LIST]: "<th>Fecha</th>\n<th>Fecha</th>" })).toEqual([]);
+    const split = '<button type="button"\n        class="btn">\n  Cancelar\n</button>\n<a href="/">Cancelar</a>';
+    expect(await locate(el("button", "Cancelar", frames(LIST)), { [LIST]: split })).toEqual([]);
+    // Never for component files: Stage 0's silence stays.
+    const svelte = { "src/A.svelte": "<th>Estado</th>\n<label>Estado</label>" };
+    expect(await locate(el("th", "Estado", [{ component: "A", file: "src/A.svelte", line: 1 }]), svelte)).toEqual([]);
+  });
+
+  it("does not count scripts, attribute values or {% if %} operands as on-screen text", async () => {
+    const source = [
+      '<button id="ref">Añadir por referencia</button>', // 1
+      "<script>", // 2
+      "  aviso('Usa \"Añadir por referencia\".');", // 3
+      "</script>", // 4
+      '<a class="nav-link {% if tab == \'x\' %}active{% endif %}" title="Enviada">Pedidos</a>', // 5
+      "{% if envio.estado == 'Enviada' %}<span>Enviada</span>{% endif %}", // 6
+      '<style>.x::after { content: "Pedidos"; }</style>', // 7
+    ].join("\n");
+    expect(await locate(el("button", "Añadir por referencia", frames(LIST)), { [LIST]: source })).toEqual([`${LIST}:1`]);
+    expect(await locate(el("span", "Enviada", frames(LIST)), { [LIST]: source })).toEqual([`${LIST}:6`]);
+    expect(await locate(el("a", "Pedidos", frames(LIST)), { [LIST]: source })).toEqual([`${LIST}:5`]);
+  });
+
+  it("still counts {% trans %}, and still finds labels and hrefs in attributes", async () => {
+    const source = '<button>{% trans "Guardar" %}</button>\n<button>{% translate "Guardar" %}</button>';
+    expect(await locate(el("button", "Guardar", frames(LIST)), { [LIST]: source })).toEqual([]);
+    const label = el("input", "", frames(LIST), { label: "Buscar producto" });
+    expect(await locate(label, { [LIST]: '<input type="search" placeholder="Buscar producto">' })).toEqual([`${LIST}:1`]);
+    // A text only in a data attribute is not the element's text: nothing, rather than that line.
+    expect(await locate(el("span", "su pedido", frames(LIST)), { [LIST]: '<div data-origen="su pedido"></div>' })).toEqual([]);
+  });
+
+  it("marks template frames in the chain", () => {
+    expect(codeChain(el("p", "x", frames(LIST, "templates/base.html")))).toEqual([
+      { component: "pim/list.html", host: false, file: LIST, template: true },
+      { component: "base.html", host: false, file: "templates/base.html", template: true },
+    ]);
+  });
+});

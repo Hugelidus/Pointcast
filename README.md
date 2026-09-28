@@ -8,6 +8,8 @@
 
 One recording covers a whole list of UI changes: say what you want while you point, press Stop, and Claude Code, Codex, Gemini CLI or Cursor get a spec that leads with `src/…:line`. In [an evaluation on three real admin dashboards](docs/eval/results-2026-09-27.md), pointing raised the agent's accuracy from 78 % to 89 % over the same words without pointing; in a follow-up, adding the code lines [cut the tokens it spent finding the elements by more than half](docs/eval/stage0-code-pointer-2026-09-27.md). Your voice is transcribed locally, in the browser.
 
+In a [typed-mode evaluation on four apps](docs/eval/results-2026-09-28-batching.md) (React, Vue, Svelte, Django), an agent reading one Pointcast recording with six changes found the right code 96 % of the time, against 85 % for a quick hand-typed request with the same six changes, with 24 % fewer tokens and 75 % fewer searches. One change per request is more accurate but [not cheaper](docs/eval/results-2026-09-28.md): the saving comes from batching.
+
 [![CI](https://github.com/Hugelidus/pointcast/actions/workflows/ci.yml/badge.svg)](https://github.com/Hugelidus/pointcast/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/Hugelidus/pointcast?include_prereleases&label=beta)](https://github.com/Hugelidus/pointcast/releases)
 [![npm](https://img.shields.io/npm/v/pointcast?label=npm)](https://www.npmjs.com/package/pointcast)

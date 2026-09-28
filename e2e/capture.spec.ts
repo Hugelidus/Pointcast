@@ -159,7 +159,7 @@ async function record(
   await expect(app.locator('[data-pointcast-ui="flash"]')).toHaveCount(0);
   await expect(app.locator("#toast")).toHaveText("");
   // The popup confirms what landed, from the described element (not a synthetic draft).
-  await expect(popup.locator("#last-event")).toHaveText("Last: button «Export» · Alt+click");
+  await expect(popup.locator("#last-event")).toHaveText("Last: button “Export”");
 
   const rows = app.locator("#orders-table tbody tr");
   await expect(rows).toHaveCount(4);
@@ -232,7 +232,7 @@ async function privacyCanary(scenario: Scenario, popup: Page): Promise<void> {
     await page.locator(css).click({ modifiers: ["Alt"] });
     if (css === "#password") {
       // A sensitive element is summarized by tag and label only: never its value (D8).
-      await expect(popup.locator("#last-event")).toHaveText("Last: input «Password» · Alt+click");
+      await expect(popup.locator("#last-event")).toHaveText("Last: field “Password”");
     }
   }
   await page.locator("#settings-form").click({ modifiers: ["Alt"], position: { x: 2, y: 2 } });

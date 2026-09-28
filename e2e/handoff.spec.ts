@@ -86,12 +86,17 @@ test("a running MCP server gets the recording: no download, no dialog; after it 
 
     const records = await readE2eRecords(popup);
     expect(records.filter((r) => r.kind === "clipboard")).toEqual([{ kind: "clipboard", text: markdown }]);
-    const saved = `Copied — paste it into your agent. Saved by the pointcast MCP server to ${handedOffTo}`;
-    expect(records.filter((r) => r.kind === "notification")).toEqual([{ kind: "notification", title: "pointcast", message: saved }]);
-    await expect(popup.locator("#message")).toHaveText(saved);
-    // Show in folder only reveals Chrome's downloads; the message names the folder instead.
+    const saved = `Copied. Paste it into your agent. Saved by the Pointcast MCP server to ${handedOffTo}`;
+    expect(records.filter((r) => r.kind === "notification")).toEqual([{ kind: "notification", title: "Pointcast", message: saved }]);
+    await expect(popup.locator("#message")).toHaveText("Copied. Paste it into your agent.");
+    await expect(popup.locator("#where-label")).toHaveText("Sent to your agent's Pointcast MCP server");
+    // The line shows the end of the folder; the whole of it is in the title.
+    await expect(popup.locator("#where-path")).toHaveAttribute("title", handedOffTo);
+    await expect(popup.locator("#where-path")).toContainText(sessionId);
+    // Show in folder only reveals Chrome's downloads; Copy path offers the folder instead.
     await expect(popup.locator("#copy-again")).toBeVisible();
     await expect(popup.locator("#show-folder")).toBeHidden();
+    await expect(popup.locator("#copy-path")).toBeVisible();
 
     // ---- The agent reads it through the same server's tools.
     const latest = await mcp.client.callTool({ name: "get_session", arguments: { id: "latest" } });
@@ -174,9 +179,17 @@ test("fallbacks: setting off makes no request; a refusing server gets a warning;
     const sessionId = state.lastSessionId;
     if (!sessionId) throw new Error("stopped without a saved session");
     const saved = await readSavedSession(popup, downloadsDir, sessionId);
-    const reason = "The pointcast MCP server did not take this recording (disk full (test)), so Chrome's downloads saved it instead.";
+    const reason =
+      "Not sent to the Pointcast MCP server: it refused this recording (disk full (test)). Your agent won't find it there, so paste it instead.";
     expect(state.warning).toBe(reason);
-    await expect(popup.locator("#message")).toHaveText(`Copied — paste it into your agent. Saved to Downloads/pointcast/${sessionId}/ ${reason}`);
+    // Still a success, with the warning apart from it (amber, never the error's red).
+    await expect(popup.locator("#message")).toHaveText("Copied. Paste it into your agent.");
+    await expect(popup.locator("#where-path")).toHaveText(sessionId);
+    // What happened in bold, then what to do (popup/view.ts splitLead).
+    await expect(popup.locator("#warning-lead")).toHaveText("Not sent to the Pointcast MCP server.");
+    await expect(popup.locator("#warning-body")).toHaveText(
+      "It refused this recording (disk full (test)). Your agent won't find it there, so paste it instead.",
+    );
 
     // ---- Exactly a hello and one upload, from this extension, with no cookie and no preflight.
     expect(fake.requests.map((r) => `${r.method} ${r.url}`)).toEqual([

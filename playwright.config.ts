@@ -14,7 +14,7 @@ const encoder = path.join(MODEL_CACHE_DIR, MODEL_ID, "onnx", "encoder_model.onnx
 if (!existsSync(encoder)) {
   throw new Error(
     `The e2e suite serves ${MODEL_ID} from ${MODEL_CACHE_DIR}, but it is not there. ` +
-      `Download it once (291 MB) with "node scripts/download-model.mjs".`,
+      `Download it once (294 MB) with "node scripts/download-model.mjs".`,
   );
 }
 
@@ -24,7 +24,7 @@ export default defineConfig({
   // keeps the machine responsive and avoids competing for the fixed ports.
   workers: 1,
   fullyParallel: false,
-  // Every Stop now transcribes: a fresh profile loads the model (291 MB from the local server)
+  // Every Stop now transcribes: a fresh profile loads the model (294 MB from the local server)
   // before Whisper runs, several seconds per recording.
   timeout: 120_000,
   forbidOnly: !!process.env["CI"],

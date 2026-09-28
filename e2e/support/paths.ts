@@ -20,7 +20,7 @@ export const MODEL_PORT = 5541;
 /**
  * transformers.js' own cache in node_modules, filled when the CLI (Node) first loads a model:
  * Xenova/whisper-base/{config.json, onnx/encoder_model.onnx, …}. Serving it keeps the e2e suite
- * from downloading 291 MB from Hugging Face in every fresh browser profile.
+ * from downloading 294 MB from Hugging Face in every fresh browser profile.
  */
 export const MODEL_CACHE_DIR = (() => {
   const fromTranscribe = createRequire(path.join(REPO_ROOT, "packages", "transcribe", "package.json"));

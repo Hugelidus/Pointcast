@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>pointcast store screenshot 1: record and point</title>
+<title>Pointcast store screenshot 1: record and point</title>
 <link rel="stylesheet" href="store.css">
 <style>
   .browser { left: 56px; top: 176px; width: 816px; }
   /* The captures are 1120x780 CSS px at 2x. */
   .page { width: 816px; height: 568.3px; }
 
-  /* raw/popup-rec-export.png is 260x427 CSS px, shown at 1.2x. */
-  .popup { left: 866px; top: 218px; width: 312px; }
+  /* raw/popup-rec-export.png is 260x341 CSS px, shown at 1.2x. */
+  .popup { left: 866px; top: 262px; width: 312px; }
   .popup img { width: 312px; }
 
   /* What the user says while pointing: the narration of the recording. */
@@ -56,17 +56,18 @@
   .rec-card {
     position: absolute;
     left: 904px;
-    top: 741px;
+    top: 739px;
     display: flex;
     align-items: center;
     gap: 14px;
   }
   .rec-card .zoom {
-    width: 114px;
-    height: 50px;
-    border-radius: 25px;
+    /* Device-pixel box of the pill in the capture, border included (right 2216, bottom 1536). */
+    width: 124px;
+    height: 54px;
+    border-radius: 27px;
     background-image: url("raw/rec-export.png");
-    background-position: -2102px -1486px;
+    background-position: -2092px -1482px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.18);
   }
   .rec-card span { font-size: 14px; line-height: 1.35; color: var(--soft); font-weight: 500; }
@@ -80,7 +81,7 @@
     <p class="subline">Narrate the change while you point at it. The click never reaches your app.</p>
   </div>
   <!-- LOGO: scripts/icon/pointcast.svg -->
-  <div class="brand"><img src="../../../../scripts/icon/pointcast.svg" alt=""><span>pointcast</span></div>
+  <div class="brand"><img src="../../../../scripts/icon/pointcast.svg" alt=""><span>Pointcast</span></div>
 
   <div class="browser">
     <div class="bar">
@@ -92,7 +93,7 @@
       <div class="ext active"><img src="../../../../scripts/icon/pointcast.svg" alt=""></div>
     </div>
     <!-- Real capture: the e2e build recording on examples/react-dashboard, right after the
-         Alt+click on «Export» (the red outline is pointcast's capture flash; REC bottom right). -->
+         Alt+click on «Export» (the violet outline is Pointcast's capture flash; REC bottom right). -->
     <img class="page" src="raw/rec-export.png" alt="">
   </div>
 

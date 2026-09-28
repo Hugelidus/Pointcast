@@ -1,5 +1,32 @@
 # Changelog
 
+## Extension 0.2.2 (2026-09-28)
+
+A usability pass on everything the extension says and shows. The CLI and the integrations are unchanged (0.2.1).
+
+**Popup**
+- A result reads as a result: a success headline ("Copied. Paste it into your agent."), then where it went on its own line (Downloads › pointcast, or your agent's Pointcast MCP server, with the whole folder on hover and a *Copy path* button), then the audio length and the number of events. A warning is its own amber block and never looks like an error; an error says in its first sentence what failed and what to do, with the raw message folded under *Details*.
+- The first recording is announced before it happens: while the microphone is not allowed, the main button is *Allow microphone* and opens the permission page; while the speech model was never downloaded, a notice says the first recording downloads it once (294 MB, one figure everywhere). After Stop, a first run reads "Preparing…" instead of a made-up estimate.
+- While a recording is processed, Record, the tab line and the site section step aside; the Time and Events cards show only while recording, and every duration reads m:ss.
+- Gestures are named in words: "Last: link “View report”", "Undone: column header “Quantity”", the same in the popup and in the page.
+- On a remote site that is not enabled, *Enable on <host>* is the first step and Record says the tab won't be captured.
+- New look: ink and violet brand colours, stronger contrast in light and dark, violet for processing and amber for warnings only; the shortcuts are drawn as keys.
+- Screen readers hear each change of stage, headline, warning or error once (never the countdown); the progress bar is a progressbar; the focus stays on a usable control when the one pressed goes away.
+
+**In the page**
+- The pill says where the recording went ("✓ Copied · saved to Downloads" or "sent to your agent"), shows a warning in amber and a failure with ✗, and says so when Record failed (for example a denied microphone).
+- New pill style (ink background, one coloured glyph), a violet capture ring instead of the error red, and `prefers-reduced-motion` is honoured.
+
+**Failures you can act on**
+- Known transcription failures (the model download, not enough memory, too long) come out as one sentence that says what to do, and every one says that the events and audio are saved. The notification carries that sentence only.
+- A failed Record shows "!" on the toolbar icon, and a denied microphone opens the permission page, which now brings you back to the tab you came from. The permission page is rebuilt: numbered steps when the microphone is blocked, *Check again*, *Back to my app*.
+- Fixed: a retried report could download a session's files twice. Fixed: when the service worker could not take the processed recording, the popup stayed on "Processing…" for up to 10 minutes; after five tries (about 30 s) it now says what was kept (the Markdown on the clipboard, or the files with your agent's MCP server).
+- Plain words instead of internal ones in every message, "Pointcast" written the same way everywhere, and every Whisper language named in the language menu.
+
+**Repository**
+- The README is rewritten around a one-line install per agent (Claude Code, Codex, Gemini CLI, Cursor and any MCP client) and the evaluation numbers, each linked to its report; setup and development moved to CONTRIBUTING.md.
+- A code of conduct (Contributor Covenant 2.1), issue forms instead of Markdown templates, and a demo script built on the React example.
+
 ## 0.2.1 (2026-09-28)
 
 CLI 0.2.1, extension 0.2.1 and the integrations at 0.2.1.

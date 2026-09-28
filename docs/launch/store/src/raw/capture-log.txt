@@ -1,6 +1,6 @@
-popup-remote-unseen.png: This tab is not captured: pointcast only runs on local dev hosts (localhost, *.localhost, 127.0.0.1, [::1], *.test), not on file:// pages or remote sites. | (no site section)
-popup-remote.png: This tab is not captured: pointcast is off on staging.example.com. | Enable on staging.example.com /  / Chrome will ask to let pointcast read staging.example.com only. Personal data in the page (emails, phone numbers…) is redacted on sites that are not local.
-view-report: "this" #1 at 1762 ms, pressed at 1768 ms (flash shot 72 ms after)
+popup-remote-unseen.png: This tab is not captured: Pointcast runs on local dev hosts (localhost, *.localhost, 127.0.0.1, [::1], *.test) and on sites you enable, not on file:// pages. | (no site section)
+popup-remote.png: Pointcast is off on staging.example.com. | Enable on staging.example.com /  / Chrome asks to let Pointcast read this site only. Personal data in the page, such as emails and phone numbers, is redacted.
+view-report: "this" #1 at 1762 ms, pressed at 1774 ms (flash shot 105 ms after)
 badge: "this" #2 at 8618 ms, pressed at 8633 ms (flash shot 66 ms after)
-export: "this" #3 at 14859 ms, pressed at 14875 ms (flash shot 61 ms after)
+export: "this" #3 at 14859 ms, pressed at 14859 ms (flash shot 64 ms after)
 clipboard equals session.md

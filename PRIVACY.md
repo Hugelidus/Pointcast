@@ -24,7 +24,7 @@ Effective 28 September 2026. It covers the pointcast Chrome extension, the `poin
 
 The extension makes only these requests:
 
-1. **Once, to download the speech models** (`Xenova/whisper-base`, about 291 MB, and the voice activity detector `onnx-community/silero-vad`, about 2 MB) from Hugging Face, which are then kept in the browser's cache. No data of yours is sent with it. As with any download, Hugging Face sees ordinary request information such as your IP address.
+1. **Once, to download the speech models** (`Xenova/whisper-base`, about 294 MB, and the voice activity detector `onnx-community/silero-vad`, about 2 MB) from Hugging Face, which are then kept in the browser's cache. No data of yours is sent with it. As with any download, Hugging Face sees ordinary request information such as your IP address.
 2. **To the page's own development server**, to read source files as described above.
 3. **To a pointcast MCP server on your own computer** (`http://127.0.0.1:20547`), only while *Send to a running pointcast MCP server* is on in the settings (the default). After Stop it sends a short, empty hello; when a pointcast MCP server answers, it sends it the recording's files. This request never leaves your computer, unless you forward that port to another machine yourself (for example `ssh -L 20547:127.0.0.1:20547`, or an editor's automatic port forwarding for a remote workspace): the recording then goes through the forward to the pointcast MCP server on that machine. A program on that port that is not pointcast only ever receives the empty hello.
 

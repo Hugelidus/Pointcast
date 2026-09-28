@@ -35,7 +35,7 @@ vi.mock("wxt/browser", () => ({
   browser: {
     storage: { session: fake.area(fake.storage), local: fake.area(fake.local) },
     runtime: { getManifest: () => ({ version: "0.1.0" }), getURL: (path: string) => path },
-    tabs: { create: vi.fn() },
+    tabs: { create: vi.fn(), query: vi.fn(async () => [{ id: 42 }]) },
     alarms: {
       create: async (name: string, { when }: { when: number }) => void fake.alarms.set(name, when),
       clear: async (name: string) => fake.alarms.delete(name),
@@ -107,6 +107,10 @@ async function stopped(): Promise<void> {
   recorderStops();
   expect(await commands.stopRecording()).toEqual({ ok: true });
 }
+
+/** A transcription failure as processing/failure.ts words it, and its first sentence. */
+const TRANSCRIPTION_SENTENCE = "Could not download the speech model: check your internet connection, then record again.";
+const TRANSCRIPTION_ERROR = `${TRANSCRIPTION_SENTENCE} Your events and audio are saved.`;
 
 const DONE: ProcessingResult = {
   files: [
@@ -231,8 +235,9 @@ describe("stopRecording", () => {
 
     const result = commands.stopRecording();
     await vi.advanceTimersByTimeAsync(commands.STOP_TIMEOUT_MS);
-    expect(await result).toEqual({ ok: false, error: "The recorder did not finish saving in time." });
-    expect(state()).toMatchObject({ status: "idle", error: "The recorder did not finish saving in time." });
+    const error = "Stopping the recording took too long, so it could not be saved.";
+    expect(await result).toEqual({ ok: false, error });
+    expect(state()).toMatchObject({ status: "idle", error, errorKind: "processing" });
     expect(fake.offscreenOpen).toBe(false);
     expect(fake.alarms.size).toBe(0);
     expect(fake.outcomeBadge).toHaveBeenCalledWith(false);
@@ -289,7 +294,7 @@ describe("finishProcessing", () => {
     expect(fake.offscreenOpen).toBe(false);
     expect(fake.alarms.size).toBe(0);
     expect(fake.outcomeBadge).toHaveBeenCalledWith(true);
-    expect(fake.notify).toHaveBeenCalledWith("pointcast", expect.stringMatching(/^Copied — paste it into your agent\. Saved to/));
+    expect(fake.notify).toHaveBeenCalledWith("Pointcast", expect.stringMatching(/^Copied\. Paste it into your agent\. Saved to/));
   });
 
   it("keeps a transcription error with the saved session, and notifies it", async () => {
@@ -301,18 +306,37 @@ describe("finishProcessing", () => {
       ],
       copied: false,
       audioMs: 12_000,
-      error: "Could not transcribe: offline.",
+      error: TRANSCRIPTION_ERROR,
+      errorDetail: "Failed to fetch",
     });
-    expect(state()).toMatchObject({ status: "idle", lastSessionId: BASE_ID, error: "Could not transcribe: offline." });
+    expect(state()).toMatchObject({
+      status: "idle",
+      lastSessionId: BASE_ID,
+      error: TRANSCRIPTION_ERROR,
+      errorKind: "transcription",
+      errorDetail: "Failed to fetch",
+    });
     expect(await readLastMarkdown()).toBeUndefined();
     expect(fake.outcomeBadge).toHaveBeenCalledWith(false);
-    expect(fake.notify).toHaveBeenCalledWith("pointcast: could not transcribe", "Could not transcribe: offline.");
+    // The notification gets the sentence that says what to do, not the rest.
+    expect(fake.notify).toHaveBeenCalledWith("Pointcast: could not transcribe", TRANSCRIPTION_SENTENCE);
   });
 
   it("ends in an error when nothing could be saved", async () => {
     await stopped();
-    await commands.finishProcessing(BASE_ID, { files: [], copied: false, audioMs: 0, error: "Processing failed unexpectedly: bug" });
-    expect(state()).toMatchObject({ status: "idle", error: "Processing failed unexpectedly: bug" });
+    await commands.finishProcessing(BASE_ID, {
+      files: [],
+      copied: false,
+      audioMs: 0,
+      error: "Processing failed unexpectedly, so nothing was saved.",
+      errorDetail: "bug",
+    });
+    expect(state()).toMatchObject({
+      status: "idle",
+      error: "Processing failed unexpectedly, so nothing was saved.",
+      errorKind: "processing",
+      errorDetail: "bug",
+    });
     expect(state().lastSessionId).toBeUndefined();
     expect(fake.offscreenOpen).toBe(false);
   });
@@ -323,6 +347,54 @@ describe("finishProcessing", () => {
     await commands.finishProcessing(BASE_ID, DONE);
     await commands.finishProcessing("another-session", DONE);
     expect(fake.downloads.size).toBe(3);
+  });
+
+  it("finds the downloads a report started when its handler died before storing them, instead of starting them again", async () => {
+    await stopped();
+    const setState = browser.storage.session.set;
+    // The service worker stops right after the downloads started: the state write never happens.
+    browser.storage.session.set = async (items) => {
+      if ("recorder" in items && (items.recorder as RecorderState).pendingDownloads) throw new Error("worker stopped");
+      return setState(items);
+    };
+    try {
+      await expect(commands.finishProcessing(BASE_ID, DONE)).rejects.toThrow("worker stopped");
+    } finally {
+      browser.storage.session.set = setState;
+    }
+    expect(state().status).toBe("processing");
+    expect(fake.downloads.size).toBe(3);
+
+    // The recorder retries the report: the same three files, no "session (1).md".
+    expect(await commands.finishProcessing(BASE_ID, DONE)).toEqual({ ok: true });
+    expect(fake.downloads.size).toBe(3);
+    expect(state()).toMatchObject({ status: "idle", lastSessionId: BASE_ID, lastResult: { downloadId: 1 } });
+  });
+
+  it("still downloads a later session with its own id", async () => {
+    await stopped();
+    await commands.finishProcessing(BASE_ID, DONE);
+    fake.storage.set("recorder", { ...state(), status: "recording", t0: T0 + 60_000 });
+    recorderStops();
+    await commands.stopRecording();
+    const next = state().sessionId ?? "";
+    expect(next).not.toBe(BASE_ID);
+    await commands.finishProcessing(next, DONE);
+    expect(fake.downloads.size).toBe(6);
+  });
+
+  it("ends a failed report at once, so the popup never waits for the processing alarm", async () => {
+    await stopped();
+    // What the recorder sends when its reports got no answer (offscreen/run-processing.ts).
+    await commands.finishProcessing(BASE_ID, {
+      files: [],
+      copied: true,
+      audioMs: 12_000,
+      error: "The recording was processed, but Pointcast could not save it. The Markdown is still on your clipboard.",
+    });
+    expect(state()).toMatchObject({ status: "idle", errorKind: "processing" });
+    expect(fake.alarms.size).toBe(0);
+    expect(fake.notify).toHaveBeenCalledWith("Pointcast: processing failed", "The recording was processed, but Pointcast could not save it.");
   });
 
   it("ends in an error when a download cannot start, so a retried report saves nothing twice", async () => {
@@ -339,10 +411,10 @@ describe("finishProcessing", () => {
       browser.downloads.download = download;
     }
     expect(fake.downloads.size).toBe(2);
-    expect(state()).toMatchObject({ status: "idle", error: `Saving session ${BASE_ID} failed: Invalid filename` });
+    expect(state()).toMatchObject({ status: "idle", error: `Could not save session ${BASE_ID}.`, errorDetail: "Invalid filename" });
     expect(fake.offscreenOpen).toBe(false);
     expect(fake.alarms.size).toBe(0);
-    expect(fake.notify).toHaveBeenCalledWith("pointcast: saving failed", expect.stringContaining("Invalid filename"));
+    expect(fake.notify).toHaveBeenCalledWith("Pointcast: saving failed", `Could not save session ${BASE_ID}.`);
   });
 
   it("does not notify when the user turned notifications off", async () => {
@@ -394,10 +466,7 @@ describe("finishProcessing", () => {
       warning: expect.stringMatching(/Chrome asked where to save each file.*not in Downloads\/pointcast/),
     });
     // Must not claim it saved to the session folder when it did not.
-    expect(fake.notify).toHaveBeenCalledWith(
-      "pointcast",
-      "Copied — paste it into your agent. See the popup for a warning.",
-    );
+    expect(fake.notify).toHaveBeenCalledWith("Pointcast", "Copied. Paste it into your agent. See the popup for a warning.");
   });
 
   it("says a save dialog was cancelled, with the same advice, when a download is USER_CANCELED", async () => {
@@ -421,9 +490,13 @@ describe("finishProcessing", () => {
     }
     expect(state()).toMatchObject({
       status: "idle",
-      error: expect.stringMatching(/a save dialog was cancelled.*Ask where to save each file before downloading/),
+      error: expect.stringMatching(/a Save dialog was cancelled\. Turn off "Ask where to save each file before downloading"/),
+      errorDetail: "USER_CANCELED",
     });
-    expect(fake.notify).toHaveBeenCalledWith("pointcast: saving failed", expect.stringMatching(/save dialog was cancelled/));
+    expect(fake.notify).toHaveBeenCalledWith(
+      "Pointcast: saving failed",
+      `Could not save session ${BASE_ID}: a Save dialog was cancelled.`,
+    );
   });
 });
 
@@ -451,7 +524,8 @@ describe("finishProcessing, handed off to a pointcast MCP server (D11)", () => {
     expect(await readLastMarkdown()).toBe(DONE.markdown);
     expect(fake.local.get("processingStats")).toMatchObject({ modelReady: true, lastLanguage: "es" });
     expect(fake.outcomeBadge).toHaveBeenCalledWith(true);
-    expect(fake.notify).toHaveBeenCalledWith("pointcast", `Copied — paste it into your agent. Saved by the pointcast MCP server to ${DIR}`);
+    expect(fake.notify).toHaveBeenCalledWith("Pointcast", expect.stringMatching(/^Copied\. Paste it into your agent\. Saved by .* to /));
+    expect(fake.notify.mock.calls[0]?.[1]).toContain(DIR);
   });
 
   it("says transcription failed, for a session handed off with its audio", async () => {
@@ -461,16 +535,19 @@ describe("finishProcessing, handed off to a pointcast MCP server (D11)", () => {
       handedOff: { dir: DIR },
       copied: false,
       audioMs: 12_000,
-      error: "Could not transcribe: offline.",
+      error: TRANSCRIPTION_ERROR,
+      errorDetail: "Failed to fetch",
     });
     expect(state()).toMatchObject({
       status: "idle",
       lastSessionId: BASE_ID,
-      error: "Could not transcribe: offline.",
+      error: TRANSCRIPTION_ERROR,
+      errorKind: "transcription",
+      errorDetail: "Failed to fetch",
       lastResult: { handedOffTo: DIR },
     });
     expect(fake.outcomeBadge).toHaveBeenCalledWith(false);
-    expect(fake.notify).toHaveBeenCalledWith("pointcast: could not transcribe", "Could not transcribe: offline.");
+    expect(fake.notify).toHaveBeenCalledWith("Pointcast: could not transcribe", TRANSCRIPTION_SENTENCE);
   });
 
   it("keeps a warning, and the notification points to the popup for it", async () => {
@@ -478,8 +555,8 @@ describe("finishProcessing, handed off to a pointcast MCP server (D11)", () => {
     await commands.finishProcessing(BASE_ID, { ...HANDED_OFF, warning: "The microphone stopped by itself." });
     expect(state()).toMatchObject({ status: "idle", warning: "The microphone stopped by itself." });
     expect(fake.notify).toHaveBeenCalledWith(
-      "pointcast",
-      `Copied — paste it into your agent. See the popup for a warning. Saved by the pointcast MCP server to ${DIR}`,
+      "Pointcast",
+      expect.stringMatching(/^Copied\. Paste it into your agent\. See the popup for a warning\. Saved by /),
     );
   });
 
@@ -499,7 +576,8 @@ describe("finishProcessing, handed off to a pointcast MCP server (D11)", () => {
     expect(state().error).toBeUndefined();
     expect(fake.offscreenOpen).toBe(false);
     expect(fake.alarms.size).toBe(0);
-    expect(fake.notify).toHaveBeenCalledWith("pointcast", `Copied — paste it into your agent. Saved by the pointcast MCP server to ${DIR}`);
+    expect(fake.notify).toHaveBeenCalledWith("Pointcast", expect.stringMatching(/^Copied\. Paste it into your agent\. Saved by .* to /));
+    expect(fake.notify.mock.calls[0]?.[1]).toContain(DIR);
     // A later restart finds nothing to recover.
     await commands.recoverInterruptedTransition();
     expect(state()).toMatchObject({ status: "idle", lastResult: { handedOffTo: DIR } });
@@ -578,7 +656,14 @@ describe("startRecording", () => {
     const result = commands.startRecording();
     await vi.advanceTimersByTimeAsync(commands.START_TIMEOUT_MS);
     expect(await result).toMatchObject({ ok: false });
-    expect(state().status).toBe("idle");
+    expect(state()).toMatchObject({
+      status: "idle",
+      error: "The microphone did not start in time. Press Record again.",
+      errorKind: "start",
+      startFailedAt: expect.any(Number),
+    });
+    // The keyboard shortcut has no popup to say it failed: the toolbar icon does.
+    expect(fake.outcomeBadge).toHaveBeenCalledWith(false);
   });
 
   it("starts with no events: the count and the previous recording's last event are cleared", async () => {
@@ -593,7 +678,7 @@ describe("startRecording", () => {
 
   it("is refused while the previous session is processed", async () => {
     await stopped();
-    expect(await commands.startRecording()).toEqual({ ok: false, error: "Cannot start while processing." });
+    expect(await commands.startRecording()).toEqual({ ok: false, error: "Wait until the last recording is saved." });
   });
 });
 
@@ -636,7 +721,7 @@ describe("undoLastEvent", () => {
 
     fake.sendMessage.mockClear();
     fake.storage.set("recorder", { status: "idle" });
-    expect(await commands.undoLastEvent()).toEqual({ ok: false, error: "Undo works while recording." });
+    expect(await commands.undoLastEvent()).toEqual({ ok: false, error: "Undo works only while recording." });
     expect(fake.sendMessage).not.toHaveBeenCalled();
   });
 });
@@ -656,20 +741,38 @@ describe("toggleRecording (keyboard shortcut)", () => {
   it("opens the permission page when the microphone is denied, like the popup's Record", async () => {
     fake.sendMessage.mockResolvedValue({ ok: false, reason: "microphone-denied", error: "Permission denied" });
 
+    const before = Date.now();
     expect(await commands.toggleRecording()).toEqual({ ok: false, error: "Permission denied" });
-    expect(browser.tabs.create).toHaveBeenCalledWith({ url: "/permission.html" });
-    expect(state()).toEqual({ status: "idle", error: "Permission denied" });
+    // With the tab the user was in, for the page's "Back to my app".
+    expect(browser.tabs.create).toHaveBeenCalledWith({ url: "/permission.html?from=42" });
+    expect(state()).toEqual({
+      status: "idle",
+      error: "Permission denied",
+      errorKind: "microphone-denied",
+      startFailedAt: expect.any(Number),
+    });
+    expect(state().startFailedAt).toBeGreaterThanOrEqual(before);
+    // "!" on the toolbar icon: with the shortcut, nothing else would show that Record did nothing.
+    expect(fake.outcomeBadge).toHaveBeenCalledWith(false);
+  });
+
+  it("drops the failed start once a recording starts", async () => {
+    fake.sendMessage.mockResolvedValue({ ok: false, reason: "microphone-denied", error: "Permission denied" });
+    await commands.toggleRecording();
+    fake.sendMessage.mockResolvedValue({ ok: true, t0: T0 });
+    await commands.toggleRecording();
+    expect(state()).toEqual({ status: "recording", t0: T0 });
   });
 
   it("changes nothing while starting, stopping or processing", async () => {
-    const busyStates = [
-      { status: "starting" },
-      { status: "stopping", t0: T0, sessionId: BASE_ID },
-      { status: "processing", t0: T0, sessionId: BASE_ID },
-    ] as RecorderState[];
-    for (const busy of busyStates) {
+    const busyStates: [RecorderState, string][] = [
+      [{ status: "starting" }, "Recording is already starting."],
+      [{ status: "stopping", t0: T0, sessionId: BASE_ID }, "Wait until the last recording is saved."],
+      [{ status: "processing", t0: T0, sessionId: BASE_ID }, "Wait until the last recording is saved."],
+    ];
+    for (const [busy, error] of busyStates) {
       fake.storage.set("recorder", busy);
-      expect(await commands.toggleRecording()).toEqual({ ok: false, error: `Cannot start while ${busy.status}.` });
+      expect(await commands.toggleRecording()).toEqual({ ok: false, error });
       expect(state()).toEqual(busy);
     }
     expect(fake.sendMessage).not.toHaveBeenCalled();

@@ -20,7 +20,7 @@ test("popup Record/Stop saves a 16 kHz mono WAV and a valid session.json when th
   await setSettings(popup, { keepAudio: true });
   const t0 = await startFromPopup(popup);
   await popup.waitForTimeout(RECORD_MS);
-  await expect(popup.locator("#elapsed")).not.toHaveText("00:00");
+  await expect(popup.locator("#elapsed")).not.toHaveText("0:00");
   const { stoppedAt, sessionId } = await stopFromPopup(popup);
 
   const saved = await readSavedSession(popup, downloadsDir, sessionId);
@@ -59,7 +59,7 @@ test("a draft sent from the content script lands in session.json as e1 with a ti
   await expect.poll(async () => (await readRecorder(popup)).eventCount).toBe(1);
   await expect(popup.locator("#events")).toHaveText("1");
   // The recorder's summary of the event it accepted, next to the count.
-  await expect(popup.locator("#last-event")).toHaveText("Last: button «Export» · Alt+click");
+  await expect(popup.locator("#last-event")).toHaveText("Last: button “Export”");
   await popup.waitForTimeout(500);
   const { sessionId } = await stopFromPopup(popup);
   await expect(popup.locator("#last-event")).toBeHidden();

@@ -43,7 +43,39 @@ describe("flashElement", () => {
     expect(overlays()).toHaveLength(0);
   });
 
-  it("draws an undone element in grey and dashed, never in the capture red", () => {
+  it("draws a capture as a violet ring inside a white one, never in the error red", () => {
+    flashElement(document.getElementById("target") as Element);
+    const style = overlays()[0]?.style;
+    const outline = style?.getPropertyValue("outline") ?? "";
+    expect(outline).toContain("solid");
+    expect(outline).toMatch(/#7c3aed|rgb\(124, 58, 237\)/);
+    expect(outline).not.toMatch(/#ea4335|rgb\(234, 67, 53\)/);
+    expect(style?.getPropertyValue("box-shadow")).toMatch(/#fff|rgb\(255, 255, 255\)/);
+  });
+
+  it("does not fade with reduced motion, and still removes the overlay", () => {
+    const animate = vi.fn();
+    const original = { animate: HTMLElement.prototype.animate, matchMedia: window.matchMedia };
+    const prefers = (reduce: boolean) =>
+      ((query: string) => ({ matches: reduce && query.includes("reduce") }) as MediaQueryList) as typeof window.matchMedia;
+    HTMLElement.prototype.animate = animate;
+    window.matchMedia = prefers(true);
+    try {
+      flashElement(document.getElementById("target") as Element);
+      expect(animate).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(FLASH_MS);
+      expect(overlays()).toHaveLength(0);
+
+      window.matchMedia = prefers(false);
+      flashElement(document.getElementById("target") as Element);
+      expect(animate).toHaveBeenCalledTimes(1);
+    } finally {
+      HTMLElement.prototype.animate = original.animate;
+      window.matchMedia = original.matchMedia;
+    }
+  });
+
+  it("draws an undone element in grey and dashed, never in the capture style", () => {
     flashElement(document.getElementById("target") as Element, FLASH_MS, true);
     const outline = overlays()[0]?.style.getPropertyValue("outline") ?? "";
     expect(outline).toContain("dashed");

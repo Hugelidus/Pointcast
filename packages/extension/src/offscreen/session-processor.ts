@@ -1,5 +1,6 @@
 import { renderMarkdown, unreliableTimes, type CapturedEvent, type SessionFile, type WordsFile } from "@pointcast/core";
 import type { ProcessingOptions, ProcessingResult } from "../messages";
+import { explainTranscriptionFailure } from "../processing/failure";
 import { languageName } from "../processing/settings";
 import type { TranscribeDone } from "../transcriber/protocol";
 import { samplesDurationMs, wavBlob } from "./audio";
@@ -79,10 +80,11 @@ export async function processSession(job: ProcessingJob, deps: ProcessorDeps): P
       files: [jsonFile(SESSION_FILE_NAME, session(true, durationMs)), { fileName: RAW_AUDIO_FILE_NAME, blob: raw }],
       copied: false,
       audioMs: durationMs,
-      error:
-        `The audio could not be converted (${error}), so nothing was transcribed. The events were saved, and the raw ` +
-        `recording is ${RAW_AUDIO_FILE_NAME}: convert it with "ffmpeg -i ${RAW_AUDIO_FILE_NAME} -ar 16000 -ac 1 ${AUDIO_FILE.file}", ` +
-        `then run "pointcast process".${joinWarnings(warnings)}`,
+      error: "The audio could not be converted, so nothing was transcribed. Your events and the raw recording are saved.",
+      errorDetail:
+        `${error}\nThe raw recording is ${RAW_AUDIO_FILE_NAME} in the session folder: convert it with ` +
+        `"ffmpeg -i ${RAW_AUDIO_FILE_NAME} -ar 16000 -ac 1 ${AUDIO_FILE.file}", then run "pointcast process".`,
+      ...joinedWarnings(warnings),
     };
   }
 
@@ -97,13 +99,16 @@ export async function processSession(job: ProcessingJob, deps: ProcessorDeps): P
     // Nothing to transcribe in an empty recording (Stop pressed right after Record).
     done = samples.length === 0 ? { words: emptyWords(), loadMs: 0, transcribeMs: 0 } : await deps.transcribe(samples, job.options);
   } catch (error) {
+    // A known failure (model download, memory, deadline) in words the user can act on; the raw
+    // message goes to the popup's Details (processing/failure.ts).
+    const { error: message, errorDetail } = explainTranscriptionFailure(rawMessage(error));
     return {
       files: [jsonFile(SESSION_FILE_NAME, session(true, audioMs)), audioFile()],
       copied: false,
       audioMs,
-      error:
-        `Could not transcribe: ${errorMessage(error)} The events and the audio were saved in the session folder, ` +
-        `so "pointcast process" can finish it.${joinWarnings(warnings)}`,
+      error: message,
+      errorDetail,
+      ...joinedWarnings(warnings),
     };
   }
 
@@ -173,16 +178,14 @@ function emptyWords(): WordsFile {
   return { schemaVersion: 1, engine: "none (empty recording)", words: [] };
 }
 
-function joinWarnings(warnings: string[]): string {
-  return warnings.length > 0 ? ` ${warnings.join(" ")}` : "";
+/**
+ * What was found while stopping (e.g. the microphone ended early) stays a warning next to the
+ * error, rather than being appended to it: the error line is the one thing to act on.
+ */
+function joinedWarnings(warnings: string[]): { warning?: string } {
+  return warnings.length > 0 ? { warning: warnings.join(" ") } : {};
 }
 
 function rawMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
-}
-
-/** The message as a sentence, so more text can follow it. */
-function errorMessage(error: unknown): string {
-  const message = rawMessage(error);
-  return /[.!?]$/.test(message) ? message : `${message}.`;
 }

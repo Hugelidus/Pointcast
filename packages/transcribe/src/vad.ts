@@ -4,7 +4,7 @@ import { VAD_FRAME } from "./speech";
 
 /**
  * Silero VAD v5 (MIT), the voice activity detector faster-whisper and WhisperX use. 2.2 MB of
- * fp32 weights, so it costs nothing next to Whisper's 291 MB, and it runs through the ONNX
+ * fp32 weights, so it costs nothing next to Whisper's 294 MB, and it runs through the ONNX
  * Runtime transformers.js already brings: no new code in the extension (MV3 forbids remote
  * code), and its weights are downloaded and cached exactly like Whisper's, from the same host.
  * The repo has no config.json, so the model type is given here ("custom": a plain ONNX session,

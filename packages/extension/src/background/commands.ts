@@ -1,10 +1,11 @@
 import { browser } from "wxt/browser";
 import type { TranscriptionProgress } from "@pointcast/transcribe";
 import { sendMessage, type CommandResult, type ProcessingOptions, type ProcessingResult, type UndoResult } from "../messages";
+import { firstSentence, type ErrorKind } from "../processing/failure";
 import { processingEstimateMs, transcriptionEstimateMs, type ProcessingInfo } from "../processing/progress";
 import { chosenLanguage } from "../processing/settings";
 import { learnFromRun } from "../processing/stats";
-import { savedLocationText, toggleCommand, type LastResult, type RecorderState } from "../recorder-state";
+import { savedLocationText, toggleCommand, type LastResult, type RecorderState, type RecorderStatus } from "../recorder-state";
 import { formatSessionId, nextFreeSessionId } from "../session-id";
 import {
   readSettings,
@@ -22,7 +23,14 @@ import { showBadge, showOutcomeBadge } from "./badge";
 import { attachToOpenTabs } from "./content-scripts";
 import { notify } from "./notify";
 import { closeOffscreenDocument, ensureOffscreenDocument, hasOffscreenDocument } from "./offscreen-document";
-import { checkDownloads, sessionIdsInHistory, startSessionDownloads, turnOffAskWhereAdvice } from "./session-downloads";
+import { openPermissionPage } from "./permission-page";
+import {
+  checkDownloads,
+  sessionDownloadIds,
+  sessionIdsInHistory,
+  startSessionDownloads,
+  turnOffAskWhereAdvice,
+} from "./session-downloads";
 
 /**
  * The service worker's command handlers. Each one reads the state from storage, acts, and
@@ -40,7 +48,7 @@ export const START_TIMEOUT_MS = 20_000;
 export const STOP_TIMEOUT_MS = 180_000;
 
 /**
- * How long processing may take: 10 minutes (the first run downloads 291 MB) plus twice the
+ * How long processing may take: 10 minutes (the first run downloads 294 MB) plus twice the
  * audio length. The spike transcribed a minute of audio in 17 s, so this only catches a hang.
  */
 export function processingDeadline(stoppedAt: number, audioMs: number): number {
@@ -65,12 +73,20 @@ async function setState(state: RecorderState): Promise<void> {
 
 interface Outcome {
   lastSessionId?: string;
-  error?: string;
-  warning?: string;
+  error?: string | undefined;
+  /** The raw text behind `error`, for the popup's "Details" (processing/failure.ts). */
+  errorDetail?: string | undefined;
+  errorKind?: ErrorKind | undefined;
+  /** Set when Record failed, so the pill can say so (processing/progress.ts pillView). */
+  startFailedAt?: number;
+  warning?: string | undefined;
   lastResult?: LastResult;
 }
 
-/** Back to idle, keeping where the last session went so the popup can still show it. */
+/**
+ * Back to idle, keeping where the last session went so the popup can still show it. Everything
+ * about the previous error is dropped unless `outcome` repeats it.
+ */
 function idle(previous: RecorderState, outcome: Outcome = {}): RecorderState {
   const lastSessionId = outcome.lastSessionId ?? previous.lastSessionId;
   const lastResult = outcome.lastResult ?? previous.lastResult;
@@ -78,7 +94,9 @@ function idle(previous: RecorderState, outcome: Outcome = {}): RecorderState {
     status: "idle",
     ...(lastSessionId ? { lastSessionId } : {}),
     ...(lastResult ? { lastResult } : {}),
-    ...(outcome.error ? { error: outcome.error } : {}),
+    ...(outcome.error ? { error: outcome.error, errorKind: outcome.errorKind ?? "processing" } : {}),
+    ...(outcome.error && outcome.errorDetail ? { errorDetail: outcome.errorDetail } : {}),
+    ...(outcome.error && outcome.startFailedAt !== undefined ? { startFailedAt: outcome.startFailedAt } : {}),
     ...(outcome.warning ? { warning: outcome.warning } : {}),
   };
 }
@@ -103,18 +121,33 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-/** Rejects when the recorder does not answer in time, so the state can never stay busy forever. */
-function withTimeout<T>(promise: Promise<T>, ms: number, what: string): Promise<T> {
+/** Rejects with `message` when the recorder does not answer in time, so the state can never stay busy forever. */
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`The recorder did not ${what} in time.`)), ms);
+    timer = setTimeout(() => reject(new Error(message)), ms);
   });
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
+/** Why Record (or the shortcut) does nothing in a busy state, in the user's terms rather than a status name. */
+const BUSY_START: Record<Exclude<RecorderStatus, "idle">, string> = {
+  starting: "Recording is already starting.",
+  recording: "Already recording.",
+  stopping: "Wait until the last recording is saved.",
+  processing: "Wait until the last recording is saved.",
+};
+
+/** A failed Record: back to idle with the reason, and "!" on the toolbar icon, which the shortcut otherwise lacks. */
+async function startFailed(state: RecorderState, error: string, kind: ErrorKind): Promise<CommandResult> {
+  await setState(idle(state, { error, errorKind: kind, startFailedAt: Date.now() }));
+  await showOutcomeBadge(false);
+  return { ok: false, error };
+}
+
 export async function startRecording(): Promise<CommandResult> {
   const state = await readState();
-  if (state.status !== "idle") return { ok: false, error: `Cannot start while ${state.status}.` };
+  if (state.status !== "idle") return { ok: false, error: BUSY_START[state.status] };
 
   await setState({ ...idle(state), status: "starting" });
   await resetCapturedEvents();
@@ -132,26 +165,23 @@ export async function startRecording(): Promise<CommandResult> {
     const result = await withTimeout(
       sendMessage({ to: "offscreen", type: "recorder-start", ...(language ? { language } : {}) }),
       START_TIMEOUT_MS,
-      "start",
+      "The microphone did not start in time. Press Record again.",
     );
-    if (!result) throw new Error("The recorder did not answer.");
+    if (!result) throw new Error("The recorder did not respond. Press Record again.");
     if (!result.ok) {
       await closeOffscreenDocument();
-      await setState(idle(state, { error: result.error }));
+      const denied = result.reason === "microphone-denied";
+      const failed = await startFailed(state, result.error, denied ? "microphone-denied" : "start");
       // The grant must come from a visible extension page; the offscreen document cannot prompt (D6).
-      if (result.reason === "microphone-denied") {
-        await browser.tabs.create({ url: browser.runtime.getURL("/permission.html") });
-      }
-      return { ok: false, error: result.error };
+      if (denied) await openPermissionPage();
+      return failed;
     }
     await attaching;
     await setState({ status: "recording", t0: result.t0 });
     return { ok: true };
   } catch (error) {
-    const message = errorMessage(error);
     await closeOffscreenDocument().catch(() => undefined);
-    await setState(idle(state, { error: message }));
-    return { ok: false, error: message };
+    return startFailed(state, errorMessage(error), "start");
   }
 }
 
@@ -165,7 +195,7 @@ async function chooseSessionId(state: RecorderState): Promise<string> {
 
 export async function stopRecording(): Promise<CommandResult> {
   const state = await readState();
-  if (state.status !== "recording") return { ok: false, error: `Cannot stop while ${state.status}.` };
+  if (state.status !== "recording") return { ok: false, error: "Nothing is being recorded." };
 
   const stoppedAt = Date.now();
   // The wall-clock length until the recorder reports the decoded one.
@@ -219,9 +249,9 @@ async function askRecorderToStop(state: RecorderState): Promise<CommandResult> {
         options: await processingOptions(deadline),
       }),
       STOP_TIMEOUT_MS,
-      "finish saving",
+      "Stopping the recording took too long, so it could not be saved.",
     );
-    if (!result) throw new Error("The recorder did not answer.");
+    if (!result) throw new Error("The recorder did not respond, so the recording could not be saved.");
     if (!result.ok) throw new Error(result.error);
     await writeEventCount(result.eventCount);
     const current = await readState();
@@ -253,7 +283,7 @@ async function askRecorderToStop(state: RecorderState): Promise<CommandResult> {
     const message = errorMessage(error);
     await endProcessing();
     await setState(idle(state, { error: message, lastResult: endedNow(state) }));
-    await announce(false, "pointcast: stopping failed", message);
+    await announce(false, "Pointcast: stopping failed", message);
     return { ok: false, error: message };
   }
 }
@@ -296,7 +326,7 @@ export async function recordProcessingProgress(sessionId: string, progress: Tran
  * speed, and finish once the files are saved. When a pointcast MCP server already stored the
  * files, there is nothing to download and the session ends at once. Idempotent: the recorder
  * retries the report when it gets no answer, and a report for another session or a finished one
- * changes nothing.
+ * changes nothing, and a session's files are downloaded at most once (FINISHING_KEY).
  */
 export async function finishProcessing(sessionId: string, result: ProcessingResult): Promise<{ ok: true }> {
   const state = await readState();
@@ -307,25 +337,27 @@ export async function finishProcessing(sessionId: string, result: ProcessingResu
 
   if (result.files.length === 0) {
     await endProcessing();
-    const error = result.error ?? "Processing produced no files.";
-    await setState(idle(state, { error, lastResult: endedNow(state) }));
-    await announce(false, "pointcast: processing failed", error);
+    const error = result.error ?? "Processing produced no files, so nothing was saved.";
+    await setState(idle(state, { error, errorDetail: result.errorDetail, lastResult: endedNow(state) }));
+    await announce(false, "Pointcast: processing failed", firstSentence(error, Infinity));
     return { ok: true };
   }
 
   let pendingDownloads: number[];
   try {
-    pendingDownloads = await startSessionDownloads(sessionId, result.files);
+    pendingDownloads = await downloadOnce(sessionId, result);
   } catch (error) {
     // Still answered { ok: true }: a retried report would start every download again (duplicate
     // "session (1).md" files) and then leave the state busy until the processing alarm.
     await endProcessing();
-    const message = `Saving session ${sessionId} failed: ${errorMessage(error)}`;
-    await setState(idle(state, { error: message, lastResult: endedNow(state) }));
-    await announce(false, "pointcast: saving failed", message);
+    const message = `Could not save session ${sessionId}.`;
+    await setState(idle(state, { error: message, errorDetail: errorMessage(error), lastResult: endedNow(state) }));
+    await announce(false, "Pointcast: saving failed", message);
     return { ok: true };
   }
-  await rememberRun(result);
+  // The files are on their way: from here on nothing may fail the report, or its retry would find
+  // the state as it was and could only wait for the processing alarm.
+  await rememberRun(result).catch((error: unknown) => console.error("[pointcast] could not keep the last run", error));
   await setState({
     ...state,
     status: "processing",
@@ -338,13 +370,36 @@ export async function finishProcessing(sessionId: string, result: ProcessingResu
       audioMs: result.audioMs,
       ...(result.code ? { code: result.code } : {}),
     },
-    ...(result.error ? { error: result.error } : {}),
+    // A failed transcription still saves the session (with its audio), so it ends like a success.
+    ...(result.error ? { error: result.error, errorKind: "transcription" as const } : {}),
+    ...(result.error && result.errorDetail ? { errorDetail: result.errorDetail } : {}),
     ...(result.warning ? { warning: result.warning } : {}),
   });
   // Small files may complete before their ids were stored, i.e. before onChanged could
   // recognise them as ours, so check once right away.
   await finishSessionIfSaved();
   return { ok: true };
+}
+
+/**
+ * chrome.storage.session key holding the id of the session whose downloads were started. The
+ * download ids are stored in the state only after every download started; a service worker stopped
+ * in between would leave the state as it was, and the recorder's retried report would download
+ * every file a second time ("session (1).md"). With this key the retry finds the downloads that
+ * were started instead.
+ */
+export const FINISHING_KEY = "finishingSession";
+
+/** Starts the session's downloads, unless a previous report for the same session did. */
+async function downloadOnce(sessionId: string, result: ProcessingResult): Promise<number[]> {
+  const stored = await browser.storage.session.get(FINISHING_KEY);
+  if (stored[FINISHING_KEY] === sessionId) {
+    // Found by folder: a file Chrome saved elsewhere (a Save dialog) is not, and is downloaded again.
+    const started = await sessionDownloadIds(sessionId);
+    if (started.length > 0) return started;
+  }
+  await browser.storage.session.set({ [FINISHING_KEY]: sessionId });
+  return startSessionDownloads(sessionId, result.files);
 }
 
 /** The Markdown for "Copy again", and what this run says about the device's speed. */
@@ -381,7 +436,16 @@ async function finishHandedOff(
   // estimate) is optional: a failure (a full disk) is only logged. It is kept before the idle state,
   // which the popup reacts to by reading the Markdown for its Copy again button.
   await rememberRun(result).catch((error: unknown) => console.error("[pointcast] could not keep the last run", error));
-  await setState(idle(state, { lastSessionId: sessionId, lastResult, error: result.error, warning: result.warning }));
+  await setState(
+    idle(state, {
+      lastSessionId: sessionId,
+      lastResult,
+      error: result.error,
+      errorDetail: result.errorDetail,
+      errorKind: "transcription",
+      warning: result.warning,
+    }),
+  );
   // No blob URLs to keep alive for downloads: the offscreen document can close now.
   await endProcessing();
   await announceSaved(sessionId, lastResult, { error: result.error, warning: result.warning, locationKnown: true });
@@ -405,10 +469,10 @@ export async function finishSessionIfSaved(): Promise<void> {
     // "Ask where to save each file" setting), so it gets the same advice instead of the generic line.
     const error =
       check.error === "USER_CANCELED"
-        ? `Saving session ${sessionId} failed: a save dialog was cancelled. ${turnOffAskWhereAdvice()}`
-        : `Saving session ${sessionId} failed; see chrome://downloads.`;
-    await setState(idle(state, { error, lastResult: endedNow(state) }));
-    await announce(false, "pointcast: saving failed", error);
+        ? `Could not save session ${sessionId}: a Save dialog was cancelled. ${turnOffAskWhereAdvice()}`
+        : `Could not save session ${sessionId}: see chrome://downloads.`;
+    await setState(idle(state, { error, errorDetail: check.error, lastResult: endedNow(state) }));
+    await announce(false, "Pointcast: saving failed", firstSentence(error, Infinity));
     return;
   }
   const lastResult = endedNow(state);
@@ -417,8 +481,10 @@ export async function finishSessionIfSaved(): Promise<void> {
     idle(state, {
       lastSessionId: sessionId,
       lastResult,
-      ...(state.error ? { error: state.error } : {}),
-      ...(warning ? { warning } : {}),
+      error: state.error,
+      errorDetail: state.errorDetail,
+      errorKind: state.errorKind ?? "transcription",
+      warning,
     }),
   );
   // Chrome may have saved these files outside the session folder (check.warning says so): never
@@ -436,15 +502,16 @@ async function announceSaved(
   outcome: { error?: string; warning?: string; locationKnown: boolean },
 ): Promise<void> {
   if (outcome.error) {
-    await announce(false, "pointcast: could not transcribe", outcome.error);
+    // One sentence that says what to do (processing/failure.ts); the popup has the rest.
+    await announce(false, "Pointcast: could not transcribe", firstSentence(outcome.error, Infinity));
     return;
   }
-  const done = lastResult.copied ? "Copied — paste it into your agent." : "Saved. Open the pointcast popup to copy it.";
+  const done = lastResult.copied ? "Copied. Paste it into your agent." : "Saved. Open the Pointcast popup to copy it.";
   const warningNote = outcome.warning ? "See the popup for a warning. " : "";
   const message = outcome.locationKnown
     ? `${done} ${warningNote}${savedLocationText(sessionId, lastResult.handedOffTo)}`
     : `${done} ${warningNote}`.trimEnd();
-  await announce(true, "pointcast", message);
+  await announce(true, "Pointcast", message);
 }
 
 /** The end of processing, on the toolbar icon and as a notification when the user wants one. */
@@ -471,9 +538,9 @@ export async function abandonOverdueProcessing(): Promise<void> {
     return;
   }
   await endProcessing();
-  const error = "Processing stopped responding and was abandoned. The recording could not be saved.";
+  const error = "Processing stopped responding, so the recording could not be saved.";
   await setState(idle(state, { error, lastResult: endedNow(state) }));
-  await announce(false, "pointcast: processing failed", error);
+  await announce(false, "Pointcast: processing failed", error);
 }
 
 /**
@@ -490,7 +557,9 @@ export async function recoverInterruptedTransition(): Promise<void> {
   if (state.status === "starting") {
     // The recorder may hold the microphone without anyone knowing: close it.
     await closeOffscreenDocument().catch(() => undefined);
-    await setState(idle(state, { error: "Recording did not start because the extension was restarted. Press Record again." }));
+    await setState(
+      idle(state, { error: "Recording did not start because Pointcast was restarted. Press Record again.", errorKind: "start" }),
+    );
     return;
   }
   if (state.status !== "stopping" && state.status !== "processing") return;
@@ -507,7 +576,7 @@ export async function recoverInterruptedTransition(): Promise<void> {
   }
   await browser.alarms.clear(PROCESSING_ALARM).catch(() => undefined);
   await setState(
-    idle(state, { error: "The recording was lost: the extension was restarted while processing it.", lastResult: endedNow(state) }),
+    idle(state, { error: "The recording was lost: Pointcast was restarted while processing it.", lastResult: endedNow(state) }),
   );
 }
 
@@ -531,7 +600,7 @@ export async function recordEventCount(count: number, lastEvent: string): Promis
  * to flash the element and every visible page to say what was undone (content.ts).
  */
 export async function undoLastEvent(): Promise<UndoResult> {
-  if ((await readState()).status !== "recording") return { ok: false, error: "Undo works while recording." };
+  if ((await readState()).status !== "recording") return { ok: false, error: "Undo works only while recording." };
   const answer = await sendMessage({ to: "offscreen", type: "recorder-undo" });
   const undone = answer?.undone;
   if (!undone) return { ok: false, error: "Nothing to undo." };

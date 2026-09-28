@@ -72,7 +72,7 @@ describe("handOff: the requests", () => {
     const { deps, calls } = receiver({ hello: HELLO_OK, upload: STORED });
     const outcome = await handOff(SESSION_ID, [...FILES, { fileName: "x.txt", blob: new Blob(["x"]) }], deps);
     expect(outcome.kind).toBe("refused");
-    expect(warningOf(outcome)).toMatch(/internal error: unexpected files .*x\.txt.*Chrome's downloads saved it instead/);
+    expect(warningOf(outcome)).toMatch(/^Not sent to the Pointcast MCP server: internal error \(unexpected files .*x\.txt\)\. Your agent won't find it there/);
     expect(await handOff("../evil", FILES, deps)).toMatchObject({ kind: "refused" });
     expect(calls).toEqual([]);
   });
@@ -101,7 +101,10 @@ describe("handOff: a pointcast MCP server that will not take it (downloads, with
   it("speaks another protocol: says to update, and uploads nothing", async () => {
     const { deps, calls } = receiver({ hello: () => json(200, { app: "pointcast", protocol: 2, version: "1.0.0" }), upload: STORED });
     const outcome = await handOff(SESSION_ID, FILES, deps);
-    expect(warningOf(outcome)).toMatch(/speaks another version of the handoff: update your agent's pointcast plugin or extension \(or the pointcast@ version in its MCP config\)/);
+    expect(warningOf(outcome)).toBe(
+      "Not sent to the Pointcast MCP server: it runs another version. Update your agent's Pointcast plugin " +
+        "(or the pointcast@ version in its MCP config) and this extension.",
+    );
     expect(calls).toHaveLength(1);
   });
 
@@ -110,8 +113,10 @@ describe("handOff: a pointcast MCP server that will not take it (downloads, with
       json(403, { app: "pointcast", error: "unknown-extension", message: `This server does not accept extension ${EXTENSION_ID}.` });
     const { deps, calls } = receiver({ hello, upload: STORED });
     const warning = warningOf(await handOff(SESSION_ID, FILES, deps));
-    expect(warning).toContain(`does not accept this build of the extension (id ${EXTENSION_ID})`);
-    expect(warning).toContain(`set POINTCAST_EXTENSION_IDS=${EXTENSION_ID} for the server`);
+    expect(warning).toBe(
+      "Not sent to the Pointcast MCP server: it does not accept this build of the extension. " +
+        `Set POINTCAST_EXTENSION_IDS=${EXTENSION_ID} for the server.`,
+    );
     expect(calls).toHaveLength(1);
   });
 
@@ -124,7 +129,7 @@ describe("handOff: a pointcast MCP server that will not take it (downloads, with
       const { deps } = receiver({ hello: HELLO_OK, upload: () => json(status, { app: "pointcast", error, message }) });
       expect(await handOff(SESSION_ID, FILES, deps)).toEqual({
         kind: "refused",
-        warning: `The pointcast MCP server did not take this recording (${message}), so Chrome's downloads saved it instead.`,
+        warning: `Not sent to the Pointcast MCP server: it refused this recording (${message}). Your agent won't find it there, so paste it instead.`,
       });
     }
   });
@@ -143,7 +148,7 @@ describe("handOff: a pointcast MCP server that will not take it (downloads, with
   it("treats a 404 as another version of the handoff", async () => {
     const upload = () => json(404, { app: "pointcast", error: "not-found", message: "no such path" });
     const { deps } = receiver({ hello: HELLO_OK, upload });
-    expect(warningOf(await handOff(SESSION_ID, FILES, deps))).toMatch(/speaks another version of the handoff/);
+    expect(warningOf(await handOff(SESSION_ID, FILES, deps))).toMatch(/it runs another version/);
   });
 
   it("does not trust a 201 for another session or with a folder that could spoof the popup", async () => {
@@ -155,15 +160,15 @@ describe("handOff: a pointcast MCP server that will not take it (downloads, with
       const { deps } = receiver({ hello: HELLO_OK, upload: () => json(201, answer) });
       const outcome = await handOff(SESSION_ID, FILES, deps);
       expect(outcome.kind).toBe("refused");
-      expect(warningOf(outcome)).toContain("(it gave an unexpected answer)");
+      expect(warningOf(outcome)).toContain(": it gave an unexpected answer.");
     }
   });
 
   it("says so when the upload times out or the connection fails", async () => {
     const slow = receiver({ hello: HELLO_OK, upload: HANG });
-    expect(warningOf(await handOff(SESSION_ID, FILES, slow.deps))).toContain("(it did not answer in time)");
+    expect(warningOf(await handOff(SESSION_ID, FILES, slow.deps))).toContain(": it did not answer in time.");
     const gone = receiver({ hello: HELLO_OK, upload: REFUSED_CONNECTION });
-    expect(warningOf(await handOff(SESSION_ID, FILES, gone.deps))).toContain("(the connection failed)");
+    expect(warningOf(await handOff(SESSION_ID, FILES, gone.deps))).toContain(": the connection failed.");
   });
 });
 

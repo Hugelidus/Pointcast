@@ -26,7 +26,7 @@ test("Undo in the popup drops the last gesture: the session keeps only the first
   await popup.bringToFront();
   await expect(popup.locator("#undo")).toBeEnabled();
   await popup.locator("#undo").click();
-  await expect(popup.locator("#message")).toHaveText("Undone: th «Quantity» · Alt+click");
+  await expect(popup.locator("#message")).toHaveText("Undone: column header “Quantity”");
   await expect(popup.locator("#events")).toHaveText("1");
   expect(await readRecorder(popup)).toMatchObject({ eventCount: 1, lastEvent: "button «Export» · Alt+click" });
 

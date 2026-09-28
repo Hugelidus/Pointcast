@@ -94,11 +94,11 @@ test("Enable on a site: its open tab and its later pages are captured, Alt+click
   await open.bringToFront();
   await open.locator("#export-btn").click({ modifiers: ["Alt"] });
   // Pointing, not using: the app's Export handler never ran.
-  await expect(popup.locator("#last-event")).toHaveText("Last: button «Export» · Alt+click");
+  await expect(popup.locator("#last-event")).toHaveText("Last: button “Export”");
   await expect(open.locator("#toast")).toHaveText("");
   await later.bringToFront();
   await later.getByRole("button", { name: "View orders" }).first().click({ modifiers: ["Alt"] });
-  await expect(popup.locator("#last-event")).toHaveText("Last: button «View orders» · Alt+click");
+  await expect(popup.locator("#last-event")).toHaveText("Last: button “View orders”");
   const { sessionId } = await stopFromPopup(popup);
 
   const { session } = await readSavedSession(popup, downloadsDir, sessionId);
@@ -131,9 +131,9 @@ test("on an enabled site, emails and phone numbers in the page and in the URL ar
   await startFromPopup(popup);
   await app.bringToFront();
   await card.locator("p").first().click({ modifiers: ["Alt"] });
-  await expect(popup.locator("#last-event")).toHaveText("Last: p «[redacted]» · Alt+click");
+  await expect(popup.locator("#last-event")).toHaveText("Last: paragraph “[redacted]”");
   await card.click({ modifiers: ["Alt"], position: { x: 4, y: 4 } });
-  await expect(popup.locator("#last-event")).toContainText("Last: article «Jane Cooper [redacted]");
+  await expect(popup.locator("#last-event")).toContainText("Last: “Jane Cooper [redacted]");
   const { sessionId } = await stopFromPopup(popup);
 
   const { folder, session } = await readSavedSession(popup, downloadsDir, sessionId);

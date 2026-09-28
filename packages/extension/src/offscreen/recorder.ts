@@ -64,7 +64,7 @@ export class Recorder {
   }
 
   async #start(language: string | undefined): Promise<RecorderStartResult> {
-    if (this.#active) return { ok: false, reason: "error", error: "Already recording" };
+    if (this.#active) return { ok: false, reason: "error", error: "Already recording." };
     try {
       const recording = await MicrophoneRecording.start();
       this.#active = { recording, log: new EventLog(recording.t0), live: this.#startLive(recording, language) };
@@ -78,7 +78,7 @@ export class Recorder {
 
   #stop(extensionVersion: string, sessionId: string, options: ProcessingOptions): Promise<RecorderStopResult> {
     const active = this.#active;
-    if (!active) return this.#lastStop ?? Promise.resolve({ ok: false, error: "Not recording" });
+    if (!active) return this.#lastStop ?? Promise.resolve({ ok: false, error: "Not recording." });
     // Detach first so drafts that arrive while the audio is being converted are rejected
     // instead of landing in a session.json that is already being written.
     this.#active = null;

@@ -67,7 +67,7 @@ export function pointcastConfig({ store }: { store: boolean }) {
       // Also registers the content scripts of the sites the user enabled (D8 note 2026-09-27).
       // notifications: "copied" / "failed" when processing ends, for a user who looked away.
       // alarms: the processing timeout; a service worker's setTimeout dies with the worker (D6).
-      // unlimitedStorage: the Whisper model (291 MB) lives in the Cache API.
+      // unlimitedStorage: the Whisper model (294 MB) lives in the Cache API.
       // activeTab: when the user opens the popup, it may read the active tab's URL, so it can
       // offer "Enable on <host>" for that site; no access to any other tab or site (D8 note).
       permissions: ["storage", "offscreen", "downloads", "scripting", "notifications", "alarms", "unlimitedStorage", "activeTab"],

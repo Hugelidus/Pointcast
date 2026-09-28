@@ -4,23 +4,38 @@
   <meta charset="utf-8">
   <meta name="color-scheme" content="light dark">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>pointcast · microphone access</title>
+  <title>Pointcast · microphone access</title>
+  <link rel="icon" href="/icon/32.png">
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <main>
-    <h1>pointcast needs your microphone</h1>
+    <header class="brand">
+      <img src="/icon/48.png" width="48" height="48" alt="">
+      <span>Pointcast</span>
+    </header>
+    <h1>Pointcast needs your microphone</h1>
     <p>
-      pointcast records what you say while you point at elements of your app, so a coding agent
-      can tell what "this" and "here" mean. The recording is saved to your Downloads folder and
-      transcribed on your own machine; it is never uploaded by the extension.
+      Pointcast records what you say while you point at elements of your app, so your coding agent
+      can tell what "this" and "here" mean. The speech is transcribed on this computer; the extension
+      never uploads it. The recording goes to your agent's Pointcast MCP server when one is running,
+      or else to your Downloads folder.
     </p>
     <p>
-      Chrome only lets an extension ask for the microphone from a visible page like this one.
-      You grant it once; after that, recording starts straight from the toolbar button.
+      Chrome lets an extension ask for the microphone only from a page like this one. You allow it
+      once; after that, Record works straight from the toolbar.
     </p>
-    <button id="allow" type="button">Allow microphone</button>
-    <p id="result" class="result" role="status" hidden></p>
+    <button id="allow" class="primary" type="button">Allow microphone</button>
+    <p id="result" class="result" role="status" aria-live="polite" hidden></p>
+    <section id="steps" hidden>
+      <ol>
+        <li>Click the microphone icon at the right of the address bar, or the icon at its left for this page's settings.</li>
+        <li>Set <strong>Microphone</strong> to <strong>Allow</strong>.</li>
+        <li>Come back to this tab and press <strong>Check again</strong>.</li>
+      </ol>
+      <button id="check" class="secondary" type="button">Check again</button>
+    </section>
+    <button id="back" class="primary" type="button" hidden>Back to my app</button>
   </main>
   <script type="module" src="./main.ts"></script>
 </body>

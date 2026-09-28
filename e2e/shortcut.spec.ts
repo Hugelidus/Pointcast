@@ -1,4 +1,4 @@
-import { TOGGLE_RECORDING_COMMAND } from "../packages/extension/src/shortcut";
+import { TOGGLE_RECORDING_COMMAND, UNDO_EVENT_COMMAND } from "../packages/extension/src/shortcut";
 import { setCommandShortcut } from "./support/extension";
 import { expect, test } from "./support/fixtures";
 
@@ -18,26 +18,31 @@ import { expect, test } from "./support/fixtures";
  * what chrome.commands.getAll returns rather than spelled out here.
  */
 
-const HINT = " starts or stops recording without opening this popup.";
 
 test("the popup shows the Record/Stop shortcut Chrome has, also after the user changes or removes it", async ({
   context,
   extensionId,
   extensionPage: popup,
 }) => {
-  const binding = async () =>
-    (await popup.evaluate(() => chrome.commands.getAll())).find((c) => c.name === TOGGLE_RECORDING_COMMAND)?.shortcut;
+  const bindingOf = async (name: string) =>
+    (await popup.evaluate(() => chrome.commands.getAll())).find((c) => c.name === name)?.shortcut;
+  const binding = () => bindingOf(TOGGLE_RECORDING_COMMAND);
+  // The popup's keys line: "<record keys> record · <undo keys> undo", the undo part only when bound.
+  const keysLine = async (record: string | undefined) => {
+    const undo = await bindingOf(UNDO_EVENT_COMMAND);
+    return undo ? `${record} record · ${undo} undo` : `${record} record`;
+  };
 
   // Chrome assigned the suggested key (a blank shortcut would mean it keeps the key for itself).
   const suggested = await binding();
   expect(suggested, "Chrome did not assign the suggested key").toMatch(/S$/);
-  await expect(popup.locator("#shortcut")).toHaveText(`${suggested}${HINT}`);
+  await expect(popup.locator("#shortcut")).toHaveText(await keysLine(suggested));
 
   // What chrome://extensions/shortcuts does when the user records other keys, then clears them.
   await setCommandShortcut(context, extensionId, TOGGLE_RECORDING_COMMAND, "Alt+Shift+Y");
   await expect.poll(binding).toMatch(/Y$/);
   await popup.reload();
-  await expect(popup.locator("#shortcut")).toHaveText(`${await binding()}${HINT}`);
+  await expect(popup.locator("#shortcut")).toHaveText(await keysLine(await binding()));
 
   await setCommandShortcut(context, extensionId, TOGGLE_RECORDING_COMMAND, "");
   await expect.poll(binding).toBe("");

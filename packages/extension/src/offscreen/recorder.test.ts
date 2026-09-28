@@ -142,7 +142,7 @@ describe("Recorder stop", () => {
     microphone.endedEarlyAt = T0 + 65_000;
     const { recorder, jobs } = await recordOneEvent();
     await stop(recorder);
-    expect(jobs[0]?.warnings.join(" ")).toMatch(/stopped by itself 01:05 into the recording/);
+    expect(jobs[0]?.warnings.join(" ")).toMatch(/stopped by itself 1:05 into the recording/);
   });
 
   it("answers a repeated stop (service worker restarted mid-stop) the same way, and processes once", async () => {
@@ -188,6 +188,6 @@ describe("Recorder stop", () => {
   });
 
   it("refuses to stop when nothing was ever recorded", async () => {
-    expect(await stop(newRecorder().recorder)).toEqual({ ok: false, error: "Not recording" });
+    expect(await stop(newRecorder().recorder)).toEqual({ ok: false, error: "Not recording." });
   });
 });

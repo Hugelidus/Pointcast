@@ -1,6 +1,6 @@
-# Contributing to pointcast
+# Contributing to Pointcast
 
-Thanks for considering it. pointcast is an early public beta (0.2; the original plan is [docs/plan-phase-1.md](docs/plan-phase-1.md)) and design decisions plus their rationale live in [docs/decisions.md](docs/decisions.md) — read the relevant section before changing behavior it documents; if you disagree with a decision, open an issue or PR that edits it with a dated note, rather than quietly working around it.
+Thanks for considering it. Pointcast is an early public beta (0.2; the original plan is [docs/plan-phase-1.md](docs/plan-phase-1.md)) and design decisions plus their rationale live in [docs/decisions.md](docs/decisions.md) — read the relevant section before changing behavior it documents; if you disagree with a decision, open an issue or PR that edits it with a dated note, rather than quietly working around it.
 
 ## Before you start
 
@@ -8,20 +8,59 @@ Thanks for considering it. pointcast is an early public beta (0.2; the original 
 - **New feature or behavior change?** Open an issue first so we can agree on the approach — this project deliberately avoids speculative options and abstractions; the simplest robust version that meets the goal wins.
 - **Questions or ideas?** [Discussions](https://github.com/Hugelidus/pointcast/discussions). **Security problems:** privately, see [SECURITY.md](SECURITY.md).
 
-## Setup
+## Try it locally
+
+The whole loop runs from this repository (Chrome, and Node ≥ 22.12 with pnpm to build it).
+
+1. **Build and load the extension.** Run `pnpm install`, then `pnpm build`. In Chrome, open `chrome://extensions`, turn on *Developer mode*, choose *Load unpacked* and pick `packages/extension/.output/chrome-mv3`.
+2. **Open an app on a local host.** `pnpm playground` serves test pages on http://localhost:5500. Pointcast runs on `localhost`, `127.0.0.1`, `[::1]`, `*.localhost` and `*.test`, on any port. For any other site (a staging server, a preview deployment), open the popup there and press **Enable on `<host>`**: Chrome asks for access to that host only, and on such sites text that looks like personal data (emails, phone numbers…) is redacted. **Remove `<host>`** turns it off again. The playground is static HTML, so it cannot show the code pointer; `pnpm example:react` and `pnpm example:vue` each start a small Vite dev build of the same "Acme Store" admin dashboard (React 19 and Vue 3, on `127.0.0.1:5174`/`5175`) built to exercise it — shared components, a data-driven sidebar badge, two identically-labeled buttons. Each has a `SCENARIOS.md` under [examples/](examples/) with three narrated pointing scenarios and the code locations they should turn up.
+3. **Record.** Click the Pointcast icon and press **Record**. The first time, a page asks for the microphone: allow it, then press Record again. The popup says whether the current tab is captured; while recording it should read *Capturing this tab*. Talk while you **Alt+click** things (the app does not react) or select text; only those two gestures are recorded, so a plain click reaches the app exactly as if Pointcast were not there. The popup shows the last element it captured. Pointed at the wrong thing? **Undo last gesture** in the popup, or **Alt+Shift+U**, removes it; the element flashes grey and the pill says what was undone. **Alt+Shift+S** starts and stops recording without opening the popup (change it in `chrome://extensions/shortcuts`).
+4. **Stop.** Press **Stop** (or Alt+Shift+S). Pointcast transcribes your voice on your machine, in the browser, and puts the Markdown in the clipboard. The pill in the page corner turns from *REC* into *Processing… ~0:05* with a progress bar, then says *✓ Copied · saved to Downloads* (or *✓ Copied · sent to your agent* when a Pointcast MCP server took it). The toolbar icon shows *…* and then *✓*, and a notification appears when it is done. The time is an estimate from the length of the recording and the speed measured on your machine in earlier runs. The first time, the Whisper model is downloaded once (294 MB, `Xenova/whisper-base`) and kept in the browser; the popup shows the download in MB. On a desktop CPU, 12 s of speech takes about 5 s, and a minute takes about 17 s.
+5. **Paste it into your coding agent.** The popup has **Copy again** and **Show in folder**, keeps showing the recording's length until the next one, and on a dev build adds one line on whether the code lines were found through your dev server. The session is saved to `Downloads/pointcast/<session-id>/`, or, while a `pointcast` MCP server runs, into that server's sessions folder (the popup says which): `session.md` (the Markdown), `words.json` (the transcript) and `session.json` (the events).
+
+The popup's **Settings**: the spoken **Language** (*Auto-detect* by default; when detection is unsure, Pointcast uses the language of your previous session, or its best guess, and says so), **Keep audio** (also saves `audio.wav`), **Notify when done**, and **Send to a running pointcast MCP server** (on by default; it only acts when one answers). When something goes wrong, the popup says what happened, and the session is still saved with its audio so the CLI can finish it.
+
+**The CLI is optional.** `pnpm pointcast process` re-renders the latest session (or `pnpm pointcast process <session-dir>`) after a change to fusion or rendering, reusing `words.json`. With the audio it can transcribe again (`--force`, `--language es`) or use an OpenAI-compatible endpoint (`--engine openai`), and Node is faster than the browser on slow machines. If Chrome saves downloads somewhere other than your Downloads folder, pass `--dir <that folder>/pointcast` or set `POINTCAST_DIR`.
+
+**The MCP server is optional.** `pnpm pointcast mcp` starts a read-only MCP server (`list_sessions`, `get_session`, `get_element`) so an agent can fetch your latest recording itself instead of you pasting it. While it runs, it also receives recordings from the extension, on `127.0.0.1:20547` only and from the Pointcast extension only, and stores them in its sessions folder.
+
+## Development
 
 Requires Node ≥ 22.12 and pnpm.
 
 ```bash
 pnpm install
 pnpm test          # unit tests (fast, offline)
-pnpm typecheck      # TypeScript across packages
-pnpm playground     # test pages on http://localhost:5500
-pnpm dev            # opens Chrome with the extension; auto-reloads on edit (WXT)
-pnpm e2e            # headless Chromium end-to-end suite (Playwright)
+pnpm typecheck     # TypeScript across packages
+pnpm playground    # test pages on http://localhost:5500
+pnpm example:react # Acme Store dashboard, React 19 + Vite, on http://127.0.0.1:5174 (examples/react-dashboard)
+pnpm example:vue   # the same dashboard, Vue 3 + Vite, on http://127.0.0.1:5175 (examples/vue-dashboard)
+
+pnpm dev           # opens Chrome with the extension; reloads it when you edit the code (WXT)
+pnpm build         # production build in packages/extension/.output/chrome-mv3
+pnpm zip           # packaged extension to load unpacked (GitHub releases): packages/extension/.output/pointcast-<version>-chrome.zip
+pnpm --filter @pointcast/extension zip:store  # the store upload, without the manifest key: …/pointcast-<version>-chrome-store.zip
+pnpm e2e           # builds the e2e flavor (.output/chrome-mv3-e2e), then runs it in headless Chromium (Playwright)
 ```
 
-See the [README's Development section](README.md#development) for the full command list, and [docs/session-format.md](docs/session-format.md) for the on-disk session format.
+CLI, from the repository root (paths are relative to where you run it):
+
+```bash
+pnpm pointcast transcribe <session-dir | file.wav> [--language es]   # writes words.json
+pnpm pointcast process [session-dir] [--language es] [--force]      # writes session.md
+pnpm pointcast process [session-dir] --format classic                # transcript + appendix layout
+pnpm -s pointcast process <session-dir> --stdout > spec.md          # -s keeps pnpm's banner out of stdout
+pnpm pointcast mcp                                                   # MCP server for agents
+pnpm pointcast --help                                                # every option
+```
+
+`process` reuses `words.json` when it exists, so re-running it after a change to fusion or rendering takes milliseconds; `--force` transcribes again. `--engine openai` sends the audio to an OpenAI-compatible endpoint instead (`POINTCAST_API_BASE`, `POINTCAST_API_KEY`; `OPENAI_API_KEY` is only used for api.openai.com).
+
+`pnpm e2e` never downloads the model, touches the real clipboard or shows notifications: the e2e build records the clipboard and notifications instead, and the harness serves `Xenova/whisper-base` from transformers.js' cache in `node_modules` (filled by the CLI's first transcription, or once with `node scripts/download-model.mjs`).
+
+Slow tests that run the real model: `POINTCAST_SLOW=1 pnpm vitest run packages/cli/src/process/run.slow.test.ts packages/cli/src/transcribe/local.slow.test.ts`. Model benchmark: `cd packages/cli && ./node_modules/.bin/tsx ../../scripts/bench/transcribe.ts` (results in `scripts/bench/results.json`).
+
+The on-disk session format is documented in [docs/session-format.md](docs/session-format.md).
 
 ## Making a change
 
@@ -61,7 +100,7 @@ The extension, the CLI and the integrations (Claude Code and Codex plugin, Gemin
 
 ## Code of conduct
 
-Be respectful and assume good faith. Report unacceptable behavior by opening an issue tagged accordingly, or contacting the maintainer directly via the repository's contact info.
+This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). Report unacceptable behavior privately, as that file explains.
 
 ## License
 

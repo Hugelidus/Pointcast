@@ -26,6 +26,20 @@ export type Ms = number;
  */
 export type Gesture = "point" | "click" | "select";
 
+/**
+ * How the user said what they wanted (since extension 0.4.0).
+ * - voice: they spoke; the transcript (words.json) carries the request and the events are placed in it.
+ * - typed: they typed a note for each gesture (`CapturedEvent.note`); there is no audio and no
+ *   words.json, and every noted event is a request of its own.
+ */
+export type InputMode = "voice" | "typed";
+
+/**
+ * Longest note kept, in characters (UTF-16 code units, like .length). A note is a sentence or
+ * a paragraph about one element; a cap keeps a pasted log from bloating the spec.
+ */
+export const NOTE_MAX_CHARS = 2000;
+
 /** Location in the app's source code, read from an attribute such as data-source="src/App.tsx:12:5". */
 export interface SourceRef {
   file: string;
@@ -183,6 +197,12 @@ export interface CapturedEvent {
   url: string;
   element: ElementInfo;
   selection?: SelectionInfo;
+  /**
+   * Typed sessions only: what the user typed about this gesture, trimmed, with line breaks
+   * kept, at most NOTE_MAX_CHARS. The user's own words, not page content, so it is not redacted
+   * (D12). Absent when they saved the gesture without a note, and in voice sessions.
+   */
+  note?: string;
 }
 
 /** Contents of session.json. */
@@ -209,6 +229,11 @@ export interface SessionFile {
     userAgent: string;
   };
   events: CapturedEvent[];
+  /**
+   * How the requests were given (InputMode). Absent means "voice": every session recorded
+   * before typed mode existed. A typed session has no audio and no words.json.
+   */
+  inputMode?: InputMode;
 }
 
 /** One transcribed word. */

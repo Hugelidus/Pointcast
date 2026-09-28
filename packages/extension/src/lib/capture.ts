@@ -1,6 +1,6 @@
 import { UI_ATTRIBUTE, type CapturedEventDraft, type Gesture, type SelectionInfo } from "@pointcast/core";
 import { describeElement } from "./describe";
-import { isShadowRoot } from "./dom";
+import { composedClosest, isShadowRoot } from "./dom";
 import { DEFAULT_CAPTURE_OPTIONS, type CaptureOptions } from "./options";
 import { redactPersonalText, redactPersonalUrl } from "./personal";
 import { boundaryElement, readRange } from "./selection";
@@ -80,8 +80,13 @@ function eventElement(event: Event): Element | null {
   return svg ? (svg.parentElement ?? svg) : el;
 }
 
+/**
+ * Pointcast's own UI is never recorded. Across shadow roots: the note box (typed mode) is the
+ * first piece of it that takes clicks, and its textarea sits in a shadow root under the host
+ * that carries UI_ATTRIBUTE, where a plain closest() stops.
+ */
 function isPointcastUi(el: Element | null): boolean {
-  return el !== null && el.closest(`[${UI_ATTRIBUTE}]`) !== null;
+  return el !== null && composedClosest(el, `[${UI_ATTRIBUTE}]`) !== null;
 }
 
 /**

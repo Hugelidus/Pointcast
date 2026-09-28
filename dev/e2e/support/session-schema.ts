@@ -30,6 +30,12 @@ export function assertSessionFile(value: unknown): asserts value is SessionFile 
   string(recorder["extensionVersion"], "recorder.extensionVersion");
   string(recorder["userAgent"], "recorder.userAgent");
 
+  // Typed mode (D12): written only for typed sessions, which have no audio.
+  if (s["inputMode"] !== undefined) {
+    equal(s["inputMode"], "typed", "inputMode");
+    equal(s["audio"], undefined, "audio (a typed session records none)");
+  }
+
   const events = s["events"];
   if (!Array.isArray(events)) throw new Error("events: expected an array");
   events.forEach((event, i) => assertEvent(event, i));
@@ -44,6 +50,10 @@ function assertEvent(value: unknown, index: number): asserts value is CapturedEv
   integer(e["tEnd"], `${at}.tEnd`, tStart);
   string(e["url"], `${at}.url`);
   assertElement(e["element"], `${at}.element`);
+  if (e["note"] !== undefined) {
+    const note = string(e["note"], `${at}.note`);
+    if (note === "" || note !== note.trim() || note.length > 2000) throw new Error(`${at}.note: not a cleaned note`);
+  }
   if (e["selection"] !== undefined) {
     const selection = object(e["selection"], `${at}.selection`);
     string(selection["text"], `${at}.selection.text`);

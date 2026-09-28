@@ -1,4 +1,4 @@
-import { SESSIONS_FOLDER } from "@pointcast/core";
+import { SESSIONS_FOLDER, type InputMode } from "@pointcast/core";
 import type { ProcessingInfo } from "./processing/progress";
 
 /**
@@ -48,12 +48,20 @@ export interface LastResult {
   processingMs: number;
   /** ProcessingResult.code: how the code pointers resolved against the dev server, in one line. */
   code?: string;
+  /** A typed session (D12): `audioMs` is how long the notes took, with no audio. */
+  typed?: boolean;
 }
 
 export interface RecorderState {
   status: RecorderStatus;
   /** Date.now() at the MediaRecorder start event; set while recording and stopping. */
   t0?: number;
+  /**
+   * The mode the current recording started in (Settings.inputMode, D12), from Record until it is
+   * saved: the pill says "Notes" and the page opens a note box for each gesture when "typed".
+   * Absent means voice, as in states written before 0.4.0.
+   */
+  inputMode?: InputMode;
   /** Folder name of the session being saved; known once the recorder has stopped. */
   sessionId?: string;
   /** chrome.downloads ids of the files being saved; the session ends when all complete. */
@@ -142,6 +150,11 @@ export function savedLocationText(sessionId: string, handedOffTo?: string): stri
 
 export function isRecording(state: RecorderState): boolean {
   return state.status === "recording";
+}
+
+/** The current recording is typed (D12): notes instead of speech. */
+export function isTyped(state: RecorderState): boolean {
+  return state.inputMode === "typed";
 }
 
 /**

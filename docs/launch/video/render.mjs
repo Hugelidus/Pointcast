@@ -37,7 +37,9 @@ const KEYS = {
   "4-stop": 8.5,
   "5-spec": 11.5,
   "6-code": 14.7,
-  "7-end": 16.8,
+  "7-type": 18.1,
+  "8-typed-spec": 21.1,
+  "9-end": 23.0,
 };
 
 const args = process.argv.slice(2);

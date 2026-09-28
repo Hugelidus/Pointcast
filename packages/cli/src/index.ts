@@ -138,7 +138,9 @@ async function runProcessCommand(command: Extract<CliCommand, { command: "proces
   });
   if (result.resolution) log(describeResolution(result.resolution, { explicit: command.repo !== undefined }));
 
-  if (result.transcribed) {
+  if (result.typed) {
+    log("typed session: rendered from its notes, nothing to transcribe");
+  } else if (result.transcribed) {
     logDetectedLanguage(command.language, result.words);
     log(`transcribed with ${result.words.engine} (${result.words.words.length} words)`);
     logUnreliable(result.words);

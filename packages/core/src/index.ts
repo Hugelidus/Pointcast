@@ -3,6 +3,7 @@ export * from "./constants";
 export * from "./handoff";
 export { projectRelativePath } from "./paths";
 export { isShortValue } from "./describe";
+export { cleanNote, isTypedSession, TYPED_SESSION_WORDS } from "./notes";
 export {
   DEFAULT_DEICTICS,
   DEICTICS_DE,

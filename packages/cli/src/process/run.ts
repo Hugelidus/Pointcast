@@ -3,7 +3,9 @@ import path from "node:path";
 import {
   estimateTokens,
   fuse,
+  isTypedSession,
   renderMarkdown,
+  TYPED_SESSION_WORDS,
   type RenderFormat,
   type RenderLayout,
   type SessionFile,
@@ -15,7 +17,7 @@ import { resolveWithRepo, type LocalResolution } from "../resolve/local";
 import { createEngine, type EngineName } from "../transcribe";
 import { readSessionFile } from "./session-file";
 import { buildInitialPrompt } from "./prompt";
-import { formatFusionSummary, summarizeFusion } from "./summary";
+import { formatFusionSummary, formatTypedSummary, summarizeFusion } from "./summary";
 import { readWordsFileIfPresent, writeWordsFile } from "./words-file";
 
 export interface ProcessOptions {
@@ -46,6 +48,8 @@ export interface ProcessResult {
   markdown: string;
   /** True when this run transcribed audio and (over)wrote words.json. */
   transcribed: boolean;
+  /** A typed session (D12): rendered from its notes, with nothing to transcribe. */
+  typed: boolean;
   /** Set unless `toStdout`, in which case nothing was written to disk. */
   sessionMdPath?: string;
   chars: number;
@@ -68,7 +72,10 @@ export async function runProcess(options: ProcessOptions): Promise<ProcessResult
   const sessionDir = path.resolve(options.sessionDir);
   const session = await readSessionFile(sessionDir);
 
-  const cached = options.force ? undefined : await readWordsFileIfPresent(sessionDir);
+  // A typed session (D12) has no audio and no words.json: its notes are the requests, so there is
+  // nothing to transcribe, with or without --force.
+  const typed = isTypedSession(session);
+  const cached = typed ? TYPED_SESSION_WORDS : options.force ? undefined : await readWordsFileIfPresent(sessionDir);
   const transcribed = cached === undefined;
   const words = cached ?? (await transcribe(sessionDir, session, options));
   if (transcribed) await writeWordsFile(sessionDir, words);
@@ -85,6 +92,7 @@ export async function runProcess(options: ProcessOptions): Promise<ProcessResult
   // was actually rendered.
   const { placements } = fuse(session.events, words.words);
   const summary = summarizeFusion(placements);
+  const summaryLine = typed ? formatTypedSummary(session) : formatFusionSummary(summary);
 
   // Writing to stdout is the caller's job (index.ts): a test that calls runProcess() directly
   // should not spray Markdown across the test runner's own output.
@@ -99,11 +107,12 @@ export async function runProcess(options: ProcessOptions): Promise<ProcessResult
     words,
     markdown,
     transcribed,
+    typed,
     sessionMdPath,
     chars: markdown.length,
     tokens: estimateTokens(markdown),
     summary,
-    summaryLine: formatFusionSummary(summary),
+    summaryLine,
     ...(resolution ? { resolution } : {}),
   };
 }

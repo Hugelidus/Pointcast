@@ -1,4 +1,4 @@
-import type { RecorderState } from "../recorder-state";
+import { isTyped, type RecorderState } from "../recorder-state";
 import { firstSentence } from "./failure";
 import type { SpeedStats } from "./stats";
 
@@ -120,7 +120,8 @@ export const ERROR_VISIBLE_MS = 10_000;
  * problem only says that there is one and where to read it: the popup has the details.
  */
 export type PillView =
-  | { kind: "recording" }
+  /** `typed`: a typed recording (D12), shown as "Notes" instead of "REC". */
+  | { kind: "recording"; typed?: boolean }
   | { kind: "processing"; text: string; fraction: number }
   | { kind: "done"; text: string }
   /** Saved (and copied), with something the user should read in the popup. */
@@ -132,7 +133,7 @@ export type PillView =
 const SEE_POPUP = "See the Pointcast popup.";
 
 export function pillView(state: RecorderState, now: number): PillView | null {
-  if (state.status === "recording") return { kind: "recording" };
+  if (state.status === "recording") return isTyped(state) ? { kind: "recording", typed: true } : { kind: "recording" };
   if ((state.status === "stopping" || state.status === "processing") && state.processing) {
     return { kind: "processing", ...processingView(state.processing, now) };
   }

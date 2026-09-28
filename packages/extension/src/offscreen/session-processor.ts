@@ -27,7 +27,9 @@ export interface ProcessingJob {
   audio:
     | { decoded: true; samples: Float32Array }
     /** The browser could not decode the recording: only the raw bytes and the wall-clock length. */
-    | { decoded: false; raw: Blob; durationMs: number; error: string };
+    | { decoded: false; typed?: false; raw: Blob; durationMs: number; error: string }
+    /** Typed mode (D12): nothing was recorded; the notes are in the events. Wall-clock length. */
+    | { decoded: false; typed: true; durationMs: number };
   /** Found while stopping, e.g. the microphone ended early. */
   warnings: string[];
   options: ProcessingOptions;
@@ -74,6 +76,9 @@ export async function processSession(job: ProcessingJob, deps: ProcessorDeps): P
       withAudio,
     });
 
+  if (!job.audio.decoded && job.audio.typed) {
+    return processTyped(job, job.audio.durationMs, deps, warnings);
+  }
   if (!job.audio.decoded) {
     const { raw, durationMs, error } = job.audio;
     return {
@@ -156,6 +161,53 @@ export async function processSession(job: ProcessingJob, deps: ProcessorDeps): P
     ...(code.note ? { code: code.note } : {}),
     audioMs,
     ...(samples.length > 0 ? { timings: { loadMs: done.loadMs, transcribeMs: done.transcribeMs, audioMs: done.audioMs ?? audioMs } } : {}),
+  };
+}
+
+/**
+ * Typed mode (D12): the notes are the requests, so Stop goes straight to the spec. Same result
+ * as a voice session (resolved code pointers, the clipboard, then the handoff or the downloads),
+ * without audio, words.json or timings: session.md and session.json only.
+ */
+async function processTyped(
+  job: ProcessingJob,
+  durationMs: number,
+  deps: ProcessorDeps,
+  warnings: string[],
+): Promise<ProcessedSession> {
+  const session = (events: readonly CapturedEvent[]) =>
+    buildSessionFile({
+      id: job.sessionId,
+      t0: job.t0,
+      durationMs,
+      events,
+      extensionVersion: job.extensionVersion,
+      userAgent: job.userAgent,
+      withAudio: false,
+      inputMode: "typed",
+    });
+  const code = await resolveCode(deps, session(job.events));
+  const sessionFile = session(code.session.events);
+  const markdown = renderMarkdown(sessionFile, undefined);
+
+  let copied = true;
+  try {
+    await deps.copy(markdown);
+  } catch (error) {
+    copied = false;
+    warnings.push(`Could not copy to the clipboard (${rawMessage(error)}): use Copy again in the popup.`);
+  }
+  return {
+    // session.md first: "Show in folder" selects the first file.
+    files: [
+      { fileName: MARKDOWN_FILE_NAME, blob: new Blob([markdown], { type: "text/markdown" }) },
+      jsonFile(SESSION_FILE_NAME, sessionFile),
+    ],
+    markdown,
+    copied,
+    ...joinedWarnings(warnings),
+    ...(code.note ? { code: code.note } : {}),
+    audioMs: durationMs,
   };
 }
 

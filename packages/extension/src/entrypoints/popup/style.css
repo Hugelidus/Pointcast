@@ -182,6 +182,17 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 0; }
 .settings label.check { display: flex; gap: 6px; align-items: center; }
 .settings select { font: inherit; padding: 3px; }
 
+/* Voice / Typed (D12): two radios drawn as one segmented control; the native inputs keep the
+   arrow keys, the focus and the screen reader's "1 of 2". */
+.mode { display: grid; grid-template-columns: 1fr 1fr; margin: 0; padding: 2px; border: 1px solid var(--border-strong); border-radius: 8px; gap: 2px; }
+.mode label { position: relative; display: block; }
+.mode input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.mode label > span { display: block; padding: 5px 6px; border-radius: 6px; text-align: center; font-size: 12px; font-weight: 500; color: var(--muted); }
+.mode input:checked + span { background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+.mode input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mode input:disabled { cursor: default; }
+.mode input:disabled:not(:checked) + span { opacity: 0.5; }
+
 /* Read by screen readers, never drawn. */
 .sr-only {
   position: absolute;

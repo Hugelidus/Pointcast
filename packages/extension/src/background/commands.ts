@@ -5,7 +5,7 @@ import { firstSentence, type ErrorKind } from "../processing/failure";
 import { processingEstimateMs, transcriptionEstimateMs, type ProcessingInfo } from "../processing/progress";
 import { chosenLanguage } from "../processing/settings";
 import { learnFromRun } from "../processing/stats";
-import { savedLocationText, toggleCommand, type LastResult, type RecorderState, type RecorderStatus } from "../recorder-state";
+import { isTyped, savedLocationText, toggleCommand, type LastResult, type RecorderState, type RecorderStatus } from "../recorder-state";
 import { formatSessionId, nextFreeSessionId } from "../session-id";
 import {
   readSettings,
@@ -112,6 +112,8 @@ function endedNow(state: RecorderState): LastResult {
     copied: false,
     audioMs: state.processing?.audioMs ?? 0,
     ...state.pendingResult,
+    // The popup's "of audio" line reads "of notes" for a typed session (D12).
+    ...(isTyped(state) ? { typed: true } : {}),
     finishedAt,
     processingMs: finishedAt - (state.processing?.startedAt ?? finishedAt),
   };
@@ -149,7 +151,11 @@ export async function startRecording(): Promise<CommandResult> {
   const state = await readState();
   if (state.status !== "idle") return { ok: false, error: BUSY_START[state.status] };
 
-  await setState({ ...idle(state), status: "starting" });
+  // The mode is fixed at Record (D12): changing it in the popup applies to the next recording.
+  const settings = await readSettings();
+  const inputMode = settings.inputMode;
+  const typedMode = inputMode === "typed" ? { inputMode } : {};
+  await setState({ ...idle(state), status: "starting", ...typedMode });
   await resetCapturedEvents();
   // Every local tab gets a live content script before the recording is reported as started:
   // a tab opened before the extension was (re)loaded would otherwise capture nothing (D6).
@@ -160,12 +166,14 @@ export async function startRecording(): Promise<CommandResult> {
   try {
     await ensureOffscreenDocument();
     // The language goes along so the recording can be transcribed while it is made
-    // (D1 note 2026-09-27, live transcription).
-    const language = chosenLanguage(await readSettings());
+    // (D1 note 2026-09-27, live transcription). A typed recording opens no microphone at all.
+    const language = chosenLanguage(settings);
     const result = await withTimeout(
-      sendMessage({ to: "offscreen", type: "recorder-start", ...(language ? { language } : {}) }),
+      sendMessage({ to: "offscreen", type: "recorder-start", ...(language ? { language } : {}), ...typedMode }),
       START_TIMEOUT_MS,
-      "The microphone did not start in time. Press Record again.",
+      inputMode === "typed"
+        ? "The recorder did not start in time. Press Record again."
+        : "The microphone did not start in time. Press Record again.",
     );
     if (!result) throw new Error("The recorder did not respond. Press Record again.");
     if (!result.ok) {
@@ -177,7 +185,7 @@ export async function startRecording(): Promise<CommandResult> {
       return failed;
     }
     await attaching;
-    await setState({ status: "recording", t0: result.t0 });
+    await setState({ status: "recording", t0: result.t0, ...typedMode });
     return { ok: true };
   } catch (error) {
     await closeOffscreenDocument().catch(() => undefined);
@@ -201,12 +209,15 @@ export async function stopRecording(): Promise<CommandResult> {
   // The wall-clock length until the recorder reports the decoded one.
   const audioMs = Math.max(0, stoppedAt - (state.t0 ?? stoppedAt));
   const stats = await readStats();
-  const firstRun = !stats.modelReady;
+  // A typed session (D12) transcribes nothing: no model to download, and no time to estimate
+  // beyond rendering and saving.
+  const typed = isTyped(state);
+  const firstRun = !typed && !stats.modelReady;
   const processing: ProcessingInfo = {
     startedAt: stoppedAt,
     audioMs,
     stage: "stopping",
-    estimatedEnd: stoppedAt + processingEstimateMs(audioMs, stats.speed, firstRun),
+    estimatedEnd: stoppedAt + (typed ? TYPED_PROCESSING_MS : processingEstimateMs(audioMs, stats.speed, firstRun)),
     deadline: processingDeadline(stoppedAt, audioMs),
     firstRun,
   };
@@ -217,6 +228,9 @@ export async function stopRecording(): Promise<CommandResult> {
   await browser.alarms.create(PROCESSING_ALARM, { when: processing.deadline + ALARM_GRACE_MS });
   return askRecorderToStop(stopping);
 }
+
+/** Stop to saved for a typed session (D12): resolving code pointers, rendering and saving. */
+const TYPED_PROCESSING_MS = 1_000;
 
 /** The popup's settings and what earlier runs taught, for the offscreen document. */
 async function processingOptions(deadline: number): Promise<ProcessingOptions> {
@@ -268,7 +282,8 @@ async function askRecorderToStop(state: RecorderState): Promise<CommandResult> {
         processing: {
           ...current.processing,
           audioMs: result.durationMs,
-          stage: downloading ? "downloading-model" : "transcribing",
+          // Typed (D12): nothing to transcribe, the spec is being saved.
+          stage: isTyped(current) ? "saving" : downloading ? "downloading-model" : "transcribing",
           // Only the audio live transcription has not done yet is left to wait for, and no model
           // load when it is loaded already (on a first run, the download is shown in MB instead).
           estimatedEnd:
@@ -591,7 +606,8 @@ export async function toggleRecording(): Promise<CommandResult> {
 /** The offscreen document reports each accepted event; the popup shows the count and the last event. */
 export async function recordEventCount(count: number, lastEvent: string): Promise<void> {
   // Written under their own keys, so this cannot race with the status changes above.
-  if ((await readState()).status === "recording") await writeCapturedEvent(count, lastEvent);
+  // "" is "no event left" (a typed note box cancelled the only gesture, D12).
+  if ((await readState()).status === "recording") await writeCapturedEvent(count, lastEvent || null);
 }
 
 /**

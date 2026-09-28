@@ -3,7 +3,8 @@ import { deicticsForLanguage } from "./deictics";
 import { formatClock } from "./describe";
 import { fuse, type FuseOptions } from "./fuse";
 import { escapeMarkdown, inlineText } from "./markdown";
-import { renderRequests, type RequestsLayout } from "./requests";
+import { isTypedSession, TYPED_SESSION_WORDS } from "./notes";
+import { renderRequests, renderTypedRequests, type RequestsLayout } from "./requests";
 import type { CapturedEvent, SessionFile, WordsFile } from "./schema";
 import { renderTranscript } from "./transcript";
 
@@ -55,13 +56,19 @@ export const DEFAULT_RENDER_OPTIONS: Readonly<RenderOptions> = {
 /**
  * The Markdown spec for a coding agent, in `options.format` (see RenderFormat). Pure and
  * deterministic: the same session, words and options always produce the same string.
+ *
+ * A typed session (SessionFile.inputMode, D12) renders from its notes, always as requests (it
+ * has no transcript to lay a timeline on): `words` is ignored there and may be undefined, since
+ * such a session has no words.json. A voice session given no words renders as if nothing was said.
  */
 export function renderMarkdown(
   session: SessionFile,
-  words: WordsFile,
+  words: WordsFile | undefined,
   options: Partial<RenderOptions> = {},
 ): string {
   const opts: RenderOptions = { ...DEFAULT_RENDER_OPTIONS, ...options };
+  if (isTypedSession(session)) return `${renderTypedRequests(session.events, opts).join("\n\n")}\n`;
+  words ??= TYPED_SESSION_WORDS;
   const fuseOptions = { deictics: deicticsForLanguage(words.language), ...opts.fuse };
   const { placements } = fuse(session.events, words.words, fuseOptions);
   const note = unreliableNote(words);

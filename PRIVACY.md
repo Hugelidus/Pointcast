@@ -7,6 +7,7 @@ Effective 28 September 2026. It covers the pointcast Chrome extension, the `poin
 ## What the extension handles, and where it stays
 
 - **Your voice.** The microphone is recorded only between Record and Stop. The recording is transcribed on your device, inside the extension (Whisper runs in the browser). The audio is then discarded, unless you turn on *Keep audio* in the settings, or pointcast needs it to redo the transcription (the spoken language was uncertain, or transcription failed). In those cases it is saved as `audio.wav` in the recording's folder on your computer.
+- **Your typed notes.** In Typed mode the microphone is never opened; what you type in Pointcast's note box is kept, as you wrote it, with the element it is about, in the same files as the rest of the recording. The page you are testing does not receive those keystrokes, and its scripts cannot read or change what is in the box. One limit: a script the page set up to watch every key on the whole window before Pointcast started in that tab still sees the keys you type, as it would anywhere on that page. On your own dev build that is your own code; on a site you enabled, keep that in mind before typing anything private into a note.
 - **The elements you point at.** Only when you Alt+click or select text on a page where pointcast is active: local development hosts (`localhost`, `127.0.0.1`, `*.localhost`, `*.test`), or a site you enabled yourself, one at a time. For each element pointcast keeps:
   - its visible text;
   - a CSS selector and its position in the page;

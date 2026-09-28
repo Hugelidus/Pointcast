@@ -852,3 +852,46 @@ describe("recoverInterruptedTransition (service worker restarted mid-transition)
     expect(fake.sendMessage).not.toHaveBeenCalled();
   });
 });
+
+describe("typed mode (D12)", () => {
+  it("starts a typed recording without the microphone, and keeps the mode in the state", async () => {
+    fake.local.set("settings", { language: "es", keepAudio: false, notify: true, handoff: true, inputMode: "typed" });
+    fake.sendMessage.mockImplementation(async (message) => (message.type === "recorder-start" ? { ok: true, t0: T0 } : undefined));
+    expect(await commands.startRecording()).toEqual({ ok: true });
+    expect(fake.sendMessage.mock.calls.map(([m]) => m).find((m) => m.type === "recorder-start")).toMatchObject({
+      type: "recorder-start",
+      inputMode: "typed",
+    });
+    expect(state()).toEqual({ status: "recording", t0: T0, inputMode: "typed" });
+  });
+
+  it("starts a voice recording, as before, from settings saved without a mode", async () => {
+    fake.local.set("settings", { language: "auto", keepAudio: false, notify: true });
+    fake.sendMessage.mockImplementation(async (message) => (message.type === "recorder-start" ? { ok: true, t0: T0 } : undefined));
+    await commands.startRecording();
+    const start = fake.sendMessage.mock.calls.map(([m]) => m).find((m) => m.type === "recorder-start");
+    expect(start).not.toHaveProperty("inputMode");
+    expect(state()).toEqual({ status: "recording", t0: T0 });
+  });
+
+  it("goes from Stop to saving with no model download or transcription estimate, and says so in the result", async () => {
+    fake.storage.set("recorder", { status: "recording", t0: T0, inputMode: "typed" });
+    fake.offscreenOpen = true;
+    recorderStops(8_000, 0, false);
+    expect(await commands.stopRecording()).toEqual({ ok: true });
+    expect(state()).toMatchObject({ status: "processing", inputMode: "typed", processing: { stage: "saving", firstRun: false } });
+
+    const typedDone: ProcessingResult = {
+      files: [
+        { url: "blob:md", fileName: "session.md" },
+        { url: "blob:session", fileName: "session.json" },
+      ],
+      markdown: "> Sort it [a]",
+      copied: true,
+      audioMs: 8_000,
+    };
+    await commands.finishProcessing(state().sessionId ?? "", typedDone);
+    expect(state()).toMatchObject({ status: "idle", lastResult: { typed: true, audioMs: 8_000, copied: true } });
+    expect(state().inputMode).toBeUndefined();
+  });
+});

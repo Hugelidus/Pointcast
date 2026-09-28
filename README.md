@@ -38,6 +38,8 @@ Any other agent: paste the spec from the clipboard. (In Windows PowerShell 5.1, 
 
 **3. Record** on your app on `localhost`: press **Record**, talk while you **Alt+click** things, press **Stop**.
 
+**Rather type than talk?** Pick **⌨️ Typed** above Record in the popup. Each Alt+click then opens a small box next to the element: type what should change, press Enter (Esc drops that gesture). No microphone, no speech model, and Stop gives you the spec at once.
+
 <details id="manual-install">
 <summary><b>Manual install (release zip)</b>, updating from 0.1.x, and where recordings go</summary>
 
@@ -56,7 +58,7 @@ Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://git
 
 1. **Record.** Press Record in the extension (or Alt+Shift+S) and talk while you use your app.
 2. **Point.** Alt+click or select text on whatever you are talking about. The Alt+click never reaches your app.
-3. **Stop.** Your voice is transcribed on your machine, and each sentence becomes a request with the elements you pointed at while saying it:
+3. **Stop.** Your voice is transcribed on your machine, and each sentence becomes a request with the elements you pointed at while saying it (in **Typed** mode, each note you typed becomes a request with its element):
 
 ```markdown
 ## Request 2
@@ -126,7 +128,9 @@ Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that ver
 
 **Does this send my voice anywhere?** No, by default. A local Whisper model (`Xenova/whisper-base`, 294 MB, downloaded once, so the first recording takes longer) runs in the browser. The CLI's optional `--engine openai` sends audio to an OpenAI-compatible endpoint only if you choose it.
 
-**What if I point at the wrong element?** Popup → **Undo last gesture**, or **Alt+Shift+U**.
+**What if I point at the wrong element?** Popup → **Undo last gesture**, or **Alt+Shift+U**. In Typed mode, Esc in the note box drops that gesture.
+
+**Can I use it without a microphone?** Yes: choose **⌨️ Typed** in the popup and type a note for each element instead of speaking. The app you are testing never receives the keys you type into the note box.
 
 **How accurate is the transcription?** ~93 % word accuracy on Spanish test recordings ([D1](docs/decisions.md#d1-transcription--whisper-via-transformersjs-locally)).
 

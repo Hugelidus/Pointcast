@@ -124,3 +124,10 @@ describe("pillView", () => {
     expect(pillView(denied, 50_000 + ERROR_VISIBLE_MS)).toBeNull();
   });
 });
+
+describe("pillView in typed mode (D12)", () => {
+  it("marks a typed recording, and only a typed one", () => {
+    expect(pillView({ status: "recording", t0: 1, inputMode: "typed" }, 2)).toEqual({ kind: "recording", typed: true });
+    expect(pillView({ status: "recording", t0: 1 }, 2)).toEqual({ kind: "recording" });
+  });
+});

@@ -29,7 +29,7 @@ export async function waitForStatus(extensionPage: Page, status: RecorderStatus,
 
 /** Changes the popup's settings (chrome.storage.local), e.g. to keep audio.wav for a test that reads it. */
 export async function setSettings(extensionPage: Page, settings: Partial<Settings>): Promise<void> {
-  const full: Settings = { language: "auto", keepAudio: false, notify: true, handoff: true, ...settings };
+  const full: Settings = { language: "auto", keepAudio: false, notify: true, handoff: true, inputMode: "voice", ...settings };
   await extensionPage.evaluate((value) => chrome.storage.local.set({ settings: value }), full);
 }
 
@@ -80,6 +80,7 @@ export interface SavedSession {
   session: SessionFile;
   /** Present only when the audio was kept (setSettings keepAudio, or a language fallback). */
   wav?: WavInfo;
+  /** Empty for a typed session, which saves no words.json. */
   words: WordsFile;
   markdown: string;
 }
@@ -99,7 +100,12 @@ export async function readSavedSession(extensionPage: Page, downloadsDir: string
   };
   const session: unknown = JSON.parse(readFileSync(fileFor("session.json"), "utf8"));
   assertSessionFile(session);
-  const words = JSON.parse(readFileSync(fileFor("words.json"), "utf8")) as WordsFile;
+  // A typed session (D12) is rendered from its notes: it has no words.json at all.
+  const typed = session.inputMode === "typed";
+  expect(existsSync(path.join(folder, "words.json"))).toBe(!typed);
+  const words: WordsFile = typed
+    ? { schemaVersion: 1, engine: "none (typed session)", words: [] }
+    : (JSON.parse(readFileSync(fileFor("words.json"), "utf8")) as WordsFile);
   const markdown = readFileSync(fileFor("session.md"), "utf8");
   // The audio is described in session.json exactly when it was saved (v2).
   expect(existsSync(path.join(folder, "audio.wav"))).toBe(session.audio !== undefined);

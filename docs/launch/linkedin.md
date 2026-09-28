@@ -26,7 +26,7 @@ Lo que más he aprendido no ha sido construirlo, sino medirlo:
 
 • Un compañero lo probó en su proyecto Django real y ahí no llegaba al código: las plantillas del servidor no dicen de dónde viene cada elemento. Un paquete para Django lo resuelve, marcando las plantillas solo en desarrollo. En una app Django + HTMX de unas 1.300 plantillas, colocó ~94 % de los elementos de muestra en su línea exacta, y ninguno en una línea equivocada.
 
-• Una grabación real trae varios cambios a la vez, no uno. Repetí la comparación con seis cambios en una sola grabación: el agente acertó el código el 96 % de las veces frente al 85 % del mismo pedido escrito a mano, con un 24 % menos de tokens y un 75 % menos de búsquedas. Pedir un cambio cada vez sigue siendo algo más preciso, pero no más barato: el ahorro está en agruparlos.
+• Una grabación real trae varios cambios a la vez, no uno. Repetí la comparación con seis cambios en una sola grabación: el agente acertó el código el 96 % de las veces frente al 85 % del mismo pedido escrito a mano, con un 24 % menos de tokens y un 75 % menos de búsquedas. Con un cambio cada vez también acierta más (96 % frente a 84 %), pero no gasta menos: el ahorro está en agruparlos. En tiempo, mi estimación (no medida) para seis cambios: ~15 min pidiéndolos de uno en uno frente a ~5 min con una grabación de 2 minutos.
 
 • Desde entonces añadí lo que pedían los primeros usuarios: un modo escrito para cuando no se puede hablar, y que la grabación recoja los errores de consola y de red de los segundos alrededor de cada elemento señalado, para que el agente sepa no solo qué botón sino por qué no hacía nada.
 
@@ -62,7 +62,7 @@ What taught me the most wasn't building it, it was measuring it:
 
 • A colleague tried it on their real Django project, and there it couldn't reach the code: server templates don't say where each element comes from. A small Django package fixes that, marking templates in development only. On a Django + HTMX app with about 1,300 templates, it placed ~94% of sampled elements on their exact line, and none on a wrong one.
 
-• A real recording usually carries several changes, not one. I re-ran the comparison with six changes in a single recording: the agent got the right code 96% of the time against 85% for the same six changes typed by hand, at 24% fewer tokens and 75% fewer searches. Asking one change at a time stayed a bit more accurate, but not cheaper: the saving is in batching them.
+• A real recording usually carries several changes, not one. I re-ran the comparison with six changes in a single recording: the agent got the right code 96% of the time against 85% for the same six changes typed by hand, at 24% fewer tokens and 75% fewer searches. With one change at a time it is still more accurate (96% vs. 84%), but not cheaper: the saving is in batching them. In time, my rough estimate (not measured) for six changes: ~15 min asking one by one vs. ~5 min with one 2-minute recording.
 
 • Since then I've added what early users asked for: a typed mode for when talking isn't an option, and a setting that carries the console and network errors around each pointed element, so the agent knows not just which button but why it did nothing.
 

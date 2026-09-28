@@ -36,7 +36,9 @@ Also on Django templates now: on a real ~1,300-template Django + HTMX app, ~94% 
 
 A real recording usually holds several changes. Six in one recording: 96% right code vs. 85% for the same six typed by hand — 24% fewer tokens, 75% fewer searches.
 
-One change at a time is a bit more accurate (96% vs. 84%), just not cheaper.
+One change at a time: still more accurate (96% vs. 84%), just not cheaper.
+
+My rough estimate, not measured: six changes take ~15 min asked one by one, ~5 min with one 2-minute recording.
 
 **6/**
 

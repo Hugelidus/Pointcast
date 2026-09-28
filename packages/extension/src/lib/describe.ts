@@ -336,10 +336,15 @@ const SHADOW_BOUNDARY = "#shadow-root";
  */
 export function readablePath(el: Element, options: DescribeOptions = DEFAULT_DESCRIBE_OPTIONS): string {
   const segments: string[] = [];
+  let previousIncluded: Element | null = null;
   let isHost = false;
   for (let current: Element | null = el; current !== null; ) {
     if (current !== el && (current.localName === "body" || current.localName === "html")) break;
-    if (current === el || isHost || isPathLandmark(current)) segments.unshift(pathSegment(current, options));
+    if (current === el || isHost || isPathLandmark(current)) {
+      if (previousIncluded !== null && composedParent(previousIncluded) !== current) segments.unshift("…");
+      segments.unshift(pathSegment(current, options));
+      previousIncluded = current;
+    }
     isHost = current.parentElement === null && isShadowRoot(current.parentNode);
     if (isHost) segments.unshift(SHADOW_BOUNDARY);
     current = composedParent(current);

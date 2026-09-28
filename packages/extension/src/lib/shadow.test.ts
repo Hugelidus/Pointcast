@@ -64,7 +64,7 @@ describe("gestures inside an open shadow root", () => {
     expect(element).toMatchObject({
       tag: "button",
       text: "Buy",
-      path: "main › section#shop › x-card › #shadow-root › button",
+      path: "main › section#shop › x-card › … › #shadow-root › button",
       selector: "x-card >>> button.buy",
       selectorUnique: false,
       // The source attribute sits outside the component and still counts, across the boundary.

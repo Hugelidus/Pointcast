@@ -18,7 +18,7 @@ describe("describeElement on the playground", () => {
       selector: "#export-btn",
       context: "Orders",
       selectorUnique: true,
-      path: "main › section#orders › button#export-btn",
+      path: "main › section#orders › … › button#export-btn",
       html: '<button type="button" id="export-btn" class="primary Toolbar_export__3xKz1"><svg/> Export</button>',
       source: { file: "src/components/Toolbar.tsx", line: 8, attribute: "data-source", distance: 1 },
     });
@@ -72,11 +72,23 @@ describe("describeElement on the playground", () => {
   });
 
   it("names landmarks without generated ids", () => {
-    expect(describeElement(q('[aria-label="More actions"]')).path).toBe("main › section#orders › button«More actions»");
+    expect(describeElement(q('[aria-label="More actions"]')).path).toBe("main › section#orders › … › button«More actions»");
     expect(readablePath(q("#orders-table tbody tr:nth-child(3) button"))).toBe(
       "main › section#orders › table#orders-table › tbody › tr[3] › td[5] › button",
     );
     expect(readablePath(index.body)).toBe("body");
+  });
+
+  it("marks omitted ancestors between path landmarks", () => {
+    const main = document.createElement("main");
+    main.innerHTML = "<div><section><div><button>Export</button></div></section></div>";
+    expect(readablePath(main.querySelector("button") as Element)).toBe("main › … › section › … › button");
+  });
+
+  it("does not mark a path gap between directly nested landmarks", () => {
+    const main = document.createElement("main");
+    main.innerHTML = "<section><button>Export</button></section>";
+    expect(readablePath(main.querySelector("button") as Element)).toBe("main › section › button");
   });
 
   it("keeps tag, selector, path and label of sensitive fields but no value", () => {
@@ -263,7 +275,7 @@ describe("itemLabel: the item a short value belongs to", () => {
       text: "3",
       itemLabel: "Messages",
       context: "Main",
-      path: "div#root › nav«Main» › ul › li[2] › span[2]",
+      path: "div#root › nav«Main» › ul › li[2] › … › span[2]",
     });
     // The words on both sides of the value stay apart.
     expect(itemLabelOf(`<ul><li><b>Top</b><span id="v">+5</span><b>sellers</b></li></ul>`, "#v")).toBe("Top sellers");

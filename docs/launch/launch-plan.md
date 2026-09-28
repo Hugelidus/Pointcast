@@ -1,10 +1,10 @@
-# Plan de lanzamiento (0.5)
+# Plan de lanzamiento (0.6)
 
 Para Hugo. Los textos están en esta carpeta; aquí va solo qué hacer, en qué orden y cuándo. Nada de esto está publicado: todo lo publicas tú.
 
 ## 1. Antes del lanzamiento (checklist)
 
-- [ ] **Chrome Web Store aprobada.** Sin ella, cada post dice "carga el zip a mano", y eso frena a la mitad de la gente. Cuando la aprueben: subir el zip de tienda de 0.5.0 (el artefacto `pointcast-0.5.0-chrome-store` del workflow de release, nunca el zip de la release), comprobar que se instala desde la ficha y cambiar el paso 1 del README ("in review") por el enlace a la ficha. Si la aprobación tarda más de ~2 semanas, lanzar igual con el zip y decirlo en los posts.
+- [ ] **Chrome Web Store aprobada.** Sin ella, cada post dice "carga el zip a mano", y eso frena a la mitad de la gente. Cuando la aprueben: subir el zip de tienda de 0.6.0 (el artefacto `pointcast-0.6.0-chrome-store` del workflow de release, nunca el zip de la release), comprobar que se instala desde la ficha y cambiar el paso 1 del README ("in review") por el enlace a la ficha. Si la aprobación tarda más de ~2 semanas, lanzar igual con el zip y decirlo en los posts.
 - [ ] **Edge Add-ons enviada** ([edge-addons.md](edge-addons.md)). No bloquea el lanzamiento; al publicarse, añadir su id a `OFFICIAL_EXTENSION_IDS` en la siguiente release del CLI.
 - [x] **Vídeo en `main`.** Ya está: el vídeo largo (`pointcast-demo.mp4`, ~27.5 s) y el GIF de cabecera del README (`pointcast-hero.gif`, 9.6 s, «Not the HTML. The line that makes it.») están en `main`, junto con los GIFs cortos de modo escrito, lote, MCP y captura de errores. Quedan por revisar: que ningún post siga diciendo "18 s" o enlazando a `pointcast-demo.gif` (ya no es el que se usa en el README).
 - [ ] **Segunda prueba del compañero** con 0.5 y `pointcast-django` en su app real: que grabe 3–5 peticiones, aplique con su agente y te diga qué señaló mal. Si sale algo grave, arreglarlo antes; si no, sus palabras (con su permiso) valen más que cualquier número. Nunca nombrar su app en público.
@@ -21,7 +21,7 @@ Para Hugo. Los textos están en esta carpeta; aquí va solo qué hacer, en qué 
 
 1. Verificar la galería de extensiones de Gemini CLI (automática).
 2. Enviar a awesome-mcp-servers (PR con una línea).
-3. MCP Registry: requiere una release del CLI con `mcpName` (0.5.1, placeholder); hacerlo cuando salga esa release, antes o después del lanzamiento, da igual.
+3. MCP Registry: requiere una release del CLI con `mcpName` (0.6.0, placeholder); hacerlo cuando salga esa release, antes o después del lanzamiento, da igual.
 4. Directorio de plugins de Claude: ya enviado; comprobar el estado. Marketplace de la comunidad: ver la nota en listings.md antes de enviar otra vez.
 5. PyPI para `pointcast-django`: publicarlo antes del lanzamiento, así el post de r/django dice `pip install pointcast-django`.
 

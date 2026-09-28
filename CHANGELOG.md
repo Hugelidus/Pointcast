@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.6.0 (unreleased)
+## 0.6.0 (2026-09-28)
+
+Extension, CLI and integrations at 0.6.0. The CLI package now declares `mcpName` (`io.github.Hugelidus/pointcast`) for the MCP Registry.
 
 **`pointcast setup`: one command, whatever your agent and stack** ([D14](docs/decisions.md#d14-one-setup-command))
 - `npx pointcast@latest setup`, run in your project, finds Claude Code, Codex, Gemini CLI and Cursor and adds Pointcast to each one its documented way: the plugin for Claude Code and Codex, the extension for Gemini CLI, the MCP server (pinned to the CLI's exact version) in the project's `.cursor/mcp.json` for Cursor, merged with the servers already there. Agents that already have it are skipped.

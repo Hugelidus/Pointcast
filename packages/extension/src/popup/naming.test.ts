@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 import type { ProcessingInfo } from "../processing/progress";
 import type { RecorderState } from "../recorder-state";
@@ -60,9 +61,13 @@ describe("naming rule B", () => {
 
   it("holds in the popup's HTML: text, and the attributes people read", () => {
     const html = readFileSync(join(popupDir, "index.html"), "utf8");
-    const withoutCode = html.replace(/<!--[\s\S]*?-->/g, "").replace(/<(script|style)[\s\S]*?<\/\1>/g, "");
-    const attributes = [...withoutCode.matchAll(/\b(?:title|alt|aria-label|placeholder)="([^"]*)"/g)].map((m) => m[1]);
-    const text = withoutCode.replace(/<[^>]*>/g, "\n").split("\n");
+    // A real HTML parser, not regexes: comments are not text, and scripts and styles are removed.
+    const { document } = new JSDOM(html).window;
+    for (const node of document.querySelectorAll("script, style")) node.remove();
+    const attributes = [...document.querySelectorAll("[title], [alt], [aria-label], [placeholder]")].flatMap((el) =>
+      ["title", "alt", "aria-label", "placeholder"].flatMap((name) => el.getAttribute(name) ?? []),
+    );
+    const text = (document.body?.textContent ?? "").split("\n");
     expect(lowercaseNames([...attributes, ...text])).toEqual([]);
   });
 

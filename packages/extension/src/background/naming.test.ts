@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -22,14 +23,21 @@ const FOLDERS = ["background", "offscreen", "processing", "transcriber", "entryp
  */
 const ALLOWED = [/[/\\@]pointcast\b/g, /\bpointcast[/\\@-]/g, /["`]pointcast [^"`]*["`]/g, /\[pointcast\]/g];
 
-/** Comments are for developers, and quote the product in many ways. */
+/** Script comments are for developers, and quote the product in many ways. HTML comments are left to the parser (pageText). */
 function withoutComments(code: string): string {
-  return code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "").replace(/<!--[\s\S]*?-->/g, "");
+  return code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+}
+
+/** The visible text of a page, read by a real HTML parser: no comments, scripts or styles. */
+function pageText(html: string): string {
+  const { document } = new JSDOM(html).window;
+  for (const node of document.querySelectorAll("script, style")) node.remove();
+  return document.body?.textContent ?? "";
 }
 
 /** String and template literals of a script; the text of a page. */
 function texts(file: string, code: string): string[] {
-  if (file.endsWith(".html")) return [code.replace(/<[^>]+>/g, " ")];
+  if (file.endsWith(".html")) return [pageText(code)];
   return [...code.matchAll(/"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`/g)].map(([literal]) => literal);
 }
 

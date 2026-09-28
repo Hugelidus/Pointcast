@@ -25,6 +25,7 @@ Where the code is known, an element starts with it: prefer its "used at", "text 
   - used at: `src/lib/Stats.svelte:55` — `<TabItem class="w-full">`
   - defined in: package `flowbite-svelte`
   - text at: `src/routes/utils/dashboard/Dashboard.svelte:79` — `tab2Title: 'Top customers'`
+  - shown by: `src/lib/Stats.svelte:57` — `{tab2Title}`
   - within: `<Stats>` at `src/routes/utils/dashboard/Dashboard.svelte:113` ← `<Dashboard>` at `src/routes/(sidebar)/+page.svelte:14`
   - on screen: button «Top customers» in «Statistics this month · Show information» on `/`
   - find: `#s3` · component `TabItem` (svelte, package `flowbite-svelte`)

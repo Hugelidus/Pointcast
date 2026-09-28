@@ -88,6 +88,14 @@ function scenarios(app: Example): ElementInfo[] {
       path: `${app.rootId} › main › section › table#orders-table › tbody › tr[1] › td[3]`,
       html: "<td>$128.00</td>",
     }),
+    element("OrdersTable", {
+      tag: "td",
+      text: "Marco Peña",
+      hint: "Customer",
+      selector: "#orders-table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)",
+      path: `${app.rootId} › main › section › table#orders-table › tbody › tr[2] › td[2]`,
+      html: "<td>Marco Peña</td>",
+    }),
   ];
 }
 
@@ -108,18 +116,22 @@ describe("examples: the code locations SCENARIOS.md lists", () => {
     [
       "react-dashboard",
       REACT,
-      ["text src/pages/Dashboard.tsx:11", "data src/data/nav.ts:16", "text src/components/OrdersTable.tsx:22", "text src/components/OrdersTable.tsx:9"],
+      ["text src/pages/Dashboard.tsx:11", "data src/data/nav.ts:16", "text src/components/OrdersTable.tsx:22", "text src/components/OrdersTable.tsx:9", "text src/components/OrdersTable.tsx:10"],
+      ["", "src/components/Sidebar.tsx:26", "", "src/components/OrdersTable.tsx:39", "src/components/OrdersTable.tsx:38"],
     ],
     [
       "vue-dashboard",
       VUE,
-      ["text src/pages/Dashboard.vue:12", "data src/data/nav.ts:18", "text src/components/OrdersTable.vue:21", "text src/components/OrdersTable.vue:10"],
+      ["text src/pages/Dashboard.vue:12", "data src/data/nav.ts:18", "text src/components/OrdersTable.vue:21", "text src/components/OrdersTable.vue:10", "text src/components/OrdersTable.vue:11"],
+      ["", "src/components/Sidebar.vue:22", "", "src/components/OrdersTable.vue:36", "src/components/OrdersTable.vue:35"],
     ],
-  ])("%s", async (_, app, expected) => {
+  ])("%s", async (_, app, expected, shownBy) => {
     const result = await resolveWithRepo(sessionOf(scenarios(app)), app.root, { explicit: true });
     expect(result.status).toBe("resolved");
     const locations = result.session.events.map((event) => (event.element.resolved ?? []).map((r) => `${r.kind} ${r.file}:${r.line}`).join(", "));
     expect(locations).toEqual(expected);
+    // D9 note 2026-09-28: the line that renders the value's key, for the values that come from data.
+    expect(result.session.events.map((event) => (event.element.shownBy ? `${event.element.shownBy.file}:${event.element.shownBy.line}` : ""))).toEqual(shownBy);
     const md = renderMarkdown(result.session, { schemaVersion: 1, engine: "test", words: [] });
     expect(md).toContain("  - on screen: span «3» next to «Messages» in «Main» on `/`\n");
     expect(md).toContain("  - on screen: td «$128.00» next to «A-1042» on `/`\n");

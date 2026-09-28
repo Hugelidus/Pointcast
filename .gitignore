@@ -3,6 +3,12 @@ dist/
 coverage/
 *.log
 
+# Python (integrations/django)
+__pycache__/
+*.egg-info/
+/integrations/django/build/
+.venv/
+
 # WXT build output and generated types
 .output/
 .wxt/

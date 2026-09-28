@@ -77,7 +77,9 @@ export function searchHints(element: ElementInfo): string[] {
     // Defense in depth (D8): normalizes to a project-relative path even for a session recorded
     // before capture did it, since component.file is dev-build data the extension only reads.
     const where = component.file ? ` in ${codeSpan(`${projectRelativePath(component.file)}${line}`)}` : "";
-    hints.push(`component ${codeSpan(component.name)} (${escapeMarkdown(component.framework)})${where}`);
+    // pointcast-django's markers name a template, not a component (D9 note 2026-09-28).
+    const kind = component.framework === "django" ? "template" : "component";
+    hints.push(`${kind} ${codeSpan(component.name)} (${escapeMarkdown(component.framework)})${where}`);
   }
   if (element.source) {
     const distance = element.source.distance;

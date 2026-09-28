@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Productos{% endblock %}
+{% block content %}
+<section id="products">
+  <h1>Catálogo de productos</h1>
+  {# Exportar CSV: the button below downloads the table #}
+  <table>
+    <thead><tr><th>SKU</th><th>Nombre</th><th>Estado</th><th></th></tr></thead>
+    <tbody id="rows">
+      {% for product in products %}
+        {% include "pim/partials/row.html" %}
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="hint">{% include "pim/partials/empty_hint.html" %}</p>
+  {% comment "old export" %}
+    <button>Exportar CSV</button>
+  {% endcomment %}
+  <p class="total">Total: {{ products|length }} productos</p>
+  <button type="button" hx-get="/pim/export/">Exportar CSV</button>
+</section>
+{% endblock %}

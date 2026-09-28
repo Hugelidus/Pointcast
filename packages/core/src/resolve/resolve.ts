@@ -50,6 +50,9 @@ export type SourceVia = ResolvedLocation["via"];
  *    silence over a duplicate): definitions are read only where Stage 0 had nothing to go on.
  *    For server templates (isTemplateFile), the definitions are the templates the chain's
  *    templates `{% include %}` by name (templateIncludes).
+ * For a chain of server templates, rule 1 also: searches the innermost template first and the
+ * rest of the chain only when it has no hit; ignores scripts, attribute values and `{% if %}`
+ * operands (onScreenLines); and breaks a tie by the element's tag (byElementTag).
  * Comments are not code: a literal in a comment is not a hit (withoutComments; in templates also
  * `{# #}` and `{% comment %}`, asTemplateCode).
  * Only those files and their direct imports are read: never a search of the whole project.
@@ -93,11 +96,21 @@ async function lookup(
   };
   const code = codeOf(files);
   const item = itemOf(element, text);
+  // Templates (D9 note 2026-09-28): the text is searched where it can be on screen, in the
+  // innermost template first (where the element's markup is written), with the tag filter.
+  const onScreen = new Map([...code].map(([file, lines]) => [file, isTemplateFile(file) ? onScreenLines(files.get(file) ?? []) : lines]));
+  const innermost = codeChain(element)[0];
+  const first = innermost?.template && onScreen.has(innermost.file) ? new Map([[innermost.file, onScreen.get(innermost.file)!]]) : undefined;
 
   for (const phrase of item === undefined ? phrases(text) : []) {
-    const hits = hitsIn(code, literalPattern(phrase));
+    const pattern = literalPattern(phrase);
+    let hits = first === undefined ? [] : hitsIn(first, pattern);
+    if (hits.length === 0) hits = hitsIn(onScreen, pattern);
     if (hits.length === 1) return at("text", hits[0], files);
-    if (hits.length > 1) return [];
+    if (hits.length > 1) {
+      const tagged = byElementTag(hits, onScreen, pattern, element.tag);
+      return tagged === undefined ? [] : at("text", tagged, files);
+    }
   }
 
   if (element.label) {
@@ -366,6 +379,11 @@ function hiddenEnd(start: string): RegExp {
  * (`{% translate "Guardar" %}`) keep their quotes.
  */
 function asTemplateCode(lines: readonly string[]): string[] {
+  return withoutTemplateHidden(lines).map(delimitersAsTags);
+}
+
+/** The lines without what TEMPLATE_HIDDEN_START opens, line for line. */
+function withoutTemplateHidden(lines: readonly string[]): string[] {
   let end: RegExp | undefined;
   return lines.map((line) => {
     let code = "";
@@ -373,17 +391,154 @@ function asTemplateCode(lines: readonly string[]): string[] {
     for (;;) {
       if (end !== undefined) {
         const close = end.exec(rest);
-        if (close === null) return delimitersAsTags(code);
+        if (close === null) return code;
         rest = ` ${rest.slice(close.index + close[0].length)}`;
         end = undefined;
       }
       const start = TEMPLATE_HIDDEN_START.exec(rest);
-      if (start === null) return delimitersAsTags(code + rest);
+      if (start === null) return code + rest;
       code += rest.slice(0, start.index);
       end = hiddenEnd(start[0]);
       rest = rest.slice(start.index + start[0].length);
     }
   });
+}
+
+/**
+ * A template's lines as rule 1 searches them for the element's text (D9 note 2026-09-28, second
+ * part): the code view (codeLines) minus what is never an element's visible text, blanked with
+ * spaces so lines and columns stay: `<script>` and `<style>` contents, quoted attribute values
+ * (`class="{% if a %}active{% endif %}"`, `title="…"`, `data-…`), and the quoted operands of
+ * `{% if %}`/`{% elif %}` (`{% if estado == 'enviada' %}`). `{% trans "Guardar" %}` and
+ * `{% blocktrans %}` keep their text. Labels and hrefs, which live in attributes, are still
+ * searched in the code view (rules 2 and 3).
+ */
+function onScreenLines(lines: readonly string[]): string[] {
+  const source = withoutComments(withoutTemplateHidden(lines)).join("\n");
+  const lower = source.toLowerCase();
+  const out = source.split("");
+  const blank = (from: number, to: number): void => {
+    for (let i = from; i < to; i++) if (out[i] !== "\n") out[i] = " ";
+  };
+  const templateEnd = (at: number): number => {
+    const close = source.indexOf(source[at + 1] === "%" ? "%}" : "}}", at + 2);
+    return close < 0 ? source.length : close + 2;
+  };
+  let inTag = false;
+  let tagName = "";
+  let closing = false;
+  let i = 0;
+  while (i < source.length) {
+    if (source[i] === "{" && (source[i + 1] === "%" || source[i + 1] === "{")) {
+      const end = templateEnd(i);
+      if (/^\{%-?\s*(el)?if\b/.test(source.slice(i, end))) {
+        for (const quoted of source.slice(i, end).matchAll(/(["'])[^"'\n]*\1/g)) blank(i + quoted.index, i + quoted.index + quoted[0].length);
+      }
+      i = end;
+      continue;
+    }
+    const char = source[i];
+    if (!inTag) {
+      const tag = char === "<" ? /^<(\/?)([a-zA-Z][\w-]*)/.exec(source.slice(i, i + 64)) : null;
+      if (tag !== null) {
+        inTag = true;
+        closing = tag[1] === "/";
+        tagName = tag[2].toLowerCase();
+        i += tag[0].length;
+      } else {
+        i++;
+      }
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      let j = i + 1;
+      while (j < source.length && source[j] !== char) j = source[j] === "{" && (source[j + 1] === "%" || source[j + 1] === "{") ? templateEnd(j) : j + 1;
+      if (j - i > MAX_ATTRIBUTE_CHARS) {
+        i++; // An unbalanced quote: not an attribute value to trust; leave the rest as it is.
+        continue;
+      }
+      blank(i + 1, j);
+      i = j + 1;
+      continue;
+    }
+    if (char === ">") {
+      inTag = false;
+      i++;
+      if (!closing && (tagName === "script" || tagName === "style")) {
+        const end = lower.indexOf(`</${tagName}`, i);
+        const stop = end < 0 ? source.length : end;
+        blank(i, stop);
+        i = stop;
+      }
+      continue;
+    }
+    i++;
+  }
+  return out.join("").split("\n").map(delimitersAsTags);
+}
+
+/** A quoted value longer than this is taken for a stray quote, not an attribute value. */
+const MAX_ATTRIBUTE_CHARS = 4000;
+
+/** Tags with no content: skipped when looking for the tag a text is written in. */
+const VOID_TAGS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
+
+/**
+ * The name of the HTML element a literal found at `at` in an on-screen line (onScreenLines) is
+ * written in, when that line shows it: the opening tag right before the literal, past template
+ * tags (`<span>{% if a %}Activo`), void and self-closing tags, and empty elements
+ * (`<a><i class="bi bi-plus"></i> Nuevo`). Undefined otherwise (the tag is on another line, a
+ * closing tag of a non-empty element comes first): then the tag filter does not apply.
+ */
+function enclosingTagName(line: string, at: number): string | undefined {
+  let before = line.slice(0, at);
+  for (;;) {
+    before = before.trimEnd();
+    if (before.endsWith("%>") || before.endsWith("}>")) {
+      const start = before.lastIndexOf(before.endsWith("%>") ? "<%" : "<{");
+      if (start < 0) return undefined;
+      before = before.slice(0, start);
+      continue;
+    }
+    if (!before.endsWith(">")) return undefined;
+    const start = before.lastIndexOf("<");
+    const tag = start < 0 ? null : /^<(\/?)([a-zA-Z][\w-]*)\b[^<>]*?(\/?)>$/.exec(before.slice(start));
+    if (tag === null) return undefined;
+    const name = tag[2].toLowerCase();
+    if (tag[1] === "/") {
+      const rest = before.slice(0, start).trimEnd();
+      const open = rest.lastIndexOf("<");
+      if (open < 0 || !new RegExp(`^<${name}\\b[^<>]*>$`, "i").test(rest.slice(open)) || rest.endsWith("/>")) return undefined;
+      before = rest.slice(0, open);
+      continue;
+    }
+    if (tag[3] === "/" || VOID_TAGS.has(name)) {
+      before = before.slice(0, start);
+      continue;
+    }
+    return name;
+  }
+}
+
+/**
+ * Rule 1's tie-break for templates (tag filter): of several hits of a literal, all in template
+ * files, the only one written in the element's own tag (`<th>Estado</th>` for a th, not the
+ * filter's `<label>Estado</label>`). Only when every hit's tag shows on its line and the literal
+ * is there once; else undefined, and the lookup stays silent as before.
+ */
+function byElementTag(hits: readonly Hit[], text: Sources, pattern: RegExp, tag: string): Hit | undefined {
+  const global = new RegExp(pattern.source, "g");
+  const matching: Hit[] = [];
+  for (const hit of hits) {
+    if (!isTemplateFile(hit.file)) return undefined;
+    const line = text.get(hit.file)?.[hit.line - 1] ?? "";
+    const found = [...line.matchAll(global)];
+    if (found.length !== 1) return undefined;
+    const name = enclosingTagName(line, found[0].index + found[0][1].length);
+    if (name === undefined) return undefined;
+    if (name === tag.toLowerCase()) matching.push(hit);
+  }
+  return matching.length === 1 ? matching[0] : undefined;
 }
 
 function delimitersAsTags(line: string): string {

@@ -48,7 +48,10 @@ export type SourceVia = ResolvedLocation["via"];
  *    is defined, not a chain file: React 19 and Vue frames are where each instance is USED.
  *    Whatever 1-3 find on the chain alone stays exactly as Stage 0 found it (a location, or
  *    silence over a duplicate): definitions are read only where Stage 0 had nothing to go on.
- * Comments are not code: a literal in a comment is not a hit (withoutComments).
+ *    For server templates (isTemplateFile), the definitions are the templates the chain's
+ *    templates `{% include %}` by name (templateIncludes).
+ * Comments are not code: a literal in a comment is not a hit (withoutComments; in templates also
+ * `{# #}` and `{% comment %}`, asTemplateCode).
  * Only those files and their direct imports are read: never a search of the whole project.
  * Each location carries its `snippet` (sourceSnippet), taken from the lines already read, except
  * for a sensitive element: its source line could hold the very text D8 keeps out of a session.
@@ -321,7 +324,70 @@ function splitLines(source: string): string[] {
 
 /** The same files with their comments blanked out (withoutComments): what the lookup searches. */
 function codeOf(files: Sources): Map<string, string[]> {
-  return new Map([...files].map(([file, lines]) => [file, withoutComments(lines)]));
+  return new Map([...files].map(([file, lines]) => [file, codeLines(file, lines)]));
+}
+
+/** A file's lines as the lookup searches them: comments out, and template tags as boundaries. */
+function codeLines(file: string, lines: readonly string[]): string[] {
+  return isTemplateFile(file) ? withoutComments(asTemplateCode(lines)) : withoutComments(lines);
+}
+
+/**
+ * Server-side template files (Django, Jinja; D9 note 2026-09-28): `.html`, `.htm`, `.djhtml`,
+ * `.jinja`, `.jinja2`, `.j2`. The chain names them when pointcast-django's markers are on the
+ * page. Their own comment syntax and tag delimiters are handled only here (asTemplateCode):
+ * `{#` opens a block in Svelte (`{#if}`), so never in `.svelte`, `.vue` or script files.
+ */
+export function isTemplateFile(file: string): boolean {
+  return /\.(html?|djhtml|jinja2?|j2)$/i.test(file);
+}
+
+/**
+ * What a template writes that is never on screen, so never the element pointed at: comments,
+ * `{#` … `#}` (Django: one line; Jinja: any) and `{% comment %}` … `{% endcomment %}` (Django),
+ * and the document title, `<title>` … `</title>` and `{% block title %}` … `{% endblock %}`.
+ * A title block usually repeats the page's heading (`{% block title %}Envios FBA{% endblock %}`
+ * and `<h1>Envios FBA</h1>`): searched, it would make the heading look written twice.
+ */
+const TEMPLATE_HIDDEN_START = /\{#|\{%-?\s*comment\b[^%]*%\}|\{%-?\s*block\s+title\s*-?%\}|<title\b[^>]*>/i;
+
+function hiddenEnd(start: string): RegExp {
+  if (start === "{#") return /#\}/;
+  if (/^<title/i.test(start)) return /<\/title\s*>/i;
+  return /comment/.test(start) ? /\{%-?\s*endcomment\s*-?%\}/ : /\{%-?\s*endblock\b[^%]*%\}/;
+}
+
+/**
+ * A template's lines as code, line for line: what is never on screen blanked out (comments and
+ * the title, TEMPLATE_HIDDEN_START) like withoutComments does for `<!-- -->`, and its tag
+ * delimiters turned into `<` and `>` of the same length (`{{` -> `<{`, `}}` -> `}>`, `{%` -> `<%`,
+ * `%}` -> `%>`). A literal next to a tag is then bounded like one next to an HTML tag: «Activo» in
+ * `{% if a %}Activo{% else %}`, «Pedidos (» in `Pedidos ({{ n }})`. Quoted literals inside tags
+ * (`{% translate "Guardar" %}`) keep their quotes.
+ */
+function asTemplateCode(lines: readonly string[]): string[] {
+  let end: RegExp | undefined;
+  return lines.map((line) => {
+    let code = "";
+    let rest = line;
+    for (;;) {
+      if (end !== undefined) {
+        const close = end.exec(rest);
+        if (close === null) return delimitersAsTags(code);
+        rest = ` ${rest.slice(close.index + close[0].length)}`;
+        end = undefined;
+      }
+      const start = TEMPLATE_HIDDEN_START.exec(rest);
+      if (start === null) return delimitersAsTags(code + rest);
+      code += rest.slice(0, start.index);
+      end = hiddenEnd(start[0]);
+      rest = rest.slice(start.index + start[0].length);
+    }
+  });
+}
+
+function delimitersAsTags(line: string): string {
+  return line.replace(/\{\{|\{%/g, (open) => `<${open[1]}`).replace(/\}\}|%\}/g, (close) => `${close[0]}>`);
 }
 
 /**
@@ -506,7 +572,40 @@ async function withDefinitions(element: ElementInfo, chain: Sources, reader: Sou
     }
     add(definition);
   }
+  for (const candidates of templateIncludes(element, chain)) add(await read(candidates));
   return new Map([...definitions, ...chain]);
+}
+
+/** `{% include "pim/partials/status.html" %}` (Django, Jinja), as codeLines leaves it. */
+const INCLUDE = /[{<]%-?\s*include\s+["']([^"'\s]+)["']/g;
+
+/**
+ * Rule 4 for templates: the files a chain template includes by a literal name, as candidate
+ * paths per include. A name is looked up in the template folders the chain itself shows (its
+ * file minus its name: "templates/" for `templates/pim/list.html` named "pim/list.html"), then in
+ * "templates/" and in the app folder its first segment names ("pim/templates/pim/…", Django's
+ * APP_DIRS). An include rendered by pointcast-django is already a chain frame when it holds the
+ * element; this finds the text of one whose output is not HTML (a label, a status word), which
+ * gets no markers. `{% extends %}` adds nothing: the parent's markers already put it in the chain.
+ */
+function templateIncludes(element: ElementInfo, chain: Sources): string[][] {
+  const frames = codeChain(element).filter((frame) => isTemplateFile(frame.file));
+  const roots = new Set<string>();
+  for (const { component, file } of frames) {
+    if (component !== undefined && file.endsWith(`/${component}`)) roots.add(file.slice(0, -component.length));
+  }
+  roots.add("templates/");
+  const includes: string[][] = [];
+  for (const { file } of frames) {
+    const lines = chain.get(file);
+    if (lines === undefined) continue;
+    for (const [, name] of codeLines(file, lines).join("\n").matchAll(INCLUDE)) {
+      const app = name.includes("/") ? [`${name.split("/")[0]}/templates/${name}`] : [];
+      const paths = [...[...roots].map((root) => `${root}${name}`), ...app];
+      includes.push([...new Set(paths.flatMap((path) => safePath(path) ?? []))]);
+    }
+  }
+  return includes;
 }
 
 /** `import A from "…"`, `import { B, C as D } from "…"`, `import A, { B } from "…"`, `export { … } from "…"`. */

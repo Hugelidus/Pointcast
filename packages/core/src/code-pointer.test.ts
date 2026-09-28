@@ -399,3 +399,34 @@ describe("code-first layout (the requests default)", () => {
     expect(md).not.toContain("used at");
   });
 });
+
+describe("server templates (pointcast-django, D9 note 2026-09-28)", () => {
+  const STATUS = "pim/templates/pim/partials/status.html";
+  const badge: ElementInfo = {
+    tag: "span",
+    text: "Activo",
+    selector: "span.badge",
+    selectorUnique: false,
+    path: "main › table › span",
+    html: '<span class="badge">Activo</span>',
+    component: { framework: "django", name: "pim/partials/status.html", file: STATUS },
+    renderedBy: [
+      { file: STATUS, component: "pim/partials/status.html" },
+      { file: "templates/pim/partials/row.html", component: "pim/partials/row.html" },
+      { file: "templates/pim/list.html", component: "pim/list.html" },
+    ],
+    resolved: [{ kind: "text", file: STATUS, line: 1, via: "repo", snippet: '<span class="badge">{% if product.active %}Activo{% else %}Inactivo{% endif %}</span>' }],
+  };
+
+  it("names templates by their file, not as <components>", () => {
+    expect(codeFirstLines(badge)).toEqual([
+      `template: \`${STATUS}\``,
+      `text at: \`${STATUS}:1\` — \`<span class="badge">{% if product.active %}Activo{% else %}Inactivo{% endif %}</span>\``,
+      "within: template `templates/pim/partials/row.html` ← template `templates/pim/list.html`",
+    ]);
+    expect(codePointerLines(badge)).toEqual([
+      `code: template \`${STATUS}\` ← template \`templates/pim/partials/row.html\` ← template \`templates/pim/list.html\``,
+      `text at: \`${STATUS}:1\``,
+    ]);
+  });
+});

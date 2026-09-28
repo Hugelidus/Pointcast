@@ -51,6 +51,8 @@ export function codePointerLines(element: ElementInfo): string[] {
  * - defined in: that definition's file, marked shared only on that evidence (the literal is
  *   written elsewhere, so the file renders every instance: Stage 0's `nav-group.tsx` error);
  *   for a library component, its package.
+ * - template (instead of used at): for a chain read from pointcast-django's markers, the
+ *   innermost template, where the element's markup is written (D9 note 2026-09-28).
  * - text at / data at: the resolved locations, with their source line.
  * - within: the rest of the chain, outwards, in Stage 0's wording.
  *
@@ -70,8 +72,10 @@ export function codeFirstLines(element: ElementInfo): string[] {
 
   const lines: string[] = [];
   if (used !== undefined) {
-    const what = quote(used.snippet) ?? (used.component === undefined ? undefined : codeSpan(`<${used.component}>`));
-    lines.push(`used at: ${codeSpan(where(used))}${what === undefined ? "" : ` — ${what}`}`);
+    const name = used.component === undefined || used.template ? undefined : codeSpan(`<${used.component}>`);
+    const what = quote(used.snippet) ?? name;
+    // A server template (pointcast-django) is where the element's markup is written, not an instance.
+    lines.push(`${used.template ? "template" : "used at"}: ${codeSpan(where(used))}${what === undefined ? "" : ` — ${what}`}`);
   }
   if (definition !== undefined) {
     lines.push(`defined in: ${codeSpan(definition.file)}${shared ? " (shared — do not change it unless asked)" : ""}`);
@@ -111,8 +115,12 @@ function snippetSpan(snippet: string): string {
   return codeSpan(truncate(oneLine(snippet), MAX_SNIPPET_CHARS));
 }
 
-/** "flowbite-svelte `<TabItem>` at `src/lib/Stats.svelte:55`", "`<p>` in `src/X.vue`". */
+/**
+ * "flowbite-svelte `<TabItem>` at `src/lib/Stats.svelte:55`", "`<p>` in `src/X.vue`", and
+ * "template `templates/pim/list.html`" for a server template (its name is in its path).
+ */
 function frameText(frame: ChainFrame, tag: string, inside: boolean): string {
+  if (frame.template) return `template ${codeSpan(where(frame))}`;
   const name = frame.host ? `<${tag}>` : frame.component === undefined ? undefined : `<${frame.component}>`;
   const what = [
     ...(frame.pkg === undefined ? [] : [escapeMarkdown(frame.pkg)]),

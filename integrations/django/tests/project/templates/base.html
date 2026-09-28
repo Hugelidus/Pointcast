@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}FlipyERP{% endblock %}</title>
+</head>
+<body>
+  <nav>
+    <a href="/pim/">Productos</a>
+    <a href="/ventas/">Ventas</a>
+  </nav>
+  <main id="content">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

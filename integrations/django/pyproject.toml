@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pointcast-django"
+version = "0.1.0"
+description = "Dev-only template markers so pointcast recordings point at the Django template that rendered each element."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = ["Django>=4.2"]
+keywords = ["django", "pointcast", "templates", "htmx", "developer-tools"]
+classifiers = [
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.2",
+    "Programming Language :: Python :: 3",
+    "Environment :: Web Environment",
+]
+
+[project.urls]
+Homepage = "https://github.com/Hugelidus/pointcast/tree/main/integrations/django"
+Issues = "https://github.com/Hugelidus/pointcast/issues"
+
+[tool.setuptools]
+packages = ["pointcast_django"]

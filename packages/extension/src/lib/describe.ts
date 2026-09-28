@@ -1,5 +1,6 @@
 import { isShortValue, projectRelativePath, type ElementInfo, type SourceRef } from "@pointcast/core";
 import { requestFrameworkInfo } from "./component-bridge";
+import { withTemplateChain } from "./server-templates";
 import { composedParent, isShadowRoot } from "./dom";
 import { isGeneratedId } from "./noise";
 import { DEFAULT_DESCRIBE_OPTIONS, type DescribeOptions } from "./options";
@@ -384,7 +385,8 @@ export function describeElement(el: Element, options: Partial<DescribeOptions> =
   });
   const source = findSource(el, settings.sourceAttributes);
   // Names and file positions only (component-bridge.ts), so they are kept for sensitive elements too.
-  const { component, renderedBy } = requestFrameworkInfo(el);
+  // No framework chain: the server templates' markers around it, when the page has them (Django).
+  const { component, renderedBy } = withTemplateChain(requestFrameworkInfo(el), el);
 
   const info: ElementInfo = {
     tag: el.localName,

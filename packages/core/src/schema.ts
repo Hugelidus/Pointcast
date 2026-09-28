@@ -92,6 +92,9 @@ export interface ElementInfo {
    * most 3, read from the framework's dev-mode data. Each frame is where that instance is written
    * (its call site), so the agent lands on the right copy of a shared component. Library and
    * generated frames are never included. Absent without dev metadata and in older sessions.
+   * Server-rendered pages (since 2026-09-28): the templates around the element, read from the
+   * dev-only `<!-- pointcast:begin file="…" name="…" -->` comments pointcast-django writes, each
+   * `{ file, component: <template name> }` without a line; `component.framework` is then "django".
    */
   renderedBy?: CodeFrame[];
   /**

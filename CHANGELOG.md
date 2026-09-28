@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.7.0 (unreleased)
+## 0.7.0 (2026-09-28)
+
+Extension, CLI and integrations at 0.7.0.
+
+**Fixed: words of side-by-side elements no longer run together** (thanks @okdanko0520, #14)
+- Texts of sibling elements laid out apart (flex or grid items, inline-blocks: a nav label and its badge, a date chip's two lines) read with a space between them, "Messages 3" instead of "Messages3". Inline siblings still read as one word ("$45"). Fixes #3.
 
 **Resolver pass 2: fewer wrong lines, more right ones** ([D9 note 2026-09-28](docs/decisions.md#d9-source-mapping))
 - Fixed: on React 19 + Vite, an element written straight in a page that a router renders (`createFileRoute(…)({ component: Dashboard })`) got the router's `<Outlet />` layout as `used at`, a wrong file, and no `text at`. Its code is now the page's own file, and the line is found (`dashboard/index.tsx:81` in shadcn-admin).

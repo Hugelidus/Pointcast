@@ -93,6 +93,7 @@ const languageEl = byId<HTMLSelectElement>("language");
 const keepAudioEl = byId<HTMLInputElement>("keep-audio");
 const notifyEl = byId<HTMLInputElement>("notify");
 const handoffEl = byId<HTMLInputElement>("handoff");
+const captureErrorsEl = byId<HTMLInputElement>("capture-errors");
 const modeEl = byId<HTMLFieldSetElement>("mode");
 const modeInputs = [...modeEl.querySelectorAll<HTMLInputElement>('input[name="mode"]')];
 const pointingEl = byId("pointing");
@@ -525,6 +526,7 @@ function renderSettings(settings: Settings): void {
   keepAudioEl.checked = settings.keepAudio;
   notifyEl.checked = settings.notify;
   handoffEl.checked = settings.handoff;
+  captureErrorsEl.checked = settings.captureErrors;
   inputMode = settings.inputMode;
 }
 
@@ -535,9 +537,10 @@ function saveSettings(): void {
     notify: notifyEl.checked,
     handoff: handoffEl.checked,
     inputMode,
+    captureErrors: captureErrorsEl.checked,
   });
 }
-for (const element of [languageEl, keepAudioEl, notifyEl, handoffEl]) element.addEventListener("change", saveSettings);
+for (const element of [languageEl, keepAudioEl, notifyEl, handoffEl, captureErrorsEl]) element.addEventListener("change", saveSettings);
 for (const input of modeInputs) {
   input.addEventListener("change", () => {
     if (!input.checked) return;

@@ -638,7 +638,7 @@ describe("startRecording", () => {
 
     fake.finishAttaching?.();
     expect(await result).toEqual({ ok: true });
-    expect(state()).toEqual({ status: "recording", t0: T0 });
+    expect(state()).toEqual({ status: "recording", t0: T0, captureErrors: true });
   });
 
   it("records even when some tabs could not be attached", async () => {
@@ -730,7 +730,7 @@ describe("toggleRecording (keyboard shortcut)", () => {
   it("starts when idle and stops while recording, like the popup's button", async () => {
     fake.sendMessage.mockResolvedValue({ ok: true, t0: T0 });
     expect(await commands.toggleRecording()).toEqual({ ok: true });
-    expect(state()).toEqual({ status: "recording", t0: T0 });
+    expect(state()).toEqual({ status: "recording", t0: T0, captureErrors: true });
 
     recorderStops();
     expect(await commands.toggleRecording()).toEqual({ ok: true });
@@ -761,7 +761,7 @@ describe("toggleRecording (keyboard shortcut)", () => {
     await commands.toggleRecording();
     fake.sendMessage.mockResolvedValue({ ok: true, t0: T0 });
     await commands.toggleRecording();
-    expect(state()).toEqual({ status: "recording", t0: T0 });
+    expect(state()).toEqual({ status: "recording", t0: T0, captureErrors: true });
   });
 
   it("changes nothing while starting, stopping or processing", async () => {
@@ -862,7 +862,7 @@ describe("typed mode (D12)", () => {
       type: "recorder-start",
       inputMode: "typed",
     });
-    expect(state()).toEqual({ status: "recording", t0: T0, inputMode: "typed" });
+    expect(state()).toEqual({ status: "recording", t0: T0, inputMode: "typed", captureErrors: true });
   });
 
   it("starts a voice recording, as before, from settings saved without a mode", async () => {
@@ -871,6 +871,13 @@ describe("typed mode (D12)", () => {
     await commands.startRecording();
     const start = fake.sendMessage.mock.calls.map(([m]) => m).find((m) => m.type === "recorder-start");
     expect(start).not.toHaveProperty("inputMode");
+    expect(state()).toEqual({ status: "recording", t0: T0, captureErrors: true });
+  });
+
+  it("keeps debug capture out of the recording when the setting is off (D13)", async () => {
+    fake.local.set("settings", { language: "auto", keepAudio: false, notify: true, captureErrors: false });
+    fake.sendMessage.mockImplementation(async (message) => (message.type === "recorder-start" ? { ok: true, t0: T0 } : undefined));
+    await commands.startRecording();
     expect(state()).toEqual({ status: "recording", t0: T0 });
   });
 

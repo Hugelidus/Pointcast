@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0 (unreleased)
+
+**Debug capture: the errors around what you point at** ([D13](docs/decisions.md#d13-debug-capture))
+- While you record, Pointcast keeps what fails on the page: uncaught errors and unhandled rejections (message, file:line, first stack lines), `console.error` and `console.warn`, and requests that fail or answer 400+ (method, path, status). When you point at something broken, the spec lists the errors from 5 s before to 3 s after, under the element: ``- network: `POST /api/export` → 500 (0.6 s before)``, ``- uncaught: `TypeError: …` at `src/OrdersTable.tsx:31` ``. Nothing is added when nothing failed.
+- Works in voice and typed mode, on local dev hosts and on sites you enabled, and on pages loaded during the recording. The page is only hooked while recording, and its behaviour is unchanged.
+- Privacy: never a request or response body, a header or a query value; sensitive field values are replaced everywhere; on enabled sites personal data is redacted as in the page text. Popup → Settings → *Capture console and network errors* (on by default) turns it off. See [PRIVACY.md](PRIVACY.md).
+- Session format: events and `session.json` gain an optional `errors` list (`schemaVersion` stays 2). `pointcast process`, `get_session` and `get_element` read and render them; older sessions and readers are unaffected.
+- Playground: `dev/playground/errors.html`, a page of broken buttons.
+
 ## 0.4.0 (2026-09-28)
 
 **Typed mode: type instead of talking** ([D12](docs/decisions.md#d12-typed-mode))

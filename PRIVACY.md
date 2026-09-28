@@ -17,6 +17,12 @@ Effective 28 September 2026. It covers the pointcast Chrome extension, the `poin
   - the names and file paths of the components that rendered it, when the page is a development build that exposes them.
 
   Password fields and other sensitive inputs are never captured. On sites that are not local development hosts, text that looks like personal data (email addresses, phone numbers, card and bank account numbers, tokens) is redacted, and secrets in URLs are removed.
+- **What fails on the page while you record** (*Capture console and network errors* in the settings, on by default). Only between Record and Stop, and only on the pages pointcast captures, it keeps, with the time each happened:
+  - uncaught errors and unhandled promise rejections: the message, the file and line where they happened (a path inside your project, never your computer's), and the first three stack lines;
+  - what the page writes with `console.error` and `console.warn`, as one line of at most 300 characters;
+  - requests the page made that failed or were answered with an error status (400 or more): the method, the path, the names of its query parameters and the status.
+
+  It never keeps a request or response body, a header, a cookie, or the value of a query parameter or of a URL fragment. Wherever the value of a password or other sensitive field on the page appears in a message, it is replaced by `[redacted]`. On sites that are not local development hosts, personal data in these messages and paths is redacted as it is in the page text. The errors from a few seconds around each element you point at are written next to it in the spec; the recording's last 50 are kept in its `session.json`. Turn the setting off and pages are not watched at all. Outside a recording nothing is watched either way.
 - **Your app's source code (development builds only).** When you press Stop, the extension may read the source files of the components you pointed at from the page's own development server (the same origin as the page) to find the exact lines. They are read into memory only. The spec keeps file paths, line numbers and the one source line of each location it found.
 - **The result.** The spec is copied to your clipboard, and the recording is saved as files on your computer: by Chrome's downloads in `Downloads/pointcast/<recording>/`, or, when a pointcast MCP server runs on your computer, by that server in its sessions folder (request 3 below). Nothing is uploaded.
 - **Settings and state** are kept in the browser's extension storage on your device.

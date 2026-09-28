@@ -65,6 +65,8 @@ export class Recorder {
         return Promise.resolve({ ok: this.#active?.log.setNote(message.id, message.note) ?? false });
       case "capture-discard":
         return Promise.resolve(this.#discard(message.id));
+      case "capture-error":
+        return Promise.resolve({ ok: this.#active?.log.addError(message.draft) ?? false });
       case "recorder-undo":
         return Promise.resolve(this.#undo());
     }
@@ -120,6 +122,7 @@ export class Recorder {
         sessionId,
         t0: active.t0,
         events,
+        ...withErrors(log),
         extensionVersion,
         userAgent: navigator.userAgent,
         audio: { decoded: false, typed: true, durationMs },
@@ -162,6 +165,7 @@ export class Recorder {
       sessionId,
       t0: recording.t0,
       events,
+      ...withErrors(log),
       extensionVersion,
       userAgent: navigator.userAgent,
       audio,
@@ -233,6 +237,12 @@ export class Recorder {
       },
     };
   }
+}
+
+/** The session's page errors (D13), left out when there were none. */
+function withErrors(log: EventLog): Pick<ProcessingJob, "errors"> {
+  const errors = log.errors();
+  return errors ? { errors } : {};
 }
 
 function errorMessage(error: unknown): string {

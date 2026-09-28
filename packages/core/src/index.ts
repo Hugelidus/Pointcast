@@ -4,6 +4,7 @@ export * from "./handoff";
 export { projectRelativePath } from "./paths";
 export { isShortValue } from "./describe";
 export { cleanNote, isTypedSession, TYPED_SESSION_WORDS } from "./notes";
+export { attachErrors, errorsAround, parseCapturedErrorDraft, parseCapturedErrors } from "./page-errors";
 export {
   DEFAULT_DEICTICS,
   DEICTICS_DE,

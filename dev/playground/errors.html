@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Broken buttons · pointcast playground</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!--
+  Test bench for debug capture (D13): buttons that fail the ways real apps fail.
+    - loading the page asks for api/orders, which this static server does not have (404);
+    - "Export" POSTs to api/export (404 here, 500 in dev/e2e/page-errors.spec.ts) and logs
+      console.error when it fails;
+    - "Archive" throws a TypeError from errors.js;
+    - "Refresh" works.
+  Record, click them, then Alt+click one: the spec lists the errors around that moment.
+-->
+<header class="flex items-center justify-between px-6 py-3 bg-slate-900 text-white">
+  <strong>Acme Admin</strong>
+  <nav aria-label="Main">
+    <a href="index.html">Orders</a>
+    <a href="errors.html" aria-current="page">Broken buttons</a>
+  </nav>
+</header>
+
+<main class="mx-auto max-w-5xl p-6">
+  <section id="broken" aria-labelledby="broken-title">
+    <h1 id="broken-title" class="text-2xl font-bold tracking-tight">Broken buttons</h1>
+    <div class="toolbar flex gap-2">
+      <button type="button" id="broken-export" class="primary">Export</button>
+      <button type="button" id="broken-archive">Archive</button>
+      <button type="button" id="working-refresh">Refresh</button>
+    </div>
+    <p id="orders-status">Loading orders…</p>
+  </section>
+</main>
+
+<div id="toast" role="status"></div>
+<script src="errors.js"></script>
+</body>
+</html>

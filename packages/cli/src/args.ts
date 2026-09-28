@@ -29,7 +29,13 @@ export type CliCommand =
       /** --repo: project folder to resolve code pointers in (default: the current directory). */
       repo?: string;
     } & EngineChoice)
-  | { command: "mcp"; dir?: string; repo?: string }
+  | {
+      command: "mcp";
+      dir?: string;
+      repo?: string;
+      /** --no-handoff: do not receive recordings from the extension (handoff/config.ts). */
+      noHandoff?: true;
+    }
   | {
       command: "issue";
       target?: string;
@@ -62,6 +68,7 @@ export function parseCommandLine(argv: readonly string[], env: Record<string, st
         force: { type: "boolean", default: false },
         stdout: { type: "boolean", default: false },
         "no-copy": { type: "boolean", default: false },
+        "no-handoff": { type: "boolean", default: false },
         format: { type: "string" },
         layout: { type: "string" },
         repo: { type: "string" },
@@ -137,6 +144,7 @@ export function parseCommandLine(argv: readonly string[], env: Record<string, st
         command,
         ...(values.dir !== undefined ? { dir: values.dir } : {}),
         ...(values.repo !== undefined ? { repo: values.repo } : {}),
+        ...(values["no-handoff"] ? { noHandoff: true } : {}),
       };
     case "issue":
       if (values.repo === undefined) throw new CliError('issue needs --repo owner/name (the GitHub repository to file it in).');
@@ -173,7 +181,9 @@ export const USAGE = [
   "                                         Default session-dir: the latest session in",
   "                                         --dir / POINTCAST_DIR / <Downloads>/pointcast.",
   "  mcp                                    Run a stdio MCP server exposing sessions read-only",
-  "                                         (list_sessions, get_session, get_element).",
+  "                                         (list_sessions, get_session, get_element). While it",
+  "                                         runs, it also receives the extension's recordings on",
+  "                                         127.0.0.1, so they skip Chrome's downloads.",
   "  issue [session-dir] --repo owner/name  File the spec as a GitHub issue, with code locations",
   "                                         resolved in that repo and linked to its source.",
   "",
@@ -188,6 +198,8 @@ export const USAGE = [
   "  --no-copy                process: do not copy the Markdown to the clipboard",
   "                           (copying is skipped automatically with --stdout, or when no",
   "                           clipboard tool is found)",
+  "  --no-handoff             mcp: do not receive recordings from the extension",
+  "                           (also POINTCAST_HANDOFF=off)",
   "  --format <classic|requests>  process/issue: Markdown style passed to the renderer (default: requests)",
   "  --layout <code-first|dom-first>  process: where an element's code is known, lead with it",
   "                           (code-first, default) or with the on-screen element (dom-first)",
@@ -201,7 +213,8 @@ export const USAGE = [
   "  -h, --help               Show this help",
   "  -v, --version            Show the version",
   "",
-  "Environment: POINTCAST_DIR, POINTCAST_LANGUAGE; for --engine openai: POINTCAST_API_BASE,",
-  "POINTCAST_API_KEY (OPENAI_API_KEY is used only for api.openai.com); for issue: GITHUB_TOKEN",
-  "(else the token of the gh CLI, if logged in).",
+  "Environment: POINTCAST_DIR, POINTCAST_LANGUAGE; for mcp: POINTCAST_HANDOFF,",
+  "POINTCAST_EXTENSION_IDS (more extension ids to accept recordings from, comma-separated); for",
+  "--engine openai: POINTCAST_API_BASE, POINTCAST_API_KEY (OPENAI_API_KEY is used only for",
+  "api.openai.com); for issue: GITHUB_TOKEN (else the token of the gh CLI, if logged in).",
 ].join("\n");

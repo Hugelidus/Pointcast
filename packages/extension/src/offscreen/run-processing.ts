@@ -1,4 +1,5 @@
-import { MODEL_HOST, MODEL_PATH_TEMPLATE } from "../build-env";
+import { browser } from "wxt/browser";
+import { HANDOFF_PORT, MODEL_HOST, MODEL_PATH_TEMPLATE } from "../build-env";
 import { copyFromOffscreenDocument } from "../clipboard";
 import { sendMessage, type ProcessingResult } from "../messages";
 import {
@@ -10,6 +11,7 @@ import {
 import type { EngineConfig } from "../transcriber/protocol";
 import { decodeRecording } from "./audio";
 import { resolveFromDevServer } from "./dev-server";
+import { handOff, publishFiles } from "./handoff";
 import { LiveTranscription } from "./live-transcription";
 import type { MicrophoneRecording } from "./microphone-recording";
 import { throttleProgress } from "../transcriber/throttle";
@@ -17,8 +19,9 @@ import { processSession, type ProcessingJob } from "./session-processor";
 
 /**
  * Processes a stopped recording in this offscreen document and reports to the service worker:
- * progress while it runs, then the files to save. The blob: URLs stay valid until the service
- * worker closes this document, which it does once every download has completed.
+ * progress while it runs, then the files to save, or that a running pointcast MCP server stored
+ * them (D11). The blob: URLs stay valid until the service worker closes this document, which it
+ * does once every download has completed.
  */
 export async function runProcessing(job: ProcessingJob): Promise<void> {
   const report = throttleProgress((progress) => {
@@ -69,10 +72,11 @@ async function processAndPublish(
     // sites the user enabled (the only pages events come from). Extension pages skip CORS there.
     resolveCode: (session) => resolveFromDevServer(session, { fetch: globalThis.fetch.bind(globalThis) }),
   });
-  return {
-    ...processed,
-    files: processed.files.map(({ fileName, blob }) => ({ fileName, url: URL.createObjectURL(blob) })),
-  };
+  return publishFiles(job.sessionId, processed, job.options, {
+    handOff: (sessionId, files) =>
+      handOff(sessionId, files, { fetch: globalThis.fetch.bind(globalThis), port: HANDOFF_PORT, extensionId: browser.runtime.id }),
+    createObjectURL: (blob) => URL.createObjectURL(blob),
+  });
 }
 
 /**

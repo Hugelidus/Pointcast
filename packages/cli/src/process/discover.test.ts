@@ -1,9 +1,9 @@
 import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { resolveSessionDir } from "./discover";
-import { downloadsDir, expandWindowsVariables, parseRegistryValue } from "./downloads-dir";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { listSessionDirs, resolveSessionDir } from "./discover";
+import { downloadsDir, expandWindowsVariables, parseRegistryValue, parseXdgDownloadDir } from "./downloads-dir";
 
 const setTime = (dir: string, iso: string) => utimesSync(dir, new Date(iso), new Date(iso));
 
@@ -101,6 +101,24 @@ describe("resolveSessionDir", () => {
     );
   });
 
+  it("ignores dot folders, such as a recording the MCP server is still receiving", async () => {
+    makeSessionDir(join(base, "2026-01-01_09-00-00"));
+    // Newer by name and empty so far, like a staging folder: it must not be reported as a
+    // skipped session folder with the Ask-where hint.
+    mkdirSync(join(base, ".incoming-2026"));
+    mkdirSync(join(base, ".2026-01-02_09-00-00"));
+
+    const resolved = await resolveSessionDir({ dirFlag: base });
+    expect(resolved.dir).toBe(join(base, "2026-01-01_09-00-00"));
+    expect(resolved.reason).not.toMatch(/Skipped/);
+    expect((await listSessionDirs(base)).skippedNewer).toEqual([]);
+  });
+
+  it("finds no session folders when there are only dot folders", async () => {
+    mkdirSync(join(base, ".incoming-x"));
+    await expect(resolveSessionDir({ dirFlag: base })).rejects.toThrowError(/No session folders/);
+  });
+
   it("falls back through dirFlag, then envDir, then <Downloads>/pointcast", async () => {
     const downloads = join(base, "Downloads");
     const only = join(downloads, "pointcast", "2026-01-01_00-00-00");
@@ -131,9 +149,71 @@ describe("downloadsDir", () => {
     expect(downloadsDir({ platform: "win32", env: {}, homeDir: "/home/me", queryRegistry: () => undefined })).toBe(
       join("/home/me", "Downloads"),
     );
-    expect(downloadsDir({ platform: "linux", env: {}, homeDir: "/home/me", queryRegistry: () => REG_OUTPUT })).toBe(
-      join("/home/me", "Downloads"),
+    expect(
+      downloadsDir({ platform: "linux", env: {}, homeDir: "/home/me", queryRegistry: () => REG_OUTPUT, readTextFile: () => undefined }),
+    ).toBe(join("/home/me", "Downloads"));
+    expect(downloadsDir({ platform: "darwin", env: {}, homeDir: "/Users/me", readTextFile: () => 'XDG_DOWNLOAD_DIR="/x"' })).toBe(
+      join("/Users/me", "Downloads"),
     );
+  });
+
+  describe("on Linux, from xdg-user-dirs", () => {
+    const USER_DIRS = [
+      "# This file is written by xdg-user-dirs-update",
+      "# If you want to change or add directories, just edit the line you're",
+      'XDG_DESKTOP_DIR="$HOME/Escritorio"',
+      'XDG_DOWNLOAD_DIR="$HOME/Descargas"',
+      'XDG_MUSIC_DIR="$HOME/Música"',
+      "",
+    ].join("\n");
+
+    it("reads XDG_DOWNLOAD_DIR from ~/.config/user-dirs.dirs, or from $XDG_CONFIG_HOME", () => {
+      const read = vi.fn((file: string) => (file.endsWith("user-dirs.dirs") ? USER_DIRS : undefined));
+      expect(downloadsDir({ platform: "linux", env: {}, homeDir: "/home/me", readTextFile: read })).toBe("/home/me/Descargas");
+      expect(read).toHaveBeenLastCalledWith("/home/me/.config/user-dirs.dirs");
+      downloadsDir({ platform: "linux", env: { XDG_CONFIG_HOME: "/cfg" }, homeDir: "/home/me", readTextFile: read });
+      expect(read).toHaveBeenLastCalledWith("/cfg/user-dirs.dirs");
+      // A relative XDG_CONFIG_HOME is invalid per the spec: the default applies.
+      downloadsDir({ platform: "linux", env: { XDG_CONFIG_HOME: "cfg" }, homeDir: "/home/me", readTextFile: read });
+      expect(read).toHaveBeenLastCalledWith("/home/me/.config/user-dirs.dirs");
+    });
+
+    it("falls back to ~/Downloads without a usable line", () => {
+      const withContent = (content: string | undefined) =>
+        downloadsDir({ platform: "linux", env: {}, homeDir: "/home/me", readTextFile: () => content });
+      expect(withContent(undefined)).toBe(join("/home/me", "Downloads"));
+      expect(withContent('XDG_DESKTOP_DIR="$HOME/Escritorio"')).toBe(join("/home/me", "Downloads"));
+      expect(withContent('XDG_DOWNLOAD_DIR="Descargas"')).toBe(join("/home/me", "Downloads"));
+    });
+
+    it.each([
+      ['XDG_DOWNLOAD_DIR="$HOME/Descargas"', "/home/me/Descargas"],
+      ['XDG_DOWNLOAD_DIR="${HOME}/Téléchargements/"', "/home/me/Téléchargements"],
+      ["XDG_DOWNLOAD_DIR='/data/downloads'", "/data/downloads"],
+      ["XDG_DOWNLOAD_DIR=/data/downloads", "/data/downloads"],
+      ['  XDG_DOWNLOAD_DIR = "$HOME/Mis descargas"  \r', "/home/me/Mis descargas"],
+      ['XDG_DOWNLOAD_DIR="$HOME/say \\"hi\\""', '/home/me/say "hi"'],
+      ['XDG_DOWNLOAD_DIR="$HOME"', "/home/me"],
+      // The last valid line wins; bad lines are skipped.
+      ['XDG_DOWNLOAD_DIR="$HOME/a"\nXDG_DOWNLOAD_DIR="$HOME/b"', "/home/me/b"],
+      ['XDG_DOWNLOAD_DIR="$HOME/a"\nXDG_DOWNLOAD_DIR="$HOME/b', "/home/me/a"],
+    ])("parses %j", (content, expected) => {
+      expect(parseXdgDownloadDir(content, "/home/me")).toBe(expected);
+    });
+
+    it.each([
+      "",
+      "# XDG_DOWNLOAD_DIR=\"$HOME/x\"",
+      'XDG_DOWNLOAD_DIR="relative/x"',
+      'XDG_DOWNLOAD_DIR="$XDG_DATA_HOME/x"',
+      'XDG_DOWNLOAD_DIR="$HOMEWORK/x"',
+      'XDG_DOWNLOAD_DIR="$HOME/x',
+      "XDG_DOWNLOAD_DIR=$HOME/two words",
+      'XDG_DOWNLOAD_DIR=""',
+      'MY_XDG_DOWNLOAD_DIR="/x"',
+    ])("ignores %j", (content) => {
+      expect(parseXdgDownloadDir(content, "/home/me")).toBeUndefined();
+    });
   });
 
   it("parses reg output and expands %VARIABLES% case-insensitively", () => {

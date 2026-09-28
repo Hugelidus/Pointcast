@@ -1,11 +1,10 @@
 import { browser } from "wxt/browser";
-import { SESSIONS_FOLDER } from "@pointcast/core";
 import type { TranscriptionProgress } from "@pointcast/transcribe";
 import { sendMessage, type CommandResult, type ProcessingOptions, type ProcessingResult, type UndoResult } from "../messages";
 import { processingEstimateMs, transcriptionEstimateMs, type ProcessingInfo } from "../processing/progress";
 import { chosenLanguage } from "../processing/settings";
 import { learnFromRun } from "../processing/stats";
-import { toggleCommand, type LastResult, type RecorderState } from "../recorder-state";
+import { savedLocationText, toggleCommand, type LastResult, type RecorderState } from "../recorder-state";
 import { formatSessionId, nextFreeSessionId } from "../session-id";
 import {
   readSettings,
@@ -52,10 +51,12 @@ export function processingDeadline(stoppedAt: number, audioMs: number): number {
  * The alarm that ends a processing state nobody finishes (the offscreen document crashed or was
  * closed). The offscreen document enforces the deadline itself and saves what it has; the alarm
  * fires a minute later, only if that did not happen. An alarm, not a timer: timers die with
- * the service worker, alarms wake it up (D6).
+ * the service worker, alarms wake it up (D6). The handoff to a pointcast MCP server after the
+ * deadline fits in that minute by construction (offscreen/handoff.ts), so the alarm never closes
+ * the offscreen document during an upload.
  */
 export const PROCESSING_ALARM = "pointcast-processing-timeout";
-const ALARM_GRACE_MS = 60_000;
+export const ALARM_GRACE_MS = 60_000;
 
 async function setState(state: RecorderState): Promise<void> {
   await writeState(state);
@@ -196,6 +197,7 @@ async function processingOptions(deadline: number): Promise<ProcessingOptions> {
     ...(stats.lastLanguage ? { fallbackLanguage: stats.lastLanguage } : {}),
     keepAudio: settings.keepAudio,
     deadline,
+    handoff: settings.handoff,
   };
 }
 
@@ -291,12 +293,17 @@ export async function recordProcessingProgress(sessionId: string, progress: Tran
 /**
  * The offscreen document finished processing (or gave up and saved what it had): start the
  * downloads, remember the Markdown for "Copy again" and what this run says about the device's
- * speed, and finish once the files are saved. Idempotent: the recorder retries the report when
- * it gets no answer, and a report for another session or a finished one changes nothing.
+ * speed, and finish once the files are saved. When a pointcast MCP server already stored the
+ * files, there is nothing to download and the session ends at once. Idempotent: the recorder
+ * retries the report when it gets no answer, and a report for another session or a finished one
+ * changes nothing.
  */
 export async function finishProcessing(sessionId: string, result: ProcessingResult): Promise<{ ok: true }> {
   const state = await readState();
   if (!isProcessing(state, sessionId) || state.pendingDownloads || !state.processing) return { ok: true };
+
+  // Before the no-files check: a handed-off result has no files by design.
+  if (result.handedOff) return finishHandedOff(state, sessionId, result, result.handedOff.dir);
 
   if (result.files.length === 0) {
     await endProcessing();
@@ -318,11 +325,7 @@ export async function finishProcessing(sessionId: string, result: ProcessingResu
     await announce(false, "pointcast: saving failed", message);
     return { ok: true };
   }
-  if (result.markdown !== undefined) await writeLastMarkdown(result.markdown);
-  if (result.timings) {
-    const stats = await readStats();
-    await writeStats(learnFromRun(stats, result.timings, result.language));
-  }
+  await rememberRun(result);
   await setState({
     ...state,
     status: "processing",
@@ -341,6 +344,47 @@ export async function finishProcessing(sessionId: string, result: ProcessingResu
   // Small files may complete before their ids were stored, i.e. before onChanged could
   // recognise them as ours, so check once right away.
   await finishSessionIfSaved();
+  return { ok: true };
+}
+
+/** The Markdown for "Copy again", and what this run says about the device's speed. */
+async function rememberRun(result: ProcessingResult): Promise<void> {
+  if (result.markdown !== undefined) await writeLastMarkdown(result.markdown);
+  if (result.timings) {
+    const stats = await readStats();
+    await writeStats(learnFromRun(stats, result.timings, result.language));
+  }
+}
+
+/**
+ * A pointcast MCP server stored the files (D11): Chrome downloads nothing, so the session is
+ * saved already. `dir` is the folder the server reported, for display.
+ */
+async function finishHandedOff(
+  state: RecorderState,
+  sessionId: string,
+  result: ProcessingResult,
+  dir: string,
+): Promise<{ ok: true }> {
+  const lastResult = endedNow({
+    ...state,
+    pendingResult: {
+      sessionId,
+      copied: result.copied,
+      audioMs: result.audioMs,
+      ...(result.code ? { code: result.code } : {}),
+      handedOffTo: dir,
+    },
+  });
+  // The files are safe on disk already, so nothing may leave the recorder busy with no alarm, which
+  // a restart would then report as a lost recording. The last run ("Copy again", the speed
+  // estimate) is optional: a failure (a full disk) is only logged. It is kept before the idle state,
+  // which the popup reacts to by reading the Markdown for its Copy again button.
+  await rememberRun(result).catch((error: unknown) => console.error("[pointcast] could not keep the last run", error));
+  await setState(idle(state, { lastSessionId: sessionId, lastResult, error: result.error, warning: result.warning }));
+  // No blob URLs to keep alive for downloads: the offscreen document can close now.
+  await endProcessing();
+  await announceSaved(sessionId, lastResult, { error: result.error, warning: result.warning, locationKnown: true });
   return { ok: true };
 }
 
@@ -377,17 +421,30 @@ export async function finishSessionIfSaved(): Promise<void> {
       ...(warning ? { warning } : {}),
     }),
   );
-  const folder = `Downloads/${SESSIONS_FOLDER}/${sessionId}/`;
-  if (state.error) {
-    await announce(false, "pointcast: could not transcribe", `${state.error}`);
-  } else {
-    const done = lastResult.copied ? "Copied — paste it into your agent." : "Saved. Open the pointcast popup to copy it.";
-    const warningNote = warning ? "See the popup for a warning. " : "";
-    // Chrome may have saved these files outside the session folder (check.warning says so): never
-    // announce a location that is not actually where they ended up.
-    const message = check.warning ? `${done} ${warningNote}`.trimEnd() : `${done} ${warningNote}Saved to ${folder}`;
-    await announce(true, "pointcast", message);
+  // Chrome may have saved these files outside the session folder (check.warning says so): never
+  // announce a location that is not actually where they ended up.
+  await announceSaved(sessionId, lastResult, { error: state.error, warning, locationKnown: !check.warning });
+}
+
+/**
+ * A saved session, downloaded or handed off: done (and where, when `locationKnown`), or that
+ * transcription failed although the session and its audio were saved.
+ */
+async function announceSaved(
+  sessionId: string,
+  lastResult: LastResult,
+  outcome: { error?: string; warning?: string; locationKnown: boolean },
+): Promise<void> {
+  if (outcome.error) {
+    await announce(false, "pointcast: could not transcribe", outcome.error);
+    return;
   }
+  const done = lastResult.copied ? "Copied — paste it into your agent." : "Saved. Open the pointcast popup to copy it.";
+  const warningNote = outcome.warning ? "See the popup for a warning. " : "";
+  const message = outcome.locationKnown
+    ? `${done} ${warningNote}${savedLocationText(sessionId, lastResult.handedOffTo)}`
+    : `${done} ${warningNote}`.trimEnd();
+  await announce(true, "pointcast", message);
 }
 
 /** The end of processing, on the toolbar icon and as a notification when the user wants one. */

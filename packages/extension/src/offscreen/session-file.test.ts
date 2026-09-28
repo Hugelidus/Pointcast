@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { SCHEMA_VERSION, type CapturedEvent } from "@pointcast/core";
-import { buildSessionFile } from "./session-file";
+import { HANDOFF_FILE_NAMES, SCHEMA_VERSION, type CapturedEvent } from "@pointcast/core";
+import {
+  AUDIO_FILE,
+  MARKDOWN_FILE_NAME,
+  RAW_AUDIO_FILE_NAME,
+  SESSION_FILE_NAME,
+  WORDS_FILE_NAME,
+  buildSessionFile,
+} from "./session-file";
 
 describe("buildSessionFile", () => {
   const t0 = Date.UTC(2026, 8, 26, 16, 30, 5, 123);
@@ -52,5 +59,12 @@ describe("buildSessionFile", () => {
 
   it("serializes to JSON without losing anything", () => {
     expect(JSON.parse(JSON.stringify(session))).toEqual(session);
+  });
+});
+
+describe("session file names", () => {
+  it("are all names the handoff protocol accepts, so a session can always be handed to a pointcast MCP server", () => {
+    const names = [SESSION_FILE_NAME, WORDS_FILE_NAME, MARKDOWN_FILE_NAME, AUDIO_FILE.file, RAW_AUDIO_FILE_NAME];
+    for (const name of names) expect(HANDOFF_FILE_NAMES).toContain(name);
   });
 });

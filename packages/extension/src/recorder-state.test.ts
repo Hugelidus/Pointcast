@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { IDLE_STATE, isRecording, parseLastEvent, parseState, toggleCommand } from "./recorder-state";
+import { IDLE_STATE, isRecording, parseLastEvent, parseState, savedLocationText, toggleCommand } from "./recorder-state";
 
 describe("parseState", () => {
   it("falls back to idle for missing or malformed values", () => {
@@ -29,5 +29,14 @@ describe("parseLastEvent", () => {
   it("keeps a summary and treats anything else as none", () => {
     expect(parseLastEvent("button «Export» · Alt+click")).toBe("button «Export» · Alt+click");
     for (const value of [undefined, null, "", 3, {}]) expect(parseLastEvent(value)).toBeUndefined();
+  });
+});
+
+describe("savedLocationText", () => {
+  it("names the Downloads folder, or the folder a pointcast MCP server reported", () => {
+    expect(savedLocationText("2026-09-28_10-15-00")).toBe("Saved to Downloads/pointcast/2026-09-28_10-15-00/");
+    expect(savedLocationText("2026-09-28_10-15-00", "~/Downloads/pointcast/2026-09-28_10-15-00")).toBe(
+      "Saved by the pointcast MCP server to ~/Downloads/pointcast/2026-09-28_10-15-00",
+    );
   });
 });

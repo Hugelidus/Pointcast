@@ -1,0 +1,29 @@
+{
+  "name": "pointcast",
+  "version": "0.2.0",
+  "description": "Apply a pointcast recording (what you said while pointing at your web app) as code changes: the pointcast MCP server plus a pointcast skill.",
+  "author": {
+    "name": "Hugelidus",
+    "url": "https://github.com/Hugelidus"
+  },
+  "homepage": "https://github.com/Hugelidus/pointcast",
+  "repository": "https://github.com/Hugelidus/pointcast",
+  "license": "MIT",
+  "keywords": ["pointcast", "ui", "voice", "spec", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "pointcast",
+    "shortDescription": "Apply what you said while pointing at your web app",
+    "longDescription": "Record yourself talking through changes while you point at your web app with the pointcast Chrome extension, then ask Codex to apply the latest recording. The pointcast MCP server finds the recordings the extension saved and resolves each element you pointed at to its line in this project's source, so Codex goes straight to the right code.",
+    "developerName": "Hugelidus",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/Hugelidus/pointcast",
+    "privacyPolicyURL": "https://github.com/Hugelidus/pointcast/blob/main/PRIVACY.md",
+    "defaultPrompt": [
+      "Apply my latest pointcast recording",
+      "List my recent pointcast recordings"
+    ]
+  }
+}

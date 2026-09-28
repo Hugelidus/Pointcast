@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { isSessionId } from "@pointcast/core";
 import { formatSessionId, nextFreeSessionId } from "./session-id";
 
 describe("formatSessionId", () => {
@@ -29,5 +30,14 @@ describe("nextFreeSessionId", () => {
   it("still sorts chronologically as text", () => {
     const ids = ["2026-09-26_18-30-06", "2026-09-26_18-30-05-2", "2026-09-26_18-30-05"];
     expect([...ids].sort()).toEqual(["2026-09-26_18-30-05", "2026-09-26_18-30-05-2", "2026-09-26_18-30-06"]);
+  });
+});
+
+describe("session ids and the handoff", () => {
+  it("are ids a pointcast MCP server accepts as a folder name", () => {
+    const base = formatSessionId(new Date(2026, 8, 28, 10, 15, 0));
+    expect(isSessionId(base)).toBe(true);
+    expect(isSessionId(nextFreeSessionId(base, new Set([base])))).toBe(true);
+    expect(isSessionId(nextFreeSessionId(base, new Set([base, `${base}-2`])))).toBe(true);
   });
 });

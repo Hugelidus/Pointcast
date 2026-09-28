@@ -5,6 +5,7 @@ import {
   lastEventText,
   popupView,
   processingPanel,
+  recordingTimeMs,
   resultView,
   shortcutHint,
   siteView,
@@ -61,6 +62,68 @@ describe("popupView", () => {
       text: "Saved to Downloads/pointcast/x/ Audio kept as audio.webm.",
       isError: true,
     });
+  });
+
+  describe("a session a pointcast MCP server stored (D11)", () => {
+    const dir = "~\\Downloads\\pointcast\\s1";
+    const handedOff = (copied: boolean): RecorderState => ({
+      status: "idle",
+      lastSessionId: "s1",
+      lastResult: { sessionId: "s1", finishedAt: 1, copied, handedOffTo: dir, audioMs: 12_000, processingMs: 5_000 },
+    });
+
+    it("names the folder the server reported instead of Downloads", () => {
+      expect(popupView(handedOff(true)).message).toEqual({
+        text: "Copied — paste it into your agent. Saved by the pointcast MCP server to ~\\Downloads\\pointcast\\s1",
+        isError: false,
+      });
+      expect(popupView(handedOff(false)).message?.text).toBe("Saved by the pointcast MCP server to ~\\Downloads\\pointcast\\s1");
+    });
+
+    it("shows a warning the same way as for downloads", () => {
+      expect(popupView({ ...handedOff(true), warning: "The microphone stopped by itself." }).message).toEqual({
+        text: "Copied — paste it into your agent. Saved by the pointcast MCP server to ~\\Downloads\\pointcast\\s1 The microphone stopped by itself.",
+        isError: true,
+      });
+    });
+
+    it("has no Show in folder: Chrome downloaded nothing it could reveal", () => {
+      expect(resultView(handedOff(true), true)).toEqual({
+        copyAgain: true,
+        timing: "0:12 of audio processed in 0:05.",
+        code: null,
+      });
+    });
+  });
+});
+
+describe("recordingTimeMs (the popup's Time)", () => {
+  const t0 = 100_000;
+  const processing = { startedAt: t0 + 12_400, audioMs: 12_400, estimatedEnd: t0 + 20_000, deadline: t0 + 900_000, firstRun: false };
+
+  it("counts from t0 while recording", () => {
+    expect(recordingTimeMs({ status: "recording", t0 }, t0 + 5_000)).toBe(5_000);
+  });
+
+  it("shows the recording's length while it is processed: wall-clock at Stop, then the decoded audio", () => {
+    expect(recordingTimeMs({ status: "stopping", t0, processing: { ...processing, stage: "stopping" } }, t0 + 60_000)).toBe(12_400);
+    const decoded = { ...processing, audioMs: 12_000, stage: "transcribing" } as const;
+    expect(recordingTimeMs({ status: "processing", t0, processing: decoded }, t0 + 60_000)).toBe(12_000);
+  });
+
+  it("keeps showing the finished recording's length once processing ended, until the next one starts", () => {
+    // The idle state keeps no t0 and no processing info: only lastResult.
+    const lastResult = { sessionId: "s1", finishedAt: t0 + 20_000, copied: true, audioMs: 12_000, processingMs: 7_600 };
+    const idle: RecorderState = { status: "idle", lastSessionId: "s1", lastResult };
+    expect(formatElapsed(recordingTimeMs(idle, t0 + 3_600_000))).toBe("00:12");
+    // Also when that processing failed. From Record on, it is the new recording's time.
+    expect(recordingTimeMs({ status: "idle", lastResult, error: "Could not transcribe." }, 0)).toBe(12_000);
+    expect(recordingTimeMs({ status: "starting", lastResult }, 0)).toBe(0);
+    expect(recordingTimeMs({ status: "recording", t0: 500_000, lastResult }, 501_000)).toBe(1_000);
+  });
+
+  it("is zero before any recording", () => {
+    expect(recordingTimeMs({ status: "idle" }, 123_456)).toBe(0);
   });
 });
 

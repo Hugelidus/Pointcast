@@ -46,4 +46,26 @@ describe("pointcast mcp server (smoke test)", () => {
     await client.close();
     await server.close();
   });
+
+  it("marks every tool read-only, and answers list_sessions with an object", async () => {
+    const server = createServer({ dirFlag: base, repoRoot: base });
+    const client = await connectClient(server);
+
+    // Gemini CLI's plan mode refuses MCP tools without readOnlyHint.
+    const { tools } = await client.listTools();
+    expect(tools.map((tool) => [tool.name, tool.annotations?.readOnlyHint])).toEqual([
+      ["list_sessions", true],
+      ["get_session", true],
+      ["get_element", true],
+    ]);
+
+    // Gemini CLI copies a tool's JSON text into structuredContent, which MCP requires to be an
+    // object: a bare array made every list_sessions call fail there.
+    const listed = await client.callTool({ name: "list_sessions", arguments: {} });
+    const parsed = JSON.parse((listed.content as Array<{ text: string }>)[0]!.text) as unknown;
+    expect(parsed).toEqual({ sessions: [expect.objectContaining({ id: "2026-09-26_20-29-01" })] });
+
+    await client.close();
+    await server.close();
+  });
 });

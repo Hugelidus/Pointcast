@@ -1,6 +1,6 @@
 {
   "name": "pointcast",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Turn a pointcast recording (your voice + the elements you pointed at) into a Markdown spec for coding agents, or serve it over MCP.",
   "license": "MIT",
   "author": "Hugelidus (https://github.com/Hugelidus)",

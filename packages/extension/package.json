@@ -1,6 +1,6 @@
 {
   "name": "@pointcast/extension",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": true,
   "description": "pointcast Chrome extension: records voice and pointed DOM elements.",
   "type": "module",
@@ -9,6 +9,7 @@
     "build": "wxt build",
     "build:e2e": "wxt build --mode e2e",
     "zip": "wxt zip",
+    "zip:store": "wxt zip --config wxt.store.config.ts",
     "postinstall": "wxt prepare",
     "typecheck": "wxt prepare && tsc --noEmit"
   },

@@ -12,6 +12,14 @@ import { EXTENSION_DIR } from "./paths";
  */
 export const HOST_RESOLVER_RULES = "MAP myapp.test 127.0.0.1, MAP not-local.example 127.0.0.1";
 
+/**
+ * Edge only (playwright.edge.config.ts). A new Edge profile signs in to the Windows account on its
+ * own ("implicit sign-in"); the test profile must stay signed out. Chromium keeps only the last
+ * --disable-features, so this replaces the list Playwright passes, which serves features the
+ * suite does not use (request interception, UI a headless browser never shows).
+ */
+const EDGE_ARGS = ["--disable-features=msImplicitSignin"];
+
 interface Fixtures {
   /** WAV the fake microphone plays in a loop; defaults to es-short (fake-audio.ts). */
   microphoneFile: string | undefined;
@@ -33,7 +41,8 @@ export const test = base.extend<Fixtures>({
     rmSync(dir, { recursive: true, force: true });
   },
 
-  context: async ({ downloadsDir, microphoneFile }, use) => {
+  // `channel` is Playwright's own option: unset here, "msedge" in playwright.edge.config.ts.
+  context: async ({ downloadsDir, microphoneFile, channel }, use) => {
     const tempDir = mkdtempSync(path.join(os.tmpdir(), "pointcast-e2e-profile-"));
     const userDataDir = path.join(tempDir, "profile");
     // The profile's own download folder is the temporary one (see useProfileDownloadFolder).
@@ -46,7 +55,7 @@ export const test = base.extend<Fixtures>({
     const context = await chromium.launchPersistentContext(userDataDir, {
       // The "chromium" channel runs the full browser in new headless mode, which (unlike the
       // headless shell) supports extensions. Headless: no window opens on the desktop.
-      channel: "chromium",
+      channel: channel ?? "chromium",
       headless: true,
       acceptDownloads: true,
       downloadsPath: downloadsDir,
@@ -59,6 +68,7 @@ export const test = base.extend<Fixtures>({
         "--use-fake-device-for-media-stream",
         `--use-file-for-fake-audio-capture=${microphoneFile ?? fakeMicrophoneFile(tempDir)}`,
         `--host-resolver-rules=${HOST_RESOLVER_RULES}`,
+        ...(channel === "msedge" ? EDGE_ARGS : []),
       ],
     });
     await useProfileDownloadFolder(context, downloadsDir);
@@ -88,7 +98,16 @@ export const test = base.extend<Fixtures>({
 async function useProfileDownloadFolder(context: BrowserContext, downloadsDir: string): Promise<void> {
   const settings = await context.newPage();
   await settings.goto("chrome://settings/downloads");
-  const shown = (await settings.locator("#defaultDownloadPath").innerText()).trim();
+  // The pref the page shows, read through the API the page itself uses: Edge's settings page
+  // (edge://settings) has other markup than Chrome's, but the same API.
+  const shown = await settings.evaluate(async () => {
+    const api = (
+      globalThis as unknown as {
+        chrome: { settingsPrivate: { getPref(name: string): Promise<{ value: unknown }> } };
+      }
+    ).chrome.settingsPrivate;
+    return String((await api.getPref("download.default_directory")).value);
+  });
   await settings.close();
   if (path.resolve(shown) !== path.resolve(downloadsDir)) {
     throw new Error(`Refusing to run: the profile would download into "${shown}", not "${downloadsDir}"`);

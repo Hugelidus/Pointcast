@@ -1,6 +1,6 @@
 # Session package format (v2)
 
-A recording produces one folder, `Downloads/pointcast/<session-id>/`:
+A recording produces one folder, `Downloads/pointcast/<session-id>/`, or `<sessions folder>/<session-id>/` when a running pointcast MCP server received it ([below](#handoff-to-a-running-mcp-server)):
 
 | File | Written by | Contents |
 |---|---|---|
@@ -25,6 +25,26 @@ The session id (the folder name) is the local time of `t0`, `YYYY-MM-DD_HH-mm-ss
 If the browser cannot convert the recording, the events are saved anyway. The raw recording is saved as `audio.webm` instead of `audio.wav`; `session.json` still names `audio.wav`, and the CLI prints the command that creates it: `ffmpeg -i audio.webm -ar 16000 -ac 1 audio.wav`.
 
 The TypeScript types in [`packages/core/src/schema.ts`](../packages/core/src/schema.ts) are the source of truth; this page explains them.
+
+## Handoff to a running MCP server
+
+Since extension 0.2.0 and CLI 0.2.0, the folder is written either by Chrome's downloads or by a running `pointcast mcp`, which received the files from the extension ([D11](decisions.md#d11-handoff-to-a-running-mcp-server)). The files are identical either way. The server writes them into a hidden staging folder, `<sessions folder>/.incoming-<random>`, and renames it to `<session-id>` when all are written, so a reader never sees a half-written session, and an existing folder is never overwritten. **Readers ignore folders whose name starts with `.`**: they are deliveries in progress, or left by a crash (the server removes those older than an hour when it starts receiving).
+
+### Protocol v1
+
+For other clients that want to hand a session to a running pointcast MCP server. The constants and parsers are in [`packages/core/src/handoff.ts`](../packages/core/src/handoff.ts).
+
+- **Transport.** HTTP/1.1 on `http://127.0.0.1:20547`. The server binds `127.0.0.1` only. Every request is a `POST` with `X-Pointcast-Handoff: 1`, a `Host` of exactly `127.0.0.1:20547`, and an `Origin` of `chrome-extension://<id>` for an id the server accepts (the official extension's, plus `POINTCAST_EXTENSION_IDS`). Anything else gets 403 with an empty body, except an unaccepted `chrome-extension://` origin, which gets the `unknown-extension` error below. Browsers send `Origin` on an extension's `fetch` POST only with the default referrer policy: `no-referrer` turns it into `null`. Answers never carry `Access-Control-*` headers.
+- **`POST /pointcast/v1/hello`**, empty body → `200 {"app":"pointcast","protocol":1,"version":"<CLI version>"}`. Send it first: a program on the port that is not pointcast never gets the recording, and a server that refuses you or speaks another protocol is found before the upload.
+- **`POST /pointcast/v1/sessions/<session-id>`** uploads one session:
+  - `Content-Type: application/octet-stream` and a `Content-Length` (no chunked encoding);
+  - `X-Pointcast-Files: session.json=18231,words.json=5120,session.md=2310`: the files and their byte sizes, in this order: `session.json` (required), `words.json`, `session.md`, `audio.wav` or `audio.webm` (not both), each at most once;
+  - the body is the files' bytes concatenated in the header's order, so `Content-Length` equals the sum of the sizes;
+  - limits: 32 MiB for each of `session.json`, `words.json` and `session.md`; 256 MiB in total.
+
+  The server checks the headers before reading the body, then validates `session.json` (its `id` must be the URL's session id) and `words.json` as the CLI does, and that `session.md` is UTF-8. The audio is not checked. It answers `201 {"app":"pointcast","id":"<session-id>","dir":"<folder>"}`, where `dir` has the home folder written as `~`.
+- **Errors** are `{"app":"pointcast","error":"<code>","message":"<one line>"}`: `unknown-extension` 403, `bad-request` 400, `length-required` 411, `too-large` 413, `exists` 409 (a folder with that session id is already there), `busy` 503 (one upload at a time), `not-found` 404 (another path, or another protocol version), `write-failed` 500. The server never renames a session: on any error, save it another way.
+- **Versioning.** The major version is in the path. A client checks `protocol === 1` in the hello. A server that does not listen at all (pointcast 0.1, or `--no-handoff`) refuses the connection.
 
 ## Time
 

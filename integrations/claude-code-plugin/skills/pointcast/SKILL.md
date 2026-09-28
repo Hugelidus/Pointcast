@@ -1,4 +1,5 @@
 ---
+name: pointcast
 description: Apply a pointcast recording (what the user said while pointing at elements of their web app) as code changes in this project. Use when the user asks to apply, implement or read a pointcast recording or session.
 argument-hint: "[session-id]"
 allowed-tools: mcp__plugin_pointcast_pointcast__list_sessions mcp__plugin_pointcast_pointcast__get_session mcp__plugin_pointcast_pointcast__get_element
@@ -6,7 +7,7 @@ allowed-tools: mcp__plugin_pointcast_pointcast__list_sessions mcp__plugin_pointc
 
 Apply a pointcast recording to this project.
 
-1. Call the pointcast `get_session` tool with `id` set to `$ARGUMENTS`, or to `"latest"` if that is empty. If you are unsure which recording the user means, call `list_sessions` first and ask.
+1. Call the pointcast `get_session` tool with `id` set to the session id the user gave, or to `"latest"` if they gave none. If you are unsure which recording the user means, call `list_sessions` first and ask.
 2. If the result starts with a **Warning** that the recording seems to be from another project, stop and tell the user. Do not edit anything until they confirm the project, or give you its folder to pass as `repo`.
 3. Follow the spec's own rules, written at its top: they come first. Each request quotes what the user said (speech-to-text, so words may be misheard) and lists the elements they pointed at while saying it.
 4. Find each element through its code pointer before searching:

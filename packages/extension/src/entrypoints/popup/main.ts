@@ -8,6 +8,7 @@ import {
   lastEventText,
   popupView,
   processingPanel,
+  recordingTimeMs,
   resultView,
   shortcutHint,
   siteView,
@@ -61,6 +62,7 @@ const showFolderEl = byId<HTMLButtonElement>("show-folder");
 const languageEl = byId<HTMLSelectElement>("language");
 const keepAudioEl = byId<HTMLInputElement>("keep-audio");
 const notifyEl = byId<HTMLInputElement>("notify");
+const handoffEl = byId<HTMLInputElement>("handoff");
 
 // The popup only mirrors storage; the service worker owns every transition. These copies
 // are fine here: the popup is rebuilt from storage each time it opens.
@@ -91,10 +93,7 @@ function showMessage(text: string | null, isError = false): void {
 /** The parts that follow the clock: the recording time and the processing estimate. */
 function renderClock(): void {
   const now = Date.now();
-  // Elapsed time counts from t0 (recorder start), the same origin as the audio and events.
-  // After Stop it shows the length of the recording until the next one starts.
-  const recordingEnd = state.status === "recording" ? now : state.processing?.startedAt;
-  elapsedEl.textContent = formatElapsed(state.t0 !== undefined && recordingEnd !== undefined ? recordingEnd - state.t0 : 0);
+  elapsedEl.textContent = formatElapsed(recordingTimeMs(state, now));
 
   const panel = processingPanel(state, now);
   progressEl.hidden = panel === null;
@@ -303,12 +302,18 @@ function renderSettings(settings: Settings): void {
   languageEl.value = settings.language;
   keepAudioEl.checked = settings.keepAudio;
   notifyEl.checked = settings.notify;
+  handoffEl.checked = settings.handoff;
 }
 
 function saveSettings(): void {
-  void writeSettings({ language: languageEl.value, keepAudio: keepAudioEl.checked, notify: notifyEl.checked });
+  void writeSettings({
+    language: languageEl.value,
+    keepAudio: keepAudioEl.checked,
+    notify: notifyEl.checked,
+    handoff: handoffEl.checked,
+  });
 }
-for (const element of [languageEl, keepAudioEl, notifyEl]) element.addEventListener("change", saveSettings);
+for (const element of [languageEl, keepAudioEl, notifyEl, handoffEl]) element.addEventListener("change", saveSettings);
 
 watchStore((changes) => {
   if (changes.state) {

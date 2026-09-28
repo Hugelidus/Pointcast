@@ -21,6 +21,7 @@ coverage/
 .claude/
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Playwright e2e output
 test-results/

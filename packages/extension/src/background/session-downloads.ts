@@ -42,13 +42,18 @@ export async function sessionIdsInHistory(base: string): Promise<Set<string>> {
 export type DownloadsOutcome = "in-progress" | "complete" | "failed";
 
 /**
- * "Turn off ... chrome://settings/downloads.", reused by every message that traces back to
- * Chrome's "Ask where to save each file before downloading" setting: it makes
- * `downloads.download({ saveAs: false })` pop a Save dialog for every file anyway, so a file can
- * land wherever the dialog was pointed, or the download can be cancelled outright.
+ * "Turn off ... chrome://settings/downloads, or keep ... MCP server running ...", reused by every
+ * message that traces back to Chrome's "Ask where to save each file before downloading" setting:
+ * it makes `downloads.download({ saveAs: false })` pop a Save dialog for every file anyway, so a
+ * file can land wherever the dialog was pointed, or the download can be cancelled outright. A
+ * running pointcast MCP server avoids Chrome's downloads, and so the dialogs, altogether (D11).
  */
 export function turnOffAskWhereAdvice(): string {
-  return 'Turn off "Ask where to save each file before downloading" in chrome://settings/downloads.';
+  return (
+    'Turn off "Ask where to save each file before downloading" in chrome://settings/downloads, or keep your ' +
+    "coding agent's pointcast MCP server running (with \"Send to a running pointcast MCP server\" on in Settings): " +
+    "recordings then skip Chrome's downloads."
+  );
 }
 
 /** Chrome reported saving `filename` inside its own session folder — either OS separator. */

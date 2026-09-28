@@ -82,8 +82,9 @@ describe("parseCommandLine", () => {
     expect(() => parseCommandLine(["process", "--layout", "sideways"])).toThrow(/Unknown --layout "sideways"/);
   });
 
-  it("parses mcp, with and without --dir", () => {
+  it("parses mcp, with and without --dir and --no-handoff", () => {
     expect(parseCommandLine(["mcp"])).toEqual({ command: "mcp" });
+    expect(parseCommandLine(["mcp", "--no-handoff"])).toEqual({ command: "mcp", noHandoff: true });
     expect(parseCommandLine(["mcp", "--dir", "some/dir"])).toEqual({ command: "mcp", dir: "some/dir" });
   });
 

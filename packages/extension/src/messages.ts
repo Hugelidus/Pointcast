@@ -7,6 +7,7 @@
  *                                               service worker ◀── processing-progress / -done ──── offscreen
  *   content script ─ capture-event (draft) ───────────────────────────────────────────────────────▶ offscreen
  *   service worker ─ ping (one tab) ──────────▶ content script
+ *   offscreen ── POST 127.0.0.1:20547 (hello, session) ──▶ pointcast MCP server (D11)
  *
  * Messages to the service worker and the offscreen document are sent with
  * chrome.runtime.sendMessage (sendMessage), which delivers them to ALL extension pages and the
@@ -63,6 +64,8 @@ export interface ProcessingOptions {
   keepAudio: boolean;
   /** Epoch ms after which transcription is abandoned; the session is then saved with its audio. */
   deadline: number;
+  /** Settings.handoff: try a running pointcast MCP server before chrome.downloads (D11). */
+  handoff: boolean;
 }
 
 /**
@@ -80,8 +83,16 @@ export interface SessionFileUrl {
 }
 
 export interface ProcessingResult {
-  /** In download order; the first one is what "Show in folder" selects. */
+  /**
+   * In download order; the first one is what "Show in folder" selects. Empty when a pointcast MCP
+   * server stored the files (handedOff).
+   */
   files: SessionFileUrl[];
+  /**
+   * A pointcast MCP server stored the files (D11): `files` is then empty and nothing is
+   * downloaded. `dir` is its session folder, for display, with "~" for the home folder.
+   */
+  handedOff?: { dir: string };
   /** The rendered spec, when transcription worked. */
   markdown?: string;
   /** True when the Markdown is on the clipboard. */

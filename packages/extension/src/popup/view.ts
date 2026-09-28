@@ -1,8 +1,7 @@
-import { SESSIONS_FOLDER } from "@pointcast/core";
 import { LOCAL_HOSTS } from "../hosts";
 import type { TabCapture } from "../messages";
 import { formatDuration, processingView, type ProgressView } from "../processing/progress";
-import type { RecorderState } from "../recorder-state";
+import { savedLocationText, type RecorderState } from "../recorder-state";
 
 /** What the popup shows for a given state: pure, so it is unit-tested without a browser. */
 export interface PopupView {
@@ -25,8 +24,8 @@ export function popupView(state: RecorderState): PopupView {
   let message: PopupView["message"] = null;
   if (state.error) message = { text: state.error, isError: true };
   else if (state.status === "idle" && state.lastSessionId) {
-    const copied = state.lastResult?.sessionId === state.lastSessionId && state.lastResult.copied;
-    const saved = `${copied ? "Copied — paste it into your agent. " : ""}Saved to Downloads/${SESSIONS_FOLDER}/${state.lastSessionId}/`;
+    const last = state.lastResult?.sessionId === state.lastSessionId ? state.lastResult : undefined;
+    const saved = `${last?.copied ? "Copied — paste it into your agent. " : ""}${savedLocationText(state.lastSessionId, last?.handedOffTo)}`;
     message = state.warning ? { text: `${saved} ${state.warning}`, isError: true } : { text: saved, isError: false };
   }
   return {
@@ -88,6 +87,27 @@ export function shortcutHint(shortcut: string | undefined): string | null {
   if (shortcut === undefined) return null;
   if (shortcut === "") return "No keyboard shortcut for Record/Stop: set one in chrome://extensions/shortcuts.";
   return `${shortcut} starts or stops recording without opening this popup.`;
+}
+
+/**
+ * The popup's Time: the recording so far, counted from t0 (the recorder start, the same origin as
+ * the audio and the events), then its length until the next recording starts. Once stopped, that
+ * is the audio's length, from the processing info and then from lastResult, because the idle
+ * state keeps no t0: the wall-clock length until the recorder has decoded the audio, then the
+ * decoded length, as in the popup's "of audio" lines.
+ */
+export function recordingTimeMs(state: RecorderState, now: number): number {
+  switch (state.status) {
+    case "recording":
+      return state.t0 !== undefined ? now - state.t0 : 0;
+    case "stopping":
+    case "processing":
+      return state.processing?.audioMs ?? 0;
+    case "idle":
+      return state.lastResult?.audioMs ?? 0;
+    case "starting":
+      return 0;
+  }
 }
 
 /** mm:ss, or h:mm:ss past one hour. Negative input (clock skew) shows as zero. */

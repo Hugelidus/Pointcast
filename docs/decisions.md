@@ -20,12 +20,12 @@ Existing tools either capture DOM elements one at a time without narration (MCP 
 ## Architecture
 
 ```
- ┌──────────────────────────────┐    event    ┌──────────────────────────────┐
- │ content scripts              │ ──────────▶ │ offscreen document           │
- │ click / selection → selector,│             │ MediaRecorder (microphone)   │
+ ┌──────────────────────────────┐    event    ┌──────────────────────────────┐  POST 127.0.0.1:20547 (D11)
+ │ content scripts              │ ──────────▶ │ offscreen document           │ ──────────────────────────▶ running `pointcast mcp`:
+ │ click / selection → selector,│             │ MediaRecorder (microphone)   │   when one answers            <sessions folder>/<session>/
  │ path, sanitize, trim         │             │ t0 + event buffer            │
  └──────────────▲───────────────┘             └──────────────┬───────────────┘
-                │ recording?                                 │ on stop
+                │ recording?                                 │ on stop (otherwise)
  ┌──────────────┴───────────────┐                            ▼
  │ service worker + popup       │ ── owns offscreen ──▶  Downloads/pointcast/<session>/
  │ state in storage.session     │                        audio.wav + session.json
@@ -40,7 +40,7 @@ Existing tools either capture DOM elements one at a time without narration (MCP 
 |---|---|---|
 | `packages/core` | Session schema types, deictic lists, fusion, Markdown rendering. **Pure**: data in, data out, no I/O. | nothing |
 | `packages/extension` | Chrome MV3 extension (WXT). Captures audio and events faithfully; on Stop, transcribes, fuses and renders in the browser (D6 note 2026-09-27), resolving code pointers from the page's Vite dev server (D9 note 2026-09-27, route 3). | core, transcribe |
-| `packages/cli` | Node CLI published as `pointcast`. Transcribes audio, runs core, writes the `.md`. | core |
+| `packages/cli` | Node CLI published as `pointcast`. Transcribes audio, runs core, writes the `.md`. Its MCP server also receives recordings from the extension (D11). | core |
 | `packages/transcribe` | Local Whisper engine (transformers.js), language detection, re-emitted-word cleanup. Runs unchanged in Node and in a browser worker: no `node:` imports, runtime settings come in as options. | core (types) |
 | `playground/` | Static pages imitating real-app patterns; the manual test bench. | nothing |
 
@@ -215,6 +215,8 @@ The agent never runs `querySelector`; it greps the codebase. So each event carri
 - **The user always sees what happens.** The in-page pill goes REC → *Processing… ~0:25* with a bar → *✓ Copied — paste it into your agent* (or the error) for a few seconds; the badge goes REC (red) → … (amber) → ✓ (green); a notification says when it is done or failed (popup setting). The time is an estimate: audio length × the transcription speed measured on this device in earlier runs (`chrome.storage.local`), plus the cached model load; the bar never shows 100 % before the files are saved. The first run shows the model download in MB instead. In the e2e suite (headless Chromium, i9-12900K, 8 threads), the 11.9 s fixture takes 5.0 s from Stop to saved in a fresh profile (model read from a local server into the Cache API), and a 4 s recording 2.9 s with the model cached.
 - **The e2e build** (`wxt build --mode e2e`, `.output/chrome-mv3-e2e`) records clipboard writes, notifications and "Show in folder" in `storage.session` instead of performing them, and loads the model from a local server that serves transformers.js' `node_modules` cache: the suite never touches the developer's clipboard or screen and never downloads 291 MB.
 
+*Note 2026-09-28 (the output can skip the downloads folder).* "Extensions can only write inside the downloads folder" still holds, but the extension no longer has to write at all: while a pointcast MCP server runs, the offscreen document hands it the recording over loopback, and the server writes the folder ([D11](#d11-handoff-to-a-running-mcp-server)). Chrome's downloads remain the fallback, and the one path when no server answers. The upload's timeouts (1.5 s hello + 30 s upload) fit inside the processing alarm's 60 s grace (`ALARM_GRACE_MS`), so the alarm never closes the offscreen document during an upload.
+
 ## D7. Pointing gesture
 
 - **Alt+click points without executing**: the click is cancelled in the capture phase (`preventDefault` + `stopPropagation`), so pointing at "Delete" does not delete. Same convention as MCP Pointer. Must be verified to also cancel Chrome's Alt+click-to-download on links.
@@ -267,6 +269,10 @@ The agent never runs `querySelector`; it greps the codebase. So each event carri
   - **At capture:** `framework-main.ts` (Vue/Svelte/React readers) and the extension's `parseSource` (`lib/describe.ts`) normalize the file before it ever reaches `ElementInfo`. `component-bridge.ts`'s `parseComponentInfo` normalizes again, since the attribute it reads is untrusted page input and a page could write it directly, bypassing the MAIN-world script.
   - **At render (defense in depth):** `fullSource` and the `component` search hint (`packages/core/src/describe.ts`, `element-hints.ts`) normalize again, so a session recorded before this fix (or edited by hand) still renders without leaking the path.
 - A plain rooted path with no home prefix (e.g. `/app/src/Toolbar.vue`, how some dev servers report a container-internal path) carries no user identity and is left as-is.
+
+*Note 2026-09-28 (handoff to a running MCP server, [D11](#d11-handoff-to-a-running-mcp-server)).*
+- **Loopback only.** The extension's one new request goes to `http://127.0.0.1:20547`, the user's own computer, and the receiver binds `127.0.0.1` only, never the network. Nothing leaves the machine, except through a port forward the user set up: a TCP forward of local 20547 to a host's 20547 (`ssh -L 20547:127.0.0.1:20547`, VS Code Remote-SSH or Codespaces auto-forwarding) rewrites neither `Host` nor `Origin`, so the host's receiver accepts the recording. That is the supported way to use a server on a remote dev machine (cli README); the docs warn that on a shared host the receiver can be another user's, and that a forward opened to the network (`ssh -g`) lets anyone forge both headers.
+- **`~` display paths.** The server answers with the folder it stored the session in, with the home folder written as `~` (`~\Downloads\pointcast\2026-09-28_10-15-00`). The popup keeps that answer in `lastResult`, in `storage.session`, which content scripts on enabled remote sites can read (see the note above on the last Markdown). A folder outside the home folder (a Downloads folder moved to another drive, `--dir`, `POINTCAST_DIR`) is cut to its last two segments, the sessions folder and the session (`…\pointcast\2026-09-28_10-15-00`), because a path like `D:\Users\<name>\Downloads` holds the user name too. So the OS user name never enters `storage.session`, and never crosses the wire, unless the user named the sessions folder itself after it. Error messages from the server leave out absolute paths for the same reason.
 
 ## D9. Source mapping
 
@@ -376,6 +382,63 @@ The agent never runs `querySelector`; it greps the codebase. So each event carri
 - TypeScript everywhere; pnpm workspaces; WXT for the extension (manifest generation, auto-reload, store packaging); Vitest for tests.
 - Internal packages are consumed as TypeScript source (`exports` points to `src/index.ts`): no build step for `core` during development. The CLI is bundled before publishing to npm.
 - Repository language: English. License: MIT.
+
+## D11. Handoff to a running MCP server
+
+*2026-09-28, extension and CLI 0.2.0.*
+
+**Problem.** With Chrome's "Ask where to save each file before downloading" on, every file of every recording opened a Save dialog, and sessions missed `Downloads/pointcast/`, where the MCP server and the CLI look. The popup could only tell users to turn the setting off. An extension cannot write files any other way (D6).
+
+**Choice.** At Stop, once the Markdown is on the clipboard, the offscreen document asks `http://127.0.0.1:20547` whether a pointcast MCP server is there (`POST /pointcast/v1/hello`). If one is, it sends the session's files in one `POST /pointcast/v1/sessions/<id>`, and the server stores them in the sessions folder its own tools read (`--dir` / `POINTCAST_DIR` / `<Downloads>/pointcast`). Chrome downloads nothing, so no dialog can appear. Otherwise Chrome's downloads save the recording exactly as before. The protocol is in [session-format.md](session-format.md#protocol-v1); its constants and parsers in `packages/core/src/handoff.ts`.
+
+**Why.**
+- It fixes the Ask-where problem for the users who have an agent open, with nothing to configure: the setting is on by default and only acts when a server answers.
+- The files land where the tools read them, even when Chrome saves downloads elsewhere.
+- The MCP server is already running whenever an agent can use a recording.
+
+**Facts it relies on** (headless Chrome for Testing 153, Node 22 on Windows 11, and the MCP SDK 1.30.1 source):
+
+| Fact | Consequence |
+|---|---|
+| An extension page's `fetch` POST to `http://127.0.0.1:<port>` carries `Origin: chrome-extension://<id>`; a GET carries none. | The server can pin the sender, and every endpoint is POST, the hello included. |
+| No CORS preflight for the extension, even with a custom header, thanks to its host permission on `127.0.0.1`; the answer is readable under COEP `require-corp`, and a Blob body gets a `Content-Length`. | No `OPTIONS` handling and no `Access-Control-*` headers. |
+| With `referrerPolicy: "no-referrer"`, Chrome sends `Origin: null` on that POST (Fetch spec). | The extension keeps the default referrer policy; the e2e test checks the Origin the receiver saw. |
+| A refused connection to `127.0.0.1` costs about 16 ms through `fetch`. | The hello runs after processing, one request after the other, at no noticeable cost. |
+| `StdioServerTransport` never listens for the end of stdin. | A ref'd listener would keep a dead MCP process alive, so the receiver is `unref()`'d and closed when stdin ends. |
+| Content scripts can read `storage.session` (D8 note 2026-09-27). | The folder shown in the popup is a `~` path (D8 note 2026-09-28). |
+
+**Who can send (the gate).** Every request is checked before routing and before any byte of the body is read: method `POST`, `Host` exactly `127.0.0.1:<bound port>`, `Origin` in the allowlist, and `X-Pointcast-Handoff: 1`. A failure answers 403 with an empty body. The upload must also be `application/octet-stream`.
+- *Web pages*, including the user's own dev app and DNS-rebinding pages: a page cannot forge `Origin`, the custom header and content type force a preflight the server refuses, and a rebound page's `Host` is not `127.0.0.1`. The empty 403 tells it nothing.
+- *Other extensions* carry their own id. The allowlist is `OFFICIAL_EXTENSION_IDS` (the Chrome Web Store item's id; the Edge Add-ons id is appended once known) plus `POINTCAST_EXTENSION_IDS` for forks and stores not listed yet. An unlisted `chrome-extension://` origin gets a JSON `unknown-extension` answer, so the popup can name the id to add. Accepting any extension would let every extension with loopback access inject sessions.
+- *A program that is not pointcast* on the port only receives the empty hello, fails the answer check, and the extension falls back silently; `redirect: "error"` stops a bounce elsewhere.
+- *Same-user local processes* can already write the folder: no change.
+- *Other OS users on a shared machine* (accepted): loopback is shared, so they could post a session to the user's server, or hold the port while it is down and receive recordings. Both sides have a switch (the popup's *Send to a running pointcast MCP server*, `pointcast mcp --no-handoff` / `POINTCAST_HANDOFF=off`). A browser cannot authenticate an OS user to a loopback socket without pairing; development machines are single-user; the dev-server reads (D9) already share this exposure. Native messaging or a peer-uid check are the upgrade path ([ideas.md](ideas.md)).
+
+**A fixed extension id.** Pinning the sender needs one id for every build. The Chrome Web Store item (first submitted as 0.1.2 without a manifest `key`) has the id the store assigned. Every other build (the GitHub release zip, `pnpm build`, `pnpm dev`, the e2e build) carries that item's **public** key as the manifest `key` (`EXTENSION_PUBLIC_KEY`), so Chrome derives the same id from it; nothing is signed with it. The store uploads leave the key out (`zip:store`, which builds with wxt.store.config.ts: a production build like the others, only without the key), since the store sets the id itself. Bonus: unzipping a new release into a new folder no longer creates a new id, so the 291 MB model is no longer downloaded again after each update. Cost: unpacked 0.1.x installs must be removed and loaded again once, since their id changes (the model downloads and the microphone is allowed once more).
+
+**Several servers.** One fixed port: the first `pointcast mcp` to bind it receives, the others log once and try again every 3 s. `EADDRINUSE` is the election: all instances read the same folder by default, so any receiver will do. While the user's server holds the port, nobody else can take it; a port range would let a squatter on a lower port win. Up to 3 s after the receiver exits, a Stop falls back to downloads once. With different `--dir`, a recording lands in the receiver's folder, and the popup shows which.
+
+**Storing.** The server buffers the body (at most 256 MiB, 32 MiB per text file, checked from the headers first), validates `session.json` (its id must be the URL's) and `words.json` with the CLI's own validators and `session.md` as UTF-8, and writes a hidden `.incoming-<random>` folder that it renames to `<id>`. It never overwrites (409 when the folder exists) and never renames a session to `-2`: ids collide only within one second, and renaming would mean rewriting `session.json` and re-rendering `session.md`. It commits only if the extension is still connected, so an upload the extension gave up on cannot also be stored. Readers skip dot folders, and the server sweeps stale ones. The audio is not sniffed, and nothing is fsynced, like Chrome's downloads.
+
+**Never lose a recording.** The Blobs stay in the offscreen document until one path has saved them. Any failure (a refusal, 409, 413, 500, a timeout: hello 1.5 s, upload 30 s) falls back to Chrome's downloads. Nothing on the port, or a non-pointcast program, is silent; a pointcast server that refuses, fails, does not accept this build, or speaks another protocol version gets one line in the popup, so a user who does run a server learns why the dialogs came back, and one who never does is not nagged.
+
+**The MCP process now also writes.** The receiver runs inside `pointcast mcp`, but its tools stay read-only (annotated `readOnlyHint`). It logs to stderr only, since stdout is the MCP channel, and does not log refusals, so web pages cannot flood the agent's log. A bug in it is contained: an isolated module, started inside try/catch, `unref`'d, with caps and `--no-handoff`.
+
+**Pinned plugin versions.** `npx` reuses a cached copy for an unversioned `pointcast`, so plugin users would have stayed on 0.1.0, which has no receiver. The Claude Code and Codex plugin and the Gemini CLI extension start `pointcast@0.2` (an x-range without `^` or `>`, which `cmd.exe` would mangle), bumped with each minor release (CONTRIBUTING).
+
+**Tests.** The e2e build hands off to port 5542, never 20547, so the user's real server and real extension never meet the tests. `e2e/handoff.spec.ts` runs the real CLI, and checks that web pages (no-cors, beacon, custom headers) cannot inject a session.
+
+**Rejected.**
+- *Native messaging*: a per-OS host manifest and registry keys the user installs. Heavy for a beta; it is the upgrade path for shared machines.
+- *A pairing code or token*: the extension cannot read a file the CLI writes, and pairing is friction on a single-user machine.
+- *No hello, a direct POST*: the recording would reach any program on the port, and a refused build would be learned only after the upload.
+- *Probing at Stop, in parallel with processing*: saves about 16 ms and threads a promise through processing; the hello after processing also finds a server started meanwhile.
+- *A range of ports with discovery*: complexity, and a squatter on a lower port wins even while the user's server runs.
+- *A multipart body*: a "simple" content type (no preflight), and the concatenated body is as simple and exact.
+- *Streaming to disk*: a state machine, where the buffered body is bounded by the cap.
+- *`mkdir <id>` plus `session.json.part`*: the half-written folder is visible to the tools.
+- *Retries and content-based idempotency*: no retry exists to need them; the still-connected check covers the one duplicate path.
+- *A reveal endpoint for Show in folder*: an HTTP request would start a file manager inside the agent's MCP process ([ideas.md](ideas.md)).
 
 ## Out of scope for Phase 1
 

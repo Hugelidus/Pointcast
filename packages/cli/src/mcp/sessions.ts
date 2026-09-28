@@ -52,7 +52,8 @@ export interface ResolvedSessionDirById {
  * Resolves "latest" the same way `pointcast process` does; an explicit id is joined onto the
  * base. The id comes from a coding agent, which text captured from a web page could steer, so it
  * must be one folder name: "../elsewhere" would read, and let getSession write session.md,
- * outside the sessions folder.
+ * outside the sessions folder. Nor may it start with ".": ".incoming-…" is a recording the MCP
+ * server is still receiving (handoff/store.ts), and "." and ".." are not folder names.
  */
 export async function resolveSessionDirById(
   options: ResolveSessionsBaseOptions,
@@ -63,7 +64,7 @@ export async function resolveSessionDirById(
     const { dirs, skippedNewer } = await listSessionDirs(base);
     return { dir: dirs[0]!, skippedNewer };
   }
-  if (id === "" || id === "." || id === ".." || /[\\/]/.test(id) || id !== path.basename(id)) {
+  if (id === "" || id.startsWith(".") || /[\\/]/.test(id) || id !== path.basename(id)) {
     throw new CliError(`"${id}" is not a session id: pass a folder name from list_sessions, or "latest".`);
   }
   return { dir: path.join(base, id), skippedNewer: [] };

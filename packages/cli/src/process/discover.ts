@@ -1,6 +1,6 @@
 import { readdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { SESSIONS_FOLDER } from "@pointcast/core";
+import { SESSION_ID_PATTERN, SESSIONS_FOLDER } from "@pointcast/core";
 import { CliError } from "../errors";
 import { downloadsDir } from "./downloads-dir";
 
@@ -21,12 +21,6 @@ export interface ResolvedSessionDir {
   reason: string;
 }
 
-/**
- * "YYYY-MM-DD_HH-mm-ss", optionally "-N" when two sessions started in the same second
- * (the extension's session-id.ts). Local time of the recording's start.
- */
-const SESSION_ID = /^(\d{4})-(\d{2})-(\d{2})_(\d{2})-(\d{2})-(\d{2})(?:-(\d+))?$/;
-
 interface Candidate {
   name: string;
   /** Epoch ms used for ordering. */
@@ -39,7 +33,9 @@ interface Candidate {
 }
 
 function fromSessionId(name: string): Omit<Candidate, "name" | "hasSessionFile"> | undefined {
-  const match = SESSION_ID.exec(name);
+  // "YYYY-MM-DD_HH-mm-ss", optionally "-N" when two sessions started in the same second (the
+  // extension's session-id.ts). Local time of the recording's start.
+  const match = SESSION_ID_PATTERN.exec(name);
   if (match === null) return undefined;
   const [, year, month, day, hour, minute, second, sequence] = match.map(Number);
   const time = new Date(year!, month! - 1, day!, hour!, minute!, second!).getTime();
@@ -67,7 +63,8 @@ const NO_SESSIONS_HINT =
  */
 const ASK_WHERE_HINT =
   'if Chrome asked where to save the files, they are wherever you saved them; turn off "Ask where to save ' +
-  'each file before downloading" in chrome://settings/downloads.';
+  'each file before downloading" in chrome://settings/downloads, or keep your agent\'s pointcast MCP server ' +
+  "running (pointcast 0.2+): recordings then go straight to it, with no Save dialogs.";
 
 /**
  * "Skipped 1 newer session folder with no session.json (id): ..." — appended to
@@ -109,7 +106,9 @@ export async function listSessionDirs(base: string): Promise<SessionDirs> {
     throw new CliError(`No session directory given and ${base} does not exist (${error.code}). ${NO_SESSIONS_HINT}`);
   });
 
-  const names = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+  // A dot folder is never a session: ".incoming-…" is a recording the MCP server is still receiving
+  // (handoff/store.ts), which must not be reported as an empty folder with the Ask-where hint.
+  const names = entries.filter((entry) => entry.isDirectory() && !entry.name.startsWith(".")).map((entry) => entry.name);
   if (names.length === 0) throw new CliError(`No session folders found in ${base}. ${NO_SESSIONS_HINT}`);
 
   const candidates: Candidate[] = await Promise.all(

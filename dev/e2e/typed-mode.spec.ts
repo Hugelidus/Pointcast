@@ -178,7 +178,9 @@ test("typed mode: the note box inside dialogs, focus traps and a watching page",
   await app.keyboard.down("Alt");
   await app.mouse.click(inBox.x, inBox.y);
   await app.keyboard.up("Alt");
-  await app.keyboard.press("End");
+  // To the end of the note (the click put the caret inside it). End does that on Windows and Linux
+  // only; macOS moves the caret with ⌘↓, where End merely scrolls.
+  await app.keyboard.press(process.platform === "darwin" ? "Meta+ArrowDown" : "Control+End");
   await app.keyboard.type(" too");
   await expect(box).toHaveCount(1);
   await app.keyboard.press("Enter");

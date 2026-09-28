@@ -1,10 +1,12 @@
 name: CI
 
 # Pull requests, and main after a merge. Branch pushes and tags get no run of their own: their PR has one.
+# workflow_dispatch runs everything, e2e on all three OSes, on any branch (Actions tab or `gh workflow run`).
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 # Cancel a run that a newer push to the same branch/PR has superseded.
 concurrency:
@@ -68,16 +70,21 @@ jobs:
       - name: Test
         run: python -m unittest discover -s integrations/django/tests
 
-  # The whole suite, on pull requests only (main already passed it in its PR), split in three
-  # parallel shards. It catches what local runs on one OS miss (a Linux-only path bug in 0.2.0).
+  # The whole suite, split in three parallel shards per OS. It catches what local runs on one OS
+  # miss (a Linux-only path bug in 0.2.0; macOS moves the caret with Cmd+Down, not End).
+  # - Pull requests: Linux and macOS (most users are on macOS). Measured 2026-09-28: Linux shards
+  #   2-3.5 min, macOS 4-6.5 min, so a PR waits about 6.5 min.
+  # - main after a merge: Windows, whose shards take 6-7.5 min. Pointcast is developed on Windows,
+  #   where the suite runs locally before a PR, so this is the safety net that keeps it CI-tested
+  #   without making every PR wait longer.
+  # - workflow_dispatch: all three.
   e2e:
     name: e2e (${{ matrix.os }}, ${{ matrix.shard }}/3)
-    if: github.event_name == 'pull_request'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ fromJSON(github.event_name == 'pull_request' && '["ubuntu-latest","macos-latest"]' || github.event_name == 'push' && '["windows-latest"]' || '["ubuntu-latest","macos-latest","windows-latest"]') }}
         shard: [1, 2, 3]
     steps:
       - name: Checkout

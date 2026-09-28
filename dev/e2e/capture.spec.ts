@@ -35,7 +35,9 @@ const GROUND_TRUTH = path.join(REPO_ROOT, "dev", "fixtures", "audio", "es-short.
 const FIXTURE_OUT = path.join(REPO_ROOT, "dev", "fixtures", "sessions", "e2e-es");
 
 /** How late a timed gesture may land after its schedule (Playwright → CDP → renderer latency). */
-const MAX_SCHEDULE_OFFSET_MS = 150;
+// It measures the test harness, not Pointcast: GitHub's Windows runners are slower (a drag-select
+// landed 298 ms late there, 2026-09-28), so they get more room; everywhere else it stays tight.
+const MAX_SCHEDULE_OFFSET_MS = process.env["CI"] && process.platform === "win32" ? 400 : 150;
 
 /** Strings the privacy scenario puts in the page that must never reach a session file (D8, plan step 8). */
 const FORBIDDEN = [CANARY, "Jane Doe", "Private note", "Default textarea content"];

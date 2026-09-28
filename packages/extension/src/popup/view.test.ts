@@ -488,6 +488,9 @@ describe("typed mode (D12)", () => {
     expect(modeView({ status: "processing" }, "typed").visible).toBe(false);
     expect(pointingHint("typed")).toBe("Alt+click or select text, then type what should change.");
     expect(pointingHint("voice")).toBe("Alt+click or select text to point.");
+    // Chrome maps Alt to Option on macOS: the popup names the key a Mac keyboard shows.
+    expect(pointingHint("voice", true)).toBe("⌥ Option+click or select text to point.");
+    expect(pointingHint("typed", true)).toBe("⌥ Option+click or select text, then type what should change.");
   });
 
   it("says how long the notes took, not how much audio there is", () => {

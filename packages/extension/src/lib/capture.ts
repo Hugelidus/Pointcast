@@ -96,8 +96,11 @@ function isPointcastUi(el: Element | null): boolean {
  * - Drag or double-click text selection → `select` from press to release.
  * - Plain click → nothing is recorded; the click reaches the app untouched, exactly as if
  *   pointcast were not there (only deliberate gestures are captured, see D7).
- * Listeners sit on window in the capture phase, so they run before any app listener and an
- * app calling stopPropagation cannot hide events from them.
+ * Listeners sit on window in the capture phase, so they run before any app listener on document
+ * or below, and an app calling stopPropagation cannot hide events from them. The one exception:
+ * an app listener on window in the capture phase added before capture started (recording start)
+ * runs first and sees the Alt gesture, though its default action is still cancelled here
+ * (dev/e2e/alt-click-defaults.spec.ts).
  */
 export function startCapture(
   doc: Document,

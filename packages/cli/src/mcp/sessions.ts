@@ -144,28 +144,68 @@ export interface ResolvedSessionDirById {
   /** Newer folders with no session.json that "latest" skipped (skippedNewerSessionsNote); always
    * empty for an explicit id, which is never checked against the folder listing. */
   skippedNewer: string[];
+  /** "latest-here" only: one line on what it passed over, or that it fell back to "latest". */
+  note?: string;
 }
 
+/** Recordings "latest-here" looks through, newest first, before falling back to "latest". */
+export const LATEST_HERE_LOOKBACK = 20;
+
 /**
- * Resolves "latest" the same way `pointcast process` does; an explicit id is joined onto the
- * base. The id comes from a coding agent, which text captured from a web page could steer, so it
- * must be one folder name: "../elsewhere" would read, and let getSession write session.md,
- * outside the sessions folder. Nor may it start with ".": ".incoming-…" is a recording the MCP
- * server is still receiving (handoff/store.ts), and "." and ".." are not folder names.
+ * Resolves "latest" the same way `pointcast process` does, and "latest-here" to the newest of
+ * the LATEST_HERE_LOOKBACK newest recordings not known to be from another project (latestHere).
+ * An explicit id is joined onto the base. The id comes from a coding agent, which text captured
+ * from a web page could steer, so it must be one folder name: "../elsewhere" would read, and let
+ * getSession write session.md, outside the sessions folder. Nor may it start with ".":
+ * ".incoming-…" is a recording the MCP server is still receiving (handoff/store.ts), and "." and
+ * ".." are not folder names.
  */
 export async function resolveSessionDirById(
   options: ResolveSessionsBaseOptions,
   id: string,
+  repo?: { root: string; explicit: boolean },
 ): Promise<ResolvedSessionDirById> {
   const base = resolveSessionsBase(options);
-  if (id === "latest") {
+  if (id === "latest" || id === "latest-here") {
     const { dirs, skippedNewer } = await listSessionDirs(base);
-    return { dir: dirs[0]!, skippedNewer };
+    if (id === "latest" || repo === undefined) return { dir: dirs[0]!, skippedNewer };
+    return { ...(await latestHere(dirs, repo)), skippedNewer };
   }
   if (id === "" || id.startsWith(".") || /[\\/]/.test(id) || id !== path.basename(id)) {
-    throw new CliError(`"${id}" is not a session id: pass a folder name from list_sessions, or "latest".`);
+    throw new CliError(`"${id}" is not a session id: pass a folder name from list_sessions, "latest" or "latest-here".`);
   }
   return { dir: path.join(base, id), skippedNewer: [] };
+}
+
+/**
+ * "latest-here": the newest recording whose source files are in the project, or that names none
+ * (matchesProject "unknown": a production build or a Django page may have no chain, and skipping
+ * those would make "latest-here" skip every recording of such a project). Only recordings that
+ * name files, none of which is in the project, are passed over, and the note says which. When
+ * every one looked at is from elsewhere, it is plain "latest", and get_session's own warning
+ * then says the recording looks like another project's.
+ */
+async function latestHere(dirs: readonly string[], repo: { root: string; explicit: boolean }): Promise<{ dir: string; note?: string }> {
+  const reader = await projectReader(repo);
+  if (reader === undefined) return { dir: dirs[0]! };
+  const passed: string[] = [];
+  for (const dir of dirs.slice(0, LATEST_HERE_LOOKBACK)) {
+    const session = await readSessionFile(dir).catch(() => undefined);
+    // A malformed session.json is left to "latest" and get_session's own error.
+    if (session === undefined) continue;
+    if ((await matchesProject(session, reader)) === false) {
+      passed.push(path.basename(dir));
+      continue;
+    }
+    if (passed.length === 0) return { dir };
+    const which = passed.length === 1 ? "recording" : "recordings";
+    return { dir, note: `Skipped ${passed.length} newer ${which} from another project (${passed.join(", ")}).` };
+  }
+  if (passed.length === 0) return { dir: dirs[0]! };
+  return {
+    dir: dirs[0]!,
+    note: `None of the ${passed.length} newest recordings points at files in \`${repo.root}\`: this is the newest one.`,
+  };
 }
 
 export interface GetSessionResult {

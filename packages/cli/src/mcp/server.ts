@@ -52,6 +52,10 @@ const repoArgument = z
       "Default: the project this server was started for.",
   );
 
+const sessionIdArgument = z
+  .string()
+  .describe('Session id (the folder name), "latest-here" (newest recording made on this project) or "latest" (newest of all).');
+
 /**
  * `pointcast mcp`'s 3 read-only tools, all built on the same session discovery `pointcast
  * process` uses (`--dir` / `POINTCAST_DIR` / `<Downloads>/pointcast`, D2/session-format.md).
@@ -95,18 +99,20 @@ export function createServer(options: ServerOptions): McpServer {
     {
       description:
         "Get a session's Markdown spec (session.md), rendering it from session.json + words.json if it " +
-        'is not on disk yet. Pass "latest" for the most recent session. Code locations are resolved ' +
-        "against the project's source when the recording has them.",
-      inputSchema: { id: z.string().describe('Session id (the folder name), or "latest".'), repo: repoArgument },
+        'is not on disk yet. Pass "latest-here" for the most recent recording made on this project, or "latest" ' +
+        "for the most recent one of any project. Code locations are resolved against the project's source when " +
+        "the recording has them.",
+      inputSchema: { id: sessionIdArgument, repo: repoArgument },
       annotations: { readOnlyHint: true },
     },
     async ({ id, repo }) => {
       try {
-        const { dir, skippedNewer } = await resolveSessionDirById(options, id);
+        const { dir, skippedNewer, note } = await resolveSessionDirById(options, id, repoFor(repo));
         const result = await getSession(dir, { repo: repoFor(repo) });
-        // Both are one-liners above the spec: a folder "latest" had to skip (no session.json,
-        // usually Chrome's save dialog), then the project mismatch getSession itself found.
-        const notes = [skippedNewerSessionsNote(skippedNewer), result.warning].filter((n): n is string => n !== undefined);
+        // One-liners above the spec: a folder "latest" had to skip (no session.json, usually
+        // Chrome's save dialog), what "latest-here" passed over, then the project mismatch
+        // getSession itself found.
+        const notes = [skippedNewerSessionsNote(skippedNewer), note, result.warning].filter((n): n is string => n !== undefined);
         return text(
           (notes.length ? `${notes.join("\n\n")}\n\n` : "") +
             `# ${result.session.id}\n\n${result.summaryLine} · ${result.chars} chars · ~${result.tokens} tokens\n\n---\n\n${result.markdown}`,
@@ -123,7 +129,7 @@ export function createServer(options: ServerOptions): McpServer {
       description:
         "Get the full captured details (ElementInfo) of one event in a session by its event id, with the page errors captured around it (stack frames included) when there were any.",
       inputSchema: {
-        id: z.string().describe('Session id (the folder name), or "latest".'),
+        id: sessionIdArgument,
         eventId: z.string().describe('Event id within the session, e.g. "e3".'),
         repo: repoArgument,
       },
@@ -131,10 +137,10 @@ export function createServer(options: ServerOptions): McpServer {
     },
     async ({ id, eventId, repo }) => {
       try {
-        const { dir, skippedNewer } = await resolveSessionDirById(options, id);
+        const { dir, skippedNewer, note } = await resolveSessionDirById(options, id, repoFor(repo));
         const result = await getElement(dir, eventId, { repo: repoFor(repo) });
         const details = JSON.stringify(result.event, null, 2);
-        const notes = [skippedNewerSessionsNote(skippedNewer), result.warning].filter((n): n is string => n !== undefined);
+        const notes = [skippedNewerSessionsNote(skippedNewer), note, result.warning].filter((n): n is string => n !== undefined);
         return text(notes.length ? `${notes.join("\n\n")}\n\n${details}` : details);
       } catch (error) {
         return toolError(error);

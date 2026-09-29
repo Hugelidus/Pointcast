@@ -35,11 +35,12 @@
   .window .bar .trim { margin-left: auto; color: var(--muted); font-weight: 500; }
 
   .spec {
-    padding: 16px 26px;
+    padding: 14px 26px;
     font-family: "JetBrains Mono", Consolas, monospace;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 13.5px;
+    line-height: 18.5px;
     color: #e9e6ff;
+    font-variant-ligatures: none;
   }
   .spec .line { white-space: pre-wrap; }
   .spec .gap { height: 6px; }
@@ -55,12 +56,15 @@
   .spec .c { color: #ffd6ec; }
   .spec .tick { color: #6f69a8; }
   /* The line to edit: where the element's text or data is written. */
+  /* The preamble's instruction line (the Build what I mean setting). */
+  .spec .pre { color: var(--soft); font-size: 12.5px; line-height: 18px; padding: 6px 12px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); box-shadow: inset 3px 0 0 #a78bfa; }
+  .spec .pre b { color: #fff; font-weight: 600; }
   .spec .hot { background: linear-gradient(90deg, rgba(124, 58, 237, 0.22), rgba(236, 72, 153, 0.12) 70%, transparent); border-radius: 6px; box-shadow: inset 3px 0 0 #ec4899; }
 </style>
 </head>
 <body>
   <div class="header">
-    <span class="step">3 · Paste</span>
+    <span class="step">3 · The spec</span>
     <h1 class="headline">Each element <em>leads with its code</em></h1>
     <p class="subline">One request per sentence you said, with the file and line behind each element you pointed at.</p>
   </div>
@@ -71,26 +75,27 @@
     <div class="bar">
       <div class="dots"><i></i><i></i><i></i></div>
       <span class="file">session.md</span><span>copied to your clipboard · real recording on dev/examples/react-dashboard</span>
-      <span class="trim">find: · in: · styles: lines not shown</span>
+      <span class="trim">3 of 4 preamble lines and within: · on screen: · find: · in: · styles: not shown</span>
     </div>
     <div class="spec" id="spec"></div>
   </div>
 
   <script>
     // spec-example.md is the spec the extension copied (session.md). Shown from "## Request 1" to
-    // the appendix, without the find:/in:/styles: lines; every other line exactly as written.
+    // the appendix, after the preamble's instruction line, without the within:/on screen:/find:/in:/styles: lines; every other line exactly as written.
     const escape = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const codeSpans = (s) =>
       escape(s).replace(/`([^`]*)`/g, '<span class="tick">`</span><span class="c">$1</span><span class="tick">`</span>');
-    const LABEL = /^(  - )(used at:|defined in:|text at:|data at:|within:|on screen:)(.*)$/;
+    const LABEL = /^(  - )(used at:|defined in:|text at:|data at:|shown by:|within:|on screen:)(.*)$/;
 
     function render(md) {
       const all = md.replace(/\r/g, "").split("\n");
       const from = all.findIndex((l) => l.startsWith("## Request 1"));
       const to = all.findIndex((l) => l.startsWith("## Appendix"));
-      const lines = all.slice(from, to).filter((l) => !/^  - (find|in|styles):/.test(l));
+      const pre = all.find((l) => l.startsWith("The elements say WHERE"));
+      const lines = all.slice(from, to).filter((l) => !/^  - (within|on screen|find|in|styles):/.test(l));
       while (lines.at(-1) === "") lines.pop();
-      const html = [];
+      const html = pre ? [`<div class="line pre">${escape(pre).replace("The elements say WHERE.", "<b>The elements say WHERE.</b>")}</div>`, '<div class="gap big"></div>'] : [];
       lines.forEach((line, i) => {
         if (line === "") {
           html.push(`<div class="gap${lines[i + 1]?.startsWith("## ") ? " big" : ""}"></div>`);
@@ -100,7 +105,7 @@
           html.push(`<div class="line q">${escape(line).replace(/\[([a-z])\]/g, '<span class="mark">[$1]</span>')}</div>`);
         } else if (LABEL.test(line)) {
           const [, dash, label, rest] = line.match(LABEL);
-          const key = /^(used at|defined in|text at|data at):$/.test(label);
+          const key = /^(used at|defined in|text at|data at|shown by):$/.test(label);
           const hot = /^(text at|data at):$/.test(label);
           html.push(
             `<div class="line sub${line.length > 130 ? " wraps" : ""}${hot ? " hot" : ""}">${dash}<span class="${key ? "k" : "p"}">${label}</span>${codeSpans(rest)}</div>`,

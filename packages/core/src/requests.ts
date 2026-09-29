@@ -547,8 +547,10 @@ function siblingLines(run: readonly ElementBlock[]): string[] {
     ? ""
     : ` ${run.map((block) => label(block.element)).join(", ")}`;
   const tag = escapeMarkdown(first.element.tag);
+  // Code-first, the texts name the copies; without texts, their tag does ("3 × g"), as label()
+  // does for one element.
   const head = first.codeFirst
-    ? `- [${range}] ${run.length} ×${texts} → code:`
+    ? `- [${range}] ${run.length} ×${texts || ` ${tag}`} → code:`
     : `- [${range}] ${run.length} × ${tag}${texts}${first.rest}`;
   const shared: string[] = [];
   const perElement: string[] = [];

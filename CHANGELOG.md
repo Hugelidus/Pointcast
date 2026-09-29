@@ -21,6 +21,9 @@
 - Fixed: Alt+click on a bar, point or star of a chart or map drawn in inline SVG captured the whole element around the drawing (a 3254×1568 px `div.map-layer` in a real test), so one star could not be pointed at. It now captures the SVG element when it is content (named by `aria-label`, `aria-labelledby` or a `<title>`, or with a role, a test attribute, a stable id, a link, `tabindex` or its own pointer cursor, or a `<text>` label): `rect «Febrero: 90»`, with a path through the drawing (`svg«Mapa» › g«Álgebra» › circle«Límite de una función»`), its component, and the highlight on the shape itself. A nameless shape inside a named group points at the group, and so does one inside an item marked only by an identifier (`<g data-id="limites">`, also `data-key`, `data-node`, `data-node-id`, `data-name`, `data-slug`), even in an `<svg role="application" aria-label>`: `find:` shows ``data-id `limites` `` and the path `g[data-id=limites]`. Three or more such items drawn by one component are one entry, their identifiers listed like links (``data-id [a–c]: `limites`, `derivadas`, …``).
 - Unchanged: icons (`aria-hidden`, inside a button or link, or icon-sized) and nameless drawing still point at the element around them. Path data and other geometry never leave the page; a `<title>` follows the same privacy rules as `aria-label`. Session format: `styles` adds `fill` and `stroke` for SVG elements.
 
+**Spec polish from real sessions** ([D4](docs/decisions.md#d4-fusion--monotonic-alignment-of-events-to-deictic-words), [D5](docs/decisions.md#d5-html--capture-generously-already-sanitized-render-lean) and [D9](docs/decisions.md#d9-source-mapping) notes 2026-09-29)
+- Fixed: a group of copies with no text (three SVG stars) read `- [a–c] 3 × → code:`; it now names their tag, `3 × g → code:`.
+
 ## 0.7.0 (2026-09-28)
 
 Extension, CLI and integrations at 0.7.0.

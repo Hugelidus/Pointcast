@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Claude Code and Codex plugin: the MCP server inside the plugin is now called `recordings`, so tool calls read "plugin pointcast recordings: wait for recording" instead of "pointcast pointcast". After updating the plugin, Claude Code asks once more before the first tool call. To turn it off for a project: `/mcp` → `plugin:pointcast:recordings`.
+- `/pointcast watch` always reports what it changed before listening again.
+- Fixed: a Stop message without a transcription quality (an older service worker next to a newer build) now uses Fast instead of failing the recording (#56).
+
 ## 0.8.0 (2026-09-29)
 
 Extension, CLI and integrations at 0.8.0. The MCP server becomes the main path: `/pointcast watch` applies each recording as soon as you press Stop.

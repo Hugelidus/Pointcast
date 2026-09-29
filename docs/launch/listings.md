@@ -28,7 +28,7 @@ One section per place: its status, the exact text, and the steps. Everything her
 Pointcast turns a recording made with its browser extension (the user's voice plus the web-page elements they Alt+clicked) into a Markdown spec, and resolves each element to its line in the user's repository.
 
 The plugin adds one MCP server and one skill:
-- MCP server: `npx -y pointcast@0.6.0 mcp` (exact version, npm package "pointcast", MIT, source in packages/cli; dependencies locked by npm-shrinkwrap.json). Three read-only tools: list_sessions, get_session, get_element. They read recordings from a local folder (<Downloads>/pointcast by default) and the user's project files; nothing is sent over the network.
+- MCP server: `npx -y pointcast@0.8.0 mcp` (exact version, npm package "pointcast", MIT, source in packages/cli; dependencies locked by npm-shrinkwrap.json). Four read-only tools: list_sessions, get_session, get_element, wait_for_recording. They read recordings from a local folder (<Downloads>/pointcast by default) and the user's project files; nothing is sent over the network.
 - Skill /pointcast: fetches the latest recording through those tools and applies the requested changes in the project.
 
 The server also listens on 127.0.0.1:20547 (never on the network) to receive recordings from the Pointcast extension: it checks Host, the extension's Origin, a custom header and the content type before reading a byte, and only writes new session folders. It can be turned off with --no-handoff or POINTCAST_HANDOFF=off. Design and threat model: docs/decisions.md#d11-handoff-to-a-running-mcp-server.
@@ -115,7 +115,7 @@ The official registry ([modelcontextprotocol/registry](https://github.com/modelc
 
 **Steps:**
 
-1. **CLI with `mcpName`:** done in 0.6.0. Check it arrived: `npm view pointcast@0.6.0 mcpName`.
+1. **CLI with `mcpName`:** done in 0.6.0. Check it arrived: `npm view pointcast@0.8.0 mcpName`.
 2. **Install `mcp-publisher`** (Windows, from the registry's quickstart; it downloads the latest release binary):
 
    ```powershell
@@ -140,16 +140,16 @@ The official registry ([modelcontextprotocol/registry](https://github.com/modelc
 **The line:**
 
 ```markdown
-- [Hugelidus/pointcast](https://github.com/Hugelidus/pointcast) 📇 🏠 🪟 🐧 - Voice and Alt+click recordings of your web app from a browser extension, served to coding agents as a spec that locates each element in your source (React, Vue and Svelte dev builds, Django templates).
+- [Hugelidus/pointcast](https://github.com/Hugelidus/pointcast) 📇 🏠 🍎 🪟 🐧 - Voice and Alt+click recordings of your web app from a browser extension, served to coding agents as a spec that locates each element in your source (React, Vue and Svelte dev builds, Django templates).
 ```
 
-- Legend: 📇 TypeScript, 🏠 local service, 🪟 Windows, 🐧 Linux (CI runs the tests on Windows and Ubuntu). No 🍎: macOS is untested; add it when someone confirms it works.
+- Legend: 📇 TypeScript, 🏠 local service, 🪟 Windows, 🐧 Linux, 🍎 macOS (CI runs the end-to-end tests on all three).
 - **Place:** alphabetical by owner, between the `homespunapps/homespun` and `hungthai1401/bruno-mcp` lines of the Developer Tools section (checked in the README on 2026-09-28; re-check, the list moves daily).
 - Many entries also carry a Glama score badge (`https://glama.ai/mcp/servers/<owner>/<repo>/badges/score.svg`). It isn't required, and it only works once glama.ai has indexed the server (the list says its web directory is synced with the repository); leave it out unless Glama lists Pointcast by then.
 - **PR title:** `Add Hugelidus/pointcast`. **PR body:**
 
   ```
-  Adds Pointcast to Developer Tools: a local MCP server (npm "pointcast", `npx -y pointcast@0.5 mcp`) with 3 read-only tools (list_sessions, get_session, get_element) that serve recordings from the Pointcast browser extension, the user's voice plus the elements they Alt+clicked, and resolve each element to its file and line in the local repository. MIT.
+  Adds Pointcast to Developer Tools: a local MCP server (npm "pointcast", `npx -y pointcast@0.8 mcp`) with 4 read-only tools (list_sessions, get_session, get_element, wait_for_recording) that serve recordings from the Pointcast browser extension, the user's voice plus the elements they Alt+clicked, and resolve each element to its file and line in the local repository. MIT.
   ```
 
 ## awesome-claude-code

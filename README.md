@@ -166,12 +166,12 @@ Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that ver
 **How accurate is the transcription?** ~93 % word accuracy on Spanish test recordings ([D1](docs/decisions.md#d1-transcription--whisper-via-transformersjs-locally)).
 
 **How do I turn it off for a project or a session?** In Claude Code:
-- **For one project:** `/mcp`, select `plugin:pointcast:pointcast`, then *Disable*. Claude Code remembers it for that project, and `/pointcast` stays installed.
+- **For one project:** `/mcp`, select `plugin:pointcast:recordings`, then *Disable*. Claude Code remembers it for that project, and `/pointcast` stays installed.
 - **Everywhere:** `/plugin`, disable *pointcast* on the *Installed* tab (or `claude plugin disable pointcast@pointcast` in your shell); closing the panel runs `/reload-plugins`, which disconnects the server.
 - **For one session without MCP servers:** `claude --strict-mcp-config`.
 - **Stop receiving recordings** but keep the tools: turn off *Send to your agent's Pointcast MCP server* in the popup's Settings. Recordings then go to Chrome's downloads, and the clipboard, as before.
 
-Other agents: disable the `pointcast` server in their MCP settings. Codex: `enabled = false` under `[plugins."pointcast@pointcast".mcp_servers.pointcast]` in `~/.codex/config.toml` (under `[mcp_servers.pointcast]` if you added the server by hand). Gemini CLI: `gemini extensions disable pointcast`.
+Other agents: disable the `pointcast` server in their MCP settings. Codex: `enabled = false` under `[plugins."pointcast@pointcast".mcp_servers.recordings]` in `~/.codex/config.toml` (under `[mcp_servers.pointcast]` if you added the server by hand). Gemini CLI: `gemini extensions disable pointcast`.
 
 **Is this affiliated with Anthropic, OpenAI, Google, Cursor or any agent vendor?** No. Pointcast is an independent, MIT-licensed tool.
 

@@ -66,11 +66,11 @@ The MCP server works in any MCP client. Without the plugin:
 
 - Gemini CLI: the repository is also a Gemini CLI extension, with the MCP server and the same
   skill as `/pointcast`: `gemini extensions install https://github.com/Hugelidus/pointcast`
-- Claude Code: `claude mcp add pointcast -- npx -y pointcast@0.7 mcp`
+- Claude Code: `claude mcp add pointcast -- npx -y pointcast@0.8 mcp`
 - Cursor, `.cursor/mcp.json`:
-  `{ "mcpServers": { "pointcast": { "command": "npx", "args": ["-y", "pointcast@0.7", "mcp", "--repo", "${workspaceFolder}"] } } }`
+  `{ "mcpServers": { "pointcast": { "command": "npx", "args": ["-y", "pointcast@0.8", "mcp", "--repo", "${workspaceFolder}"] } } }`
 - Windsurf, `~/.codeium/windsurf/mcp_config.json`:
-  `{ "mcpServers": { "pointcast": { "command": "npx", "args": ["-y", "pointcast@0.7", "mcp"] } } }`
+  `{ "mcpServers": { "pointcast": { "command": "npx", "args": ["-y", "pointcast@0.8", "mcp"] } } }`
 
 More in the [CLI's README](../../packages/cli/README.md#mcp-server).
 

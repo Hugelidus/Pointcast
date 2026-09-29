@@ -8,6 +8,9 @@
 - Silent when unsure: a missing map, a module edited since the element was rendered, or a map that names another file leaves the file without a line, as before. Files in the chain never change, only lines are added.
 - New e2e test against the real `dev/examples/react-dashboard` dev server (`dev/e2e/vite-react19.spec.ts`).
 
+**One entry for list rows that link to different pages** ([D5 note 2026-09-29](docs/decisions.md#d5-html--capture-generously-already-sanitized-render-lean))
+- Fixed: 3 or more copies of one component that differ only in their link (`<a href="#/asignatura/algebra">`, `…/calculo`, …) were one entry each, because their `find:` lines differed by `href`. They are now one entry like other copies; the links are listed in letter order on their own line (``href [a–e]: `#/asignatura/algebra`, …``), and a label that differs as the texts do (`«Ver Álgebra»`) likewise. Everything else must still be identical, and pairs are never grouped. Specs without such runs are unchanged.
+
 ## 0.7.0 (2026-09-28)
 
 Extension, CLI and integrations at 0.7.0.

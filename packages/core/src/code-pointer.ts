@@ -5,7 +5,7 @@ import type { ElementInfo, ResolvedLocation, ShownByLocation } from "./schema";
 
 /**
  * The code pointer lines of one element, without list markers: the chain Stage 0 tested
- * ("P-chain-repo", docs/eval/stage0-code-pointer-2026-09-27.md) and the resolved locations.
+ * ("P-chain-repo", docs/eval/archive/stage0-code-pointer-2026-09-27.md) and the resolved locations.
  *
  *   code: `<a>` inside `src/lib/More.svelte:18` ← `<More>` at `src/lib/ChartWidget.svelte:27` ← …
  *   text at: `src/lib/ChartWidget.svelte:27`

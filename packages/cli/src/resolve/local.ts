@@ -6,7 +6,7 @@ import { appFolderOf, createRepoReader, normalizeProjectPath } from "./repo-read
 
 /**
  * Route 1: resolve a session's code pointers against a project folder on disk, for
- * `pointcast process` and the MCP tools. Stage 0 (docs/eval/stage0-code-pointer-2026-09-27.md)
+ * `pointcast process` and the MCP tools. Stage 0 (docs/eval/archive/stage0-code-pointer-2026-09-27.md)
  * found the chain alone can send an agent to the shared component; the resolved `text at:` line
  * is what fixed it, and it needs the source, which only exists where the CLI runs.
  */

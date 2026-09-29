@@ -1,6 +1,6 @@
 {
   "appDir": "dev/playground",
-  "note": "The 2026-09-27 pilot (docs/eval/pilot-2026-09-27.md): a real 43 s recording on the playground, so there is no narration or gesture plan here. Its session is not in git (it is the user's own recording): copy session.json + words.json into dev/eval/.runs/sessions/pilot/.",
+  "note": "The 2026-09-27 pilot (docs/eval/archive/pilot-2026-09-27.md): a real 43 s recording on the playground, so there is no narration or gesture plan here. Its session is not in git (it is the user's own recording): copy session.json + words.json into dev/eval/.runs/sessions/pilot/.",
   "language": "es",
   "changes": [
     {

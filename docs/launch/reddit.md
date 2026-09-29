@@ -15,8 +15,8 @@ Links used below:
 
 - Repository: https://github.com/Hugelidus/pointcast
 - Video: https://github.com/Hugelidus/pointcast/blob/main/docs/launch/video/out/pointcast-demo.mp4
-- Eval: https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-27.md
-- Code-pointer eval: https://github.com/Hugelidus/pointcast/blob/main/docs/eval/stage0-code-pointer-2026-09-27.md
+- Eval: https://github.com/Hugelidus/pointcast/blob/main/docs/eval/archive/results-2026-09-27.md
+- Code-pointer eval: https://github.com/Hugelidus/pointcast/blob/main/docs/eval/archive/stage0-code-pointer-2026-09-27.md
 - Django: https://github.com/Hugelidus/pointcast/tree/main/integrations/django
 
 ---
@@ -46,7 +46,7 @@ claude plugin marketplace add Hugelidus/pointcast && claude plugin install point
 
 plus the Chrome/Edge extension (the Chrome Web Store listing is in review; the release zip works meanwhile).
 
-**Does it help, or is it just a nice demo?** I measured it with `claude -p` (Sonnet) on three open-source admin dashboards: with pointing, Claude picked the right element 89% of the time, against 78% with the same words and no pointing. A careful hand-written prompt still beats it on accuracy for a single change (96%): Pointcast is for when you'd rather talk and point than write that prompt. Where it does pay off is a real recording with several changes: read through the MCP server, six changes in one recording got the right code 96% of the time against 85% for the same six changes typed by hand, with 24% fewer tokens and 75% fewer searches. Reports, with their limits: [eval](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-27.md), [code pointer](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/stage0-code-pointer-2026-09-27.md), [batching](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-28-batching.md).
+**Does it help, or is it just a nice demo?** I measured it with `claude -p` (Sonnet) on three open-source admin dashboards: with pointing, Claude picked the right element 89% of the time, against 78% with the same words and no pointing. A careful hand-written prompt still beats it on accuracy for a single change (96%): Pointcast is for when you'd rather talk and point than write that prompt. Where it does pay off is a real recording with several changes: read through the MCP server, six changes in one recording got the right code 96% of the time against 85% for the same six changes typed by hand, with 24% fewer tokens and 75% fewer searches. Reports, with their limits: [eval](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/archive/results-2026-09-27.md), [code pointer](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/archive/stage0-code-pointer-2026-09-27.md), [batching](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/archive/results-2026-09-28-batching.md).
 
 How Claude was involved: I built it with Claude Code, and the evaluation runs Claude as the agent under test.
 
@@ -85,9 +85,9 @@ What I measured (three open-source dashboards, 45 changes, same agent and prompt
 | Pointing + code lines | 98% (44/45) | 40k |
 | Careful hand-written description | 96% | 65k |
 
-The code-lines row is a second run of the same harness on the same apps (pointing without code lines got 43/45 and 94k there), with code chains taken by a probe rather than the shipped extension, so read it as indicative; the reports say what they can and can't show ([eval](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-27.md), [code pointer](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/stage0-code-pointer-2026-09-27.md)). Small samples, one model (Sonnet).
+The code-lines row is a second run of the same harness on the same apps (pointing without code lines got 43/45 and 94k there), with code chains taken by a probe rather than the shipped extension, so read it as indicative; the reports say what they can and can't show ([eval](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/archive/results-2026-09-27.md), [code pointer](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/archive/stage0-code-pointer-2026-09-27.md)). Small samples, one model (Sonnet).
 
-A follow-up ran the whole product end to end (typed notes, the MCP server, four apps including Django) with a recording of six changes at once: reading it through the MCP server got the right code 96% of the time against 85% for the same six changes typed by hand, at 24% fewer input tokens and 75% fewer searches. With one change per request it is still more accurate (96% vs. 84%), but not cheaper — the saving is in batching. In wall-clock terms, my rough estimate (not measured) for six UI changes is ~15 min asking one by one vs. ~5 min with one 2-minute recording; the accuracy and token numbers above are measured. [Full results](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/results-2026-09-28-batching.md).
+A follow-up ran the whole product end to end (typed notes, the MCP server, four apps including Django) with a recording of six changes at once: reading it through the MCP server got the right code 96% of the time against 85% for the same six changes typed by hand, at 24% fewer input tokens and 75% fewer searches. With one change per request it is still more accurate (96% vs. 84%), but not cheaper — the saving is in batching. In wall-clock terms, my rough estimate (not measured) for six UI changes is ~15 min asking one by one vs. ~5 min with one 2-minute recording; the accuracy and token numbers above are measured. [Full results](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/archive/results-2026-09-28-batching.md).
 
 Voice is transcribed locally in the browser (Whisper, with a voice activity detector so silence doesn't turn into invented sentences). Recordings go to a local MCP server, no cloud.
 

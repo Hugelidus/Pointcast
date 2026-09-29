@@ -66,7 +66,7 @@ describe("processSession", () => {
     const result = await processSession(job(), d);
 
     expect(names(result.files)).toEqual(["session.md", "words.json", "session.json"]);
-    // The default spec format is "requests" (docs/eval/results-2026-09-27.md).
+    // The default spec format is "requests" (docs/eval/archive/results-2026-09-27.md).
     expect(result.markdown).toContain("> Esto [a] ordénalo.\n\n- [a] th «Quantity» on `/`");
     expect(d.copy).toHaveBeenCalledWith(result.markdown);
     expect(await result.files[0]?.blob.text()).toBe(result.markdown);

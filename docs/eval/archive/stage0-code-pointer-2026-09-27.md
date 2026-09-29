@@ -1,3 +1,5 @@
+> Archived: measured with a pre-0.1.0 build plus prototype code pointers on 2026-09-27. Current results: [docs/eval](../README.md).
+
 # Stage 0: does a code pointer save the agent work? (2026-09-27)
 
 **Question.** If the spec adds a *code pointer* for each pointed element (the chain of app components that rendered that instance, as `file:line`), does a coding agent find the same elements with fewer tokens and searches? The feature is built only if a bar set before the runs is met.
@@ -202,7 +204,7 @@ Shared constructs that appear in the chains and were never edited: `components/u
 
 ## What this shows
 
-- **A code pointer turns the search into a few reads.** Every P-chain run went to a ground-truth file with its first reads: 0 searches before it, 0.2 Grep/Glob per run in total. M3 made 8.3 searches per run, 4.1 of them before reaching a ground-truth file. Input tokens fell by more than half, below even the careful written request (M2, 65 k), which [ideas.md](../ideas.md) notes is an upper bound. Turns (−45 %), time (−50 %) and cost (−51 % for P-chain-repo) fell with them. This is the token lever the full evaluation asked for: `file:line` of the instance, not of the shared component.
+- **A code pointer turns the search into a few reads.** Every P-chain run went to a ground-truth file with its first reads: 0 searches before it, 0.2 Grep/Glob per run in total. M3 made 8.3 searches per run, 4.1 of them before reaching a ground-truth file. Input tokens fell by more than half, below even the careful written request (M2, 65 k), which [ideas.md](../../ideas.md) notes is an upper bound. Turns (−45 %), time (−50 %) and cost (−51 % for P-chain-repo) fell with them. This is the token lever the full evaluation asked for: `file:line` of the instance, not of the shared component.
 - **Line numbers did not matter.** P-chain-lines and P-chain-files are the same on accuracy (43 and 43) and tokens (39.7 k and 38.4 k), and Vue, with files only, was the cheapest app. The agent reads whole files anyway.
 - **The chain alone can point at the shared component.** When the instance's data lives outside the chain (the Chats badge comes from `sidebar-data.ts`), the frame just before the data is the shared renderer, and some runs stop there. The lookup's `text at:` line fixed this case. "Silent when not unique" kept it from guessing on the duplicate "Users" card, and none of its lines caused a wrong answer.
 - **A realistic typed request is much worse than pointing.** M3 got 35/45, against 43/45 for today's P-requests and 43/45 for M2. It failed where pointing is needed: two identical links (flowbite 0/3), and "cambia el texto" without saying which text (shadcn 1/3). It cost the same tokens as P-requests. The earlier conclusion that "a careful written request is still better" held only against M2, which is an upper bound.

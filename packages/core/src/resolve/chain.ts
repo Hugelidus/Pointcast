@@ -3,7 +3,7 @@ import type { CodeFrame, ElementInfo } from "../schema";
 
 /**
  * The code chain of one element, normalized with the rules Stage 0 tested
- * (docs/eval/stage0-code-pointer-2026-09-27.md). The resolver searches these files and the
+ * (docs/eval/archive/stage0-code-pointer-2026-09-27.md). The resolver searches these files and the
  * renderer prints these frames, so both always talk about the same chain.
  */
 

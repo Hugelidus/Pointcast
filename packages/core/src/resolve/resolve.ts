@@ -10,7 +10,7 @@ import { cleanPath, codeChain, isLibraryPath } from "./chain";
  * Resolves pointed elements to code locations: pure, with file access injected, so every route
  * (CLI and MCP on the local repo, the extension through the dev server, GitHub) runs the same
  * rules. The rules are Stage 0's repo lookup, which is what passed the bar
- * (docs/eval/stage0-code-pointer-2026-09-27.md, "P-chain-repo"); keep them as they are unless an
+ * (docs/eval/archive/stage0-code-pointer-2026-09-27.md, "P-chain-repo"); keep them as they are unless an
  * evaluation says otherwise. Silence beats a wrong location: anything ambiguous yields nothing.
  * Two extensions (resolveElement; docs/decisions.md D9): the files defining the chain's
  * components, only where Stage 0 found nothing (rule 4), and a short value looked up through the

@@ -9,7 +9,7 @@
     {
       "name": "pointcast",
       "source": "./integrations/claude-code-plugin",
-      "description": "The pointcast MCP server (list_sessions, get_session, get_element) plus a pointcast skill that applies the latest recording (/pointcast in Claude Code).",
+      "description": "The pointcast MCP server (list_sessions, get_session, get_element, wait_for_recording) plus a pointcast skill that applies the latest recording, or each new one as you record (/pointcast, /pointcast watch in Claude Code).",
       "category": "development"
     }
   ]

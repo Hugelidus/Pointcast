@@ -1,17 +1,19 @@
 # pointcast plugin for Claude Code and Codex
 
 Record yourself talking through changes while you point at your web app, then type `/pointcast`
-in Claude Code (or `$pointcast:pointcast` in Codex): it fetches the latest recording and applies
-it.
+in Claude Code (or `$pointcast:pointcast` in Codex): it fetches the latest recording made on this
+project and applies it. Or type `/pointcast watch` first: the agent listens, and applies each
+recording as you press Stop, until you tell it to stop.
 
 The plugin contains:
 
 - **The pointcast MCP server** (`npx -y pointcast@0.7.0 mcp`), with read-only tools:
-  `list_sessions`, `get_session` and `get_element`. They find the recordings the pointcast
+  `list_sessions`, `get_session`, `get_element` and `wait_for_recording`. They find the recordings the pointcast
   extension saved (`<Downloads>/pointcast`, or `POINTCAST_DIR`) and resolve each pointed element
   to its line in this project's source.
-- **The `pointcast` skill**, `/pointcast [session-id]` in Claude Code: fetches the latest
-  recording (or the one you name) with `get_session` and applies it, following the spec's rules:
+- **The `pointcast` skill**, `/pointcast [session-id | watch]` in Claude Code: fetches the latest
+  recording made on this project (or the one you name) with `get_session` and applies it, or with
+  `watch` loops on `wait_for_recording` and applies each new one, following the spec's rules:
   change only what was pointed at, ask when something is ambiguous. The spec's code pointers
   (`text at:`, `code:`) take the agent straight to the right lines instead of searching the
   codebase. Plain `/pointcast` works unless another command already uses the name;
@@ -64,11 +66,11 @@ The MCP server works in any MCP client. Without the plugin:
 
 - Gemini CLI: the repository is also a Gemini CLI extension, with the MCP server and the same
   skill as `/pointcast`: `gemini extensions install https://github.com/Hugelidus/pointcast`
-- Claude Code: `claude mcp add pointcast -- npx -y pointcast@0.2 mcp`
+- Claude Code: `claude mcp add pointcast -- npx -y pointcast@0.7 mcp`
 - Cursor, `.cursor/mcp.json`:
-  `{ "mcpServers": { "pointcast": { "command": "npx", "args": ["-y", "pointcast@0.2", "mcp", "--repo", "${workspaceFolder}"] } } }`
+  `{ "mcpServers": { "pointcast": { "command": "npx", "args": ["-y", "pointcast@0.7", "mcp", "--repo", "${workspaceFolder}"] } } }`
 - Windsurf, `~/.codeium/windsurf/mcp_config.json`:
-  `{ "mcpServers": { "pointcast": { "command": "npx", "args": ["-y", "pointcast@0.2", "mcp"] } } }`
+  `{ "mcpServers": { "pointcast": { "command": "npx", "args": ["-y", "pointcast@0.7", "mcp"] } } }`
 
 More in the [CLI's README](../../packages/cli/README.md#mcp-server).
 

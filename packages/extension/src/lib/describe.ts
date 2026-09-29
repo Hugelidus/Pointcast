@@ -8,7 +8,7 @@ import { redactPersonalText } from "./personal";
 import { isSensitive, sanitizeHtml } from "./sanitize";
 import { buildComposedSelector } from "./selector";
 import { hasSvgTitle, isSvgElement, svgIdAttribute, svgTitle } from "./svg";
-import { collapseWhitespace, truncate, visibleText } from "./text";
+import { collapseWhitespace, isHidden, truncate, visibleText } from "./text";
 
 const MAX_TEXT = 200;
 const MAX_PATH_LABEL = 40;
@@ -174,14 +174,46 @@ function titleWithSubtitle(heading: Element, el: Element, options: DescribeOptio
 }
 
 /**
+ * Clipped to nothing for screen readers only (Tailwind's `sr-only`, Bootstrap's
+ * `visually-hidden`): the user never sees it. shadcn's command dialog keeps such a title and
+ * description ("Command Palette · Search for a command to run...") in the page while closed.
+ */
+function isVisuallyHidden(el: Element): boolean {
+  const style = el.ownerDocument.defaultView?.getComputedStyle(el);
+  if (style === undefined || (style.position !== "absolute" && style.position !== "fixed")) return false;
+  const clip = style.getPropertyValue("clip").replace(/\s+/g, "");
+  const clipPath = style.getPropertyValue("clip-path").replace(/\s+/g, "");
+  return /^rect\(0(px)?,?0(px)?,?0(px)?,?0(px)?\)$/.test(clip) || clipPath === "inset(50%)" || (style.width === "1px" && style.height === "1px");
+}
+
+/**
+ * A heading the user cannot see where they pointed: in a closed `<dialog>`, a `hidden`,
+ * `inert` or `aria-hidden="true"` subtree, one not rendered (`display: none`,
+ * `visibility: hidden`), or one kept for screen readers only. Checked from the heading up to
+ * `container`, which holds the element, so it is shown.
+ */
+function isUnseenHeading(heading: Element, container: Element): boolean {
+  for (let node: Element | null = heading; node !== null && node !== container; node = node.parentElement) {
+    if (node.localName === "dialog" && !node.hasAttribute("open")) return true;
+    if (node.getAttribute("aria-hidden") === "true" || node.hasAttribute("inert") || isHidden(node)) return true;
+    const style = node.ownerDocument.defaultView?.getComputedStyle(node);
+    if (style?.display === "none" || style?.visibility === "hidden" || style?.visibility === "collapse") return true;
+    if (isVisuallyHidden(node)) return true;
+  }
+  return false;
+}
+
+/**
  * The first heading of `container` before `child` (the block holding the element) that titles
  * the container. Skipped: a heading in another item of the same list or grid (a sibling block
- * with `child`'s tag and class), and one in a big sibling block (another card). A title comes
- * before what it titles, so headings after the element are never used.
+ * with `child`'s tag and class), one in a big sibling block (another card), and one the user
+ * cannot see (isUnseenHeading: a closed dialog's title is not the card around a button). A title
+ * comes before what it titles, so headings after the element are never used.
  */
 function headingOf(container: Element, child: Element, el: Element, options: DescribeOptions): string | undefined {
   for (const heading of Array.from(container.querySelectorAll(HEADINGS))) {
     if ((heading.compareDocumentPosition(child) & FOLLOWING) === 0) continue;
+    if (isUnseenHeading(heading, container)) continue;
     const block = blockOf(heading, container);
     const repeated = block.localName === child.localName && block.getAttribute("class") === child.getAttribute("class");
     if (repeated || block.getElementsByTagName("*").length > MAX_TITLE_BLOCK_ELEMENTS) continue;

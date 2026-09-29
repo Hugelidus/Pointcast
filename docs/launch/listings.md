@@ -6,7 +6,7 @@ One section per place: its status, the exact text, and the steps. Everything her
 |---|---|---|
 | [Claude plugin directory](#claude-plugin-directory) | submitted, in review | check status |
 | [Claude community marketplace](#claude-community-marketplace) | probably the same review as above | only if it turns out to be separate |
-| [Chrome Web Store](#chrome-web-store) | 0.1.2 in review | upload 0.7.0 when approved |
+| [Chrome Web Store](#chrome-web-store) | 0.1.2 in review | upload 0.8.0 when approved |
 | [Microsoft Edge Add-ons](#microsoft-edge-add-ons) | not submitted | before launch |
 | [Gemini CLI extensions gallery](#gemini-cli-extensions-gallery) | automatic | verify before launch |
 | [MCP Registry](#mcp-registry) | needs a CLI release with `mcpName` | with CLI 0.6.0 |
@@ -68,7 +68,7 @@ To test without the extension: copy the recorded sample session in dev/fixtures/
 
 Everything, tab by tab: [chrome-web-store.md](chrome-web-store.md). Status: 0.1.2 submitted as *Unlisted*, in review.
 
-**When approved:** upload the latest release's store zip (the `pointcast-0.7.0-chrome-store` artifact of the v0.7.0 release workflow run, or `pnpm --filter @pointcast/extension zip:store`; never the GitHub release zip), and put the listing's link in the README's Quick start.
+**When approved:** upload the latest release's store zip (the `pointcast-0.8.0-chrome-store` artifact of the v0.8.0 release workflow run, or `pnpm --filter @pointcast/extension zip:store`; never the GitHub release zip), and put the listing's link in the README's Quick start.
 
 **Optional description update for 0.5** (the text under "IT POINTS AT THE CODE" names React, Vue 3 and Svelte 5 only). Replacement for its first sentence, if you want to mention Django:
 

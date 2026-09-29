@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.8.0 (2026-09-29)
+
+Extension, CLI and integrations at 0.8.0. The MCP server becomes the main path: `/pointcast watch` applies each recording as soon as you press Stop.
 
 **Code lines on React 19 + Vite** ([D9 note 2026-09-29](docs/decisions.md#d9-source-mapping))
 - Fixed: on React 19 with Vite, `used at:` and `within:` named the file with no line (``used at: `src/App.tsx` — `<Sidebar>` ``). They now give the line, like React 18 did: ``used at: `src/App.tsx:12` — `<Sidebar page={page} onNavigate={setPage} />` ``, and the element's own component gets its line in `find:`.

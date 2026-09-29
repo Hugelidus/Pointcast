@@ -173,7 +173,41 @@ export async function resolveSessionDirById(
   if (id === "" || id.startsWith(".") || /[\\/]/.test(id) || id !== path.basename(id)) {
     throw new CliError(`"${id}" is not a session id: pass a folder name from list_sessions, "latest" or "latest-here".`);
   }
-  return { dir: path.join(base, id), skippedNewer: [] };
+  const dir = path.join(base, id);
+  if (!(await isFile(path.join(dir, "session.json")))) throw await unknownSessionError(options, id, dir);
+  return { dir, skippedNewer: [] };
+}
+
+/** Recordings named in unknownSessionError. */
+const SUGGESTED_SESSIONS = 3;
+
+/**
+ * An id with no recording behind it: usually one an agent remembered from an earlier chat, or
+ * mistyped. The error names the newest recordings, with what each is about, so the agent can pick
+ * one or ask, instead of only learning that a file is missing.
+ */
+async function unknownSessionError(options: ResolveSessionsBaseOptions, id: string, dir: string): Promise<CliError> {
+  const folderExists = await stat(dir).then(
+    (s) => s.isDirectory(),
+    () => false,
+  );
+  const what = folderExists
+    ? `Recording "${id}" has no session.json (Chrome may have saved its files elsewhere).`
+    : `No recording "${id}" in ${resolveSessionsBase(options)}.`;
+  const newest = await listSessions(options, SUGGESTED_SESSIONS).catch(() => []);
+  if (newest.length === 0) return new CliError(`${what} There are no recordings there yet.`);
+  const lines = newest.map((s) => `- ${s.id}${s.preview === undefined ? "" : `: "${s.preview}"`}`);
+  return new CliError(
+    `${what} The newest ${newest.length === 1 ? "recording is" : `${newest.length} are`}:\n${lines.join("\n")}\n` +
+      `Pass one of these ids, "latest-here" or "latest", or call list_sessions to see them all.`,
+  );
+}
+
+async function isFile(file: string): Promise<boolean> {
+  return stat(file).then(
+    (s) => s.isFile(),
+    () => false,
+  );
 }
 
 /**

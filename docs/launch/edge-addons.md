@@ -26,7 +26,7 @@ The listing's name, Pointcast, comes from the manifest's `name` (`packages/exten
 
 One listing, in **English**:
 
-- **Description:** the Chrome Web Store's **Description** ([Store listing](chrome-web-store.md#store-listing)), unchanged: it names no browser.
+- **Description:** the Chrome Web Store's **Description** ([Store listing](chrome-web-store.md#store-listing)), unchanged: it names Chrome and Edge alike.
 - **Short description**, if the form asks for one: the manifest's `description`, as in the Chrome Web Store:
 
   ```
@@ -35,7 +35,7 @@ One listing, in **English**:
 
 - **Extension Store logo:** `store/icon-128.png` (128x128 is the smallest Partner Center accepts; it recommends 300x300).
 - **Small promotional tile (440x280):** `store/promo-small.png`
-- **Screenshots (1280x800):** `store/screenshot-1.png` … `store/screenshot-4.png`
+- **Screenshots (1280x800):** `store/screenshot-1.png` … `store/screenshot-5.png`
 - **Large promotional tile (1400x560):** `store/promo-marquee.png`
 - **YouTube video URL:** none yet.
 - **Search terms** (up to 7, 30 characters each):

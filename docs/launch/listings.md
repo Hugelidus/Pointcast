@@ -6,7 +6,7 @@ One section per place: its status, the exact text, and the steps. Everything her
 |---|---|---|
 | [Claude plugin directory](#claude-plugin-directory) | submitted, in review | check status |
 | [Claude community marketplace](#claude-community-marketplace) | probably the same review as above | only if it turns out to be separate |
-| [Chrome Web Store](#chrome-web-store) | 0.1.2 in review | upload 0.8.0 when approved |
+| [Chrome Web Store](#chrome-web-store) | 0.1.2 approved (unlisted); 0.8.1 update to upload | now |
 | [Microsoft Edge Add-ons](#microsoft-edge-add-ons) | not submitted | before launch |
 | [Gemini CLI extensions gallery](#gemini-cli-extensions-gallery) | automatic | verify before launch |
 | [MCP Registry](#mcp-registry) | needs a CLI release with `mcpName` | with CLI 0.6.0 |
@@ -66,17 +66,14 @@ To test without the extension: copy the recorded sample session in dev/fixtures/
 
 ## Chrome Web Store
 
-Everything, tab by tab: [chrome-web-store.md](chrome-web-store.md). Status: 0.1.2 submitted as *Unlisted*, in review.
+Everything, tab by tab: [chrome-web-store.md](chrome-web-store.md). Status: 0.1.2 approved, *Unlisted*; 0.8.1 update to upload. Store item id `hliijcklkpbddgjhkifjeggidghbbboa`, listing https://chromewebstore.google.com/detail/hliijcklkpbddgjhkifjeggidghbbboa (unlisted: reachable by this link only).
 
-**When approved:** upload the latest release's store zip (the `pointcast-0.8.0-chrome-store` artifact of the v0.8.0 release workflow run, or `pnpm --filter @pointcast/extension zip:store`; never the GitHub release zip), and put the listing's link in the README's Quick start.
-
-**Optional description update for 0.5** (the text under "IT POINTS AT THE CODE" names React, Vue 3 and Svelte 5 only). Replacement for its first sentence, if you want to mention Django:
-
-```
-On development builds of React, Vue 3 and Svelte 5, and on Django templates with the pointcast-django package, each element leads with its code: where that instance is used, and the line of its text or data in your source, quoted.
-```
-
-Change it in a separate listing update after approval, not while the item is in review, so the review isn't restarted for a text change.
+**Now, in one listing update:**
+1. *Package:* upload the 0.8.1 store zip (the `pointcast-0.8.1-chrome-store` artifact of the v0.8.1 release workflow run, or `pnpm --filter @pointcast/extension zip:store`; never the GitHub release zip).
+2. *Store listing:* replace the description with the one in [chrome-web-store.md](chrome-web-store.md#store-listing); delete the four old screenshots and upload `store/screenshot-1.png` … `store/screenshot-5.png` in that order; replace both promo tiles (`store/promo-small.png`, `store/promo-marquee.png`: the wordmark is now "Pointcast" and the marquee's spec excerpt is 0.8's).
+3. *Privacy practices:* update the `storage` and `unlimitedStorage` justifications from [chrome-web-store.md](chrome-web-store.md#privacy-practices). No permission changed since 0.1.2.
+4. Submit for review. Keep *Unlisted* (Distribution unchanged).
+5. Once 0.8.1 is live, put the listing's link in the README's Quick start (step 1 still says the listing is in review) and upload `store/social-preview.png` in the GitHub repository's settings (*Social preview*).
 
 ## Microsoft Edge Add-ons
 

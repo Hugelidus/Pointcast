@@ -168,11 +168,11 @@ function subject(n: number, slug: string, name: string, extra: Partial<ElementIn
   return {
     tag: "a",
     text: name,
-    context: "Asignaturas",
+    context: "Courses",
     selector: `ul > li:nth-of-type(${n}) > a`,
     selectorUnique: true,
     path: `main › ul › li[${n}] › a«${name}»`,
-    html: `<a href="#/asignatura/${slug}" aria-label="${name}" class="subjects-row-link">${name}</a>`,
+    html: `<a href="#/course/${slug}" aria-label="${name}" class="course-row-link">${name}</a>`,
     label: name,
     styles: STYLES,
     component: { framework: "react", name: "SubjectRow", file: "src/subjects/SubjectRow.tsx", line: 9 },
@@ -202,9 +202,9 @@ describe("sibling runs whose links differ", () => {
         "  - used at: `src/subjects/SubjectList.tsx:21` — `<SubjectRow key={s.slug} subject={s} />`",
         "  - defined in: `src/subjects/SubjectRow.tsx`",
         "  - within: `<SubjectList>` at `src/pages/Home.tsx:30`",
-        "  - on screen: a in «Asignaturas» on `/`",
-        "  - find: class `subjects-row-link` · component `SubjectRow` (react) in `src/subjects/SubjectRow.tsx:9`",
-        "  - href [a–e]: `#/asignatura/algebra`, `#/asignatura/calculo`, `#/asignatura/fisica`, `#/asignatura/quimica`, `#/asignatura/historia`",
+        "  - on screen: a in «Courses» on `/`",
+        "  - find: class `course-row-link` · component `SubjectRow` (react) in `src/subjects/SubjectRow.tsx:9`",
+        "  - href [a–e]: `#/course/algebra`, `#/course/calculo`, `#/course/fisica`, `#/course/quimica`, `#/course/historia`",
         "  - in: `main › ul › li[1..5] › a«…»`",
         "  - styles: `color: rgb(17, 24, 39); font-size: 14px; display: flex`",
       ].join("\n"),
@@ -218,10 +218,10 @@ describe("sibling runs whose links differ", () => {
       path: s.path.replace(/«.*»$/, `«Ver ${s.text}»`),
     }));
     const md = request(render(labelled, "dom-first"));
-    expect(md).toContain("- [a–c] 3 × a «Álgebra», «Cálculo», «Física» in «Asignaturas» on `/`");
-    expect(md).toContain("  - find: class `subjects-row-link` · component `SubjectRow` (react) in `src/subjects/SubjectRow.tsx:9`");
+    expect(md).toContain("- [a–c] 3 × a «Álgebra», «Cálculo», «Física» in «Courses» on `/`");
+    expect(md).toContain("  - find: class `course-row-link` · component `SubjectRow` (react) in `src/subjects/SubjectRow.tsx:9`");
     expect(md).toContain("  - label [a–c]: «Ver Álgebra», «Ver Cálculo», «Ver Física»");
-    expect(md).toContain("  - href [a–c]: `#/asignatura/algebra`, `#/asignatura/calculo`, `#/asignatura/fisica`");
+    expect(md).toContain("  - href [a–c]: `#/course/algebra`, `#/course/calculo`, `#/course/fisica`");
     expect(md).toContain("  - in: `main › ul › li[1..3] › a«…»`");
   });
 
@@ -229,7 +229,7 @@ describe("sibling runs whose links differ", () => {
     const [a, b] = SUBJECTS;
     for (const odd of [
       subject(3, "fisica", "Física", { label: "Abrir" }),
-      subject(3, "fisica", "Física", { html: '<a href="#/asignatura/fisica" class="subjects-row-link destacada">Física</a>' }),
+      subject(3, "fisica", "Física", { html: '<a href="#/course/fisica" class="course-row-link destacada">Física</a>' }),
       subject(3, "fisica", "Física", { component: { framework: "react", name: "OtherRow", file: "src/subjects/OtherRow.tsx", line: 3 } }),
       subject(3, "fisica", "Física", { path: "main › ul › li[3] › a«Abrir»" }),
     ]) {

@@ -50,7 +50,7 @@ export async function resolveWithRepo(
 }
 
 /**
- * The session with every app path the spec shows prefixed by `folder` ("atlas/"): the chain's
+ * The session with every app path the spec shows prefixed by `folder` ("web/"): the chain's
  * frames, the element's component and source attribute, and the resolved and shown-by lines, in
  * `used at`, `within`, `defined in`, `text at`/`data at`, `shown by`, `find:` and get_element
  * alike. Library paths and anything not a plain relative path are left as they are.

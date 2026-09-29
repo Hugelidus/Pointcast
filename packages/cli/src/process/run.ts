@@ -17,7 +17,7 @@ import { resolveWithRepo, type LocalResolution } from "../resolve/local";
 import { createEngine, type EngineName } from "../transcribe";
 import { readSessionFile } from "./session-file";
 import { buildInitialPrompt } from "./prompt";
-import { formatFusionSummary, formatTypedSummary, summarizeFusion } from "./summary";
+import { formatSpecHeader, specStats, summarizeFusion } from "./summary";
 import { readWordsFileIfPresent, writeWordsFile } from "./words-file";
 
 export interface ProcessOptions {
@@ -55,7 +55,8 @@ export interface ProcessResult {
   chars: number;
   tokens: number;
   summary: ReturnType<typeof summarizeFusion>;
-  summaryLine: string;
+  /** "8 requests · 17 elements · ~3,100 tokens" (formatSpecHeader). */
+  header: string;
   /** Set when `repo` was given: what resolution did, for the one stderr line index.ts prints. */
   resolution?: LocalResolution;
 }
@@ -92,7 +93,8 @@ export async function runProcess(options: ProcessOptions): Promise<ProcessResult
   // was actually rendered.
   const { placements } = fuse(session.events, words.words);
   const summary = summarizeFusion(placements);
-  const summaryLine = typed ? formatTypedSummary(session) : formatFusionSummary(summary);
+  const tokens = estimateTokens(markdown);
+  const header = formatSpecHeader({ requests: specStats(markdown).requests, elements: session.events.length, tokens });
 
   // Writing to stdout is the caller's job (index.ts): a test that calls runProcess() directly
   // should not spray Markdown across the test runner's own output.
@@ -110,9 +112,9 @@ export async function runProcess(options: ProcessOptions): Promise<ProcessResult
     typed,
     sessionMdPath,
     chars: markdown.length,
-    tokens: estimateTokens(markdown),
+    tokens,
     summary,
-    summaryLine,
+    header,
     ...(resolution ? { resolution } : {}),
   };
 }

@@ -108,7 +108,7 @@ describe("runProcess against dev/fixtures/sessions/e2e-es (no model loaded)", ()
 
     // e1..e6 via the two deictics; e7..e10 (other pages, no burst to join) by time.
     expect(result.summary).toEqual({ total: 10, deictic: 6, time: 4, standalone: 0 });
-    expect(result.summaryLine).toBe("10 events (6 deictic, 4 time, 0 standalone)");
+    expect(result.header).toBe("2 requests · 10 elements · ~470 tokens");
     expect(result.chars).toBe(result.markdown.length);
     expect(result.chars).toBeGreaterThan(0);
     expect(result.tokens).toBe(Math.ceil(result.chars / 4));

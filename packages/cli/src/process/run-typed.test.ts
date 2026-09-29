@@ -50,7 +50,7 @@ describe("a typed session (no words.json, no audio)", () => {
   it("is processed from its notes without transcribing, even with --force", async () => {
     for (const force of [false, true]) {
       const result = await runProcess({ sessionDir, engine: "local", force, toStdout: false });
-      expect(result).toMatchObject({ typed: true, transcribed: false, summaryLine: "1 event (1 with a note)" });
+      expect(result).toMatchObject({ typed: true, transcribed: false, header: expect.stringMatching(/^1 request · 1 element · ~\d+ tokens$/) });
       expect(result.markdown).toContain("> Export only the filtered orders. [a]");
       expect(readFileSync(join(sessionDir, "session.md"), "utf8")).toBe(result.markdown);
       expect(existsSync(join(sessionDir, "words.json"))).toBe(false);
@@ -61,6 +61,6 @@ describe("a typed session (no words.json, no audio)", () => {
     const result = await getSession(sessionDir);
     expect(result.rendered).toBe(true);
     expect(result.markdown).toContain("> Export only the filtered orders. [a]");
-    expect(result.summaryLine).toBe("1 event (1 with a note)");
+    expect(result.header).toMatch(/^1 request · 1 element · /);
   });
 });

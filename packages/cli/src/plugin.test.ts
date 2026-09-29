@@ -61,7 +61,10 @@ describe("Claude Code and Codex plugin", () => {
     expect(meta.name).toBe("pointcast");
     expect(meta.description).toBeTruthy();
     expect(skill).toContain("get_session");
-    expect(skill).toContain('"latest"');
+    expect(skill).toContain('"latest-here"');
+    // `/pointcast watch` loops on wait_for_recording until the user says stop.
+    expect(meta["argument-hint"]).toContain("watch");
+    expect(skill).toMatch(/Watch mode:[\s\S]*`wait_for_recording`[\s\S]*call it again/);
 
     // Claude Code names a plugin's MCP tools mcp__plugin_<plugin>_<server>__<tool>.
     const prefix = `mcp__plugin_${manifest.name}_${Object.keys(mcp.mcpServers)[0]}__`;

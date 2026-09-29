@@ -32,11 +32,11 @@ describe("mcp sessions tools", () => {
   });
 
   describe("listSessions", () => {
-    it("lists sessions newest first with id, date, duration and event count", async () => {
+    it("lists sessions newest first with id, date, duration and element count", async () => {
       const sessions = await listSessions({ dirFlag: base });
       expect(sessions).toHaveLength(2);
-      expect(sessions[0]).toMatchObject({ id: "2026-09-26_20-29-01", eventCount: 10, durationMs: 11880 });
-      expect(sessions[1]).toMatchObject({ eventCount: 0 });
+      expect(sessions[0]).toMatchObject({ id: "2026-01-02_09-00-00", elements: 10, durationMs: 11880, matchesProject: "unknown" });
+      expect(sessions[1]).toMatchObject({ elements: 0, rendered: false });
     });
 
     it("skips a folder with no valid session.json instead of failing the whole list", async () => {
@@ -70,7 +70,23 @@ describe("mcp sessions tools", () => {
       });
     });
 
-    it("joins an explicit id onto the base without checking it exists", async () => {
+    it("names the newest recordings, with their preview, for an id that is not there", async () => {
+      const error = await resolveSessionDirById({ dirFlag: base }, "2025-12-31_23-59-59").catch((e: Error) => e);
+      expect((error as Error).message).toBe(
+        [
+          `No recording "2025-12-31_23-59-59" in ${base}. The newest 2 are:`,
+          '- 2026-01-02_09-00-00: "Esto me gustaría que estuviera filtrado por cantidad."',
+          "- 2026-01-01_09-00-00",
+          'Pass one of these ids, "latest-here" or "latest", or call list_sessions to see them all.',
+        ].join("\n"),
+      );
+      mkdirSync(join(base, "2026-01-05_09-00-00"));
+      await expect(resolveSessionDirById({ dirFlag: base }, "2026-01-05_09-00-00")).rejects.toThrow(
+        'Recording "2026-01-05_09-00-00" has no session.json',
+      );
+    });
+
+    it("joins an explicit id onto the base when its session.json is there", async () => {
       expect(await resolveSessionDirById({ dirFlag: base }, "2026-01-01_09-00-00")).toEqual({
         dir: join(base, "2026-01-01_09-00-00"),
         skippedNewer: [],

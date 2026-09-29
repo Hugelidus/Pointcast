@@ -35,10 +35,10 @@ It finds your coding agents (Claude Code, Codex, Gemini CLI, Cursor) and, after 
 
 **1. Add the extension.** The Chrome Web Store listing is in review; meanwhile, [load the release zip](#manual-install).
 
-**2. Connect your agent** (optional: it fetches your latest recording itself and resolves each element to its line in your repository):
+**2. Connect your agent.** This is the main path: at Stop the recording goes straight to your agent's Pointcast MCP server, and the agent fetches it itself, with each element resolved to its line in your repository.
 
 ```bash
-# Claude Code, then /pointcast
+# Claude Code, then /pointcast (or /pointcast watch)
 claude plugin marketplace add Hugelidus/pointcast && claude plugin install pointcast@pointcast
 # Codex CLI, then in a new session $pointcast:pointcast (or "apply my latest pointcast recording")
 codex plugin marketplace add Hugelidus/pointcast && codex plugin add pointcast@pointcast
@@ -48,9 +48,13 @@ gemini extensions install https://github.com/Hugelidus/pointcast
 npx -y pointcast@0.7.0 mcp
 ```
 
-Any other agent: paste the spec from the clipboard. (In Windows PowerShell 5.1, run each `&&` half on its own line.)
+(In Windows PowerShell 5.1, run each `&&` half on its own line.)
 
 **3. Record** on your app on `localhost`: press **Record**, talk while you **Alt+click** things (**⌥ Option+click** on macOS), press **Stop**.
+
+**4. Apply it.** Type `/pointcast` in your agent: it applies the newest recording made on this project. Or type `/pointcast watch` before you start: the agent listens, applies each recording as you press Stop and tells you what it changed, until you tell it to stop.
+
+**No agent integration?** Stop also puts the spec on the clipboard: paste it into any agent.
 
 **Rather type than talk?** Pick **⌨️ Typed** above Record in the popup. Each Alt+click then opens a small box next to the element: type what should change, press Enter (Esc drops that gesture). No microphone, no speech model, and Stop gives you the spec at once.
 
@@ -130,10 +134,10 @@ A coding agent can't see what "this" is in "make *this* sortable and move *this*
 
 | Agent | How | Apply a recording |
 |---|---|---|
-| Claude Code | [plugin](integrations/claude-code-plugin/README.md) | `/pointcast [session-id]` |
-| Codex CLI | plugin (the same one) | `$pointcast:pointcast [session-id]`, or ask to "apply my latest pointcast recording" |
-| Gemini CLI | extension | `/pointcast [session-id]` |
-| Cursor, Windsurf | [MCP server](packages/cli/README.md#mcp-server) | ask for your latest pointcast recording |
+| Claude Code | [plugin](integrations/claude-code-plugin/README.md) | `/pointcast [session-id]`, or `/pointcast watch` to apply each recording as you make it |
+| Codex CLI | plugin (the same one) | `$pointcast:pointcast [session-id \| watch]`, or ask to "apply my latest pointcast recording" |
+| Gemini CLI | extension | `/pointcast [session-id \| watch]` |
+| Cursor, Windsurf | [MCP server](packages/cli/README.md#mcp-server) | ask for your latest pointcast recording, or to listen for recordings |
 | Any other agent | the clipboard | paste |
 
 <img src="docs/launch/video/out/pointcast-mcp.gif" alt="Stop sends the recording to the agent's MCP server; the agent reads it and edits the line" width="640">
@@ -161,6 +165,14 @@ Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that ver
 
 **How accurate is the transcription?** ~93 % word accuracy on Spanish test recordings ([D1](docs/decisions.md#d1-transcription--whisper-via-transformersjs-locally)).
 
+**How do I turn it off for a project or a session?** In Claude Code:
+- **For one project:** `/mcp`, select `plugin:pointcast:pointcast`, then *Disable*. Claude Code remembers it for that project, and `/pointcast` stays installed.
+- **Everywhere:** `/plugin`, disable *pointcast* on the *Installed* tab (or `claude plugin disable pointcast@pointcast` in your shell); closing the panel runs `/reload-plugins`, which disconnects the server.
+- **For one session without MCP servers:** `claude --strict-mcp-config`.
+- **Stop receiving recordings** but keep the tools: turn off *Send to your agent's Pointcast MCP server* in the popup's Settings. Recordings then go to Chrome's downloads, and the clipboard, as before.
+
+Other agents: disable the `pointcast` server in their MCP settings. Codex: `enabled = false` under `[plugins."pointcast@pointcast".mcp_servers.pointcast]` in `~/.codex/config.toml` (under `[mcp_servers.pointcast]` if you added the server by hand). Gemini CLI: `gemini extensions disable pointcast`.
+
 **Is this affiliated with Anthropic, OpenAI, Google, Cursor or any agent vendor?** No. Pointcast is an independent, MIT-licensed tool.
 
 <details id="known-limitations-of-the-beta">
@@ -169,7 +181,7 @@ Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that ver
 - **Chromium browsers only**, desktop.
 - **The code pointer needs a dev build** of React, Vue 3 or Svelte 5, or a Django app in `DEBUG` with [pointcast-django](integrations/django/README.md). Production builds, Angular and other server-side templates get the DOM description only. On Next.js, only `next dev` with Turbopack (the default) gives the chain.
 - **Show in folder** works only for recordings Chrome's downloads saved; for one your MCP server stored, the popup names its folder instead.
-- **Shared multi-user computers:** another user could send recordings to your running MCP server, or receive yours while it is down. There, turn off *Send to a running pointcast MCP server* in the popup's Settings and start the server with `--no-handoff`.
+- **Shared multi-user computers:** another user could send recordings to your running MCP server, or receive yours while it is down. There, turn off *Send to your agent's Pointcast MCP server* in the popup's Settings and start the server with `--no-handoff`.
 - **Port forwards:** a forward of local port 20547 (`ssh -L`, or an editor's automatic port forwarding) sends your recordings to the MCP server on the other machine, which is how to use one on a remote dev server; on a shared host it can be another user's. See the [CLI's README](packages/cli/README.md#receiving-recordings-from-the-extension).
 </details>
 

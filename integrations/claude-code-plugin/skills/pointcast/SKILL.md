@@ -1,13 +1,15 @@
 ---
 name: pointcast
-description: Apply a pointcast recording (what the user said while pointing at elements of their web app) as code changes in this project. Use when the user asks to apply, implement or read a pointcast recording or session.
-argument-hint: "[session-id]"
-allowed-tools: mcp__plugin_pointcast_pointcast__list_sessions mcp__plugin_pointcast_pointcast__get_session mcp__plugin_pointcast_pointcast__get_element
+description: Apply a pointcast recording (what the user said while pointing at elements of their web app) as code changes in this project. Use when the user asks to apply, implement or read a pointcast recording or session, or to listen or watch for their recordings.
+argument-hint: "[session-id | watch]"
+allowed-tools: mcp__plugin_pointcast_pointcast__list_sessions mcp__plugin_pointcast_pointcast__get_session mcp__plugin_pointcast_pointcast__get_element mcp__plugin_pointcast_pointcast__wait_for_recording
 ---
 
 Apply a pointcast recording to this project.
 
-1. Call the pointcast `get_session` tool with `id` set to the session id the user gave, or to `"latest"` if they gave none. If you are unsure which recording the user means, call `list_sessions` first and ask.
+If the user wrote `watch` after the command, or asks you to listen or watch for recordings, use watch mode below. Otherwise:
+
+1. Call the pointcast `get_session` tool with `id` set to the session id the user gave, or to `"latest-here"` (the newest recording made on this project) if they gave none. If you are unsure which recording the user means, call `list_sessions` first (it shows each recording's pages, a preview of its first request and whether it matches this project) and ask.
 2. If the result starts with a **Warning** that the recording seems to be from another project, stop and tell the user. Do not edit anything until they confirm the project, or give you its folder to pass as `repo`.
 3. Follow the spec's own rules, written at its top: they come first. Each request quotes what the user said (speech-to-text, so words may be misheard) and lists the elements they pointed at while saying it.
 4. Find each element through its code pointer before searching:
@@ -18,5 +20,13 @@ Apply a pointcast recording to this project.
    - Search the codebase only when the spec gives no pointer, and then use its `find:` hints.
 5. If a request is ambiguous, ask before editing it. Change only what was asked.
 6. When you are done, list each request with the `file:line` you changed, and any request you skipped and why.
+
+Watch mode: keep applying the user's recordings as they make them, until they tell you to stop.
+
+1. Tell the user in one line that you are listening, and that they can record in the browser now.
+2. Call `wait_for_recording`. It only returns recordings made on this project: one whose source files are all missing here is left for an agent working on that project. If it answers "No new recording yet", call it again right away, without writing anything to the user. Pass `anyProject: true` only when the user asks for recordings from any project.
+3. When it returns a recording, apply it with steps 2 to 5 above. The same rules hold: if it starts with the other-project **Warning** (only possible with `anyProject`), do not edit; tell the user and ask whether to apply it here or keep listening. A recording that names no source files cannot be checked against the project: if its pages do not look like this project's app, ask before editing. If a request is ambiguous, ask, and wait for the answer before going on.
+4. Report briefly: one line per request with the `file:line` you changed, or why you skipped it.
+5. Go back to step 2. Stop when the user says so.
 
 `get_element` returns everything recorded about one pointed element (HTML, styles, selector, component chain). Event ids are `e1`, `e2`… in the order the user pointed.

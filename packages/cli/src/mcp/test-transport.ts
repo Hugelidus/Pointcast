@@ -30,9 +30,9 @@ export function linkedTransportPair(): [Transport, Transport] {
   return [a, b];
 }
 
-/** A client connected to `server` in memory; close both when done. */
-export async function connectClient(server: McpServer): Promise<Client> {
-  const client = new Client({ name: "test-client", version: "0.0.0" });
+/** A client connected to `server` in memory; close both when done. `name` is its clientInfo.name. */
+export async function connectClient(server: McpServer, name = "test-client"): Promise<Client> {
+  const client = new Client({ name, version: "0.0.0" });
   const [clientTransport, serverTransport] = linkedTransportPair();
   await Promise.all([client.connect(clientTransport), server.connect(serverTransport)]);
   return client;

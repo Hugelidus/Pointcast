@@ -81,7 +81,9 @@ npx pointcast doctor
 prints one line per check, with a fix under each problem: the Node.js version (22.12 or newer),
 the sessions folder it reads (`--dir` / `POINTCAST_DIR` / `<Downloads>/pointcast`) with how many
 recordings it holds and the newest one, whether a pointcast MCP server is receiving recordings
-from the extension on 127.0.0.1:20547 (and which version), whether `@huggingface/transformers`
+from the extension on 127.0.0.1:20547 (and which version: with several agent sessions open, one
+of their servers receives and all of them read the same folder; one older than the CLI is
+usually a session started before an update, worth restarting), whether `@huggingface/transformers`
 is installed for local transcription, and, on Linux, whether a clipboard tool (`wl-copy`, `xclip`
 or `xsel`) is there. It only reads: it says hello to the MCP server but never sends it a
 recording, and uses no network unless you add `--online`, which compares your version with the
@@ -137,27 +139,68 @@ repository, `issue` refuses to create the issue, since it looks like the wrong r
 
 ## MCP server
 
-`pointcast mcp` runs a stdio [MCP](https://modelcontextprotocol.io) server with 3 read-only tools,
-so an agent can look up a recording itself instead of you pasting `session.md` in:
+`pointcast mcp` runs a stdio [MCP](https://modelcontextprotocol.io) server, the main way an agent
+gets your recordings: at Stop the extension hands the recording to it, and the agent fetches the
+spec itself, with each element resolved to its line in your project. Pasting the spec from the
+clipboard is the fallback for agents without MCP. Its 4 read-only tools:
 
-- **list_sessions** — recent sessions (id, date, duration, event count), newest first, as
-  `{ "sessions": [...] }`.
-- **get_session** — a session's Markdown spec, by id or `"latest"`. Renders it from
-  `session.json`/`words.json` if `session.md` isn't on disk yet; never transcribes.
+- **list_sessions** — recent recordings, newest first, one per line in `{ "sessions": [...] }`:
+  id, date, duration, the `pages` pointed at, how many `requests` and `elements`, a `preview` of
+  the first request, `matchesProject` (whether its source files are in the project: `true`,
+  `false`, or `"unknown"` when it names none) and `rendered` (its `session.md` is on disk).
+- **get_session** — a recording's Markdown spec, by id, `"latest-here"` (the newest recording
+  made on this project: newer ones whose files are all missing here are skipped, and it says
+  which) or `"latest"` (the newest of all). Renders it from `session.json`/`words.json` if
+  `session.md` isn't on disk yet; never transcribes. The spec starts with a line like
+  `8 requests · 17 elements · ~3,100 tokens`.
 - **get_element** — the full captured detail (selector, source location, styles, framework
   component, …) of one event, by session id and event id (e.g. `"e3"`).
+- **wait_for_recording** — waits for your next recording made on this project (`anyProject: true`
+  for any) and returns its spec, like `get_session`, as soon as you press Stop; after `timeoutSeconds` it answers "No new recording
+  yet", and the agent calls it again. This is what `/pointcast watch` loops on.
+
+An unknown session id gets the 3 newest ids with their preview in the error; an unknown event id
+gets the valid range (`e1…e17`).
 
 It looks for sessions the same way `pointcast process` does: `--dir` / `POINTCAST_DIR` /
 `<Downloads>/pointcast`.
 
-Pin the version in MCP configs (`pointcast@0.2`, as below): `npx` keeps using a cached copy for
-an unversioned `pointcast`, which may be an older one.
+Pin the version in MCP configs (`pointcast@0.7`, as below): `npx` keeps using a cached copy for
+an unversioned `pointcast`, which may be an older one. The plugins pin the exact version and
+update it with each release.
 
-`get_session` and `get_element` resolve [code locations](#code-locations) in the project the
-server was started for: `--repo`, else `CLAUDE_PROJECT_DIR` (Claude Code sets it), else the
-server's working directory. Both tools also take an optional `repo` argument. When none of the
-recording's files is in that project, the result starts with a one-line warning that the
-recording is probably from another project.
+`get_session`, `get_element` and `wait_for_recording` resolve [code locations](#code-locations)
+in the project the server was started for: `--repo`, else `CLAUDE_PROJECT_DIR` (Claude Code sets
+it), else the server's working directory. They and `list_sessions` also take an optional `repo`
+argument. When none of the recording's files is in that project, the result starts with a
+one-line warning that the recording is probably from another project.
+
+### Listening: `wait_for_recording`
+
+`wait_for_recording` returns as soon as a new recording arrives: one that was not in the sessions
+folder when the agent first called it, and that no tool returned since. By default only this
+project's recordings count, by the same rule as `"latest-here"`: one whose source files are all
+missing from the project is skipped, and one that names no files is kept. A skipped recording is
+not used up: an agent session on the right project still gets it, and `anyProject: true` returns
+every recording, with the other-project warning when it applies. So a recording you make
+while the agent is still applying the previous one is returned by the next call, and one it
+already read with `get_session` is not returned twice. It works with several agent sessions open:
+only one server receives from the extension, and the others see the recording appear in the
+shared sessions folder.
+
+A tool call cannot last forever, and each client cuts it off at a different time, so the default
+wait follows the client:
+
+| Client | Its limit for a tool call | Default wait |
+|---|---|---|
+| Claude Code | none for stdio servers (`MCP_TOOL_TIMEOUT` sets one); 30 min without a response or progress | 9 min |
+| Gemini CLI | `timeout` in the server's settings, 10 min by default | 9 min |
+| Codex | `tool_timeout_sec`, 60 s by default | 50 s |
+| Cursor and others | not documented | 50 s |
+
+The agent can pass `timeoutSeconds` (at most 1,500, 25 min). When the wait ends with no recording,
+the answer is not an error, and the agent calls it again, so a short limit only means more calls.
+While waiting, the server sends progress notifications when the client asks for them.
 
 ### Receiving recordings from the extension
 
@@ -181,7 +224,7 @@ Chrome's downloads as before. The popup says where each recording went.
   log that the port is in use and try again every 3 s, so one takes over within 3 s after it
   exits. A recording lands in the receiving server's folder when their `--dir` differ.
 - **Turn it off** with `--no-handoff` or `POINTCAST_HANDOFF=off`, or in the extension's Settings
-  (*Send to a running pointcast MCP server*).
+  (*Send to your agent's Pointcast MCP server*).
 - **Shared multi-user computers:** `127.0.0.1` is shared by every user of the computer, so another
   user could send recordings to your server, or receive yours while it is down. Turn it off on
   both sides there.
@@ -199,10 +242,31 @@ Chrome's downloads as before. The popup says where each recording went.
 
 `POINTCAST_HANDOFF_PORT` is a test hook: the extension's port is fixed when it is built.
 
+### Claude Code channels (experimental)
+
+Claude Code [channels](https://code.claude.com/docs/en/channels-reference) (a research preview)
+let an MCP server push a message into a session, so Claude reacts without being asked. The server
+declares a channel, and when it receives a recording from the extension, it tells the Claude Code
+session it belongs to: `New pointcast recording 2026-09-29_10-00-00: 3 requests on
+localhost:5173/orders. Apply it with the pointcast tools (get_session, id "…").` Claude then reads
+the spec with the tools, like `/pointcast`.
+
+- **Off unless you opt in.** Claude Code ignores it unless you start it with the channel enabled.
+  During the preview only allowlisted plugins can register as a channel, and pointcast is not on
+  the list, so it takes the development flag, which asks you to confirm at startup:
+  `claude --dangerously-load-development-channels plugin:pointcast@pointcast`.
+- **Only the id, counts and pages.** The message never carries the spec or anything you said or
+  the page showed: text from a web page must not reach the agent as a message it acts on. Page
+  paths are reduced to URL characters and cut short.
+- **Only the receiving server announces.** With several Claude Code sessions open, the one whose
+  server holds the handoff port gets the message. `/pointcast watch` works in any of them.
+- Other agents get no message; `wait_for_recording` is their way to listen.
+
 ### Claude Code: plugin
 
-The plugin adds the MCP server and a `/pointcast` command that fetches the latest recording and
-applies it. See [integrations/claude-code-plugin](https://github.com/Hugelidus/pointcast/blob/main/integrations/claude-code-plugin/README.md).
+The plugin adds the MCP server and a `/pointcast` command that fetches the latest recording made
+on the project and applies it; `/pointcast watch` listens and applies each recording as you make
+it. See [integrations/claude-code-plugin](https://github.com/Hugelidus/pointcast/blob/main/integrations/claude-code-plugin/README.md).
 
 ```sh
 claude plugin marketplace add Hugelidus/pointcast
@@ -212,20 +276,20 @@ claude plugin install pointcast@pointcast
 ### Claude Code: MCP server only
 
 ```sh
-claude mcp add pointcast -- npx -y pointcast@0.2 mcp
+claude mcp add pointcast -- npx -y pointcast@0.7 mcp
 ```
 
 Or, pointed at a specific sessions folder:
 
 ```sh
-claude mcp add pointcast -- npx -y pointcast@0.2 mcp --dir /path/to/pointcast-sessions
+claude mcp add pointcast -- npx -y pointcast@0.7 mcp --dir /path/to/pointcast-sessions
 ```
 
 ### Codex CLI
 
 The same plugin works in Codex: the MCP server plus a `pointcast` skill. Start a new session after
-installing it, then type `$pointcast:pointcast [session-id]` or ask to "apply my latest pointcast
-recording":
+installing it, then type `$pointcast:pointcast [session-id]` (or `$pointcast:pointcast watch`) or
+ask to "apply my latest pointcast recording":
 
 ```sh
 codex plugin marketplace add Hugelidus/pointcast
@@ -240,8 +304,8 @@ sent right at launch may not see the tools: send it again.
 
 ### Gemini CLI
 
-The extension adds the MCP server (`npx -y pointcast@0.2 mcp --repo <the folder you run gemini
-in>`) and a `/pointcast [session-id]` command:
+The extension adds the MCP server (`npx -y pointcast@0.7 mcp --repo <the folder you run gemini
+in>`) and a `/pointcast [session-id | watch]` command:
 
 ```sh
 gemini extensions install https://github.com/Hugelidus/pointcast
@@ -260,7 +324,7 @@ tells the server which project to resolve code locations in:
   "mcpServers": {
     "pointcast": {
       "command": "npx",
-      "args": ["-y", "pointcast@0.2", "mcp", "--repo", "${workspaceFolder}"]
+      "args": ["-y", "pointcast@0.7", "mcp", "--repo", "${workspaceFolder}"]
     }
   }
 }
@@ -277,7 +341,7 @@ project:
   "mcpServers": {
     "pointcast": {
       "command": "npx",
-      "args": ["-y", "pointcast@0.2", "mcp"]
+      "args": ["-y", "pointcast@0.7", "mcp"]
     }
   }
 }

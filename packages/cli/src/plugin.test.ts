@@ -45,11 +45,12 @@ describe("Claude Code and Codex plugin", () => {
 
   it("starts this CLI's MCP server through npx, pinned to this exact version", () => {
     const servers = Object.keys(mcp.mcpServers);
-    expect(servers).toEqual(["pointcast"]);
+    // "recordings", not "pointcast": Claude Code shows tool calls as "plugin <plugin> <server>".
+    expect(servers).toEqual(["recordings"]);
     // npx reuses a cached copy of an unversioned package forever, so plugin users would never get
     // a new release. The exact version is what the Claude plugin directory requires: the package it
     // reviews is the one that runs.
-    expect(mcp.mcpServers.pointcast).toEqual({ command: "npx", args: ["-y", `pointcast@${VERSION}`, "mcp"] });
+    expect(mcp.mcpServers.recordings).toEqual({ command: "npx", args: ["-y", `pointcast@${VERSION}`, "mcp"] });
     // Claude Code and Codex only reinstall a plugin whose version changed: a new pin needs one.
     expect(minor(manifest.version)).toBe(minor(VERSION));
   });

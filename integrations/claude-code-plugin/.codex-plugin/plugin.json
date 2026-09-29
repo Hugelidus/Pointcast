@@ -23,7 +23,8 @@
     "privacyPolicyURL": "https://github.com/Hugelidus/pointcast/blob/main/PRIVACY.md",
     "defaultPrompt": [
       "Apply my latest pointcast recording",
-      "List my recent pointcast recordings"
+      "List my recent pointcast recordings",
+      "Listen for my pointcast recordings and apply each one"
     ]
   }
 }

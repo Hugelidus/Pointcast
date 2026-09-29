@@ -1,9 +1,11 @@
 # /pointcast in Gemini CLI. The prompt is the text of the Claude Code and Codex skill,
 # integrations/claude-code-plugin/skills/pointcast/SKILL.md, and a test keeps the two equal. It has
 # no {{args}}, so Gemini appends what the user typed after it, as Claude Code does for the skill.
-description = "Apply the latest pointcast recording as code changes, or the one named: /pointcast [session-id]"
+description = "Apply the latest pointcast recording, or the one named, or listen: /pointcast [session-id|watch]"
 prompt = '''
 Apply a pointcast recording to this project.
+
+If the user wrote `watch` after the command, or asks you to listen or watch for recordings, use watch mode below. Otherwise:
 
 1. Call the pointcast `get_session` tool with `id` set to the session id the user gave, or to `"latest-here"` (the newest recording made on this project) if they gave none. If you are unsure which recording the user means, call `list_sessions` first (it shows each recording's pages, a preview of its first request and whether it matches this project) and ask.
 2. If the result starts with a **Warning** that the recording seems to be from another project, stop and tell the user. Do not edit anything until they confirm the project, or give you its folder to pass as `repo`.
@@ -17,5 +19,13 @@ Apply a pointcast recording to this project.
 5. If a request is ambiguous, ask before editing it. Change only what was asked.
 6. When you are done, list each request with the `file:line` you changed, and any request you skipped and why.
 
-`get_element` returns everything recorded about one pointed element (HTML, styles, selector, component chain). Event ids are `e1`, `e2`… in the order the user pointed. `wait_for_recording` waits for the user's next recording and returns its spec, as `get_session` does.
+Watch mode: keep applying the user's recordings as they make them, until they tell you to stop.
+
+1. Tell the user in one line that you are listening, and that they can record in the browser now.
+2. Call `wait_for_recording`. If it answers "No new recording yet", call it again right away, without writing anything to the user.
+3. When it returns a recording, apply it with steps 2 to 5 above. The same rules hold: if it starts with the other-project **Warning**, do not edit; tell the user and ask whether to apply it here or keep listening. If a request is ambiguous, ask, and wait for the answer before going on.
+4. Report briefly: one line per request with the `file:line` you changed, or why you skipped it.
+5. Go back to step 2. Stop when the user says so.
+
+`get_element` returns everything recorded about one pointed element (HTML, styles, selector, component chain). Event ids are `e1`, `e2`… in the order the user pointed.
 '''

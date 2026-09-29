@@ -2,7 +2,7 @@
   "mcpServers": {
     "recordings": {
       "command": "npx",
-      "args": ["-y", "pointcast@0.8.0", "mcp"]
+      "args": ["-y", "pointcast@0.8.1", "mcp"]
     }
   }
 }

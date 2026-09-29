@@ -45,7 +45,7 @@ codex plugin marketplace add Hugelidus/pointcast && codex plugin add pointcast@p
 # Gemini CLI, then /pointcast in a folder you trust
 gemini extensions install https://github.com/Hugelidus/pointcast
 # Cursor, Windsurf or any MCP client: run this MCP server (config: packages/cli/README.md#mcp-server)
-npx -y pointcast@0.8.0 mcp
+npx -y pointcast@0.8.1 mcp
 ```
 
 (In Windows PowerShell 5.1, run each `&&` half on its own line.)
@@ -67,7 +67,7 @@ Download the newest `pointcast-<version>-chrome.zip` from [Releases](https://git
 
 **Updating an unpacked 0.1.x?** Remove it and load 0.2 as a new extension, once. From 0.2 on, every build has the same extension id (the Chrome Web Store item's), so the id changes this one time: allow the microphone again, and the speech model downloads once more.
 
-**Where recordings go.** While your agent's `pointcast` MCP server runs (the plugins above, or `npx -y pointcast@0.8.0 mcp`), recordings go straight to it, with no downloads. Without it, Chrome's downloads save them to `Downloads/pointcast/`; then turn off *Ask where to save each file before downloading* (`chrome://settings/downloads`), or Chrome asks for every file and the sessions miss the folder where the plugins, the MCP server and the CLI look. The popup tells you when that happened.
+**Where recordings go.** While your agent's `pointcast` MCP server runs (the plugins above, or `npx -y pointcast@0.8.1 mcp`), recordings go straight to it, with no downloads. Without it, Chrome's downloads save them to `Downloads/pointcast/`; then turn off *Ask where to save each file before downloading* (`chrome://settings/downloads`), or Chrome asks for every file and the sessions miss the folder where the plugins, the MCP server and the CLI look. The popup tells you when that happened.
 
 **Other sites.** Pointcast runs on `localhost`, `127.0.0.1`, `[::1]`, `*.localhost` and `*.test` out of the box. For a staging server or a preview deployment, open the popup there and press **Enable on `<host>`**: Chrome asks for access to that host only.
 

@@ -8,7 +8,7 @@ it change only the elements you pointed at, and only as asked, whatever the reco
 
 The plugin contains:
 
-- **The pointcast MCP server** (`npx -y pointcast@0.8.0 mcp`), with read-only tools:
+- **The pointcast MCP server** (`npx -y pointcast@0.8.1 mcp`), with read-only tools:
   `list_sessions`, `get_session`, `get_element` and `wait_for_recording`. They find the recordings the pointcast
   extension saved (`<Downloads>/pointcast`, or `POINTCAST_DIR`) and resolve each pointed element
   to its line in this project's source.

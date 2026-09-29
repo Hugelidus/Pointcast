@@ -15,7 +15,9 @@ const LABEL_BUDGET = 60;
  */
 export function rootAttributes(html: string): Map<string, string> {
   const attributes = new Map<string, string>();
-  const tag = /^\s*<[a-zA-Z][\w-]*((?:[^>"']|"[^"]*"|'[^']*')*)>/.exec(html);
+  // The name ends where a space, "/" or ">" follows it, so the name and the attributes can never
+  // split the same characters between them: linear on any input (CodeQL js/polynomial-redos).
+  const tag = /^\s*<[a-zA-Z][\w-]*(?=[\s/>])((?:[^>"']|"[^"]*"|'[^']*')*)>/.exec(html);
   if (!tag) return attributes;
   const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>"']+)))?/g;
   for (const match of tag[1].matchAll(ATTRIBUTE)) {

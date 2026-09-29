@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+**Code lines on React 19 + Vite** ([D9 note 2026-09-29](docs/decisions.md#d9-source-mapping))
+- Fixed: on React 19 with Vite, `used at:` and `within:` named the file with no line (``used at: `src/App.tsx` — `<Sidebar>` ``). They now give the line, like React 18 did: ``used at: `src/App.tsx:12` — `<Sidebar page={page} onNavigate={setPage} />` ``, and the element's own component gets its line in `find:`.
+- How: right after the gesture, the page reads the modules its own Vite dev server already serves and maps the stack positions through their inline source maps, like the Next.js path does. Local dev hosts only, same origin only, in memory, within the same 3 s budget; no new permission.
+- Silent when unsure: a missing map, a module edited since the element was rendered, or a map that names another file leaves the file without a line, as before. Files in the chain never change, only lines are added.
+- New e2e test against the real `dev/examples/react-dashboard` dev server (`dev/e2e/vite-react19.spec.ts`).
+
 ## 0.7.0 (2026-09-28)
 
 Extension, CLI and integrations at 0.7.0.

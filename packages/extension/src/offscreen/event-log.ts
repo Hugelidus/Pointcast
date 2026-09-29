@@ -5,8 +5,10 @@ import {
   type CapturedError,
   type CapturedEvent,
   type CapturedEventDraft,
+  type CodeFrame,
+  type ComponentInfo,
 } from "@pointcast/core";
-import { parseComponentInfo, parseRenderedBy } from "../lib/component-bridge";
+import { onlyAddsLines, parseComponentInfo, parseRenderedBy } from "../lib/component-bridge";
 
 /**
  * Errors kept while recording (D13). More than the session keeps (SESSION_ERRORS_MAX): each
@@ -74,21 +76,42 @@ export class EventLog {
   /**
    * The code chain of event `id` read after the gesture (Next.js: it needed the dev server's
    * source maps, D9 note 2026-09-28). Page input, so checked by the bridge's parsers again. Only
-   * for an event captured without a chain: a chain read at the gesture is never replaced. The
-   * component is replaced only by one that names its file (the gesture's has the name alone).
+   * for an event captured without a chain: a chain read at the gesture is never replaced, it can
+   * only get lines (#addLines, React 19 on Vite). The component is replaced only by one that
+   * names its file (the gesture's has the name alone).
    * False when there is no such event, or nothing to add.
    */
   setCode(id: string, component: unknown, renderedBy: unknown): boolean {
     const event = this.#events.find((e) => e.id === id);
-    if (!event || event.element.renderedBy !== undefined) return false;
+    if (!event) return false;
     const chain = parseRenderedBy(renderedBy);
     const info = parseComponentInfo(component);
+    if (event.element.renderedBy !== undefined) return this.#addLines(event, info, chain);
     const betterComponent = info?.file !== undefined && event.element.component?.file === undefined ? info : undefined;
     if (chain === undefined && betterComponent === undefined) return false;
     event.element = {
       ...event.element,
       ...(betterComponent !== undefined ? { component: betterComponent } : {}),
       ...(chain !== undefined ? { renderedBy: chain } : {}),
+    };
+    return true;
+  }
+
+  /**
+   * React 19 on Vite (D9 note 2026-09-29): a chain read at the gesture has files without lines,
+   * and the refinement maps them through the served modules' source maps. Only lines are ever
+   * added: the chain and the component are taken only when they are the gesture's, frame by frame,
+   * with lines where it had none (onlyAddsLines). Anything else leaves the event as captured.
+   */
+  #addLines(event: CapturedEvent, info: ComponentInfo | undefined, chain: CodeFrame[] | undefined): boolean {
+    const before = event.element;
+    const chainLines = chain !== undefined && before.renderedBy !== undefined && onlyAddsLines(before.renderedBy, chain);
+    const componentLines = info !== undefined && before.component !== undefined && onlyAddsLines([before.component], [info]);
+    if (!chainLines && !componentLines) return false;
+    event.element = {
+      ...before,
+      ...(componentLines ? { component: info } : {}),
+      ...(chainLines ? { renderedBy: chain } : {}),
     };
     return true;
   }

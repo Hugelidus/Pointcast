@@ -5,7 +5,7 @@ import { createIndicator, followWithPill } from "../content/indicator";
 import { createNoteBox } from "../content/note-box";
 import { createPageErrors } from "../content/page-errors";
 import { discardEvent, followState, sendCode, sendDraft, sendError, sendNote } from "../content/recorder-link";
-import { requestRefinedFrameworkInfo } from "../lib/component-bridge";
+import { lacksLines, requestRefinedFrameworkInfo } from "../lib/component-bridge";
 import { createUndoFeedback } from "../content/undo-feedback";
 import { isLocalDevUrl, LOCAL_HOST_MATCHES } from "../hosts";
 import { isCapturableUrl } from "../sites";
@@ -58,7 +58,8 @@ export default defineContentScript({
         if (typed) notes.open(accepted, target);
         // Next.js (D9 note 2026-09-28): a React chain that needs the dev server's source maps is
         // read by the MAIN world after the gesture, and sent when it comes (before Stop, or never).
-        if (draft.element.renderedBy === undefined && draft.element.component?.framework === "react") {
+        // Vite (note 2026-09-29): a React 19 chain read without lines gets them the same way.
+        if (draft.element.component?.framework === "react" && lacksLines(draft.element)) {
           void Promise.all([accepted, requestRefinedFrameworkInfo(target)]).then(([id, info]) => {
             if (id !== undefined && (info.renderedBy !== undefined || info.component?.file !== undefined)) sendCode(id, info);
           });

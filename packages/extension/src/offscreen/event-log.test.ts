@@ -157,3 +157,54 @@ describe("EventLog code chains read after the gesture (Next.js, D9 note 2026-09-
     expect(log.session()[0]?.element).toMatchObject({ renderedBy: [], component: { file: "app/page.tsx", line: 10 } });
   });
 });
+
+describe("EventLog lines read after the gesture (React 19 on Vite, D9 note 2026-09-29)", () => {
+  const viteElement: ElementInfo = {
+    ...element,
+    component: { framework: "react", name: "Sidebar", file: "src/components/Sidebar.tsx" },
+    renderedBy: [
+      { component: "Sidebar", file: "src/App.tsx" },
+      { component: "App", file: "src/main.tsx" },
+    ],
+  };
+  const component = { framework: "react", name: "Sidebar", file: "src/components/Sidebar.tsx", line: 26, column: 44 };
+  const renderedBy = [
+    { component: "Sidebar", file: "src/App.tsx", line: 12, column: 7 },
+    { component: "App", file: "src/main.tsx", line: 7, column: 5 },
+  ];
+
+  it("adds the lines to the chain and the component read at the gesture", () => {
+    const log = new EventLog(0);
+    const { id } = log.add(draft(100, 100, { gesture: "point", element: viteElement }));
+    expect(log.setCode(id, component, renderedBy)).toBe(true);
+    expect(log.session()[0]?.element).toEqual({ ...viteElement, component, renderedBy });
+    // Lines are never changed once there.
+    expect(log.setCode(id, { ...component, line: 30 }, renderedBy.map((frame) => ({ ...frame, line: 1 })))).toBe(false);
+    expect(log.session()[0]?.element).toEqual({ ...viteElement, component, renderedBy });
+  });
+
+  it("takes each part only when it is the gesture's with lines added, and nothing else", () => {
+    const log = new EventLog(0);
+    const { id } = log.add(draft(100, 100, { gesture: "point", element: viteElement }));
+    // Another file, another name, a frame more or less: not taken.
+    expect(log.setCode(id, undefined, [{ ...renderedBy[0], file: "src/Other.tsx" }, renderedBy[1]])).toBe(false);
+    expect(log.setCode(id, undefined, [{ ...renderedBy[0], component: "Nav" }, renderedBy[1]])).toBe(false);
+    expect(log.setCode(id, undefined, renderedBy.slice(0, 1))).toBe(false);
+    expect(log.setCode(id, undefined, [...renderedBy, { component: "Root", file: "src/Root.tsx", line: 3 }])).toBe(false);
+    expect(log.setCode(id, { ...component, name: "Nav" }, undefined)).toBe(false);
+    // The same answer without lines: nothing to add.
+    expect(log.setCode(id, viteElement.component, viteElement.renderedBy)).toBe(false);
+    expect(log.session()[0]?.element).toEqual(viteElement);
+    // The component alone, when only its module was mapped.
+    expect(log.setCode(id, component, viteElement.renderedBy)).toBe(true);
+    expect(log.session()[0]?.element).toEqual({ ...viteElement, component });
+  });
+
+  it("a page's own markup (renderedBy: []) gets its component's line", () => {
+    const log = new EventLog(0);
+    const own = { framework: "react", name: "Dashboard", file: "src/features/dashboard/index.tsx" };
+    const { id } = log.add(draft(100, 100, { gesture: "point", element: { ...element, component: own, renderedBy: [] } }));
+    expect(log.setCode(id, { ...own, line: 81, column: 13 }, [])).toBe(true);
+    expect(log.session()[0]?.element).toMatchObject({ renderedBy: [], component: { file: "src/features/dashboard/index.tsx", line: 81 } });
+  });
+});

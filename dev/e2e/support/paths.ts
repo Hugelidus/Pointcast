@@ -38,6 +38,8 @@ export const PORT_A = 5511;
 export const PORT_B = 5512;
 /** The fake Vite dev server of dev-server.spec.ts (support/fake-vite.ts), started by the test itself. */
 export const PORT_DEV_SERVER = 5513;
+/** The real Vite dev server of dev/examples/react-dashboard (vite-react19.spec.ts), started by the test itself. */
+export const PORT_VITE_REACT = 5514;
 
 /**
  * Where the e2e build hands recordings to a pointcast MCP server (WXT_HANDOFF_PORT in .env.e2e,

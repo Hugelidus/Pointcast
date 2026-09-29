@@ -9,7 +9,8 @@ import { resolveSessionsBase, skippedNewerSessionsNote, type ResolveSessionsBase
 import { announceRecording, CHANNEL_CAPABILITY } from "./channel";
 import { getElement } from "./get-element";
 import { VERSION } from "../version";
-import { getSession, listSessions, resolveSessionDirById, type GetSessionResult, type RepoOption, type SessionSummary } from "./sessions";
+import { readSessionFile } from "../process/session-file";
+import { getSession, listSessions, matchesProject, projectReader, resolveSessionDirById, type GetSessionResult, type RepoOption, type SessionSummary } from "./sessions";
 import { RecordingWatch, type NewRecording } from "./watch";
 
 /** Text-only tool result, the shape every tool below returns. */
@@ -173,7 +174,9 @@ export function createServer(options: ServerOptions): McpServer {
         "Wait for the user's next pointcast recording and return its spec. Use when the user asks you to listen/watch for " +
         "recordings; after applying one, call it again to keep listening. Returns as soon as a new recording arrives " +
         "(the user pressed Stop in the extension), with the same spec and warnings as get_session, or after " +
-        'timeoutSeconds with "No new recording yet": that is not an error, call it again to keep listening.',
+        'timeoutSeconds with "No new recording yet": that is not an error, call it again to keep listening. ' +
+        "By default only recordings made on this project count (as with get_session's \"latest-here\"); " +
+        "anyProject: true returns every recording.",
       inputSchema: {
         timeoutSeconds: z
           .number()
@@ -185,16 +188,33 @@ export function createServer(options: ServerOptions): McpServer {
             `How long to wait, at most ${MAX_WAIT_SECONDS}. Default: what this client allows a tool call ` +
               `(${LONG_WAIT_SECONDS} for Claude Code and Gemini CLI, ${SHORT_WAIT_SECONDS} for others).`,
           ),
+        anyProject: z
+          .boolean()
+          .optional()
+          .describe(
+            "Return recordings from any project. Default false: recordings whose source files are all missing from this " +
+              "project are skipped (and left for an agent session on the right project); ones that name no files are kept.",
+          ),
         repo: repoArgument,
       },
       annotations: { readOnlyHint: true },
     },
-    async ({ timeoutSeconds, repo }, extra) => {
+    async ({ timeoutSeconds, anyProject, repo }, extra) => {
       const seconds = timeoutSeconds ?? defaultWaitSeconds(server.server.getClientVersion()?.name);
+      let accept: ((dir: string) => Promise<boolean>) | undefined;
+      try {
+        accept = anyProject ? undefined : await projectFilter(repoFor(repo)!);
+      } catch (error) {
+        return toolError(error);
+      }
       const stopProgress = reportProgress(extra, seconds, options.progressEveryMs ?? PROGRESS_EVERY_MS);
       let found: NewRecording | undefined;
       try {
-        found = await watch.next({ timeoutMs: seconds * 1000, signal: extra.signal });
+        found = await watch.next({
+          timeoutMs: seconds * 1000,
+          signal: extra.signal,
+          ...(accept ? { accept } : {}),
+        });
       } finally {
         stopProgress();
       }
@@ -216,6 +236,28 @@ export function createServer(options: ServerOptions): McpServer {
   );
 
   return server;
+}
+
+/**
+ * wait_for_recording's default filter, "latest-here"'s rule: a recording is this project's unless
+ * it names source files and none of them is here. One project reader per call (its file scan runs
+ * once), and one verdict per recording, since the poll offers the same folders again and again.
+ */
+async function projectFilter(repo: { root: string; explicit: boolean }): Promise<(dir: string) => Promise<boolean>> {
+  const reader = await projectReader(repo);
+  const verdicts = new Map<string, Promise<boolean>>();
+  return (dir) => {
+    let verdict = verdicts.get(dir);
+    if (verdict === undefined) {
+      verdict = readSessionFile(dir).then(
+        async (session) => (await matchesProject(session, reader)) !== false,
+        // Unreadable: let get_session say why rather than wait on it forever.
+        () => true,
+      );
+      verdicts.set(dir, verdict);
+    }
+    return verdict;
+  };
 }
 
 /** The longest wait_for_recording accepts: under Claude Code's 30-minute idle limit for stdio servers, even with no progress. */

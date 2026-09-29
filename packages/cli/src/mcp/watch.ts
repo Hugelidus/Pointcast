@@ -89,12 +89,14 @@ export class RecordingWatch {
   /**
    * The oldest new recording, as soon as there is one; undefined once `timeoutMs` has passed or
    * `signal` aborts. Never throws: a sessions folder that does not exist yet has no recordings.
+   * With `accept`, only recordings it accepts count (wait_for_recording: this project's); the
+   * others are left as they are, not delivered, so a later call without the filter still gets them.
    */
-  async next(options: { timeoutMs: number; signal?: AbortSignal }): Promise<NewRecording | undefined> {
+  async next(options: { timeoutMs: number; signal?: AbortSignal; accept?: (dir: string) => Promise<boolean> }): Promise<NewRecording | undefined> {
     this.baseline ??= new Set(await this.folders());
     const deadline = this.now() + options.timeoutMs;
     for (;;) {
-      const found = await this.ready();
+      const found = await this.ready(options.accept);
       if (found !== undefined) {
         this.delivered.add(found.id);
         return found;
@@ -105,13 +107,16 @@ export class RecordingWatch {
     }
   }
 
-  private async ready(): Promise<NewRecording | undefined> {
+  private async ready(accept: ((dir: string) => Promise<boolean>) | undefined): Promise<NewRecording | undefined> {
     const baseline = this.baseline!;
     const fresh = (await this.folders()).filter((name) => !baseline.has(name) && !this.delivered.has(name)).sort();
     // One clock reading per pass: folders that arrived together settle together.
     const now = this.now();
     const ready: string[] = [];
-    for (const name of fresh) if (await this.isReady(name, now)) ready.push(name);
+    for (const name of fresh) {
+      if (!(await this.isReady(name, now))) continue;
+      if (accept === undefined || (await accept(path.join(this.base, name)))) ready.push(name);
+    }
     if (ready.length === 0) return undefined;
     return { id: ready[0]!, dir: path.join(this.base, ready[0]!), waiting: ready.length - 1 };
   }

@@ -155,8 +155,8 @@ clipboard is the fallback for agents without MCP. Its 4 read-only tools:
   `8 requests · 17 elements · ~3,100 tokens`.
 - **get_element** — the full captured detail (selector, source location, styles, framework
   component, …) of one event, by session id and event id (e.g. `"e3"`).
-- **wait_for_recording** — waits for your next recording and returns its spec, like
-  `get_session`, as soon as you press Stop; after `timeoutSeconds` it answers "No new recording
+- **wait_for_recording** — waits for your next recording made on this project (`anyProject: true`
+  for any) and returns its spec, like `get_session`, as soon as you press Stop; after `timeoutSeconds` it answers "No new recording
   yet", and the agent calls it again. This is what `/pointcast watch` loops on.
 
 An unknown session id gets the 3 newest ids with their preview in the error; an unknown event id
@@ -178,7 +178,11 @@ one-line warning that the recording is probably from another project.
 ### Listening: `wait_for_recording`
 
 `wait_for_recording` returns as soon as a new recording arrives: one that was not in the sessions
-folder when the agent first called it, and that no tool returned since. So a recording you make
+folder when the agent first called it, and that no tool returned since. By default only this
+project's recordings count, by the same rule as `"latest-here"`: one whose source files are all
+missing from the project is skipped, and one that names no files is kept. A skipped recording is
+not used up: an agent session on the right project still gets it, and `anyProject: true` returns
+every recording, with the other-project warning when it applies. So a recording you make
 while the agent is still applying the previous one is returned by the next call, and one it
 already read with `get_session` is not returned twice. It works with several agent sessions open:
 only one server receives from the extension, and the others see the recording appear in the

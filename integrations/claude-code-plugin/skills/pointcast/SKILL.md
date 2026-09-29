@@ -24,8 +24,8 @@ If the user wrote `watch` after the command, or asks you to listen or watch for 
 Watch mode: keep applying the user's recordings as they make them, until they tell you to stop.
 
 1. Tell the user in one line that you are listening, and that they can record in the browser now.
-2. Call `wait_for_recording`. If it answers "No new recording yet", call it again right away, without writing anything to the user.
-3. When it returns a recording, apply it with steps 2 to 5 above. The same rules hold: if it starts with the other-project **Warning**, do not edit; tell the user and ask whether to apply it here or keep listening. If a request is ambiguous, ask, and wait for the answer before going on.
+2. Call `wait_for_recording`. It only returns recordings made on this project: one whose source files are all missing here is left for an agent working on that project. If it answers "No new recording yet", call it again right away, without writing anything to the user. Pass `anyProject: true` only when the user asks for recordings from any project.
+3. When it returns a recording, apply it with steps 2 to 5 above. The same rules hold: if it starts with the other-project **Warning** (only possible with `anyProject`), do not edit; tell the user and ask whether to apply it here or keep listening. A recording that names no source files cannot be checked against the project: if its pages do not look like this project's app, ask before editing. If a request is ambiguous, ask, and wait for the answer before going on.
 4. Report briefly: one line per request with the `file:line` you changed, or why you skipped it.
 5. Go back to step 2. Stop when the user says so.
 

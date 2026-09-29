@@ -1,7 +1,10 @@
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import type { SessionFile } from "@pointcast/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { projectWith, sessionWithChain, SOURCES, TOOLBAR } from "../resolve/test-support";
 import { createServer, defaultWaitSeconds, LONG_WAIT_SECONDS, SHORT_WAIT_SECONDS } from "./server";
 import { connectClient } from "./test-transport";
 import { RecordingWatch } from "./watch";
@@ -170,5 +173,64 @@ describe("wait_for_recording", () => {
     function arrive(id: string) {
       cpSync(FIXTURE, join(base, id), { recursive: true });
     }
+  });
+});
+
+describe("wait_for_recording returns this project's recordings by default", () => {
+  let base: string;
+  let repo: string;
+
+  /** The chain session, its files pointing at `file` (in SOURCES, or nowhere). */
+  function arriveWithChain(id: string, file: string) {
+    const dir = sessionWithChain();
+    const session = JSON.parse(readFileSync(join(dir, "session.json"), "utf8")) as SessionFile;
+    session.events.find((e) => e.id === "e2")!.element.renderedBy = [{ file, line: 3 }];
+    writeFileSync(join(dir, "session.json"), JSON.stringify(session));
+    renameSync(dir, join(base, id));
+  }
+  const textOf = (result: Awaited<ReturnType<Client["callTool"]>>) => (result.content as Array<{ text: string }>)[0]!.text;
+
+  beforeEach(() => {
+    base = mkdtempSync(join(tmpdir(), "pointcast-wait-project-"));
+    cpSync(FIXTURE, join(base, OLD), { recursive: true });
+    repo = projectWith(SOURCES);
+  });
+  afterEach(() => {
+    rmSync(base, { recursive: true, force: true });
+    rmSync(repo, { recursive: true, force: true });
+  });
+
+  it("skips another project's recording without consuming it; anyProject gets it", async () => {
+    const server = createServer({ dirFlag: base, repoRoot: repo, watch: new RecordingWatch({ base, ...FAST }) });
+    const client = await connectClient(server);
+    // Start listening, then another project's recording arrives, then this project's.
+    expect(textOf(await client.callTool({ name: "wait_for_recording", arguments: { timeoutSeconds: 1 } }))).toMatch(/^No new recording yet/);
+    arriveWithChain(NEW, "src/Elsewhere.tsx");
+    arriveWithChain(NEWER, TOOLBAR);
+
+    const here = textOf(await client.callTool({ name: "wait_for_recording", arguments: { timeoutSeconds: 10 } }));
+    expect(here.split("\n")[0]).toBe(`New recording ${NEWER}.`);
+    expect(here).not.toContain("**Warning:**");
+    expect(textOf(await client.callTool({ name: "wait_for_recording", arguments: { timeoutSeconds: 1 } }))).toMatch(/^No new recording yet/);
+
+    // Still new: a session on the right project (or anyProject here) gets it, with the warning.
+    const any = textOf(await client.callTool({ name: "wait_for_recording", arguments: { timeoutSeconds: 10, anyProject: true } }));
+    expect(any.split("\n")[0]).toBe(`New recording ${NEW}.`);
+    expect(any).toContain("**Warning:**");
+    await client.close();
+    await server.close();
+  });
+
+  it("keeps a recording that names no files, and says a wrong project folder", async () => {
+    const server = createServer({ dirFlag: base, repoRoot: repo, watch: new RecordingWatch({ base, ...FAST }) });
+    const client = await connectClient(server);
+    expect(textOf(await client.callTool({ name: "wait_for_recording", arguments: { timeoutSeconds: 1 } }))).toMatch(/^No new recording yet/);
+    cpSync(FIXTURE, join(base, NEW), { recursive: true });
+    expect(textOf(await client.callTool({ name: "wait_for_recording", arguments: { timeoutSeconds: 10 } })).split("\n")[0]).toBe(`New recording ${NEW}.`);
+
+    const wrong = await client.callTool({ name: "wait_for_recording", arguments: { timeoutSeconds: 1, repo: join(repo, "nope") } });
+    expect(wrong.isError).toBe(true);
+    await client.close();
+    await server.close();
   });
 });

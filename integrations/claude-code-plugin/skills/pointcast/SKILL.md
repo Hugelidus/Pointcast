@@ -2,7 +2,7 @@
 name: pointcast
 description: Apply a pointcast recording (what the user said while pointing at elements of their web app) as code changes in this project. Use when the user asks to apply, implement or read a pointcast recording or session.
 argument-hint: "[session-id]"
-allowed-tools: mcp__plugin_pointcast_pointcast__list_sessions mcp__plugin_pointcast_pointcast__get_session mcp__plugin_pointcast_pointcast__get_element
+allowed-tools: mcp__plugin_pointcast_pointcast__list_sessions mcp__plugin_pointcast_pointcast__get_session mcp__plugin_pointcast_pointcast__get_element mcp__plugin_pointcast_pointcast__wait_for_recording
 ---
 
 Apply a pointcast recording to this project.
@@ -19,4 +19,4 @@ Apply a pointcast recording to this project.
 5. If a request is ambiguous, ask before editing it. Change only what was asked.
 6. When you are done, list each request with the `file:line` you changed, and any request you skipped and why.
 
-`get_element` returns everything recorded about one pointed element (HTML, styles, selector, component chain). Event ids are `e1`, `e2`… in the order the user pointed.
+`get_element` returns everything recorded about one pointed element (HTML, styles, selector, component chain). Event ids are `e1`, `e2`… in the order the user pointed. `wait_for_recording` waits for the user's next recording and returns its spec, as `get_session` does.

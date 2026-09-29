@@ -24,12 +24,12 @@ describe("pointcast mcp server (smoke test)", () => {
     rmSync(base, { recursive: true, force: true });
   });
 
-  it("lists the 3 tools and can call each of them end-to-end over the wire protocol", async () => {
+  it("lists the 4 tools and can call each of them end-to-end over the wire protocol", async () => {
     const server = createServer({ dirFlag: base, repoRoot: base });
     const client = await connectClient(server);
 
     const { tools } = await client.listTools();
-    expect(tools.map((t) => t.name).sort()).toEqual(["get_element", "get_session", "list_sessions"]);
+    expect(tools.map((t) => t.name).sort()).toEqual(["get_element", "get_session", "list_sessions", "wait_for_recording"]);
 
     const listed = await client.callTool({ name: "list_sessions", arguments: {} });
     expect(JSON.stringify(listed.content)).toContain("2026-01-02_09-00-00");
@@ -60,6 +60,7 @@ describe("pointcast mcp server (smoke test)", () => {
       ["list_sessions", true],
       ["get_session", true],
       ["get_element", true],
+      ["wait_for_recording", true],
     ]);
 
     // Gemini CLI copies a tool's JSON text into structuredContent, which MCP requires to be an

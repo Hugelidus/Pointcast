@@ -14,7 +14,10 @@ import {
   sessionPath,
 } from "@pointcast/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createServer } from "../mcp/server";
 import { getSession, listSessions, resolveSessionDirById } from "../mcp/sessions";
+import { connectClient } from "../mcp/test-transport";
+import { RecordingWatch } from "../mcp/watch";
 import { startHandoffReceiver, type HandoffReceiver, type HandoffReceiverOptions } from "./receiver";
 import { displayPath } from "./store";
 import { recording, SESSION_ID, type Recording } from "./test-support";
@@ -235,6 +238,45 @@ describe("handoff receiver", () => {
     expect((await listSessions({ dirFlag: base })).map((session) => session.id)).toEqual([SESSION_ID]);
     const { dir: latest } = await resolveSessionDirById({ dirFlag: base }, "latest");
     expect((await getSession(latest)).markdown).toBe(rec.bytes["session.md"]!.toString("utf8"));
+  });
+
+  it("wait_for_recording round trip: an agent waiting gets the recording the extension hands over", async () => {
+    const watch = new RecordingWatch({ base, pollMs: 60_000 });
+    const stored: string[] = [];
+    const { port } = await listening({
+      onStored: (id) => {
+        stored.push(id);
+        watch.stored(id);
+      },
+    });
+    // A recording from before the agent started listening is not "new".
+    expect((await upload(port, OTHER_ID)).status).toBe(201);
+
+    const server = createServer({ dirFlag: base, repoRoot: base, watch });
+    const client = await connectClient(server);
+    const started = Date.now();
+    const waiting = client.callTool({ name: "wait_for_recording", arguments: { timeoutSeconds: 30 } });
+    // The call has reached the server, which noted what was there, before the recording arrives.
+    await until(() => watch.listening, "the agent to start listening");
+    expect((await upload(port, SESSION_ID)).status).toBe(201);
+
+    const result = await waiting;
+    // The poll is a minute apart here: only the receiver's own event can have ended the wait.
+    expect(Date.now() - started).toBeLessThan(5_000);
+    expect(stored).toEqual([OTHER_ID, SESSION_ID]);
+    expect(result.isError).toBeFalsy();
+    const body = (result.content as Array<{ text: string }>)[0]!.text;
+    expect(body.split("\n\n").slice(0, 3)).toEqual([`New recording ${SESSION_ID}.`, `# ${SESSION_ID}`, "0 elements · ~10 tokens"]);
+    expect(body).toContain("Cambia «esto» → 👍");
+
+    // Nothing newer: the next call times out, with a text that says to call again, not an error.
+    const again = await client.callTool({ name: "wait_for_recording", arguments: { timeoutSeconds: 1 } });
+    expect(again.isError).toBeFalsy();
+    expect((again.content as Array<{ text: string }>)[0]!.text).toBe(
+      "No new recording yet (waited 1 s). Call wait_for_recording again to keep listening.",
+    );
+    await client.close();
+    await server.close();
   });
 
   it("stores a recording with only session.json", async () => {

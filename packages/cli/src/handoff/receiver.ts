@@ -30,6 +30,12 @@ export interface HandoffReceiverOptions {
   log?: (message: string) => void;
   /** How often to try the port again while another process holds it. Default 3000. */
   retryMs?: number;
+  /**
+   * Called once a recording is stored, complete, in `<base>/<id>` (wait_for_recording, and the
+   * channel notification). An error in it is logged, never answered to the extension: the
+   * recording is stored either way.
+   */
+  onStored?: (id: string) => void;
 }
 
 export interface HandoffReceiver {
@@ -192,6 +198,11 @@ export function startHandoffReceiver(options: HandoffReceiverOptions): HandoffRe
       if (result.status !== 201) return fail(res, result.error, result.message);
       log(`stored recording ${id} in ${result.dir}`);
       answer(res, 201, { app: "pointcast", id, dir: result.dir });
+      try {
+        options.onStored?.(id);
+      } catch (error) {
+        log(`after storing ${id}: ${(error as Error).message}`);
+      }
     } finally {
       uploading = false;
     }

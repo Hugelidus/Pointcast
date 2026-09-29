@@ -1,6 +1,6 @@
 import { codeFirstLines, codePointerLines } from "./code-pointer";
 import { elementKey, elementText, urlLabel } from "./describe";
-import { htmlAddsInformation, htmlSnippet, rootAttributes, searchHints, stylesLine } from "./element-hints";
+import { htmlAddsInformation, htmlSnippet, ID_DATA_ATTRIBUTES, rootAttributes, searchHints, stylesLine } from "./element-hints";
 import type { Placement } from "./fuse";
 import { codeSpan, escapeLineStart, escapeMarkdown, oneLine, truncate } from "./markdown";
 import { findMisheard } from "./misheard";
@@ -425,9 +425,13 @@ function siblings(blocks: readonly ElementBlock[]): boolean {
   return commonFind(blocks) !== undefined && commonPath(blocks) !== undefined;
 }
 
+/** `find:` parts that may take any value across a run: a link, an SVG item's identifier. */
+const VARYING_KEYS: readonly string[] = ["href", ...ID_DATA_ATTRIBUTES];
+
 /** A `find:` part that may differ between siblings, listed with every element's value. */
 interface VaryingPart {
-  key: "href" | "label";
+  /** `label`, `href`, or an SVG item's identifier attribute (`data-id`…, ID_DATA_ATTRIBUTES). */
+  key: string;
   values: string[];
 }
 
@@ -437,7 +441,8 @@ function findParts(block: ElementBlock): string[] {
 
 /**
  * The `find:` parts shared by a run, and the ones that differ: `href` (the rows of a list that
- * each link to their own page, D5 note 2026-09-29) and `label` when it differs only as the texts
+ * each link to their own page, D5 note 2026-09-29), an SVG item's identifier (the `data-id` of
+ * each star of a map, D7 note 2026-09-29) and `label` when it differs only as the texts
  * do (`«Ver Álgebra»`, `«Ver Cálculo»`). Any other difference, or a part only some elements have,
  * means they are not shown as copies of one component: undefined.
  */
@@ -451,8 +456,9 @@ function commonFind(run: readonly ElementBlock[]): { shared: string[]; varying: 
     const values = parts.map((p) => p[i]);
     if (values.every((value) => value === values[0])) {
       shared.push(values[0]);
-    } else if (values.every((value) => value.startsWith("href "))) {
-      varying.push({ key: "href", values: values.map((value) => value.slice("href ".length)) });
+    } else if (VARYING_KEYS.some((key) => values.every((value) => value.startsWith(`${key} `)))) {
+      const key = VARYING_KEYS.find((k) => values.every((value) => value.startsWith(`${k} `))) ?? "";
+      varying.push({ key, values: values.map((value) => value.slice(key.length + 1)) });
     } else if (values.every((value) => value.startsWith("label «")) && sameMasked(values, run)) {
       varying.push({ key: "label", values: values.map((value) => value.slice("label ".length)) });
     } else {
@@ -489,6 +495,18 @@ function commonPath(run: readonly ElementBlock[]): string | undefined {
     const tag = labelled[0]?.[1];
     if (tag !== undefined && labelled.every((match) => match?.[1] === tag) && sameMasked(values, run)) {
       segments[at] = `${tag}«…»`;
+      continue;
+    }
+    // An SVG item named by its identifier (`g[data-id=limites]`), whose values find: lists.
+    const identified = values.map((value) => /^([^[«]+)\[([\w-]+)=.*\]$/.exec(value));
+    const itemTag = identified[0]?.[1];
+    const attribute = identified[0]?.[2] ?? "";
+    if (
+      itemTag !== undefined &&
+      ID_DATA_ATTRIBUTES.includes(attribute) &&
+      identified.every((match) => match?.[1] === itemTag && match[2] === attribute)
+    ) {
+      segments[at] = `${itemTag}[${attribute}=…]`;
       continue;
     }
     // One indexed segment at most: the elements are items of one list.
@@ -567,8 +585,11 @@ function findLines(run: readonly ElementBlock[], range: string, detail: Detail):
 function withoutText(line: string, element: ElementInfo): string {
   const text = oneLine(elementText(element));
   let masked = text === "" ? line : line.split(escapeMarkdown(text)).join("\u0000").split(text).join("\u0000");
-  const href = rootAttributes(element.html).get("href");
-  if (href) masked = masked.split(href).join("\u0001");
+  const attributes = rootAttributes(element.html);
+  for (const name of VARYING_KEYS) {
+    const value = attributes.get(name);
+    if (value) masked = masked.split(value).join("\u0001");
+  }
   return masked.replace(/\d+/g, "#");
 }
 

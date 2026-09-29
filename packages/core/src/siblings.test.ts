@@ -243,3 +243,39 @@ describe("sibling runs whose links differ", () => {
     expect(request(render(SUBJECTS.slice(0, 2)))).not.toContain(" × ");
   });
 });
+
+/** Stars of a concept map (D7 note 2026-09-29): `<g data-id>` items drawn by one component. */
+function concept(id: string, extra: Partial<ElementInfo> = {}): ElementInfo {
+  return {
+    tag: "g",
+    text: "",
+    context: "Mapa de conceptos",
+    selector: `g[data-id="${id}"]`,
+    selectorUnique: true,
+    path: `main › svg«Mapa de conceptos» › g[data-id=${id}]`,
+    html: `<g data-id="${id}" class="concept"><circle class="star"/></g>`,
+    styles: STYLES,
+    component: { framework: "react", name: "ConceptNode", file: "src/map/ConceptNode.tsx", line: 7 },
+    renderedBy: [{ component: "ConceptNode", file: "src/map/ConceptMap.tsx", line: 52 }],
+    ...extra,
+  };
+}
+
+describe("sibling runs of SVG items whose identifiers differ", () => {
+  it("groups them, listing the identifiers in letter order like links", () => {
+    const md = request(render(["limites", "derivadas", "integrales"].map((id) => concept(id))));
+    expect(md).toContain("- [a–c] 3 × → code:");
+    expect(md).toContain("  - find: class `concept` · component `ConceptNode` (react) in `src/map/ConceptNode.tsx:7`");
+    expect(md).toContain("  - data-id [a–c]: `limites`, `derivadas`, `integrales`");
+    expect(md).toContain("  - in: `main › svg«Mapa de conceptos» › g[data-id=…]`");
+    // The html differs only by the identifier: the first element's line alone.
+    expect(md).toContain('  - [a] html: `<g data-id="limites" class="concept"><circle class="star"/></g>`');
+    expect(md).not.toContain("[b] html:");
+  });
+
+  it("keeps the guards: never a pair, and nothing else may differ", () => {
+    expect(request(render([concept("limites"), concept("derivadas")]))).not.toContain(" × ");
+    const odd = concept("integrales", { html: '<g data-id="integrales" class="concept destacado"><circle class="star"/></g>' });
+    expect(request(render([concept("limites"), concept("derivadas"), odd]))).not.toContain(" × ");
+  });
+});

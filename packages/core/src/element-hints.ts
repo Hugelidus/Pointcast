@@ -152,7 +152,7 @@ const SHOWN_ATTRIBUTES = new Set(["id", "data-testid", "name", "href", "class", 
  * Identifier data attributes the extension keeps on an SVG item (`<g data-id="limites">`, D7 note
  * 2026-09-29); the only elements whose html carries them, so HTML elements' hints are unchanged.
  */
-const ID_DATA_ATTRIBUTES = ["data-id", "data-key", "data-node", "data-node-id", "data-name", "data-slug"];
+export const ID_DATA_ATTRIBUTES: readonly string[] = ["data-id", "data-key", "data-node", "data-node-id", "data-name", "data-slug"];
 for (const name of ID_DATA_ATTRIBUTES) SHOWN_ATTRIBUTES.add(name);
 
 /**

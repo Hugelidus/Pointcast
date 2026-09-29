@@ -7,6 +7,7 @@ import { DEFAULT_DESCRIBE_OPTIONS, type DescribeOptions } from "./options";
 import { redactPersonalText } from "./personal";
 import { isSensitive, sanitizeHtml } from "./sanitize";
 import { buildComposedSelector } from "./selector";
+import { hasSvgTitle, isSvgElement, svgIdAttribute, svgTitle } from "./svg";
 import { collapseWhitespace, truncate, visibleText } from "./text";
 
 const MAX_TEXT = 200;
@@ -60,6 +61,8 @@ function labelOf(el: Element, options: DescribeOptions): string | undefined {
   const candidates: (() => string | null | undefined)[] = [
     () => (sensitive ? undefined : el.getAttribute("aria-label")),
     () => labelledByText(el, options),
+    // An SVG element's <title> child (a bar's "Enero: 120"), which is its own text like aria-label.
+    () => (sensitive ? undefined : svgTitle(el, options)),
     () => {
       // `labels` exists on labelable elements only (input, select, textarea, button, …).
       const labels = (el as Partial<HTMLInputElement>).labels;
@@ -146,7 +149,8 @@ const FOLLOWING = 4;
 function regionName(el: Element, options: DescribeOptions): string | undefined {
   // PRIVACY (D8): same rule as pathSegment, a sensitive element's aria-label may hold a value.
   if (isSensitive(el, options)) return undefined;
-  const name = collapseWhitespace(el.getAttribute("aria-label") ?? "") || collapseWhitespace(labelledByText(el, options));
+  const name =
+    collapseWhitespace(el.getAttribute("aria-label") ?? "") || collapseWhitespace(labelledByText(el, options)) || svgTitle(el, options);
   if (name === "") return undefined;
   // A tab panel is named by its tab: "Overview tab", so it does not read as a card called
   // "Overview" (shadcn-admin's dashboard has both).
@@ -265,8 +269,12 @@ function pathSegment(el: Element, options: DescribeOptions): string {
   // PRIVACY (D8): the path is kept even for sensitive elements, so a sensitive segment (or one
   // inside a sensitive subtree) must not spell out its aria-label — it can hold the value itself
   // (an accessible name built from the field's content), unlike a plain id or class name.
-  const label = isSensitive(el, options) ? "" : collapseWhitespace(el.getAttribute("aria-label") ?? "");
+  // An SVG element is named by its <title> child when it has no aria-label: `circle«Límite»`.
+  const label = isSensitive(el, options) ? "" : collapseWhitespace(el.getAttribute("aria-label") ?? "") || svgTitle(el, options);
   if (label !== "") return `${el.localName}«${truncate(label, MAX_PATH_LABEL)}»`;
+  // An SVG item named by its identifier only (`<g data-id="limites">`): `g[data-id=limites]`.
+  const item = isSensitive(el, options) ? undefined : svgIdAttribute(el);
+  if (item !== undefined) return `${el.localName}[${item.name}=${truncate(item.value, MAX_PATH_LABEL)}]`;
 
   const role = el.getAttribute("role");
   let segment = role ? `${el.localName}[role=${role}]` : el.localName;
@@ -279,6 +287,9 @@ function pathSegment(el: Element, options: DescribeOptions): string {
 
 function isPathLandmark(el: Element): boolean {
   if (PATH_TAGS.has(el.localName) || stableId(el) !== undefined || el.hasAttribute("aria-label")) return true;
+  // Inside a drawing: the <svg> itself (the path says the element is drawn in SVG) and the groups
+  // and shapes named by a <title> child or an identifier data attribute.
+  if (isSvgElement(el) && (el.localName === "svg" || hasSvgTitle(el) || svgIdAttribute(el) !== undefined)) return true;
   const role = el.getAttribute("role");
   return role !== null && role !== "presentation" && role !== "none";
 }

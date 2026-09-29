@@ -1,6 +1,6 @@
 import { codeFirstLines, codePointerLines } from "./code-pointer";
 import { elementKey, elementText, urlLabel } from "./describe";
-import { htmlAddsInformation, htmlSnippet, searchHints, stylesLine } from "./element-hints";
+import { htmlAddsInformation, htmlSnippet, ID_DATA_ATTRIBUTES, rootAttributes, searchHints, stylesLine } from "./element-hints";
 import type { Placement } from "./fuse";
 import { codeSpan, escapeLineStart, escapeMarkdown, oneLine, truncate } from "./markdown";
 import { findMisheard } from "./misheard";
@@ -285,6 +285,8 @@ function noteQuote(note: string, tags: string): string {
 interface Detail {
   kind: string;
   text: string;
+  /** The `find:` line's grep keys, one per part (searchHints), for sibling runs to compare. */
+  parts?: string[];
 }
 
 /** One element of a request, ready to render alone or in a sibling run. */
@@ -382,9 +384,9 @@ const PER_ELEMENT = new Set(["html", "selector", "said", "heard"]);
  * entry (siblingLines), any other element alone (a run of one). Siblings are consecutive elements
  * described in full, with code information (it is what tells they are copies of one component),
  * without errors or selections, whose lines are all the same (code locations,
- * `text at`/`data at`/`shown by`, `find`, `styles`, and the tag, card and page on screen) except
- * their text, their `in:` path, which may differ in the `[n]` index of one segment only, and the
- * PER_ELEMENT lines. Greedy from the first element: each run is as long as it can be.
+ * `text at`/`data at`/`shown by`, `styles`, and the tag, card and page on screen) except
+ * their text, their `in:` path (commonPath), the `href` and `label` parts of `find:` (commonFind),
+ * and the PER_ELEMENT lines. Greedy from the first element: each run is as long as it can be.
  */
 function siblingRuns(blocks: readonly ElementBlock[]): ElementBlock[][] {
   const runs: ElementBlock[][] = [];
@@ -403,6 +405,9 @@ function siblingRuns(blocks: readonly ElementBlock[]): ElementBlock[][] {
   return runs;
 }
 
+/** Lines compared part by part (commonFind) or segment by segment (commonPath), not as a whole. */
+const COMPARED_APART = new Set(["find", "in", "on screen"]);
+
 function siblings(blocks: readonly ElementBlock[]): boolean {
   const alone = (block: ElementBlock) => block.describedIn !== undefined || block.errors.length > 0 || block.selected;
   const signature = (block: ElementBlock) =>
@@ -411,43 +416,124 @@ function siblings(blocks: readonly ElementBlock[]): boolean {
       block.element.tag,
       block.rest,
       block.details.map((d) => d.kind),
-      block.details.filter((d) => !PER_ELEMENT.has(d.kind) && d.kind !== "in" && d.kind !== "on screen"),
+      block.details.filter((d) => !PER_ELEMENT.has(d.kind) && !COMPARED_APART.has(d.kind)),
     ]);
   // Only elements whose code is known: it is what tells that they are copies of one component.
   if (blocks.some(alone) || !blocks[0].details.some((d) => d.kind === "code")) return false;
   const first = signature(blocks[0]);
   if (blocks.some((block) => signature(block) !== first)) return false;
-  return commonPath(blocks.map((block) => block.element.path)) !== undefined;
+  return commonFind(blocks) !== undefined && commonPath(blocks) !== undefined;
+}
+
+/** `find:` parts that may take any value across a run: a link, an SVG item's identifier. */
+const VARYING_KEYS: readonly string[] = ["href", ...ID_DATA_ATTRIBUTES];
+
+/** A `find:` part that may differ between siblings, listed with every element's value. */
+interface VaryingPart {
+  /** `label`, `href`, or an SVG item's identifier attribute (`data-id`…, ID_DATA_ATTRIBUTES). */
+  key: string;
+  values: string[];
+}
+
+function findParts(block: ElementBlock): string[] {
+  return block.details.find((detail) => detail.kind === "find")?.parts ?? [];
+}
+
+/**
+ * The `find:` parts shared by a run, and the ones that differ: `href` (the rows of a list that
+ * each link to their own page, D5 note 2026-09-29), an SVG item's identifier (the `data-id` of
+ * each star of a map, D7 note 2026-09-29) and `label` when it differs only as the texts
+ * do (`«Ver Álgebra»`, `«Ver Cálculo»`). Any other difference, or a part only some elements have,
+ * means they are not shown as copies of one component: undefined.
+ */
+function commonFind(run: readonly ElementBlock[]): { shared: string[]; varying: VaryingPart[] } | undefined {
+  const parts = run.map(findParts);
+  const count = parts[0].length;
+  if (parts.some((p) => p.length !== count)) return undefined;
+  const shared: string[] = [];
+  const varying: VaryingPart[] = [];
+  for (let i = 0; i < count; i++) {
+    const values = parts.map((p) => p[i]);
+    if (values.every((value) => value === values[0])) {
+      shared.push(values[0]);
+    } else if (VARYING_KEYS.some((key) => values.every((value) => value.startsWith(`${key} `)))) {
+      const key = VARYING_KEYS.find((k) => values.every((value) => value.startsWith(`${k} `))) ?? "";
+      varying.push({ key, values: values.map((value) => value.slice(key.length + 1)) });
+    } else if (values.every((value) => value.startsWith("label «")) && sameMasked(values, run)) {
+      varying.push({ key: "label", values: values.map((value) => value.slice("label ".length)) });
+    } else {
+      return undefined;
+    }
+  }
+  return { shared, varying };
+}
+
+/** The same line once each element's own text, link and numbers are left out (withoutText). */
+function sameMasked(lines: readonly string[], run: readonly ElementBlock[]): boolean {
+  const masked = lines.map((line, k) => withoutText(line, run[k].element));
+  return masked.every((line) => line === masked[0]);
 }
 
 /**
  * `main › ul › li[1..7]` for paths that are the same but for the `[n]` index of one segment
  * (`li[1, 3, 4]` when the indexes do not follow each other), the path itself when all are the
- * same, undefined otherwise.
+ * same, undefined otherwise. A labelled segment may also differ as the texts do (`a«Álgebra»`,
+ * `a«Cálculo»`): it reads `a«…»`, since the texts are listed in the entry's head.
  */
-function commonPath(paths: readonly string[]): string | undefined {
+function commonPath(run: readonly ElementBlock[]): string | undefined {
+  const paths = run.map((block) => block.element.path);
   const split = paths.map((path) => path.split(" › "));
   const length = split[0].length;
   if (split.some((segments) => segments.length !== length)) return undefined;
   const differing = [...Array(length).keys()].filter((i) => split.some((segments) => segments[i] !== split[0][i]));
   if (differing.length === 0) return paths[0];
-  if (differing.length > 1) return undefined;
-  const at = differing[0];
-  const indexed = split.map((segments) => /^(.*)\[(\d+)\]$/.exec(segments[at]));
+  const segments = [...split[0]];
+  let indexed = false;
+  for (const at of differing) {
+    const values = split.map((s) => s[at]);
+    const labelled = values.map((value) => /^([^«]+)«.*»$/.exec(value));
+    const tag = labelled[0]?.[1];
+    if (tag !== undefined && labelled.every((match) => match?.[1] === tag) && sameMasked(values, run)) {
+      segments[at] = `${tag}«…»`;
+      continue;
+    }
+    // An SVG item named by its identifier (`g[data-id=limites]`), whose values find: lists.
+    const identified = values.map((value) => /^([^[«]+)\[([\w-]+)=.*\]$/.exec(value));
+    const itemTag = identified[0]?.[1];
+    const attribute = identified[0]?.[2] ?? "";
+    if (
+      itemTag !== undefined &&
+      ID_DATA_ATTRIBUTES.includes(attribute) &&
+      identified.every((match) => match?.[1] === itemTag && match[2] === attribute)
+    ) {
+      segments[at] = `${itemTag}[${attribute}=…]`;
+      continue;
+    }
+    // One indexed segment at most: the elements are items of one list.
+    const numbered = indexedSegment(values);
+    if (numbered === undefined || indexed) return undefined;
+    segments[at] = numbered;
+    indexed = true;
+  }
+  return segments.join(" › ");
+}
+
+/** `li[1..7]` for segments that differ only in their `[n]` index (`li[1, 3, 4]` when not consecutive). */
+function indexedSegment(values: readonly string[]): string | undefined {
+  const indexed = values.map((value) => /^(.*)\[(\d+)\]$/.exec(value));
   const prefix = indexed[0]?.[1];
   if (prefix === undefined || indexed.some((match) => match === null || match[1] !== prefix)) return undefined;
   const numbers = indexed.map((match) => Number(match![2]));
   const consecutive = numbers.every((n, i) => i === 0 || n === numbers[i - 1] + 1);
-  const segments = [...split[0]];
-  segments[at] = `${prefix}[${consecutive ? `${numbers[0]}..${numbers.at(-1)}` : numbers.join(", ")}]`;
-  return segments.join(" › ");
+  return `${prefix}[${consecutive ? `${numbers[0]}..${numbers.at(-1)}` : numbers.join(", ")}]`;
 }
 
 /**
  * A sibling run as one entry: the count and every element's text in the head, in letter order
  * (the first text is the first letter's), then each shared line once, then what differs per
  * element, as `[d] html: …`: every element's line, or only the first one's when the lines differ
- * in the elements' texts and numbers only.
+ * in the elements' texts, links and numbers only. The `find:` parts that differ (commonFind)
+ * follow the shared ones, a line per kind listing every element's value in letter order.
  *
  *   - [c–i] 7 × «Sem 2 …», «Sem 3 …», …, «Sem 8 …» → code:
  *     - used at: …
@@ -468,23 +554,42 @@ function siblingLines(run: readonly ElementBlock[]): string[] {
   const perElement: string[] = [];
   first.details.forEach((detail, i) => {
     if (detail.kind === "on screen") shared.push(`on screen: ${tag}${first.rest}`);
-    else if (detail.kind === "in") shared.push(`in: ${codeSpan(commonPath(run.map((block) => block.element.path)) ?? "")}`);
+    else if (detail.kind === "in") shared.push(`in: ${codeSpan(commonPath(run) ?? "")}`);
+    else if (detail.kind === "find") shared.push(...findLines(run, range, detail));
     else if (!PER_ELEMENT.has(detail.kind)) shared.push(detail.text);
     else {
       const lines = run.map((block) => block.details[i].text);
-      const masked = run.map((block) => withoutText(block.details[i].text, block.element));
       if (lines.every((line) => line === lines[0])) shared.push(lines[0]);
-      else if (masked.every((line) => line === masked[0])) perElement.push(`[${first.tag}] ${lines[0]}`);
+      else if (sameMasked(lines, run)) perElement.push(`[${first.tag}] ${lines[0]}`);
       else perElement.push(...run.map((block, k) => `[${block.tag}] ${lines[k]}`));
     }
   });
   return [head, ...[...shared, ...perElement].map((line) => `  - ${line}`)];
 }
 
-/** A line without the element's own text and without numbers: what is left is what really differs. */
+/**
+ * The run's `find:` line, as it is when every part is the same. Otherwise the shared parts, then
+ * one line per part that differs, every element's value in letter order:
+ * ``href [c–g]: `#/a`, `#/b`, …``.
+ */
+function findLines(run: readonly ElementBlock[], range: string, detail: Detail): string[] {
+  const common = commonFind(run);
+  if (common === undefined || common.varying.length === 0) return [detail.text];
+  return [
+    ...(common.shared.length > 0 ? [`find: ${common.shared.join(" · ")}`] : []),
+    ...common.varying.map(({ key, values }) => `${key} [${range}]: ${values.join(", ")}`),
+  ];
+}
+
+/** A line without the element's own text, its link and numbers: what is left is what really differs. */
 function withoutText(line: string, element: ElementInfo): string {
   const text = oneLine(elementText(element));
-  const masked = text === "" ? line : line.split(escapeMarkdown(text)).join("\u0000").split(text).join("\u0000");
+  let masked = text === "" ? line : line.split(escapeMarkdown(text)).join("\u0000").split(text).join("\u0000");
+  const attributes = rootAttributes(element.html);
+  for (const name of VARYING_KEYS) {
+    const value = attributes.get(name);
+    if (value) masked = masked.split(value).join("\u0001");
+  }
   return masked.replace(/\d+/g, "#");
 }
 
@@ -543,7 +648,7 @@ function identification(event: CapturedEvent, codePointer: boolean): Detail[] {
   const lines: Detail[] = [];
   const add = (kind: string, text: string) => lines.push({ kind, text });
   const hints = searchHints(element);
-  if (hints.length > 0) add("find", `find: ${hints.join(" · ")}`);
+  if (hints.length > 0) lines.push({ kind: "find", text: `find: ${hints.join(" · ")}`, parts: hints });
   // After find:, where Stage 0 placed them; nothing for sessions without renderedBy/resolved.
   if (codePointer) for (const line of codePointerLines(element)) add("code", line);
   add("in", `in: ${codeSpan(element.path)}`);

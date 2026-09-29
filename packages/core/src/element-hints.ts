@@ -59,6 +59,10 @@ export function searchHints(element: ElementInfo): string[] {
   if (testId) hints.push(`data-testid ${codeSpan(testId)}`);
   const name = attributes.get("name");
   if (name) hints.push(`name ${codeSpan(name)}`);
+  for (const attribute of ID_DATA_ATTRIBUTES) {
+    const value = attributes.get(attribute);
+    if (value) hints.push(`${attribute} ${codeSpan(value)}`);
+  }
   const label = oneLine(element.label ?? "");
   // The descriptor quotes elementText, which falls back to the label: do not say it twice.
   if (label !== "" && label !== oneLine(elementText(element)) && label.length <= LABEL_BUDGET) {
@@ -145,8 +149,16 @@ export function roundPixels(value: string): string {
 const SHOWN_ATTRIBUTES = new Set(["id", "data-testid", "name", "href", "class", "type", "aria-label"]);
 
 /**
+ * Identifier data attributes the extension keeps on an SVG item (`<g data-id="limites">`, D7 note
+ * 2026-09-29); the only elements whose html carries them, so HTML elements' hints are unchanged.
+ */
+export const ID_DATA_ATTRIBUTES: readonly string[] = ["data-id", "data-key", "data-node", "data-node-id", "data-name", "data-slug"];
+for (const name of ID_DATA_ATTRIBUTES) SHOWN_ATTRIBUTES.add(name);
+
+/**
  * True when the HTML tells the agent something the hints do not: an attribute we do not list
- * (role, aria-expanded, title…) or child elements. An icon (`<svg/>`) alone does not count.
+ * (role, aria-expanded, title…) or child elements. An icon (`<svg/>`) alone does not count, nor
+ * an SVG element's `<title>` child that is its label.
  * Why: `<th>Quantity</th>` next to «Quantity» is pure repetition, and big containers are what
  * made the classic appendix expensive.
  */
@@ -158,7 +170,12 @@ export function htmlAddsInformation(element: ElementInfo): boolean {
     if (!shown.has(name)) return true;
   }
   const inner = element.html.replace(/^\s*<(?:[^>"']|"[^"]*"|'[^']*')*>/, "");
-  return /<[a-zA-Z]/.test(inner.replace(/<svg\b[^>]*\/>/gi, ""));
+  // An SVG shape's own <title> is its label, which the descriptor already quotes.
+  const label = oneLine(element.label ?? "");
+  const withoutTitle = inner.replace(/<title>([^<]*)<\/title>/g, (title, text: string) =>
+    label !== "" && oneLine(decodeEntities(text)) === label ? "" : title,
+  );
+  return /<[a-zA-Z]/.test(withoutTitle.replace(/<svg\b[^>]*\/>/gi, ""));
 }
 
 /** One line of HTML, trimmed structurally (D5), for a code span. */

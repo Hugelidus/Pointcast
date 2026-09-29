@@ -8,10 +8,13 @@ const TEXT_NODE = 3;
 /**
  * Elements whose content is never read as text: code, invisible markup, icons, and form
  * controls. A textarea's child text is its (default) value and a select's options reveal the
- * chosen value, so reading them would leak form data (D8).
+ * chosen value, so reading them would leak form data (D8). An SVG element's <title> and <desc>
+ * are its name and description, never shown on the page: they are read as its label
+ * (describe.ts), not as its text. The text of a shape inside an <svg> is in <text> elements.
  */
 const OPAQUE_TAGS = new Set([
   "script", "style", "noscript", "template", "svg", "textarea", "select", "datalist", "input", "iframe", "object",
+  "title", "desc",
 ]);
 
 /** Form controls whose content, or whose descendants' content, is the user's value (D8). */

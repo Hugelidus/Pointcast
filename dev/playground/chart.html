@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Charts · pointcast playground</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .chart-layer, .map-layer { width: 600px; }
+    .bar { fill: #7c3aed; cursor: pointer; }
+    .trend { fill: none; stroke: #9ca3af; stroke-width: 2; }
+    .star { fill: #f59e0b; }
+    .dust { fill: #d1d5db; }
+    #download-chart svg { width: 16px; height: 16px; vertical-align: middle; }
+  </style>
+</head>
+<body>
+<!--
+  Pointing inside inline SVG (D7 note 2026-09-29):
+    - a bar chart whose bars have a <title> (content: each bar is pointed at by itself);
+    - a map whose stars are grouped in a <g aria-label> (a named star, and a nameless dot that
+      points at its group);
+    - a trend line with no name (drawing: points at the element around the chart, as before);
+    - an aria-hidden icon in a button (decorative: points at the button, as before);
+    - a concept map in an <svg role="application" aria-label> whose items are <g data-id> with a
+      nameless circle inside (the circle points at its <g>, not at the whole svg).
+-->
+<main>
+  <h1>Informes</h1>
+
+  <section class="card">
+    <h2>Ventas por mes</h2>
+    <div class="chart-layer">
+      <svg id="sales-chart" viewBox="0 0 600 200" width="600" height="200" aria-label="Ventas por mes">
+        <g class="bars">
+          <rect class="bar" x="40" y="80" width="80" height="120"><title>Enero: 120</title></rect>
+          <rect class="bar" x="160" y="110" width="80" height="90"><title>Febrero: 90</title></rect>
+          <rect class="bar" x="280" y="50" width="80" height="150"><title>Marzo: 150</title></rect>
+        </g>
+        <path class="trend" d="M 80 80 C 120 90, 160 120, 200 110 S 280 60, 320 50 L 360 55 L 400 58 L 440 61 L 480 64 L 520 67 L 560 70"></path>
+        <g class="axis">
+          <text x="60" y="195">Ene</text>
+          <text x="180" y="195">Feb</text>
+          <text x="300" y="195">Mar</text>
+        </g>
+      </svg>
+    </div>
+    <button id="download-chart" type="button">
+      <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M8 1v9m-4-4 4 4 4-4M2 14h12" stroke="currentColor" fill="none"></path></svg>
+      Descargar
+    </button>
+  </section>
+
+  <section class="card">
+    <h2>Mapa de temas</h2>
+    <div class="map-layer">
+      <svg viewBox="0 0 600 300" width="600" height="300" aria-label="Mapa">
+        <g aria-label="Álgebra" class="cluster">
+          <circle class="star" cx="100" cy="100" r="24"><title>Límite de una función</title></circle>
+          <circle class="star" cx="200" cy="140" r="24"><title>Derivadas</title></circle>
+          <circle class="dust" cx="160" cy="220" r="24"></circle>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Mapa de conceptos</h2>
+    <div class="map-layer">
+      <svg viewBox="0 0 600 200" width="600" height="200" role="application" aria-label="Mapa de conceptos">
+        <g data-id="limites" class="concept"><circle class="star" cx="100" cy="100" r="24"></circle></g>
+        <g data-id="derivadas" class="concept"><circle class="star" cx="220" cy="100" r="24"></circle></g>
+      </svg>
+    </div>
+  </section>
+</main>
+</body>
+</html>

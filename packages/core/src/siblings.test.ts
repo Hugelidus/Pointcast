@@ -159,3 +159,123 @@ describe("sibling runs", () => {
     expect(alike).not.toContain("[b] html:");
   });
 });
+
+/**
+ * The rows of a subject list (D5 note 2026-09-29): one component renders a link per subject, so
+ * the rows differ in their text, their `href` and the label in their path, and nothing else.
+ */
+function subject(n: number, slug: string, name: string, extra: Partial<ElementInfo> = {}): ElementInfo {
+  return {
+    tag: "a",
+    text: name,
+    context: "Asignaturas",
+    selector: `ul > li:nth-of-type(${n}) > a`,
+    selectorUnique: true,
+    path: `main › ul › li[${n}] › a«${name}»`,
+    html: `<a href="#/asignatura/${slug}" aria-label="${name}" class="subjects-row-link">${name}</a>`,
+    label: name,
+    styles: STYLES,
+    component: { framework: "react", name: "SubjectRow", file: "src/subjects/SubjectRow.tsx", line: 9 },
+    renderedBy: [
+      { component: "SubjectRow", file: "src/subjects/SubjectList.tsx", line: 21, snippet: "<SubjectRow key={s.slug} subject={s} />" },
+      { component: "SubjectList", file: "src/pages/Home.tsx", line: 30 },
+    ],
+    ...extra,
+  };
+}
+
+const SUBJECTS = [
+  subject(1, "algebra", "Álgebra"),
+  subject(2, "calculo", "Cálculo"),
+  subject(3, "fisica", "Física"),
+  subject(4, "quimica", "Química"),
+  subject(5, "historia", "Historia"),
+];
+
+describe("sibling runs whose links differ", () => {
+  it("groups copies of one component that link to different pages, listing the links in letter order", () => {
+    expect(request(render(SUBJECTS))).toBe(
+      [
+        "> Revisa estas [a–e] semanas, están mal.",
+        "",
+        "- [a–e] 5 × «Álgebra», «Cálculo», «Física», «Química», «Historia» → code:",
+        "  - used at: `src/subjects/SubjectList.tsx:21` — `<SubjectRow key={s.slug} subject={s} />`",
+        "  - defined in: `src/subjects/SubjectRow.tsx`",
+        "  - within: `<SubjectList>` at `src/pages/Home.tsx:30`",
+        "  - on screen: a in «Asignaturas» on `/`",
+        "  - find: class `subjects-row-link` · component `SubjectRow` (react) in `src/subjects/SubjectRow.tsx:9`",
+        "  - href [a–e]: `#/asignatura/algebra`, `#/asignatura/calculo`, `#/asignatura/fisica`, `#/asignatura/quimica`, `#/asignatura/historia`",
+        "  - in: `main › ul › li[1..5] › a«…»`",
+        "  - styles: `color: rgb(17, 24, 39); font-size: 14px; display: flex`",
+      ].join("\n"),
+    );
+  });
+
+  it("lists a label that differs as the texts do", () => {
+    const labelled = SUBJECTS.slice(0, 3).map((s) => ({
+      ...s,
+      label: `Ver ${s.text}`,
+      path: s.path.replace(/«.*»$/, `«Ver ${s.text}»`),
+    }));
+    const md = request(render(labelled, "dom-first"));
+    expect(md).toContain("- [a–c] 3 × a «Álgebra», «Cálculo», «Física» in «Asignaturas» on `/`");
+    expect(md).toContain("  - find: class `subjects-row-link` · component `SubjectRow` (react) in `src/subjects/SubjectRow.tsx:9`");
+    expect(md).toContain("  - label [a–c]: «Ver Álgebra», «Ver Cálculo», «Ver Física»");
+    expect(md).toContain("  - href [a–c]: `#/asignatura/algebra`, `#/asignatura/calculo`, `#/asignatura/fisica`");
+    expect(md).toContain("  - in: `main › ul › li[1..3] › a«…»`");
+  });
+
+  it("keeps everything else strict: labels that differ otherwise, another class, another component", () => {
+    const [a, b] = SUBJECTS;
+    for (const odd of [
+      subject(3, "fisica", "Física", { label: "Abrir" }),
+      subject(3, "fisica", "Física", { html: '<a href="#/asignatura/fisica" class="subjects-row-link destacada">Física</a>' }),
+      subject(3, "fisica", "Física", { component: { framework: "react", name: "OtherRow", file: "src/subjects/OtherRow.tsx", line: 3 } }),
+      subject(3, "fisica", "Física", { path: "main › ul › li[3] › a«Abrir»" }),
+    ]) {
+      expect(request(render([a, b, odd]))).not.toContain("3 × ");
+    }
+    const actions = ["Abrir", "Editar", "Borrar"].map((action, i) => ({ ...SUBJECTS[i], label: action }));
+    expect(request(render(actions))).not.toContain(" × ");
+  });
+
+  it("never groups a pair", () => {
+    expect(request(render(SUBJECTS.slice(0, 2)))).not.toContain(" × ");
+  });
+});
+
+/** Stars of a concept map (D7 note 2026-09-29): `<g data-id>` items drawn by one component. */
+function concept(id: string, extra: Partial<ElementInfo> = {}): ElementInfo {
+  return {
+    tag: "g",
+    text: "",
+    context: "Mapa de conceptos",
+    selector: `g[data-id="${id}"]`,
+    selectorUnique: true,
+    path: `main › svg«Mapa de conceptos» › g[data-id=${id}]`,
+    html: `<g data-id="${id}" class="concept"><circle class="star"/></g>`,
+    styles: STYLES,
+    component: { framework: "react", name: "ConceptNode", file: "src/map/ConceptNode.tsx", line: 7 },
+    renderedBy: [{ component: "ConceptNode", file: "src/map/ConceptMap.tsx", line: 52 }],
+    ...extra,
+  };
+}
+
+describe("sibling runs of SVG items whose identifiers differ", () => {
+  it("groups them, listing the identifiers in letter order like links", () => {
+    const md = request(render(["limites", "derivadas", "integrales"].map((id) => concept(id))));
+    expect(md).toContain("- [a–c] 3 × → code:");
+    expect(md).toContain("  - find: class `concept` · component `ConceptNode` (react) in `src/map/ConceptNode.tsx:7`");
+    expect(md).toContain("  - data-id [a–c]: `limites`, `derivadas`, `integrales`");
+    expect(md).toContain("  - in: `main › svg«Mapa de conceptos» › g[data-id=…]`");
+    // The html differs only by the identifier: the first element's line alone.
+    expect(md).toContain('  - [a] html: `<g data-id="limites" class="concept"><circle class="star"/></g>`');
+    expect(md).not.toContain("[b] html:");
+  });
+
+  it("keeps the guards: never a pair, and nothing else may differ", () => {
+    expect(request(render([concept("limites"), concept("derivadas")]))).not.toContain(" × ");
+    const odd = concept("integrales", { html: '<g data-id="integrales" class="concept destacado"><circle class="star"/></g>' });
+    expect(request(render([concept("limites"), concept("derivadas"), odd]))).not.toContain(" × ");
+  });
+});

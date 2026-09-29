@@ -2,6 +2,7 @@ import { UI_ATTRIBUTE } from "@pointcast/core";
 import { cssModulePrefix, isSemanticClass } from "./noise";
 import { isSensitive, isSensitiveSelf, type SensitivityOptions } from "./sensitive";
 import { collapseWhitespace, isEditingHost, isInsideFormValue, truncate, visibleText } from "./text";
+import { isSvgElement, SVG_ID_ATTRIBUTES, svgTitle } from "./svg";
 import { redactUrl } from "./url";
 
 export { isSensitive } from "./sensitive";
@@ -26,6 +27,9 @@ const VOID_TAGS = new Set([
 /** Never worth a token in the agent's context. */
 const SKIPPED_TAGS = new Set(["script", "style", "noscript", "template"]);
 
+/** SVG elements whose text is a name or a description, not visible text. */
+const SVG_TEXT_TAGS = new Set(["title", "desc"]);
+
 /** Their content is a form value (textarea text, selected option): keep the tag, drop the inside. */
 const EMPTIED_TAGS = new Set(["textarea", "select", "datalist"]);
 
@@ -42,8 +46,10 @@ const ALLOWED_ATTRIBUTES = new Set([
 /** aria-* is allowed except the attributes that mirror a control's current value or state. */
 const ARIA_VALUE_ATTRIBUTE = /^aria-(value|checked|selected)/;
 
-function isAllowedAttribute(name: string, options: SanitizeOptions): boolean {
+function isAllowedAttribute(el: Element, name: string, options: SanitizeOptions): boolean {
   if (ALLOWED_ATTRIBUTES.has(name) || options.sourceAttributes.includes(name)) return true;
+  // An SVG item's identifier (`<g data-id="limites">`, svg.ts): the grep key of a star or a node.
+  if (SVG_ID_ATTRIBUTES.includes(name) && isSvgElement(el)) return true;
   return name.startsWith("aria-") && !ARIA_VALUE_ATTRIBUTE.test(name);
 }
 
@@ -83,9 +89,9 @@ function openTag(el: Element, options: SanitizeOptions): string {
     if (attribute.name === "class") {
       value = cleanClass(value);
       if (value === "") continue;
-    } else if (!isAllowedAttribute(attribute.name, options)) {
+    } else if (!isAllowedAttribute(el, attribute.name, options)) {
       continue;
-    } else if (sensitive && SENSITIVE_TEXT_ATTRIBUTES.has(attribute.name)) {
+    } else if (sensitive && (SENSITIVE_TEXT_ATTRIBUTES.has(attribute.name) || SVG_ID_ATTRIBUTES.includes(attribute.name))) {
       continue;
     }
     if (attribute.name === "href") value = redactUrl(value);
@@ -94,10 +100,15 @@ function openTag(el: Element, options: SanitizeOptions): string {
   return `${tag}>`;
 }
 
-/** An element with its content replaced by `inner`; void elements have no content or end tag. */
+/**
+ * An element with its content replaced by `inner`; void elements have no content or end tag.
+ * An <svg> is always collapsed; an empty SVG shape closes itself (`<circle class="star"/>`), and
+ * its geometry (d, cx, points…) is not in the attribute allowlist, so a path's data never is.
+ */
 function wrap(el: Element, inner: string, options: SanitizeOptions): string {
   if (el.localName === "svg") return "<svg/>";
   if (VOID_TAGS.has(el.localName)) return openTag(el, options);
+  if (inner === "" && isSvgElement(el)) return `${openTag(el, options).slice(0, -1)}/>`;
   return `${openTag(el, options)}${inner}</${el.localName}>`;
 }
 
@@ -106,7 +117,19 @@ function renderChild(child: Element, options: SanitizeOptions): string {
   if (isSensitiveSelf(child, options)) return wrap(child, REDACTED_CONTENT, options);
   // A rich-text editor inside the described element holds what the user typed (text.ts).
   if (EMPTIED_TAGS.has(child.localName) || isEditingHost(child)) return wrap(child, "", options);
-  return wrap(child, escapeText(visibleText(child, options, MAX_TEXT)), options);
+  const text = visibleText(child, options, MAX_TEXT);
+  if (text === "" && isSvgElement(child)) {
+    // An SVG <title> or <desc> names or describes its parent, and text.ts leaves it out of the
+    // visible text: its own words are its summary. A shape with no text is summarized by its
+    // <title>, which is what tells one bar or star from the next.
+    const own = SVG_TEXT_TAGS.has(child.localName);
+    const title = own ? collapseWhitespace(child.textContent ?? "") : svgTitle(child, options);
+    if (title !== "") {
+      const summary = escapeText(truncate(title, MAX_TEXT));
+      return wrap(child, own ? summary : `<title>${summary}</title>`, options);
+    }
+  }
+  return wrap(child, escapeText(text), options);
 }
 
 function renderRoot(el: Element, maxChildren: number, options: SanitizeOptions): string {

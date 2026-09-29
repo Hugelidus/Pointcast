@@ -30,12 +30,21 @@ export function urlLabel(url: string): string {
 }
 
 /**
- * Identity of an element across events, for de-duplication in markers and the appendix.
- * The selector alone is not enough: "#main > button" on /orders and on /users are different
- * elements, so the page (origin + path + search + route fragment) is part of the key.
+ * Identity of an element across events, for de-duplication in markers, the appendix and the
+ * requests format's "(same element as in request N)". The selector alone is not enough:
+ * "#main > button" on /orders and on /users are different elements, so the page (origin + path +
+ * search + route fragment) is part of the key. Nor is the page: two charts in two tab panels can
+ * share `div.recharts-wrapper` on one URL (D5 note 2026-09-29), so the readable path, the card or
+ * section around the element and its code (component and chain) must match too. Any difference
+ * means two elements: one described twice beats one described with another's code.
  */
 export function elementKey(event: CapturedEvent): string {
-  return `${event.element.selector}\u0000${withoutScrollFragment(event.url)}`;
+  const { selector, path, context, component, renderedBy } = event.element;
+  const code = [
+    component ? `${component.name ?? ""}@${component.file ?? ""}:${component.line ?? ""}` : "",
+    ...(renderedBy ?? []).map((frame) => `${frame.component ?? ""}@${frame.file}:${frame.line ?? ""}`),
+  ];
+  return [selector, withoutScrollFragment(event.url), path, context ?? "", ...code].join("\u0000");
 }
 
 /** Visible text, falling back to the label (icon buttons, redacted sensitive elements). */

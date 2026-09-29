@@ -230,3 +230,28 @@ describe("a gesture just before speech joins the request said after it (mergeUtt
     expect(requests(render(events(155), more))[1][0]).toBe("> [a] y la tarjeta de pedidos [b] hay que cambiarla no me convence.");
   });
 });
+
+describe("(same element as in request N) needs the same element, not only the same selector", () => {
+  // Two charts, one per tab panel, with one selector on one URL (D5 note 2026-09-29).
+  const chart = (panel: number, file: string): ElementInfo => ({
+    tag: "div",
+    text: "",
+    selector: "div.chart-wrapper",
+    selectorUnique: false,
+    path: `main › div[role=tabpanel][${panel}] › div`,
+    html: '<div class="chart-wrapper"></div>',
+    renderedBy: [{ component: "Chart", file, line: 20 }],
+  });
+  const words = [...said("Este gráfico más alto.", 0), ...said("Y este también.", 5000)];
+
+  it("describes a chart in another tab panel in full", () => {
+    const md = render([point("e1", 300, chart(2, "src/Ventas.tsx")), point("e2", 5300, chart(3, "src/Gastos.tsx"))], words);
+    expect(md).not.toContain("same element as in request 1");
+    expect(md).toContain("src/Gastos.tsx");
+  });
+
+  it("still refers back to the same chart pointed at again", () => {
+    const md = render([point("e1", 300, chart(2, "src/Ventas.tsx")), point("e2", 5300, chart(2, "src/Ventas.tsx"))], words);
+    expect(md).toContain("(same element as in request 1)");
+  });
+});

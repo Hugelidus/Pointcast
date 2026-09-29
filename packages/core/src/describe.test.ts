@@ -68,6 +68,19 @@ describe("elementKey", () => {
     const b = event({ url: "http://localhost:5500/users" });
     expect(elementKey(a)).not.toBe(elementKey(b));
   });
+
+  it("differs for the same selector and page when the path, the card or the code differ", () => {
+    // Two charts, one per tab panel, share their selector and URL (D5 note 2026-09-29).
+    const chart = (path: string, extra: Partial<CapturedEvent["element"]> = {}) =>
+      event({ element: { tag: "div", text: "", selector: "div.chart-wrapper", selectorUnique: false, path, html: "<div></div>", ...extra } });
+    const first = chart("main › div[role=tabpanel][2] › div");
+    expect(elementKey(first)).not.toBe(elementKey(chart("main › div[role=tabpanel][3] › div")));
+    expect(elementKey(first)).not.toBe(elementKey(chart(first.element.path, { context: "Ingresos" })));
+    const frame = { component: "SalesChart", file: "src/Sales.tsx", line: 12 };
+    const drawn = chart(first.element.path, { renderedBy: [frame] });
+    expect(elementKey(drawn)).not.toBe(elementKey(chart(first.element.path, { renderedBy: [{ ...frame, line: 30 }] })));
+    expect(elementKey(drawn)).toBe(elementKey(chart(first.element.path, { renderedBy: [{ ...frame }] })));
+  });
 });
 
 describe("eventText", () => {

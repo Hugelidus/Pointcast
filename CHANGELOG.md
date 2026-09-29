@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.8.1 (2026-09-29)
+
+Extension, CLI and integrations at 0.8.1. Specs now tell the agent to build what you mean (the instruction style, with "precise" one setting away), and the plugin's MCP server is named `recordings`.
 
 - **How your agent applies requests** ([D5 note 2026-09-29](docs/decisions.md#d5-html--capture-generously-already-sanitized-render-lean), [evaluation](docs/eval/results-2026-09-29-instruction-style.md)). New popup setting. **Build what I mean** (the new default): the spec tells the agent that the elements say *where*; a request about an existing element changes exactly that, and a request for something new (a behaviour, a component, content, an animation) is built well, in the app's style, touching other files if it needs to. **Change only what I point at**: the line every spec had so far, "Change only the referenced elements, and only as asked." In a blind review of ten requests on a real app, the same recording scored 192/200 with the new line against 146 with the old one, and 174 for a carefully written prompt that took ten times longer to give. The choice is saved in `session.json` (`instructionStyle`), so the clipboard, the MCP server and the CLI word it the same; recordings made before it existed read as Build what I mean. Override it with `pointcast process --style intent|precise`, the MCP tools' `style` argument (`get_session`, `wait_for_recording`) or `/pointcast precise`. The spec grows by about 90 tokens.
 - Claude Code and Codex plugin: the MCP server inside the plugin is now called `recordings`, so tool calls read "plugin pointcast recordings: wait for recording" instead of "pointcast pointcast". After updating the plugin, Claude Code asks once more before the first tool call. To turn it off for a project: `/mcp` → `plugin:pointcast:recordings`.

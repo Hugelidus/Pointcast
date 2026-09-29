@@ -6,7 +6,7 @@ One section per place: its status, the exact text, and the steps. Everything her
 |---|---|---|
 | [Claude plugin directory](#claude-plugin-directory) | submitted, in review | check status |
 | [Claude community marketplace](#claude-community-marketplace) | probably the same review as above | only if it turns out to be separate |
-| [Chrome Web Store](#chrome-web-store) | 0.1.2 in review | upload 0.8.0 when approved |
+| [Chrome Web Store](#chrome-web-store) | 0.1.2 in review | upload 0.8.1 when approved |
 | [Microsoft Edge Add-ons](#microsoft-edge-add-ons) | not submitted | before launch |
 | [Gemini CLI extensions gallery](#gemini-cli-extensions-gallery) | automatic | verify before launch |
 | [MCP Registry](#mcp-registry) | needs a CLI release with `mcpName` | with CLI 0.6.0 |
@@ -28,7 +28,7 @@ One section per place: its status, the exact text, and the steps. Everything her
 Pointcast turns a recording made with its browser extension (the user's voice plus the web-page elements they Alt+clicked) into a Markdown spec, and resolves each element to its line in the user's repository.
 
 The plugin adds one MCP server and one skill:
-- MCP server: `npx -y pointcast@0.8.0 mcp` (exact version, npm package "pointcast", MIT, source in packages/cli; dependencies locked by npm-shrinkwrap.json). Four read-only tools: list_sessions, get_session, get_element, wait_for_recording. They read recordings from a local folder (<Downloads>/pointcast by default) and the user's project files; nothing is sent over the network.
+- MCP server: `npx -y pointcast@0.8.1 mcp` (exact version, npm package "pointcast", MIT, source in packages/cli; dependencies locked by npm-shrinkwrap.json). Four read-only tools: list_sessions, get_session, get_element, wait_for_recording. They read recordings from a local folder (<Downloads>/pointcast by default) and the user's project files; nothing is sent over the network.
 - Skill /pointcast: fetches the latest recording through those tools and applies the requested changes in the project.
 
 The server also listens on 127.0.0.1:20547 (never on the network) to receive recordings from the Pointcast extension: it checks Host, the extension's Origin, a custom header and the content type before reading a byte, and only writes new session folders. It can be turned off with --no-handoff or POINTCAST_HANDOFF=off. Design and threat model: docs/decisions.md#d11-handoff-to-a-running-mcp-server.
@@ -68,7 +68,7 @@ To test without the extension: copy the recorded sample session in dev/fixtures/
 
 Everything, tab by tab: [chrome-web-store.md](chrome-web-store.md). Status: 0.1.2 submitted as *Unlisted*, in review.
 
-**When approved:** upload the latest release's store zip (the `pointcast-0.8.0-chrome-store` artifact of the v0.8.0 release workflow run, or `pnpm --filter @pointcast/extension zip:store`; never the GitHub release zip), and put the listing's link in the README's Quick start.
+**When approved:** upload the latest release's store zip (the `pointcast-0.8.1-chrome-store` artifact of the v0.8.1 release workflow run, or `pnpm --filter @pointcast/extension zip:store`; never the GitHub release zip), and put the listing's link in the README's Quick start.
 
 **Optional description update for 0.5** (the text under "IT POINTS AT THE CODE" names React, Vue 3 and Svelte 5 only). Replacement for its first sentence, if you want to mention Django:
 
@@ -115,7 +115,7 @@ The official registry ([modelcontextprotocol/registry](https://github.com/modelc
 
 **Steps:**
 
-1. **CLI with `mcpName`:** done in 0.6.0. Check it arrived: `npm view pointcast@0.8.0 mcpName`.
+1. **CLI with `mcpName`:** done in 0.6.0. Check it arrived: `npm view pointcast@0.8.1 mcpName`.
 2. **Install `mcp-publisher`** (Windows, from the registry's quickstart; it downloads the latest release binary):
 
    ```powershell

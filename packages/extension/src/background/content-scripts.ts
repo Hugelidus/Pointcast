@@ -122,7 +122,8 @@ const chromeTabs: TabAccess = {
     // types these paths from the build's entrypoints, so renaming a content script breaks the
     // typecheck, not the injection. Top frame only, each in its manifest world. The MAIN-world
     // bridge first: without it, events on this page would lack their component name and file
-    // until a reload. Injecting it twice is harmless (installComponentBridge is idempotent).
+    // until a reload. Injecting it again is harmless: the latest bridge replaces the one before
+    // it (installComponentBridge), an older build's included.
     await browser.scripting.executeScript({ target: { tabId }, world: "MAIN", files: ["/content-scripts/framework.js"] });
     await browser.scripting.executeScript({ target: { tabId }, files: ["/content-scripts/content.js"] });
   },

@@ -17,8 +17,15 @@ import { isLibraryPath, projectRelativePath, type CodeFrame, type ComponentInfo 
  * 3. The isolated side reads the attribute, removes it and validates the shape.
  * Strings, not objects, cross the boundary: a CustomEvent's detail object is not shared between
  * worlds. No MAIN-world script (production site, not registered) simply means no attribute.
+ *
+ * The names carry the bridge's generation ("-v2"). A page keeps the MAIN-world script it loaded
+ * with until it reloads, and a page's dev server can keep one open for days (HMR). Bridges up to
+ * 0.7.0 cannot be removed by a newer one (installComponentBridge), so after the extension was
+ * updated or reloaded they kept answering with their own, older rules (D9 note 2026-09-29, a
+ * stale bridge). Under new names they are never asked; from this generation on, a newer bridge
+ * removes the one before it, so the names need not change with each release.
  */
-export const COMPONENT_REQUEST_EVENT = "pointcast:component-request";
+export const COMPONENT_REQUEST_EVENT = "pointcast:component-request-v2";
 export const COMPONENT_ATTRIBUTE = "data-pointcast-component";
 /**
  * The asynchronous request (Next.js, D9 note 2026-09-28): its chain needs source maps, which the
@@ -27,8 +34,8 @@ export const COMPONENT_ATTRIBUTE = "data-pointcast-component";
  * with `CustomEvent(COMPONENT_REFINED_EVENT, { detail: <JSON of { nonce, info: FrameworkInfo }> })`
  * on window. Strings cross between the worlds; the answer is parsed like the attribute.
  */
-export const COMPONENT_REFINE_EVENT = "pointcast:component-refine";
-export const COMPONENT_REFINED_EVENT = "pointcast:component-refined";
+export const COMPONENT_REFINE_EVENT = "pointcast:component-refine-v2";
+export const COMPONENT_REFINED_EVENT = "pointcast:component-refined-v2";
 
 const MAX_NAME = 80;
 const MAX_FILE = 300;

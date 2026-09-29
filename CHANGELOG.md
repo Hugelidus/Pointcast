@@ -7,6 +7,7 @@
 - How: right after the gesture, the page reads the modules its own Vite dev server already serves and maps the stack positions through their inline source maps, like the Next.js path does. Local dev hosts only, same origin only, in memory, within the same 3 s budget; no new permission.
 - Silent when unsure: a missing map, a module edited since the element was rendered, or a map that names another file leaves the file without a line, as before. Files in the chain never change, only lines are added.
 - New e2e test against the real `dev/examples/react-dashboard` dev server (`dev/e2e/vite-react19.spec.ts`).
+- Fixed: a dev page left open across an extension update or reload kept answering with the older build's code, so its gestures got files without lines (and no component file) until the page was reloaded. The newest build's page script now takes over when the tab is attached again; pages still running a script from 0.7.0 or earlier stop being asked.
 
 ## 0.7.0 (2026-09-28)
 

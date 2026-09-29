@@ -717,45 +717,66 @@ async function fetchText(url: string, fetchFn: typeof fetch, signal: AbortSignal
   }
 }
 
-const INSTALLED = Symbol.for("pointcast.componentBridge");
+/**
+ * Where the installed bridge keeps its handle on the page's window. A new key: bridges up to 0.7.0
+ * set `Symbol.for("pointcast.componentBridge")` to `true`, kept no handle, and listen under the
+ * older event names (component-bridge.ts), which nothing dispatches any more.
+ */
+const INSTALLED = Symbol.for("pointcast.componentBridge.v2");
 /** A refine request's nonce: the isolated side's, echoed back. */
 const MAX_NONCE = 64;
 
-/** Answers component requests from the isolated content script; installing twice is a no-op. */
+/** What an installed bridge leaves on the window, for the next one. */
+interface BridgeHandle {
+  /** Removes its listeners. */
+  remove: () => void;
+  /** The page's fetch as it was at document_start, before the app or debug capture wrapped it. */
+  pageFetch: typeof fetch | undefined;
+}
+
+/**
+ * Answers component requests from the isolated content script. The latest call wins: the bridge
+ * installed before it (the same build injected twice, or an older build still in a page that
+ * was open when the extension was updated or reloaded, content-scripts.ts inject) is removed, so
+ * the page never answers with an older build's rules (D9 note 2026-09-29, a stale bridge).
+ */
 export function installComponentBridge(win: Window): void {
-  const flags = win as unknown as Record<symbol, boolean>;
-  if (flags[INSTALLED]) return;
-  flags[INSTALLED] = true;
-  // Taken now, at document_start: before the app, or debug capture (page-errors-main.ts), wraps
-  // it, so fetching a source map is neither reported as the page's request nor seen by the app.
-  const pageFetch = typeof win.fetch === "function" ? win.fetch.bind(win) : undefined;
-  win.addEventListener(
-    COMPONENT_REQUEST_EVENT,
-    (event) => {
-      // composedPath()[0] is the element even inside an open shadow root; target is retargeted.
-      const el = event.composedPath()[0] as Element | undefined;
-      if (el === undefined || typeof el.setAttribute !== "function") return;
-      const answer = readFrameworkInfo(el);
-      if (answer.component !== undefined || answer.renderedBy !== undefined) {
-        el.setAttribute(COMPONENT_ATTRIBUTE, JSON.stringify(answer));
-      }
-    },
-    true,
-  );
+  const holder = win as unknown as Record<symbol, BridgeHandle | undefined>;
+  const previous = holder[INSTALLED];
+  previous?.remove();
+  // Taken at document_start (the manifest script runs before the app, or debug capture
+  // (page-errors-main.ts), wraps it), so fetching a source map is neither reported as the page's
+  // request nor seen by the app. A bridge injected later into an open page keeps the one its
+  // predecessor took then.
+  const pageFetch = previous !== undefined ? previous.pageFetch : typeof win.fetch === "function" ? win.fetch.bind(win) : undefined;
+  const onRequest = (event: Event) => {
+    // composedPath()[0] is the element even inside an open shadow root; target is retargeted.
+    const el = event.composedPath()[0] as Element | undefined;
+    if (el === undefined || typeof el.setAttribute !== "function") return;
+    const answer = readFrameworkInfo(el);
+    if (answer.component !== undefined || answer.renderedBy !== undefined) {
+      el.setAttribute(COMPONENT_ATTRIBUTE, JSON.stringify(answer));
+    }
+  };
   // The asynchronous request (component-bridge.ts requestRefinedFrameworkInfo): the answer comes
   // back as a CustomEvent on window whose detail is a JSON string, which both worlds can read.
-  win.addEventListener(
-    COMPONENT_REFINE_EVENT,
-    (event) => {
-      const el = event.composedPath()[0] as Element | undefined;
-      const nonce = (event as CustomEvent<unknown>).detail;
-      if (el === undefined || typeof el.setAttribute !== "function" || typeof nonce !== "string" || nonce.length > MAX_NONCE) return;
-      const answer = pageFetch === undefined ? Promise.resolve(readFrameworkInfo(el)) : refineFrameworkInfo(el, pageFetch);
-      void answer.then((info) => {
-        const EventClass = (win as unknown as { CustomEvent?: typeof CustomEvent }).CustomEvent ?? CustomEvent;
-        win.dispatchEvent(new EventClass(COMPONENT_REFINED_EVENT, { detail: JSON.stringify({ nonce, info }) }));
-      });
+  const onRefine = (event: Event) => {
+    const el = event.composedPath()[0] as Element | undefined;
+    const nonce = (event as CustomEvent<unknown>).detail;
+    if (el === undefined || typeof el.setAttribute !== "function" || typeof nonce !== "string" || nonce.length > MAX_NONCE) return;
+    const answer = pageFetch === undefined ? Promise.resolve(readFrameworkInfo(el)) : refineFrameworkInfo(el, pageFetch);
+    void answer.then((info) => {
+      const EventClass = (win as unknown as { CustomEvent?: typeof CustomEvent }).CustomEvent ?? CustomEvent;
+      win.dispatchEvent(new EventClass(COMPONENT_REFINED_EVENT, { detail: JSON.stringify({ nonce, info }) }));
+    });
+  };
+  win.addEventListener(COMPONENT_REQUEST_EVENT, onRequest, true);
+  win.addEventListener(COMPONENT_REFINE_EVENT, onRefine, true);
+  holder[INSTALLED] = {
+    remove: () => {
+      win.removeEventListener(COMPONENT_REQUEST_EVENT, onRequest, true);
+      win.removeEventListener(COMPONENT_REFINE_EVENT, onRefine, true);
     },
-    true,
-  );
+    pageFetch,
+  };
 }

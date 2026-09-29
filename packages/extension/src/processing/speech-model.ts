@@ -67,6 +67,11 @@ export function modelKey(model: SpeechModel): string {
   return `${model.id}:${precision}`;
 }
 
-export function speechModel(quality: TranscriptionQuality): SpeechModel {
-  return SPEECH_MODELS[quality];
+/**
+ * The model for a quality, and the fast one for anything else: a message from an older build, whose
+ * service worker still runs after an unpacked extension was rebuilt under it, carries no quality,
+ * and that must not cost the user their recording.
+ */
+export function speechModel(quality: TranscriptionQuality | undefined): SpeechModel {
+  return quality === "accurate" ? SPEECH_MODELS.accurate : SPEECH_MODELS.fast;
 }

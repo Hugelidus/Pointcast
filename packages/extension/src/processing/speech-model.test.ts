@@ -8,6 +8,10 @@ describe("speech models", () => {
     expect(speechModel("accurate").id).toBe("Xenova/whisper-small");
   });
 
+  it("falls back to Fast when a message from an older build carries no quality", () => {
+    expect(speechModel(undefined).id).toBe("Xenova/whisper-base");
+  });
+
   it("uses the precision @pointcast/transcribe gives each model, so the CLI and the extension agree", () => {
     for (const model of Object.values(SPEECH_MODELS)) expect(model.dtype).toEqual(defaultDtype(model.id));
   });

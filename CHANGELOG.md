@@ -25,6 +25,7 @@
 - Fixed: a group of copies with no text (three SVG stars) read `- [a–c] 3 × → code:`; it now names their tag, `3 × g → code:`.
 - Fixed: two different elements with the same selector on the same page (two charts in two tab panels) were rendered as one, "(same element as in request 1)", and the second lost its code lines. They must now also share their path, their card and their code to count as the same element; otherwise each is described in full. The classic format's appendix had the same bug and is fixed too.
 - Fixed: an element's card (`in «…»`) could be the title of a closed dialog kept in the page (a command palette's «Command Palette · Search for a command to run...»). Headings the user cannot see (closed `<dialog>`, `hidden`, `inert`, `aria-hidden`, not rendered, screen-reader-only) are skipped.
+- Fixed: fields of a shadcn form (react-hook-form) got ``used at: `src/components/ui/form.tsx:37` — `<Controller {...props} />` ``, the same wrapper line for every field. A line that only hands its props on is no longer `used at`: the field's own line in the form, or the form's `<FormField …>` line, is.
 
 ## 0.7.0 (2026-09-28)
 

@@ -32,11 +32,11 @@ describe("mcp sessions tools", () => {
   });
 
   describe("listSessions", () => {
-    it("lists sessions newest first with id, date, duration and event count", async () => {
+    it("lists sessions newest first with id, date, duration and element count", async () => {
       const sessions = await listSessions({ dirFlag: base });
       expect(sessions).toHaveLength(2);
-      expect(sessions[0]).toMatchObject({ id: "2026-09-26_20-29-01", eventCount: 10, durationMs: 11880 });
-      expect(sessions[1]).toMatchObject({ eventCount: 0 });
+      expect(sessions[0]).toMatchObject({ id: "2026-01-02_09-00-00", elements: 10, durationMs: 11880, matchesProject: "unknown" });
+      expect(sessions[1]).toMatchObject({ elements: 0, rendered: false });
     });
 
     it("skips a folder with no valid session.json instead of failing the whole list", async () => {

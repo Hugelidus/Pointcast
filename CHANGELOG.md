@@ -33,6 +33,9 @@
 - The time estimate and the first-download notice are kept per model, so switching does not reuse the other model's numbers. `words.json` names the model used.
 - CLI: `--model Xenova/whisper-small` is the same Accurate model, at the same precision (fp32 encoder, q8 decoder); `pointcast --help` lists both.
 
+**The MCP server as the main path** ([D11 note 2026-09-29](docs/decisions.md#d11-handoff-to-a-running-mcp-server))
+- `list_sessions` says what each recording is: the pages pointed at (`host/path`, three at most), how many `requests` and `elements`, a `preview` of the first request (~80 characters), `matchesProject` (whether the recording's source files are in the project: `true`, `false` or `"unknown"`, the check behind `get_session`'s other-project warning) and `rendered` (its `session.md` is on disk). It takes a `repo` argument like the other tools, and answers with one session per line. The absolute `dir` of each session is no longer listed.
+
 ## 0.7.0 (2026-09-28)
 
 Extension, CLI and integrations at 0.7.0.

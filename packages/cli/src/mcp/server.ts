@@ -8,12 +8,21 @@ import { startHandoffReceiver } from "../handoff/receiver";
 import { resolveSessionsBase, skippedNewerSessionsNote, type ResolveSessionsBaseOptions } from "../process/discover";
 import { getElement } from "./get-element";
 import { VERSION } from "../version";
-import { getSession, listSessions, resolveSessionDirById, type RepoOption } from "./sessions";
+import { getSession, listSessions, resolveSessionDirById, type RepoOption, type SessionSummary } from "./sessions";
 
 /** Text-only tool result, the shape every tool below returns. */
 function text(value: unknown) {
   const body = typeof value === "string" ? value : JSON.stringify(value, null, 2);
   return { content: [{ type: "text" as const, text: body }] };
+}
+
+/**
+ * `{"sessions":[…]}` with one session per line: compact, and still readable when an agent (or
+ * its user) looks at the raw result.
+ */
+export function sessionsJson(sessions: readonly SessionSummary[]): string {
+  if (sessions.length === 0) return '{"sessions":[]}';
+  return `{"sessions":[\n${sessions.map((session) => JSON.stringify(session)).join(",\n")}\n]}`;
 }
 
 /** A CliError is a message meant to be shown as-is; anything else is unexpected and rethrown. */
@@ -60,15 +69,21 @@ export function createServer(options: ServerOptions): McpServer {
   server.registerTool(
     "list_sessions",
     {
-      description: "List recent pointcast recordings (id, date, duration, event count), newest first.",
-      inputSchema: { limit: z.number().int().positive().max(200).optional().describe("Max sessions to return (default 20).") },
+      description:
+        "List recent pointcast recordings, newest first: id, date, duration, the pages pointed at, how many requests " +
+        "and elements, a preview of the first request, whether its source files are in this project (matchesProject), " +
+        "and whether its spec is already on disk (rendered).",
+      inputSchema: {
+        limit: z.number().int().positive().max(200).optional().describe("Max sessions to return (default 20)."),
+        repo: repoArgument,
+      },
       annotations: { readOnlyHint: true },
     },
-    async ({ limit }) => {
+    async ({ limit, repo }) => {
       try {
         // An object, not a bare array: Gemini CLI copies JSON text into structuredContent, which
         // MCP requires to be an object, and fails the whole call otherwise.
-        return text({ sessions: await listSessions(options, limit ?? 20) });
+        return text(sessionsJson(await listSessions(options, limit ?? 20, repoFor(repo))));
       } catch (error) {
         return toolError(error);
       }

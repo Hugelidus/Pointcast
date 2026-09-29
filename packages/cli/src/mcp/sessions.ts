@@ -1,42 +1,140 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { estimateTokens, fuse, isTypedSession, renderMarkdown, TYPED_SESSION_WORDS, type SessionFile, type WordsFile } from "@pointcast/core";
+import {
+  cachingReader,
+  estimateTokens,
+  fuse,
+  isTypedSession,
+  projectMatch,
+  renderMarkdown,
+  TYPED_SESSION_WORDS,
+  type SessionFile,
+  type SourceReader,
+  type WordsFile,
+} from "@pointcast/core";
 import { CliError } from "../errors";
 import { listSessionDirs, resolveSessionsBase, type ResolveSessionsBaseOptions } from "../process/discover";
 import { mismatchWarning, resolveWithRepo } from "../resolve/local";
 import { readSessionFile } from "../process/session-file";
-import { formatFusionSummary, formatTypedSummary, summarizeFusion } from "../process/summary";
+import { formatFusionSummary, formatTypedSummary, specStats, summarizeFusion } from "../process/summary";
+import { createRepoReader } from "../resolve/repo-reader";
 import { readWordsFileIfPresent } from "../process/words-file";
 
-/** What `list_sessions` reports for one session — enough to pick one, not its full contents. */
+/** What `list_sessions` reports for one session: enough to tell recordings apart and pick one. */
 export interface SessionSummary {
   id: string;
-  dir: string;
   startedAt: string;
   durationMs: number;
-  eventCount: number;
+  /** Where the user pointed: host and path of each page, first seen first (pagesOf). */
+  pages: string[];
+  /** The spec's requests; absent when it has none to count (classic format, not processed yet). */
+  requests?: number;
+  /** Elements pointed at: the recording's events. */
+  elements: number;
+  /** The first request's quote, cut to ~80 characters. */
+  preview?: string;
+  /**
+   * Whether the source files the recording points at exist in the project (the check behind
+   * get_session's other-project warning); "unknown" when it names none (production build, older
+   * extension) or the project folder does not exist.
+   */
+  matchesProject: boolean | "unknown";
+  /** Whether its session.md is on disk: false means it is rendered (or processed) on first use. */
+  rendered: boolean;
+}
+
+/** Pages listed at most by pagesOf; more are summed up as "+N more". */
+const MAX_PAGES = 3;
+
+/**
+ * The distinct pages of a recording, as "host/path" (no scheme, query or fragment: short, and a
+ * query can hold a token), in the order first pointed at.
+ */
+export function pagesOf(session: Pick<SessionFile, "events">, max: number = MAX_PAGES): string[] {
+  const pages: string[] = [];
+  for (const event of session.events) {
+    let page: string;
+    try {
+      const url = new URL(event.url);
+      page = `${url.host}${url.pathname}`;
+    } catch {
+      continue;
+    }
+    if (!pages.includes(page)) pages.push(page);
+  }
+  return pages.length > max ? [...pages.slice(0, max), `+${pages.length - max} more`] : pages;
+}
+
+/**
+ * A reader of the project to check recordings against, shared by every session of one call so
+ * its bounded file scan runs once; undefined when the folder does not exist (only an error when
+ * the caller named it, as in resolveWithRepo).
+ */
+export async function projectReader(repo: { root: string; explicit: boolean }): Promise<SourceReader | undefined> {
+  const isDir = await stat(repo.root).then(
+    (s) => s.isDirectory(),
+    () => false,
+  );
+  if (isDir) return cachingReader(createRepoReader(repo.root));
+  if (repo.explicit) throw new CliError(`The project folder ${repo.root} does not exist or is not a folder.`);
+  return undefined;
+}
+
+/** projectMatch as list_sessions reports it. */
+export async function matchesProject(session: SessionFile, reader: SourceReader | undefined): Promise<boolean | "unknown"> {
+  if (reader === undefined) return "unknown";
+  return (await projectMatch(session, reader)).matches ?? "unknown";
+}
+
+/**
+ * The session's spec without writing anything: session.md when it is on disk, else rendered in
+ * memory from words.json (or a typed session's notes); undefined when neither exists yet.
+ */
+async function readSpec(sessionDir: string, session: SessionFile): Promise<{ markdown: string; onDisk: boolean } | undefined> {
+  const existing = await readFile(path.join(sessionDir, "session.md"), "utf8").catch(() => undefined);
+  if (existing !== undefined) return { markdown: existing, onDisk: true };
+  const words = isTypedSession(session) ? TYPED_SESSION_WORDS : await readWordsFileIfPresent(sessionDir).catch(() => undefined);
+  return words === undefined ? undefined : { markdown: renderMarkdown(session, words), onDisk: false };
+}
+
+/** One list_sessions entry. */
+export async function summarizeSession(sessionDir: string, session: SessionFile, reader: SourceReader | undefined): Promise<SessionSummary> {
+  const spec = await readSpec(sessionDir, session);
+  const stats = spec === undefined ? undefined : specStats(spec.markdown);
+  return {
+    // The folder name: the id get_session takes (the same as session.json's, unless a folder was renamed).
+    id: path.basename(sessionDir),
+    startedAt: session.startedAt,
+    durationMs: session.durationMs,
+    pages: pagesOf(session),
+    ...(stats?.requests === undefined ? {} : { requests: stats.requests }),
+    elements: session.events.length,
+    ...(stats?.preview === undefined ? {} : { preview: stats.preview }),
+    matchesProject: await matchesProject(session, reader),
+    rendered: spec?.onDisk ?? false,
+  };
 }
 
 /**
  * Every session under the sessions folder (same discovery as `pointcast process`: `--dir` /
  * `POINTCAST_DIR` / `<Downloads>/pointcast`), newest first. A folder whose session.json is
  * missing or malformed is skipped rather than failing the whole list — the MCP tool is read-only
- * and should stay useful even if one folder is a leftover or a hand-edited fixture.
+ * and should stay useful even if one folder is a leftover or a hand-edited fixture. With `repo`,
+ * each says whether it matches that project; without, "unknown".
  */
-export async function listSessions(options: ResolveSessionsBaseOptions, limit?: number): Promise<SessionSummary[]> {
+export async function listSessions(
+  options: ResolveSessionsBaseOptions,
+  limit?: number,
+  repo?: { root: string; explicit: boolean },
+): Promise<SessionSummary[]> {
   const base = resolveSessionsBase(options);
   const { dirs } = await listSessionDirs(base);
+  const reader = repo === undefined ? undefined : await projectReader(repo);
   const summaries: SessionSummary[] = [];
   for (const dir of limit === undefined ? dirs : dirs.slice(0, limit)) {
     const session = await readSessionFile(dir).catch(() => undefined);
     if (session === undefined) continue;
-    summaries.push({
-      id: session.id,
-      dir,
-      startedAt: session.startedAt,
-      durationMs: session.durationMs,
-      eventCount: session.events.length,
-    });
+    summaries.push(await summarizeSession(dir, session, reader));
   }
   return summaries;
 }

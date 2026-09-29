@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Placement } from "@pointcast/core";
-import { formatFusionSummary, summarizeFusion } from "./summary";
+import { formatFusionSummary, PREVIEW_CHARS, specStats, summarizeFusion } from "./summary";
 
 describe("summarizeFusion", () => {
   it("counts each anchor kind directly", () => {
@@ -30,5 +30,34 @@ describe("summarizeFusion", () => {
     expect(formatFusionSummary({ total: 3, deictic: 1, time: 1, standalone: 1 })).toBe(
       "3 events (1 deictic, 1 time, 1 standalone)",
     );
+  });
+});
+
+describe("specStats", () => {
+  it("counts the requests and quotes the first one without its pointing markers", () => {
+    const markdown = [
+      "# UI change requests",
+      "",
+      "Preamble with [a] in it.",
+      "",
+      "## Request 1",
+      "",
+      "> Esto [a] me gustaría \\*así\\* [b, c] y [d–f] ya.",
+      "",
+      "- [a] th",
+      "",
+      "## Request 2",
+      "",
+      "_Pointed at without speaking._",
+    ].join("\n");
+    expect(specStats(markdown)).toEqual({ requests: 2, preview: "Esto me gustaría *así* y ya." });
+  });
+
+  it("cuts a long quote, and has nothing to count in the classic format", () => {
+    const long = `## Request 1\n\n> ${"palabra ".repeat(30)}\n`;
+    const { preview } = specStats(long);
+    expect(Array.from(preview!)).toHaveLength(PREVIEW_CHARS);
+    expect(preview!.endsWith("…")).toBe(true);
+    expect(specStats("# Session\n\n> said something\n")).toEqual({ requests: undefined, preview: undefined });
   });
 });

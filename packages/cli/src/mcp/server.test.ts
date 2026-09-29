@@ -32,7 +32,7 @@ describe("pointcast mcp server (smoke test)", () => {
     expect(tools.map((t) => t.name).sort()).toEqual(["get_element", "get_session", "list_sessions"]);
 
     const listed = await client.callTool({ name: "list_sessions", arguments: {} });
-    expect(JSON.stringify(listed.content)).toContain("2026-09-26_20-29-01");
+    expect(JSON.stringify(listed.content)).toContain("2026-01-02_09-00-00");
 
     const session = await client.callTool({ name: "get_session", arguments: { id: "latest" } });
     expect(JSON.stringify(session.content)).toContain("Quantity");
@@ -63,7 +63,8 @@ describe("pointcast mcp server (smoke test)", () => {
     // object: a bare array made every list_sessions call fail there.
     const listed = await client.callTool({ name: "list_sessions", arguments: {} });
     const parsed = JSON.parse((listed.content as Array<{ text: string }>)[0]!.text) as unknown;
-    expect(parsed).toEqual({ sessions: [expect.objectContaining({ id: "2026-09-26_20-29-01" })] });
+    // The folder name, the id the other tools take (this fixture's session.json has another).
+    expect(parsed).toEqual({ sessions: [expect.objectContaining({ id: "2026-01-02_09-00-00" })] });
 
     await client.close();
     await server.close();

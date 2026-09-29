@@ -46,3 +46,40 @@ export function formatTypedSummary(session: Pick<SessionFile, "events">): string
   const noted = session.events.filter((event) => cleanNote(event.note) !== undefined).length;
   return `${total} ${total === 1 ? "event" : "events"} (${noted} with a note)`;
 }
+
+/** What a rendered spec holds, read back from its Markdown (the `requests` format's headings). */
+export interface SpecStats {
+  /** Its "## Request N" headings; undefined for the classic format, which has none. */
+  requests: number | undefined;
+  /** The first request's quote, without the [a] markers, cut to PREVIEW_CHARS. */
+  preview: string | undefined;
+}
+
+export const PREVIEW_CHARS = 80;
+
+/**
+ * Read from the Markdown rather than recomputed, so it describes exactly the spec an agent gets,
+ * whichever renderer wrote it (the extension's session.md, or this CLI's).
+ */
+export function specStats(markdown: string): SpecStats {
+  const lines = markdown.split(/\r?\n/);
+  const headings = lines.flatMap((line, index) => (/^## Request \d+\s*$/.test(line) ? [index] : []));
+  if (headings.length === 0) return { requests: undefined, preview: undefined };
+  const first = lines.slice(headings[0]! + 1).find((line) => line.trim() !== "");
+  return { requests: headings.length, preview: first === undefined ? undefined : previewOf(first) };
+}
+
+function previewOf(line: string): string | undefined {
+  const text = line
+    .replace(/^>\s?/, "")
+    // The pointing markers ([a], [a, b], [c–e]) are the only unescaped brackets in a quote.
+    .replace(/\s*(?<!\\)\[[a-z](?:[\s,–-]+[a-z])*\]/g, "")
+    .replace(/\\([\\`*_[\]<>~])/g, "$1")
+    .replace(/^_(.*)_$/, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (text === "") return undefined;
+  // By code point, so an emoji is never cut in half.
+  const chars = Array.from(text);
+  return chars.length > PREVIEW_CHARS ? `${chars.slice(0, PREVIEW_CHARS - 1).join("").trimEnd()}…` : text;
+}

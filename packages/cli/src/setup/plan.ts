@@ -45,7 +45,8 @@ export interface AgentFinding {
 }
 
 export interface StackHint {
-  id: "django" | "frontend" | "none";
+  /** "several": no project here, and more than one in the folders one level down (none picked). */
+  id: "django" | "frontend" | "none" | "several";
   summary: string;
   /** What the user does by hand, one line each (setup never edits the project's code). */
   steps: string[];
@@ -301,7 +302,8 @@ async function djangoSettingsFiles(repo: string): Promise<string[]> {
   return found;
 }
 
-async function django(repo: string): Promise<StackHint | undefined> {
+/** `base`: the folder setup runs in, which the hint's paths are shown from (the project, or its parent). */
+async function django(repo: string, base = repo): Promise<StackHint | undefined> {
   const manage = await isFile(path.join(repo, "manage.py"));
   const settings = await djangoSettingsFiles(repo);
   if (!manage && settings.length === 0) return undefined;
@@ -310,12 +312,12 @@ async function django(repo: string): Promise<StackHint | undefined> {
     if ((await readText(file))?.includes("pointcast_django")) {
       return {
         id: "django",
-        summary: `Django: pointcast_django is already in INSTALLED_APPS (${path.relative(repo, file)}). Nothing to do.`,
+        summary: `Django: pointcast_django is already in INSTALLED_APPS (${path.relative(base, file).replace(/\\/g, "/")}). Nothing to do.`,
         steps: [],
       };
     }
   }
-  const where = settings[0] ? path.relative(repo, settings[0]).replace(/\\/g, "/") : "your settings.py";
+  const where = settings[0] ? path.relative(base, settings[0]).replace(/\\/g, "/") : "your settings.py";
   return {
     id: "django",
     summary: "Django: add pointcast-django, so each element leads with its template and line (development only).",
@@ -351,9 +353,51 @@ export const EXTENSION_STEPS = [
   "Then record on your app on localhost: press Record, talk (or pick Typed) while you Alt+click things (Option+click on macOS), press Stop.",
 ];
 
+/** What the project in `folder` is built with; paths shown from `base`. */
+async function stackOf(folder: string, base = folder): Promise<StackHint[]> {
+  return [await django(folder, base), await frontend(folder)].filter((hint): hint is StackHint => hint !== undefined);
+}
+
+/**
+ * The stack of the one app one folder down, when the folder setup runs in is no project itself
+ * (no package.json, no manage.py): a repository with the app in `web/` or `app/`. The CLI's
+ * resolver already finds such an app from the repository root (appFolderOf), so setup is run
+ * there too. Each hint says where the app is ("… in web/: …"). Two or more such folders: none is
+ * picked, one line lists them. Hidden folders and SKIP_DIRS are not looked into.
+ */
+async function stackOneDown(repo: string): Promise<StackHint[]> {
+  if ((await isFile(path.join(repo, "package.json"))) || (await isFile(path.join(repo, "manage.py")))) return [];
+  const entries = await readdir(repo, { withFileTypes: true }).catch(() => []);
+  const found: { name: string; hints: StackHint[] }[] = [];
+  for (const entry of entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
+    if (!entry.isDirectory() || entry.name.startsWith(".") || SKIP_DIRS.has(entry.name)) continue;
+    const folder = path.join(repo, entry.name);
+    if (!(await isFile(path.join(folder, "package.json"))) && !(await isFile(path.join(folder, "manage.py")))) continue;
+    const hints = await stackOf(folder, repo);
+    if (hints.length > 0) found.push({ name: entry.name, hints });
+  }
+  if (found.length === 1) {
+    const [{ name, hints }] = found;
+    return hints.map((hint) => ({ ...hint, summary: hint.summary.replace(/^([^:]*):/, `$1 in ${name}/:`) }));
+  }
+  if (found.length > 1) {
+    // "web/ Frontend (react, vite)": each hint's summary up to its colon.
+    const listed = found.map(({ name, hints }) => `${name}/ ${hints.map((hint) => hint.summary.replace(/:.*$/, "")).join(" + ")}`);
+    return [
+      {
+        id: "several",
+        summary: `Several projects one folder down, none picked: ${listed.join("; ")}. Run pointcast setup in the app's own folder for its steps.`,
+        steps: [],
+      },
+    ];
+  }
+  return [];
+}
+
 export async function planSetup(e: PlanEnvironment): Promise<SetupPlan> {
   const agents = [await claudeCode(e), await codex(e), await gemini(e), await cursor(e)];
-  const stack = [await django(e.repo), await frontend(e.repo)].filter((hint): hint is StackHint => hint !== undefined);
+  const here = await stackOf(e.repo);
+  const stack = here.length > 0 ? here : await stackOneDown(e.repo);
   if (stack.length === 0) {
     stack.push({
       id: "none",

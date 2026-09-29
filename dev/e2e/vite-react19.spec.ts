@@ -59,8 +59,9 @@ test("React 19 on Vite: the copied spec gives each file of the chain its source 
     await expect(app.locator(INDICATOR)).toBeVisible();
     await badge.click({ modifiers: ["Alt"] });
     await expect(popup.locator("#last-event")).toContainText("3");
-    // The lines come asynchronously, from the dev server, a few ms after the gesture (within 3 s).
-    await app.waitForTimeout(2_000);
+    // The lines come asynchronously, from the dev server: a few ms locally, and at most the 3 s
+    // budget of refineFrameworkInfo, so waiting longer than that cannot miss them.
+    await app.waitForTimeout(3_500);
     const { sessionId } = await stopFromPopup(popup);
 
     const { session, markdown } = await readSavedSession(popup, downloadsDir, sessionId);

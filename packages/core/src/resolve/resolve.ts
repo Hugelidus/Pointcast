@@ -1,5 +1,6 @@
 import { isShortValue } from "../describe";
 import { rootAttributes } from "../element-hints";
+import { HTML_TOKEN } from "../html-trim";
 import { oneLine, truncate } from "../markdown";
 import { isUtilityClass } from "../utility-classes";
 import type { CapturedEvent, CodeFrame, ElementInfo, ResolvedLocation, SessionFile, ShownByLocation } from "../schema";
@@ -1029,9 +1030,6 @@ function htmlOfText(element: ElementInfo, text: string): string | undefined {
 
 /** What html-trim appends where the capture cut a text. */
 const ELLIPSIS = "…";
-
-/** Tags, comments and text runs of an element's captured HTML (as html-trim tokenizes it). */
-const HTML_TOKEN = /<!--[\s\S]*?-->|<(?:[^>"']|"[^"]*"|'[^']*')*>|[^<]+|</g;
 
 /**
  * The element's text pieces in its captured HTML: its non-blank text runs in order, whitespace

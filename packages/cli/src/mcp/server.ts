@@ -115,7 +115,7 @@ export function createServer(options: ServerOptions): McpServer {
         const notes = [skippedNewerSessionsNote(skippedNewer), note, result.warning].filter((n): n is string => n !== undefined);
         return text(
           (notes.length ? `${notes.join("\n\n")}\n\n` : "") +
-            `# ${result.session.id}\n\n${result.summaryLine} · ${result.chars} chars · ~${result.tokens} tokens\n\n---\n\n${result.markdown}`,
+            `# ${result.session.id}\n\n${result.header}\n\n---\n\n${result.markdown}`,
         );
       } catch (error) {
         return toolError(error);

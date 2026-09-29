@@ -188,7 +188,7 @@ async function runProcessCommand(command: Extract<CliCommand, { command: "proces
   } else {
     log("words.json already present, skipped transcription (--force to redo it)");
   }
-  log(`${result.summaryLine} · ${result.chars} chars · ~${result.tokens} tokens`);
+  log(result.header);
   if (command.toStdout) {
     // A reader that stops early (`| head`) closes the pipe: that is not an error worth a stack.
     process.stdout.on("error", (error: NodeJS.ErrnoException) => {

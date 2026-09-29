@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Placement } from "@pointcast/core";
-import { formatFusionSummary, PREVIEW_CHARS, specStats, summarizeFusion } from "./summary";
+import { formatSpecHeader, PREVIEW_CHARS, specStats, summarizeFusion } from "./summary";
 
 describe("summarizeFusion", () => {
   it("counts each anchor kind directly", () => {
@@ -23,13 +23,15 @@ describe("summarizeFusion", () => {
     expect(summarizeFusion(placements)).toEqual({ total: 4, deictic: 2, time: 0, standalone: 2 });
   });
 
-  it("formats a one-line summary", () => {
-    expect(formatFusionSummary({ total: 1, deictic: 1, time: 0, standalone: 0 })).toBe(
-      "1 event (1 deictic, 0 time, 0 standalone)",
-    );
-    expect(formatFusionSummary({ total: 3, deictic: 1, time: 1, standalone: 1 })).toBe(
-      "3 events (1 deictic, 1 time, 1 standalone)",
-    );
+});
+
+describe("formatSpecHeader", () => {
+  it("says requests, elements and rounded tokens, without jargon or characters", () => {
+    expect(formatSpecHeader({ requests: 8, elements: 17, tokens: 3081 })).toBe("8 requests · 17 elements · ~3,100 tokens");
+    expect(formatSpecHeader({ requests: 1, elements: 1, tokens: 472 })).toBe("1 request · 1 element · ~470 tokens");
+    expect(formatSpecHeader({ requests: 0, elements: 0, tokens: 3 })).toBe("0 requests · 0 elements · ~10 tokens");
+    // The classic format has no requests to count.
+    expect(formatSpecHeader({ requests: undefined, elements: 10, tokens: 12_345 })).toBe("10 elements · ~12,300 tokens");
   });
 });
 

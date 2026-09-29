@@ -36,6 +36,9 @@ describe("pointcast mcp server (smoke test)", () => {
 
     const session = await client.callTool({ name: "get_session", arguments: { id: "latest" } });
     expect(JSON.stringify(session.content)).toContain("Quantity");
+    // The header says what the spec holds, in the user's terms: no fusion jargon, no characters.
+    const [title, , header] = (session.content as Array<{ text: string }>)[0]!.text.split("\n");
+    expect([title, header]).toEqual(["# 2026-09-26_20-29-01", "2 requests · 10 elements · ~470 tokens"]);
 
     const element = await client.callTool({ name: "get_element", arguments: { id: "latest", eventId: "e1" } });
     expect(JSON.stringify(element.content)).toContain("Quantity");

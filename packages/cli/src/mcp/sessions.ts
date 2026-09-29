@@ -3,7 +3,6 @@ import path from "node:path";
 import {
   cachingReader,
   estimateTokens,
-  fuse,
   isTypedSession,
   projectMatch,
   renderMarkdown,
@@ -16,7 +15,7 @@ import { CliError } from "../errors";
 import { listSessionDirs, resolveSessionsBase, type ResolveSessionsBaseOptions } from "../process/discover";
 import { mismatchWarning, resolveWithRepo } from "../resolve/local";
 import { readSessionFile } from "../process/session-file";
-import { formatFusionSummary, formatTypedSummary, specStats, summarizeFusion } from "../process/summary";
+import { formatSpecHeader, specStats } from "../process/summary";
 import { createRepoReader } from "../resolve/repo-reader";
 import { readWordsFileIfPresent } from "../process/words-file";
 
@@ -215,7 +214,8 @@ export interface GetSessionResult {
   rendered: boolean;
   chars: number;
   tokens: number;
-  summaryLine: string;
+  /** "8 requests · 17 elements · ~3,100 tokens" (formatSpecHeader), from the spec itself. */
+  header: string;
   /** One line to show above the spec: the recording looks like it is from another project. */
   warning?: string;
 }
@@ -243,15 +243,7 @@ export async function getSession(sessionDir: string, options: RepoOption = {}): 
   // A typed session (D12) renders from its notes: it never has a words.json, and needs none.
   const words = isTypedSession(session) ? TYPED_SESSION_WORDS : await readWordsFileIfPresent(sessionDir);
   if (local?.status === "resolved" && words !== undefined) {
-    const markdown = renderMarkdown(local.session, words);
-    return {
-      session: local.session,
-      markdown,
-      rendered: true,
-      chars: markdown.length,
-      tokens: estimateTokens(markdown),
-      summaryLine: summaryLineOf(session, words),
-    };
+    return specResult(local.session, renderMarkdown(local.session, words), true);
   }
   return { ...(await getStoredSession(sessionDir, session, words)), ...(warning ? { warning } : {}) };
 }
@@ -267,14 +259,7 @@ async function getStoredSession(sessionDir: string, session: SessionFile, words:
   if (existing !== undefined && words === undefined) {
     // session.md exists but words.json doesn't (or was removed) — trust the file on disk rather
     // than fail; there is nothing to re-render from anyway.
-    return {
-      session,
-      markdown: existing,
-      rendered: false,
-      chars: existing.length,
-      tokens: estimateTokens(existing),
-      summaryLine: "session.md read from disk (no words.json to summarize)",
-    };
+    return specResult(session, existing, false);
   }
   if (words === undefined) {
     throw new CliError(
@@ -283,7 +268,6 @@ async function getStoredSession(sessionDir: string, session: SessionFile, words:
   }
 
   const markdown = existing ?? renderMarkdown(session, words);
-  const summaryLine = summaryLineOf(session, words);
 
   if (existing === undefined) {
     // Cache it like `process` does, so a second call (or a later `pointcast process`) does not
@@ -293,18 +277,11 @@ async function getStoredSession(sessionDir: string, session: SessionFile, words:
     });
   }
 
-  return {
-    session,
-    markdown,
-    rendered: existing === undefined,
-    chars: markdown.length,
-    tokens: estimateTokens(markdown),
-    summaryLine,
-  };
+  return specResult(session, markdown, existing === undefined);
 }
 
-/** What `process` prints too: fusion's counts, or the notes' for a typed session (D12). */
-function summaryLineOf(session: SessionFile, words: WordsFile): string {
-  if (isTypedSession(session)) return formatTypedSummary(session);
-  return formatFusionSummary(summarizeFusion(fuse(session.events, words.words).placements));
+function specResult(session: SessionFile, markdown: string, rendered: boolean): GetSessionResult {
+  const tokens = estimateTokens(markdown);
+  const header = formatSpecHeader({ requests: specStats(markdown).requests, elements: session.events.length, tokens });
+  return { session, markdown, rendered, chars: markdown.length, tokens, header };
 }

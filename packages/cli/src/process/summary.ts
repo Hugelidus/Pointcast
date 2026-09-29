@@ -1,4 +1,4 @@
-import { cleanNote, type Placement, type SessionFile } from "@pointcast/core";
+import type { Placement } from "@pointcast/core";
 
 export interface FusionSummary {
   total: number;
@@ -32,19 +32,29 @@ export function summarizeFusion(placements: readonly Placement[]): FusionSummary
   return summary;
 }
 
-export function formatFusionSummary(summary: FusionSummary): string {
-  const { total, deictic, time, standalone } = summary;
-  return `${total} ${total === 1 ? "event" : "events"} (${deictic} deictic, ${time} time, ${standalone} standalone)`;
+/**
+ * The one line above a spec (get_session, wait_for_recording) and after `pointcast process`:
+ * "8 requests · 17 elements · ~3,100 tokens". What the user asked for and pointed at, and what
+ * reading it costs; no fusion jargon (deictic, standalone), and no character count. The requests
+ * are left out when the spec has none to count (the classic format).
+ */
+export function formatSpecHeader(counts: { requests: number | undefined; elements: number; tokens: number }): string {
+  const parts = [
+    ...(counts.requests === undefined ? [] : [plural(counts.requests, "request")]),
+    plural(counts.elements, "element"),
+    `~${roughTokens(counts.tokens).toLocaleString("en-US")} tokens`,
+  ];
+  return parts.join(" · ");
 }
 
-/**
- * A typed session (D12) has no fusion to report: each note is tied to its gesture by the user.
- * "3 events (2 with a note)".
- */
-export function formatTypedSummary(session: Pick<SessionFile, "events">): string {
-  const total = session.events.length;
-  const noted = session.events.filter((event) => cleanNote(event.note) !== undefined).length;
-  return `${total} ${total === 1 ? "event" : "events"} (${noted} with a note)`;
+function plural(count: number, noun: string): string {
+  return `${count} ${noun}${count === 1 ? "" : "s"}`;
+}
+
+/** An estimate shown as one: to the 10 under 1,000, to the 100 above. */
+function roughTokens(tokens: number): number {
+  const step = tokens < 1_000 ? 10 : 100;
+  return Math.max(step, Math.round(tokens / step) * step);
 }
 
 /** What a rendered spec holds, read back from its Markdown (the `requests` format's headings). */

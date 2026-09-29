@@ -9,7 +9,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
 
-export type PlaygroundPage = "index.html" | "other.html" | "spa.html";
+export type PlaygroundPage = "index.html" | "other.html" | "spa.html" | "chart.html";
 
 // Plain paths, not URL objects: in the jsdom environment the global URL is jsdom's class,
 // which node:fs does not accept.

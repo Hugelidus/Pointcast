@@ -158,3 +158,18 @@ describe("htmlAddsInformation", () => {
     expect(htmlAddsInformation(el({ html: "<ul><li>One</li></ul>" }))).toBe(true);
   });
 });
+
+describe("htmlAddsInformation for SVG elements", () => {
+  const svg = (html: string, label?: string) =>
+    htmlAddsInformation({ tag: "rect", text: "", selector: "rect", selectorUnique: true, path: "svg › rect", html, ...(label ? { label } : {}) });
+
+  it("does not count a <title> that is the element's label", () => {
+    expect(svg('<rect class="bar"><title>Enero: 120</title></rect>', "Enero: 120")).toBe(false);
+    expect(svg('<rect class="bar"><title>A &amp; B</title></rect>', "A & B")).toBe(false);
+  });
+
+  it("counts a <title> that says something else, and other children", () => {
+    expect(svg('<rect class="bar"><title>Enero</title></rect>', "Ventas de enero")).toBe(true);
+    expect(svg('<g class="bars"><rect class="bar"/></g>')).toBe(true);
+  });
+});

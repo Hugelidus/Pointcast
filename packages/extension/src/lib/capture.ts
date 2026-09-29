@@ -5,6 +5,7 @@ import { DEFAULT_CAPTURE_OPTIONS, type CaptureOptions } from "./options";
 import { redactPersonalText, redactPersonalUrl } from "./personal";
 import { boundaryElement, readRange } from "./selection";
 import { readStyles } from "./styles";
+import { pointedElement } from "./svg";
 import { redactUrl } from "./url";
 
 /**
@@ -69,15 +70,16 @@ function cancel(event: Event): void {
 
 /**
  * The element a mouse event is about. Clicks on an icon land on an inner <path>; the element
- * that owns the icon (usually a button or link) is what the user meant. composedPath()[0] is
- * the real target inside an open shadow root, where event.target seen from window is the host.
+ * that owns the icon (usually a button or link) is what the user meant. Clicks on a bar or a
+ * point of a chart drawn in SVG land on that bar or point when it is content (svg.ts).
+ * composedPath()[0] is the real target inside an open shadow root, where event.target seen from
+ * window is the host.
  */
 function eventElement(event: Event): Element | null {
   const target = (event.composedPath()[0] ?? event.target) as Node | null;
   if (target === null || typeof target.nodeType !== "number") return null; // window/document
   const el = boundaryElement(target);
-  const svg = el?.closest("svg");
-  return svg ? (svg.parentElement ?? svg) : el;
+  return el === null ? null : pointedElement(el);
 }
 
 /**

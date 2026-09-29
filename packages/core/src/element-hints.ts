@@ -146,7 +146,8 @@ const SHOWN_ATTRIBUTES = new Set(["id", "data-testid", "name", "href", "class", 
 
 /**
  * True when the HTML tells the agent something the hints do not: an attribute we do not list
- * (role, aria-expanded, title…) or child elements. An icon (`<svg/>`) alone does not count.
+ * (role, aria-expanded, title…) or child elements. An icon (`<svg/>`) alone does not count, nor
+ * an SVG element's `<title>` child that is its label.
  * Why: `<th>Quantity</th>` next to «Quantity» is pure repetition, and big containers are what
  * made the classic appendix expensive.
  */
@@ -158,7 +159,12 @@ export function htmlAddsInformation(element: ElementInfo): boolean {
     if (!shown.has(name)) return true;
   }
   const inner = element.html.replace(/^\s*<(?:[^>"']|"[^"]*"|'[^']*')*>/, "");
-  return /<[a-zA-Z]/.test(inner.replace(/<svg\b[^>]*\/>/gi, ""));
+  // An SVG shape's own <title> is its label, which the descriptor already quotes.
+  const label = oneLine(element.label ?? "");
+  const withoutTitle = inner.replace(/<title>([^<]*)<\/title>/g, (title, text: string) =>
+    label !== "" && oneLine(decodeEntities(text)) === label ? "" : title,
+  );
+  return /<[a-zA-Z]/.test(withoutTitle.replace(/<svg\b[^>]*\/>/gi, ""));
 }
 
 /** One line of HTML, trimmed structurally (D5), for a code span. */

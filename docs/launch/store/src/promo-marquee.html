@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>pointcast marquee promo tile (1400x560)</title>
+<title>Pointcast marquee promo tile (1400x560)</title>
 <link rel="stylesheet" href="promo.css">
 <style>
   body { width: 1400px; height: 560px; display: flex; align-items: center; justify-content: space-between; padding: 0 80px; }
@@ -15,18 +15,18 @@
 </head>
 <body>
   <div class="left">
-    <div class="brand"><img src="../../../../dev/scripts/icon/pointcast.svg" width="128" height="128" alt=""><span class="name">pointcast</span></div>
+    <div class="brand"><img src="../../../../dev/scripts/icon/pointcast.svg" width="128" height="128" alt=""><span class="name">Pointcast</span></div>
     <div class="tagline"><b>Talk and point at your web app.</b><br>Your coding agent gets the exact elements and the code behind them.</div>
   </div>
-<!-- The Revenue card's «View report» from a real recording on dev/examples/react-dashboard (README). -->
+<!-- The Revenue card's «View report» from the real recording in spec-example.md (dev/examples/react-dashboard), shortened: the quote's end and the tag's attributes. -->
 <div class="spec"><span class="h">## Request 1</span>
 
-<span class="q">&gt; This [a] should take you to the reports page.</span>
+<span class="q">&gt; This [a] should take you to a full report page.</span>
 
 - [a] «View report» → code:
-  - <span class="k">used at:</span> src/pages/Dashboard.tsx — &lt;StatCard&gt;
-  - <span class="k">text at:</span> src/pages/Dashboard.tsx:11
-  - <span class="p">within:</span>  &lt;Dashboard&gt; in src/App.tsx
+  - <span class="k">used at:</span> src/pages/Dashboard.tsx:11 — &lt;StatCard …/&gt;
+  - <span class="k">defined in:</span> src/components/StatCard.tsx
+  - <span class="k">text at:</span> src/components/StatCard.tsx:19
   - <span class="p">on screen:</span> a «View report» in «Revenue»</div>
 </body>
 </html>

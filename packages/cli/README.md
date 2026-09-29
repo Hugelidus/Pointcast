@@ -199,6 +199,26 @@ Chrome's downloads as before. The popup says where each recording went.
 
 `POINTCAST_HANDOFF_PORT` is a test hook: the extension's port is fixed when it is built.
 
+### Claude Code channels (experimental)
+
+Claude Code [channels](https://code.claude.com/docs/en/channels-reference) (a research preview)
+let an MCP server push a message into a session, so Claude reacts without being asked. The server
+declares a channel, and when it receives a recording from the extension, it tells the Claude Code
+session it belongs to: `New pointcast recording 2026-09-29_10-00-00: 3 requests on
+localhost:5173/orders. Apply it with the pointcast tools (get_session, id "…").` Claude then reads
+the spec with the tools, like `/pointcast`.
+
+- **Off unless you opt in.** Claude Code ignores it unless you start it with the channel enabled.
+  During the preview only allowlisted plugins can register as a channel, and pointcast is not on
+  the list, so it takes the development flag, which asks you to confirm at startup:
+  `claude --dangerously-load-development-channels plugin:pointcast@pointcast`.
+- **Only the id, counts and pages.** The message never carries the spec or anything you said or
+  the page showed: text from a web page must not reach the agent as a message it acts on. Page
+  paths are reduced to URL characters and cut short.
+- **Only the receiving server announces.** With several Claude Code sessions open, the one whose
+  server holds the handoff port gets the message. `/pointcast watch` works in any of them.
+- Other agents get no message; `wait_for_recording` is their way to listen.
+
 ### Claude Code: plugin
 
 The plugin adds the MCP server and a `/pointcast` command that fetches the latest recording and

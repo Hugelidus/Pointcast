@@ -6,6 +6,7 @@ import { z } from "zod";
 import { CliError } from "../errors";
 import { startHandoffReceiver } from "../handoff/receiver";
 import { resolveSessionsBase, skippedNewerSessionsNote, type ResolveSessionsBaseOptions } from "../process/discover";
+import { announceRecording, CHANNEL_CAPABILITY } from "./channel";
 import { getElement } from "./get-element";
 import { VERSION } from "../version";
 import { getSession, listSessions, resolveSessionDirById, type GetSessionResult, type RepoOption, type SessionSummary } from "./sessions";
@@ -82,7 +83,9 @@ const sessionIdArgument = z
  * Every tool carries readOnlyHint: Gemini CLI's plan mode refuses MCP tools without it.
  */
 export function createServer(options: ServerOptions): McpServer {
-  const server = new McpServer({ name: "pointcast", version: VERSION });
+  // The channel capability only takes effect in a Claude Code session started with --channels or
+  // the development flag for this server (channel.ts); everywhere else it is ignored.
+  const server = new McpServer({ name: "pointcast", version: VERSION }, { capabilities: { experimental: { [CHANNEL_CAPABILITY]: {} } } });
   const watch = options.watch ?? new RecordingWatch({ base: resolveSessionsBase(options) });
   const repoFor = (repo: string | undefined): RepoOption["repo"] =>
     repo === undefined ? { root: options.repoRoot, explicit: false } : { root: path.resolve(options.repoRoot, repo), explicit: true };
@@ -274,6 +277,7 @@ export async function runMcpServer(options: ServerOptions): Promise<void> {
   const watch = options.watch ?? new RecordingWatch({ base: resolveSessionsBase(options) });
   const server = createServer({ ...options, watch });
   await server.connect(new StdioServerTransport());
+  const log = (message: string) => console.error(`[pointcast] ${message}`);
   if (options.handoffPort === undefined) return;
   try {
     const receiver = startHandoffReceiver({
@@ -281,7 +285,10 @@ export async function runMcpServer(options: ServerOptions): Promise<void> {
       port: options.handoffPort,
       allowedExtensionIds: options.allowedExtensionIds ?? new Set(OFFICIAL_EXTENSION_IDS),
       version: VERSION,
-      onStored: (id) => watch.stored(id),
+      onStored: (id) => {
+        watch.stored(id);
+        void announceRecording(server, path.join(resolveSessionsBase(options), id), log);
+      },
     });
     const stop = () => void receiver.close();
     process.stdin.once("end", stop);

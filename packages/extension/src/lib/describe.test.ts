@@ -212,6 +212,28 @@ describe("context: the title of the card or section around an element", () => {
     expect(contextOf(`<main><h1>Dashboard</h1><div><button id="z">Download</button></div></main>`, "#z")).toBeUndefined();
   });
 
+  it("never takes a heading the user cannot see, such as a closed dialog's title", () => {
+    const around = (hidden: string) => `<main><div class="page">${hidden}<div class="toolbar"><button id="b">Buscar</button></div></div></main>`;
+    const title = "<h2>Command Palette</h2><p>Search for a command to run...</p>";
+    const SR_ONLY = "<style>.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}</style>";
+    for (const hidden of [
+      `<dialog>${title}</dialog>`,
+      `<div aria-hidden="true">${title}</div>`,
+      `<div inert>${title}</div>`,
+      `<div hidden>${title}</div>`,
+      `<div style="display: none">${title}</div>`,
+      `<div style="visibility: hidden">${title}</div>`,
+      `${SR_ONLY}<div class="sr-only">${title}</div>`,
+      `<div style="position: absolute; clip-path: inset(50%)">${title}</div>`,
+    ]) {
+      expect(contextOf(around(hidden), "#b"), hidden).toBeUndefined();
+    }
+    // A visible heading after the hidden one still titles the block.
+    expect(contextOf(around(`<dialog>${title}</dialog><h3>Pedidos</h3>`), "#b")).toBe("Pedidos");
+    // An open dialog's title is on screen.
+    expect(contextOf(around(`<dialog open>${title}</dialog>`), "#b")).toBe("Command Palette · Search for a command to run...");
+  });
+
   it("is at most 60 characters, redacted on enabled sites and blank for sensitive text", () => {
     const long = "A very long card title that goes on and on well past sixty characters";
     const context = contextOf(`<section aria-label="${long}"><button id="b">Go</button></section>`, "#b");

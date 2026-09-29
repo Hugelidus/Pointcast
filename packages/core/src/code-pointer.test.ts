@@ -583,3 +583,49 @@ describe("resolver pass 2 rendering (D9 note 2026-09-28)", () => {
     expect(codePointerLines({ ...layer, resolved: [{ ...layer.resolved![0], kind: "id" }] })).toContain("id at: `src/features/orders/OrdersMap.tsx:4`");
   });
 });
+
+describe("a relay line, `<Controller {...props} />`, is never used at (D9 note 2026-09-29)", () => {
+  // shadcn's form wrapper: FormField renders react-hook-form's Controller with its own props, and
+  // Controller calls the render prop the app wrote where it uses FormField.
+  const FORM = "src/components/ui/form.tsx";
+  const PAGE = "src/features/settings/profile-form.tsx";
+  const RELAY = { component: "Controller", file: FORM, line: 37, snippet: "<Controller {...props} />" };
+  const USAGE = { component: "FormField", file: PAGE, line: 40, snippet: "<FormField control={form.control} name='theme'" };
+
+  it("names the element's own line in the render prop, with the relay only as within", () => {
+    const input = el("input", "", {
+      component: { framework: "react", name: "Controller", file: PAGE, line: 48 },
+      renderedBy: [RELAY, USAGE],
+    });
+    expect(codeFirstLines(input)).toEqual([
+      `used at: \`${PAGE}:48\``,
+      `within: \`<Controller>\` at \`${FORM}:37\` ← \`<FormField>\` at \`${PAGE}:40\``,
+    ]);
+  });
+
+  it("without the element's own line, the usage is used at and the wrapper its shared definition", () => {
+    const input = el("input", "", { renderedBy: [RELAY, USAGE] });
+    expect(codeFirstLines(input)).toEqual([
+      `used at: \`${PAGE}:40\` — \`<FormField control={form.control} name='theme'\``,
+      `defined in: \`${FORM}\` (shared — do not change it unless asked)`,
+    ]);
+  });
+
+  it("keeps any line that says more than a spread, and a spread without its line read", () => {
+    for (const snippet of ['<Controller {...props} rules={{ required: true }} />', "<Controller {...props}>", "<Other {...props} />"]) {
+      const input = el("input", "", { renderedBy: [{ ...RELAY, snippet }, USAGE] });
+      expect(codeFirstLines(input)[0], snippet).toBe(`used at: \`${FORM}:37\` — \`${snippet}\``);
+    }
+    const unread = el("input", "", { renderedBy: [{ component: "Controller", file: FORM, line: 37 }, USAGE] });
+    expect(codeFirstLines(unread)[0]).toBe(`used at: \`${FORM}:37\` — \`<Controller>\``);
+    // The own tag, a relay, and an instance in another file: a definition as before.
+    const shared = el("input", "", {
+      component: { framework: "react", name: "Controller", file: "src/components/ui/field.tsx", line: 9 },
+      renderedBy: [RELAY, USAGE],
+    });
+    expect(codeFirstLines(shared).slice(0, 2)).toEqual([
+      `used at: \`${FORM}:37\` — \`<Controller {...props} />\``,
+      "defined in: `src/components/ui/field.tsx`",
+    ]);
+  });
+});

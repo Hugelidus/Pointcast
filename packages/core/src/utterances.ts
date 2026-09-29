@@ -26,6 +26,11 @@ export interface Unit {
   parts?: Sentence[];
   note?: string;
   pointed: Pointed[];
+  /**
+   * Sentences said right after this request without pointing, rendered as continuation lines of
+   * its quote (attachContinuations). They stay out of `sentence`: nothing in them was pointed at.
+   */
+  continued?: Sentence[];
 }
 
 /** (a) A silent pointing takes the utterance that starts at most this long after its last gesture. */
@@ -129,6 +134,42 @@ export function mergeUtterances(units: readonly Unit[], words: readonly Word[]):
         };
         joined.add(merged);
         out[out.length - 1] = merged;
+        continue;
+      }
+    }
+    out.push(unit);
+  }
+  return out;
+}
+
+/** A continuation holds at most this many sentences: past it, the user is on to something else. */
+export const CONTINUATION_MAX_SENTENCES = 4;
+/** …and at most this many words in all, so a monologue never hides inside one request. */
+export const CONTINUATION_MAX_WORDS = 80;
+
+/**
+ * Continuation of a long explanation (D4 note 2026-09-29), for rendering only: the utterances
+ * said without pointing that are still requests of their own after mergeUtterances (a request
+ * takes at most one) and come right after a request said while pointing, each starting at most
+ * CONTINUATION_GAP_MS after the previous sentence ends, go into that request's `continued`, in
+ * order. The first longer silence, the next gesture (a unit of its own, or a sentence with one),
+ * a note, CONTINUATION_MAX_SENTENCES or CONTINUATION_MAX_WORDS ends it; what is left stays a
+ * request of its own. Nothing is joined into the quote: each sentence keeps its own words.
+ */
+export function attachContinuations(units: readonly Unit[], words: readonly Word[]): Unit[] {
+  const out: Unit[] = [];
+  for (const unit of units) {
+    const previous = out.at(-1);
+    if (previous !== undefined && isBare(unit) && isSaid(previous)) {
+      const continued = previous.continued ?? [];
+      const last = continued.at(-1) ?? previous.sentence;
+      const count = [...continued, unit.sentence].reduce((sum, sentence) => sum + sentence.to - sentence.from, 0);
+      if (
+        continued.length < CONTINUATION_MAX_SENTENCES &&
+        count <= CONTINUATION_MAX_WORDS &&
+        start(unit.sentence, words) - end(last, words) <= CONTINUATION_GAP_MS
+      ) {
+        out[out.length - 1] = { ...previous, continued: [...continued, unit.sentence] };
         continue;
       }
     }

@@ -54,6 +54,10 @@ export function codePointerLines(element: ElementInfo): string[] {
  * - defined in: that definition's file, marked shared only on that evidence (the literal is
  *   written elsewhere, so the file renders every instance: Stage 0's `nav-group.tsx` error);
  *   for a library component, its package.
+ * - a relay (isRelay: `<Controller {...props} />`, a line that only hands props on) is never
+ *   `used at`: first in the chain, it is the shared wrapper's definition and the next frame is
+ *   the instance; right after the element's own tag, with an instance in the tag's file further
+ *   out, the tag was written in a render prop at the usage, so its own frame is `used at`.
  * - template (instead of used at): for a chain read from pointcast-django's markers, the
  *   innermost template, where the element's markup is written (D9 note 2026-09-28).
  * - text at / data at: the resolved locations, with their source line.
@@ -67,10 +71,18 @@ export function codeFirstLines(element: ElementInfo): string[] {
   const chain = codeChain(element);
   const resolved = resolvedLocations(element);
   const first = chain[0];
-  const shared = first !== undefined && (first.host || first.component === undefined) && literalElsewhere(chain, resolved);
+  // A relay first (`<Controller {...props} />` in a shared form wrapper) is inside the wrapper's
+  // definition, shared by construction: the instance is the next frame (D9 note 2026-09-29).
+  const relayFirst = first !== undefined && chain.length > 1 && isRelay(first);
+  const shared =
+    relayFirst || (first !== undefined && (first.host || first.component === undefined) && literalElsewhere(chain, resolved));
+  // The element's own tag, then a relay, then an instance in the tag's own file: the tag is
+  // written in a render prop (`render={({ field }) => <Input {...field} />}`) at the usage, so
+  // its own frame is where it is used, not a definition.
+  const renderProp = first !== undefined && first.host && isRelay(chain[1]) && chain[2]?.file === first.file;
   // A chain of just the element's own tag (a React element written straight in a Next.js page or
   // layout) is where it is used: there is no instance further out to send the agent to.
-  const definition = first !== undefined && chain.length > 1 && (first.host || shared) ? first : undefined;
+  const definition = first !== undefined && chain.length > 1 && !renderProp && (first.host || shared) ? first : undefined;
   const usedIndex = definition === undefined ? 0 : 1;
   const used: ChainFrame | undefined = chain[usedIndex];
   // Defense in depth (D8): the resolver keeps no snippet for a sensitive element; a hand-edited session may.
@@ -112,6 +124,20 @@ export function codeFirstLines(element: ElementInfo): string[] {
   const outer = chain.slice(usedIndex + 1);
   if (outer.length > 0) lines.push(`within: ${outer.map((frame) => frameText(frame, element.tag, false)).join(" ← ")}`);
   return lines;
+}
+
+/**
+ * A frame whose source line only hands its props on to the component it names:
+ * `<Controller {...props} />` (react-hook-form's Controller in shadcn's `FormField`),
+ * `<Field {...rest} {...props} />`. Such a line renders every use of the wrapper around it, and
+ * says nothing about this one; the usage is further out. Only on the resolver's snippet of that
+ * very line, a self-closing tag with spreads and nothing else, named as the frame's component:
+ * anything more (a class, a prop, children) is a line of its own and stays `used at`.
+ */
+function isRelay(frame: ChainFrame | undefined): boolean {
+  if (frame === undefined || frame.host || frame.template || frame.component === undefined || frame.snippet === undefined) return false;
+  const tag = /^<([\w$.]+)(?:\s+\{\s*\.\.\.\s*[\w$.]+\s*\})+\s*\/>$/.exec(oneLine(frame.snippet).trim());
+  return tag !== null && tag[1] === frame.component;
 }
 
 /**

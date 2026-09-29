@@ -264,7 +264,8 @@ function concept(id: string, extra: Partial<ElementInfo> = {}): ElementInfo {
 describe("sibling runs of SVG items whose identifiers differ", () => {
   it("groups them, listing the identifiers in letter order like links", () => {
     const md = request(render(["limites", "derivadas", "integrales"].map((id) => concept(id))));
-    expect(md).toContain("- [a–c] 3 × → code:");
+    // Without texts, the head names the tag: never a bare "3 × → code:".
+    expect(md).toContain("- [a–c] 3 × g → code:");
     expect(md).toContain("  - find: class `concept` · component `ConceptNode` (react) in `src/map/ConceptNode.tsx:7`");
     expect(md).toContain("  - data-id [a–c]: `limites`, `derivadas`, `integrales`");
     expect(md).toContain("  - in: `main › svg«Mapa de conceptos» › g[data-id=…]`");

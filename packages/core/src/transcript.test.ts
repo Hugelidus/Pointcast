@@ -41,7 +41,7 @@ describe("renderTranscript", () => {
     // Same selector for all 5: one merged part naming the first id plus a repeat count,
     // "e1 ×5", not every id ("e1, e2, e3, e4, e5") — that forced cross-referencing and
     // wasted tokens. The Appendix (renderAppendix) still lists every id for lookup.
-    const same = (id: string, t: number) => ({ ...ev(id, t), element: { ...ev(id, t).element, selector: "#shared", text: "Shared" } });
+    const same = (id: string, t: number) => ({ ...ev(id, t), element: { ...ev(id, t).element, selector: "#shared", path: "main › button#shared", text: "Shared" } });
     const events = [same("e1", 1100), same("e2", 1150), same("e3", 1200), same("e4", 1250), same("e5", 1290)];
     const placements: Placement[] = [
       { eventId: "e1", kind: "deictic", wordIndex: 0 },

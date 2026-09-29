@@ -130,7 +130,10 @@ describe("processSession", () => {
     expect(result.files[3]?.blob.size).toBe(44 + 48_000 * 2);
   });
 
-  it("says which language it fell back to, and keeps the audio so the CLI can redo it", async () => {
+  // Took 14 s once on a busy windows-latest runner (13 ms locally), past the default 5 s. It is
+  // the only test here that names languages, and the first Intl.DisplayNames loads ICU's locale
+  // data, the likely cost; nothing in the test itself is slow to trim.
+  it("says which language it fell back to, and keeps the audio so the CLI can redo it", { timeout: 30_000 }, async () => {
     const result = await processSession(
       job(),
       deps({ fallback: { guess: { code: "fr", probability: 0.45 }, used: "es", reason: "last-used" } }),

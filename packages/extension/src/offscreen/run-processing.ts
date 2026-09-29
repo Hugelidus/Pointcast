@@ -9,6 +9,7 @@ import {
   transcriptionThreads,
 } from "../transcriber/client";
 import type { EngineConfig } from "../transcriber/protocol";
+import { speechModel, type TranscriptionQuality } from "../processing/speech-model";
 import { decodeRecording } from "./audio";
 import { deliver } from "./deliver";
 import { resolveFromDevServer } from "./dev-server";
@@ -56,7 +57,7 @@ async function processAndPublish(
       const { live } = job;
       if (live) {
         try {
-          return await live.finish(samples, { ...options, onProgress: report });
+          return await live.finish(samples, { ...options, quality: job.options.quality, onProgress: report });
         } catch (error) {
           console.warn("[pointcast] live transcription failed; transcribing the whole recording", error);
         }
@@ -66,7 +67,7 @@ async function processAndPublish(
           samples,
           ...(options.language ? { language: options.language } : {}),
           ...(options.fallbackLanguage ? { fallbackLanguage: options.fallbackLanguage } : {}),
-          ...engineConfig(transcriptionThreads(navigator.hardwareConcurrency)),
+          ...engineConfig(transcriptionThreads(navigator.hardwareConcurrency), job.options.quality),
         },
         { deadline: options.deadline, onProgress: report },
       );
@@ -87,8 +88,12 @@ async function processAndPublish(
  * Starts transcribing at Record (D1 note 2026-09-27, live transcription): the model loads now,
  * and each finished piece of the recording is transcribed on at most 4 threads while the user keeps working.
  */
-export function startLiveTranscription(recording: MicrophoneRecording, language: string | undefined): LiveTranscription {
-  const worker = new TranscriptionWorker(engineConfig(liveTranscriptionThreads(navigator.hardwareConcurrency)));
+export function startLiveTranscription(
+  recording: MicrophoneRecording,
+  language: string | undefined,
+  quality: TranscriptionQuality,
+): LiveTranscription {
+  const worker = new TranscriptionWorker(engineConfig(liveTranscriptionThreads(navigator.hardwareConcurrency), quality));
   return new LiveTranscription(
     {
       worker,
@@ -96,11 +101,15 @@ export function startLiveTranscription(recording: MicrophoneRecording, language:
       recordedMs: () => Date.now() - recording.t0,
     },
     language,
+    quality,
   );
 }
 
-function engineConfig(threads: number): EngineConfig {
+function engineConfig(threads: number, quality: TranscriptionQuality): EngineConfig {
+  const { id, dtype } = speechModel(quality);
   return {
+    model: id,
+    dtype,
     threads,
     wasmPaths: new URL("/ort/", location.href).href,
     ...(MODEL_HOST ? { remoteHost: MODEL_HOST } : {}),

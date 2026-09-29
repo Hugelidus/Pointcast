@@ -32,6 +32,8 @@ scope.onmessage = ({ data: job }) => {
 async function run(job: WorkerJob): Promise<void> {
   try {
     engine ??= new LocalTranscriptionEngine({
+      model: job.model,
+      dtype: job.dtype,
       threads: job.threads,
       wasmPaths: job.wasmPaths,
       remoteHost: job.remoteHost,

@@ -3,7 +3,7 @@ import type { TranscribeDone, TranscribeJob } from "../transcriber/protocol";
 import { LIVE_LIMIT_S, LiveTranscription, type LiveDeps } from "./live-transcription";
 
 const RATE = 16000;
-const OPTIONS = { deadline: Number.MAX_SAFE_INTEGER, onProgress: () => undefined };
+const OPTIONS = { deadline: Number.MAX_SAFE_INTEGER, onProgress: () => undefined, quality: "fast" as const };
 
 /** Loud tone for speech, digital silence for pauses. */
 function audio(parts: readonly [kind: "speech" | "pause", seconds: number][]): Float32Array {
@@ -42,11 +42,11 @@ function fakeWorker(result: Partial<TranscribeDone> = {}) {
 }
 
 /** Records RECORDING in real time (fake clock) for `seconds`. */
-function record(worker: LiveDeps["worker"], language?: string) {
+function record(worker: LiveDeps["worker"], language?: string, quality: "fast" | "accurate" = "fast") {
   const startedAt = Date.now();
   const recordedMs = () => Date.now() - startedAt;
   const audioSoFar = vi.fn(async () => RECORDING.subarray(0, Math.min(RECORDING.length, Math.floor((recordedMs() * RATE) / 1000))));
-  return { live: new LiveTranscription({ worker, audioSoFar, recordedMs }, language), audioSoFar };
+  return { live: new LiveTranscription({ worker, audioSoFar, recordedMs }, language, quality), audioSoFar };
 }
 
 beforeEach(() => {
@@ -135,6 +135,16 @@ describe("LiveTranscription", () => {
     await expect(live.finish(RECORDING, OPTIONS)).rejects.toThrow("uncertain");
     // No further piece was sent after the failure.
     expect(worker.jobs).toHaveLength(1);
+    expect(worker.terminate).toHaveBeenCalled();
+  });
+
+  it("gives up when the transcription quality was changed during the recording: another model", async () => {
+    const worker = fakeWorker();
+    const changed = record(worker, "es", "fast").live;
+    await vi.advanceTimersByTimeAsync(20_000);
+    await expect(changed.finish(RECORDING.subarray(0, 20 * RATE), { ...OPTIONS, language: "es", quality: "accurate" })).rejects.toThrow(
+      "quality was changed",
+    );
     expect(worker.terminate).toHaveBeenCalled();
   });
 

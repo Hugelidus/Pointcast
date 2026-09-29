@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { SPEECH_MODEL_MB, type ProcessingInfo } from "../processing/progress";
+import type { ProcessingInfo } from "../processing/progress";
+import { SPEECH_MODELS } from "../processing/speech-model";
 import type { RecorderState } from "../recorder-state";
 import {
   firstRunNotice,
@@ -123,7 +124,7 @@ describe("firstRunNotice", () => {
     const notice = firstRunNotice({ status: "idle" }, "prompt", false);
     expect(notice?.title).toBe("Before your first recording");
     expect(notice?.text).toBe(
-      `Pointcast needs the microphone once. The first Stop also downloads the speech model (${SPEECH_MODEL_MB} MB, once); transcription then runs on this computer.`,
+      `Pointcast needs the microphone once. The first Stop also downloads the speech model (${SPEECH_MODELS.fast.downloadMB} MB, once); transcription then runs on this computer.`,
     );
   });
 
@@ -134,6 +135,15 @@ describe("firstRunNotice", () => {
     expect(firstRunNotice({ status: "idle" }, "granted", true)).toBeNull();
     // Not known yet, or not queryable: nothing to claim.
     expect(firstRunNotice({ status: "idle" }, undefined, undefined)).toBeNull();
+  });
+
+  it("announces the accurate model's own download when Accurate is chosen", () => {
+    const notice = firstRunNotice({ status: "idle" }, "granted", false, "voice", "accurate");
+    expect(notice?.title).toBe("Before the next recording");
+    expect(notice?.text).toBe(
+      `The next Stop downloads the accurate speech model (${SPEECH_MODELS.accurate.downloadMB} MB, once); transcription then runs on this computer.`,
+    );
+    expect(firstRunNotice({ status: "idle" }, "granted", true, "voice", "accurate")).toBeNull();
   });
 
   it("is shown only while idle", () => {

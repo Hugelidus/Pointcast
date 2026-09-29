@@ -1,5 +1,6 @@
 import { isTyped, type RecorderState } from "../recorder-state";
 import { firstSentence } from "./failure";
+import type { TranscriptionQuality } from "./speech-model";
 import type { SpeedStats } from "./stats";
 
 /**
@@ -15,7 +16,7 @@ import type { SpeedStats } from "./stats";
 export type ProcessingStage =
   /** The recorder stops the microphone and decodes the audio. */
   | "stopping"
-  /** First run only: the model is downloaded (SPEECH_MODEL_MB), shown in MB rather than as a time. */
+  /** First run of a model only: it is downloaded (SpeechModel.downloadMB), shown in MB rather than as a time. */
   | "downloading-model"
   /** Model load (from the cache), language detection, transcription, fusion, rendering. */
   | "transcribing"
@@ -37,6 +38,8 @@ export interface ProcessingInfo {
   totalBytes?: number;
   /** True until the model has loaded once in this browser profile. */
   firstRun: boolean;
+  /** The Settings.quality this run transcribes with; absent in a state saved before it existed (fast). */
+  quality?: TranscriptionQuality;
 }
 
 /** Stop, decode, spawn the worker, fuse, render, copy and hand the files over. */
@@ -104,11 +107,6 @@ export function megabytes(bytes: number): number {
   return Math.round(bytes / 1_000_000);
 }
 
-/**
- * The first run's download, in megabytes() of the total the model files report (whisper-base,
- * quantized encoder and merged decoder), for the popup's first-run note before any download report.
- */
-export const SPEECH_MODEL_MB = 294;
 
 /** How long the in-page pill keeps the outcome after processing ended; failures and warnings stay longer. */
 export const DONE_VISIBLE_MS = 5_000;

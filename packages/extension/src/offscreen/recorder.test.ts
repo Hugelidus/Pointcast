@@ -41,7 +41,7 @@ const draft: CapturedEventDraft = {
   element: { tag: "button", text: "Export", selector: "#export", selectorUnique: true, path: "button", html: "<button>Export</button>" },
 };
 
-const OPTIONS: ProcessingOptions = { keepAudio: false, deadline: T0 + 600_000, handoff: true };
+const OPTIONS: ProcessingOptions = { keepAudio: false, deadline: T0 + 600_000, handoff: true, quality: "fast" };
 
 function newRecorder() {
   const jobs: ProcessingJob[] = [];
@@ -159,8 +159,8 @@ describe("Recorder stop", () => {
     const startLive = vi.fn(() => live as unknown as LiveTranscription);
     const jobs: ProcessingJob[] = [];
     const recorder = new Recorder((job) => jobs.push(job), startLive);
-    await recorder.handle({ to: "offscreen", type: "recorder-start", language: "es" });
-    expect(startLive).toHaveBeenCalledWith(expect.objectContaining({ t0: T0 }), "es");
+    await recorder.handle({ to: "offscreen", type: "recorder-start", language: "es", quality: "accurate" });
+    expect(startLive).toHaveBeenCalledWith(expect.objectContaining({ t0: T0 }), "es", "accurate");
 
     // Only the audio live transcription has not done yet is left to wait for.
     // The model loaded during the recording: nothing left to download.

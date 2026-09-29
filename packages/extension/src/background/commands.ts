@@ -4,7 +4,8 @@ import { sendMessage, type CommandResult, type ProcessingOptions, type Processin
 import { firstSentence, type ErrorKind } from "../processing/failure";
 import { processingEstimateMs, transcriptionEstimateMs, type ProcessingInfo } from "../processing/progress";
 import { chosenLanguage } from "../processing/settings";
-import { learnFromRun } from "../processing/stats";
+import { speechModel, type TranscriptionQuality } from "../processing/speech-model";
+import { learnFromRun, statsFor, type ProcessingStats } from "../processing/stats";
 import { isTyped, savedLocationText, toggleCommand, type LastResult, type RecorderState, type RecorderStatus } from "../recorder-state";
 import { formatSessionId, nextFreeSessionId } from "../session-id";
 import {
@@ -169,9 +170,16 @@ export async function startRecording(): Promise<CommandResult> {
     await ensureOffscreenDocument();
     // The language goes along so the recording can be transcribed while it is made
     // (D1 note 2026-09-27, live transcription). A typed recording opens no microphone at all.
+    // So is the transcription quality (the model the live worker loads).
     const language = chosenLanguage(settings);
     const result = await withTimeout(
-      sendMessage({ to: "offscreen", type: "recorder-start", ...(language ? { language } : {}), ...typedMode }),
+      sendMessage({
+        to: "offscreen",
+        type: "recorder-start",
+        ...(language ? { language } : {}),
+        quality: settings.quality,
+        ...typedMode,
+      }),
       START_TIMEOUT_MS,
       inputMode === "typed"
         ? "The recorder did not start in time. Press Record again."
@@ -210,18 +218,22 @@ export async function stopRecording(): Promise<CommandResult> {
   const stoppedAt = Date.now();
   // The wall-clock length until the recorder reports the decoded one.
   const audioMs = Math.max(0, stoppedAt - (state.t0 ?? stoppedAt));
-  const stats = await readStats();
+  const [stats, settings] = await Promise.all([readStats(), readSettings()]);
+  // The quality at Stop decides the model (a change since Record makes Stop transcribe it all).
+  const quality = settings.quality;
+  const { speed, modelReady } = statsFor(stats, speechModel(quality));
   // A typed session (D12) transcribes nothing: no model to download, and no time to estimate
-  // beyond rendering and saving.
+  // beyond rendering and saving. Each quality's model is a first download of its own.
   const typed = isTyped(state);
-  const firstRun = !typed && !stats.modelReady;
+  const firstRun = !typed && !modelReady;
   const processing: ProcessingInfo = {
     startedAt: stoppedAt,
     audioMs,
     stage: "stopping",
-    estimatedEnd: stoppedAt + (typed ? TYPED_PROCESSING_MS : processingEstimateMs(audioMs, stats.speed, firstRun)),
+    estimatedEnd: stoppedAt + (typed ? TYPED_PROCESSING_MS : processingEstimateMs(audioMs, speed, firstRun)),
     deadline: processingDeadline(stoppedAt, audioMs),
     firstRun,
+    quality,
   };
   // The id is stored before asking the recorder, so a restarted service worker can resume
   // this stop with the same folder name (recoverInterruptedTransition).
@@ -235,7 +247,7 @@ export async function stopRecording(): Promise<CommandResult> {
 const TYPED_PROCESSING_MS = 1_000;
 
 /** The popup's settings and what earlier runs taught, for the offscreen document. */
-async function processingOptions(deadline: number): Promise<ProcessingOptions> {
+async function processingOptions(deadline: number, quality: TranscriptionQuality | undefined): Promise<ProcessingOptions> {
   const [settings, stats] = await Promise.all([readSettings(), readStats()]);
   const language = chosenLanguage(settings);
   return {
@@ -244,7 +256,14 @@ async function processingOptions(deadline: number): Promise<ProcessingOptions> {
     keepAudio: settings.keepAudio,
     deadline,
     handoff: settings.handoff,
+    // The one stopRecording chose, so the estimate and the model shown match the one used.
+    quality: quality ?? settings.quality,
   };
+}
+
+/** The learned numbers of the model a processing run uses (fast when the state predates the setting). */
+function runStats(stats: ProcessingStats, info: ProcessingInfo) {
+  return statsFor(stats, speechModel(info.quality ?? "fast"));
 }
 
 /**
@@ -262,7 +281,7 @@ async function askRecorderToStop(state: RecorderState): Promise<CommandResult> {
         type: "recorder-stop",
         extensionVersion: browser.runtime.getManifest().version,
         sessionId,
-        options: await processingOptions(deadline),
+        options: await processingOptions(deadline, state.processing?.quality),
       }),
       STOP_TIMEOUT_MS,
       "Stopping the recording took too long, so it could not be saved.",
@@ -289,7 +308,8 @@ async function askRecorderToStop(state: RecorderState): Promise<CommandResult> {
           // Only the audio live transcription has not done yet is left to wait for, and no model
           // load when it is loaded already (on a first run, the download is shown in MB instead).
           estimatedEnd:
-            startedAt + processingEstimateMs(result.pendingMs, stats.speed, firstRun || result.modelLoaded),
+            startedAt +
+            processingEstimateMs(result.pendingMs, runStats(stats, current.processing).speed, firstRun || result.modelLoaded),
         },
       });
     }
@@ -328,7 +348,7 @@ export async function recordProcessingProgress(sessionId: string, progress: Tran
   if (progress.stage === "loading-model" && info.firstRun) {
     next = { ...info, stage: "downloading-model", loadedBytes: progress.loadedBytes, totalBytes: progress.totalBytes };
   } else if (progress.stage === "model-ready") {
-    const { speed } = await readStats();
+    const { speed } = runStats(await readStats(), info);
     next = { ...info, stage: "transcribing", estimatedEnd: Date.now() + transcriptionEstimateMs(info.audioMs, speed) };
   } else {
     return;
@@ -374,7 +394,7 @@ export async function finishProcessing(sessionId: string, result: ProcessingResu
   }
   // The files are on their way: from here on nothing may fail the report, or its retry would find
   // the state as it was and could only wait for the processing alarm.
-  await rememberRun(result).catch((error: unknown) => console.error("[pointcast] could not keep the last run", error));
+  await rememberRun(result, state.processing).catch((error: unknown) => console.error("[pointcast] could not keep the last run", error));
   await setState({
     ...state,
     status: "processing",
@@ -420,11 +440,11 @@ async function downloadOnce(sessionId: string, result: ProcessingResult): Promis
 }
 
 /** The Markdown for "Copy again", and what this run says about the device's speed. */
-async function rememberRun(result: ProcessingResult): Promise<void> {
+async function rememberRun(result: ProcessingResult, info: ProcessingInfo | undefined): Promise<void> {
   if (result.markdown !== undefined) await writeLastMarkdown(result.markdown);
   if (result.timings) {
     const stats = await readStats();
-    await writeStats(learnFromRun(stats, result.timings, result.language));
+    await writeStats(learnFromRun(stats, speechModel(info?.quality ?? "fast"), result.timings, result.language));
   }
 }
 
@@ -452,7 +472,7 @@ async function finishHandedOff(
   // a restart would then report as a lost recording. The last run ("Copy again", the speed
   // estimate) is optional: a failure (a full disk) is only logged. It is kept before the idle state,
   // which the popup reacts to by reading the Markdown for its Copy again button.
-  await rememberRun(result).catch((error: unknown) => console.error("[pointcast] could not keep the last run", error));
+  await rememberRun(result, state.processing).catch((error: unknown) => console.error("[pointcast] could not keep the last run", error));
   await setState(
     idle(state, {
       lastSessionId: sessionId,

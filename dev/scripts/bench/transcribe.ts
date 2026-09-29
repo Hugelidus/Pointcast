@@ -3,13 +3,18 @@
  * (docs/plan-phase-1.md, done-criteria: "<60 s on a laptop CPU" for a 2-minute recording).
  *
  * Run from packages/cli (so @huggingface/transformers resolves):
- *   cd packages/cli && ./node_modules/.bin/tsx ../../scripts/bench/transcribe.ts [--models tiny,base,small,large-v3-turbo]
+ *   cd packages/cli && ./node_modules/.bin/tsx ../../dev/scripts/bench/transcribe.ts [--models tiny,base,small,large-v3-turbo]
+ *     [--dtypes fp32,q8,encoder_model=fp16+decoder_model_merged=q8] [--threads 4,8] [--out results-x.json] [--extra some.wav --extra-out words.json]
+ *
+ * `--extra` also transcribes a WAV without ground truth (a private recording, say) and writes each
+ * model's words to `--extra-out`, to compare models by hand. Neither file belongs in the repo.
  *
  * Deliberately outside `pnpm test` (conventions: "Default pnpm test must stay fast and
  * offline") — this downloads real models and burns real CPU minutes, so it lowers its own
  * priority. Results are printed per (model, audio, threads) row, and written to
- * dev/scripts/bench/results.json together with the machine and the date. Every run rewrites the
- * whole file, so run all the models you want to compare in one invocation.
+ * dev/scripts/bench/results.json (or `--out`) together with the machine and the date. Every run
+ * rewrites that file. results-2026-09-29.json merges one process per model and precision, so each
+ * row's peakRssMB is that model's own peak.
  *
  * The plan step 3 budget is checked on es-2min (152 s of audio): under 60 s on a laptop CPU.
  * packages/cli/src/transcribe/local.slow.test.ts asserts it for the default model.
@@ -23,6 +28,7 @@ import path from "node:path";
 import os from "node:os";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import type { DataType } from "@huggingface/transformers";
 import { LocalTranscriptionEngine } from "../../../packages/transcribe/src/index.ts";
 import { readWavPcm16Mono16k } from "../../../packages/cli/src/audio/wav.ts";
 
@@ -188,6 +194,9 @@ function percentile(sorted: number[], p: number): number {
 
 interface BenchRow {
   model: string;
+  dtype?: string;
+  /** Peak resident memory of this process so far, in MB (run one model per process for a clean peak). */
+  peakRssMB?: number;
   audio: string;
   threads: string;
   loadSeconds: number;
@@ -263,6 +272,11 @@ async function main(): Promise<void> {
     args: process.argv[2] === "--" ? process.argv.slice(3) : process.argv.slice(2),
     options: {
       models: { type: "string" }, // comma-separated sizes, e.g. "tiny,base"
+      dtypes: { type: "string", default: "fp32" }, // comma-separated, e.g. "fp32,q8"
+      threads: { type: "string" }, // comma-separated, default 4,8
+      out: { type: "string" }, // results file name next to this script, default results.json
+      extra: { type: "string" },
+      "extra-out": { type: "string" },
       "load-timeout-min": { type: "string", default: "8" },
     },
   });
@@ -277,12 +291,20 @@ async function main(): Promise<void> {
   const languageByAudio: Record<string, string> = { "es-2min": "es", "en-short": "en" };
 
   const rows: BenchRow[] = [];
+  // "fp32", or per ONNX file: "encoder_model=fp16+decoder_model_merged=q8".
+  const dtypes = values.dtypes!.split(",").map((d) =>
+    d.includes("=") ? (Object.fromEntries(d.split("+").map((part) => part.split("="))) as Record<string, DataType>) : (d as DataType),
+  );
+  const threadCounts = values.threads ? values.threads.split(",").map(Number) : THREAD_COUNTS;
+  const extraWords: Record<string, { text: string; start: number }[]> = {};
+  const peakRssMB = () => Math.round(process.resourceUsage().maxRSS / 1024);
 
-  for (const candidate of candidates) {
-    console.log(`\n=== ${candidate.size} (${candidate.repo}) ===`);
+  for (const candidate of candidates) for (const dtypeOption of dtypes) {
+    const dtype = typeof dtypeOption === "string" ? dtypeOption : JSON.stringify(dtypeOption);
+    console.log(`\n=== ${candidate.size} (${candidate.repo}) ${dtype} ===`);
 
-    for (const threads of THREAD_COUNTS) {
-      const engine = new LocalTranscriptionEngine({ model: candidate.repo, threads });
+    for (const threads of threadCounts) {
+      const engine = new LocalTranscriptionEngine({ model: candidate.repo, dtype: dtypeOption, threads });
 
       const loadStart = performance.now();
       try {
@@ -311,6 +333,8 @@ async function main(): Promise<void> {
         const result = await benchOneAudio(engine, audioName, language, ground);
         const row: BenchRow = {
           model: candidate.repo,
+          dtype,
+          peakRssMB: peakRssMB(),
           audio: audioName,
           threads: String(threads),
           loadSeconds,
@@ -331,11 +355,21 @@ async function main(): Promise<void> {
 
       // es-short "esto" deictic check runs once per model (threads do not affect correctness,
       // only speed), so only do it for the first thread count to avoid a redundant pass.
-      if (threads === THREAD_COUNTS[0]) {
+      if (values.extra && threads === threadCounts[0]) {
+        const samples = readWavPcm16Mono16k(await readFile(values.extra));
+        const t0 = performance.now();
+        const words = await engine.transcribe(samples, { language: "es" });
+        const seconds = (performance.now() - t0) / 1000;
+        extraWords[`${candidate.repo} ${dtype}`] = words.words.map((w) => ({ text: w.text, start: w.start }));
+        console.log(`  [extra] ${(samples.length / 16000).toFixed(1)}s of audio in ${seconds.toFixed(1)}s, ${words.words.length} words`);
+      }
+
+      if (threads === threadCounts[0]) {
         const estoReport = await checkEstoDeictics(engine, "es");
         console.log(`  [es-short esto check] ${estoReport}`);
         rows.push({
           model: candidate.repo,
+          dtype,
           audio: "es-short(esto-check)",
           threads: String(threads),
           loadSeconds,
@@ -351,8 +385,10 @@ async function main(): Promise<void> {
 
   const machine = `${os.cpus()[0]?.model.trim() ?? "unknown CPU"}, ${os.cpus().length} logical cores`;
   const report = { date: new Date().toISOString().slice(0, 10), machine, rows };
-  await writeFile(RESULTS_PATH, `${JSON.stringify(report, null, 2)}\n`, "utf8");
-  console.log(`\nWrote ${RESULTS_PATH}`);
+  const resultsPath = values.out ? path.join(__dirname, path.basename(values.out)) : RESULTS_PATH;
+  await writeFile(resultsPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  console.log(`\nWrote ${resultsPath}`);
+  if (values["extra-out"]) await writeFile(values["extra-out"], `${JSON.stringify(extraWords, null, 2)}\n`, "utf8");
   console.log(`CPU: ${machine}`);
 }
 
@@ -363,7 +399,10 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
   ]);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exitCode = 1;
-});
+main()
+  // ONNX Runtime's thread pool can keep the process alive after the last model ran.
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

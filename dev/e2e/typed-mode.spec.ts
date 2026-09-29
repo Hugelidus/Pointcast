@@ -113,9 +113,9 @@ test("typed mode: two notes, one cancelled with Esc, the app never sees the typi
   expect(records.filter((r) => r.kind === "clipboard")).toEqual([{ kind: "clipboard", text: saved.markdown }]);
   // Nothing was transcribed, so the speech model was never loaded.
   const stats = (await popup.evaluate(() => chrome.storage.local.get("processingStats")))["processingStats"] as
-    | { modelReady?: boolean }
+    | { models?: Record<string, { modelReady?: boolean }> }
     | undefined;
-  expect(stats?.modelReady ?? false).toBe(false);
+  expect(Object.values(stats?.models ?? {}).some((model) => model.modelReady)).toBe(false);
 });
 
 /**

@@ -28,10 +28,10 @@ export interface LocalEngineOptions {
   /** A multilingual Whisper ONNX repo id with cross-attention outputs. Default "Xenova/whisper-base". */
   model?: string;
   /**
-   * Weights precision. Default "fp32": the precision the CLI has always used, and in the spike
-   * q8 was slower in Node and less accurate on the 2-minute fixture (91 % vs 93 % of words).
+   * Weights precision, for every ONNX file or per file ({ encoder_model, decoder_model_merged }).
+   * Default: defaultDtype(model).
    */
-  dtype?: DataType;
+  dtype?: WeightsDtype;
   /** Default: the library's choice, "cpu" in Node and "wasm" in a browser. */
   device?: DeviceType;
   /** ONNX thread count. Unset lets onnxruntime pick (every core in Node: set it to stay polite). */
@@ -78,9 +78,31 @@ export interface LocalEngineOptions {
  * words right, word starts within 165 ms median / 265 ms p90, transcribed in 24 s. That meets
  * plan step 3's "under 60 s" with room to spare. tiny is less accurate (87 %); small (96 %,
  * 66 s) and large-v3-turbo (96 %, 122 s) miss the budget and do not time words any better.
+ * Since 2026-09-29, small is the extension's "Accurate" choice and the CLI's `--model
+ * Xenova/whisper-small`, for users who trade time for fewer misheard words (D1 note).
  */
 export const DEFAULT_MODEL = "Xenova/whisper-base";
 export const DEFAULT_DTYPE: DataType = "fp32";
+
+/** One precision for every ONNX file of the model, or one per file. */
+export type WeightsDtype = DataType | Record<string, DataType>;
+
+/**
+ * The precision each model runs at unless told otherwise (D1 note 2026-09-29, measured on the
+ * 152 s Spanish fixture with the VAD, 4 threads, dev/scripts/bench/results-2026-09-29.json):
+ * - whisper-base: fp32. q8 was slower in the browser and less accurate (91 % vs 93 % of words).
+ * - whisper-small: fp32 encoder, q8 decoder. Same words as all-fp32 (96.2 % in Node) for 512 MB
+ *   instead of 971 MB, and a cached load in the browser of 5.5 s instead of 15 s. All-q8 (252 MB)
+ *   lost its word times on a quarter of the fixture: runs of zero-length words, which the
+ *   sanitizer drops (79 %). fp16 gave the same words at 1.6-1.7x the time.
+ */
+const MODEL_DTYPES: Readonly<Record<string, WeightsDtype>> = {
+  "Xenova/whisper-small": { encoder_model: "fp32", decoder_model_merged: "q8" },
+};
+
+export function defaultDtype(model: string): WeightsDtype {
+  return MODEL_DTYPES[model] ?? DEFAULT_DTYPE;
+}
 
 /** Matches the library's own "long audio" example (docs comment in automatic-speech-recognition.d.ts). */
 const DEFAULT_CHUNK_LENGTH_S = 30;
@@ -182,7 +204,7 @@ export class LocalTranscriptionEngine implements TranscriptionEngine {
 
     onProgress?.({ stage: "loading-model", model: this.modelId, loadedBytes: 0, totalBytes: 0 });
     const asr = await pipeline("automatic-speech-recognition", this.modelId, {
-      dtype: this.options.dtype ?? DEFAULT_DTYPE,
+      dtype: this.options.dtype ?? defaultDtype(this.modelId),
       device: this.options.device,
       session_options:
         threads && threads > 0 ? { intraOpNumThreads: threads, interOpNumThreads: threads } : undefined,

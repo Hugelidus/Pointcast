@@ -3,6 +3,7 @@
  * Read by the service worker when a recording stops, never cached in a variable (D6).
  */
 import type { InputMode } from "@pointcast/core";
+import { TRANSCRIPTION_QUALITIES, type TranscriptionQuality } from "./speech-model";
 
 export interface Settings {
   /** "auto", or an ISO 639-1 code Whisper knows (WHISPER_LANGUAGES). */
@@ -28,6 +29,13 @@ export interface Settings {
    * on local dev hosts and (redacted) on enabled sites; read at Record, like inputMode.
    */
   captureErrors: boolean;
+  /**
+   * Which Whisper model transcribes (speech-model.ts): "fast" (whisper-base) or "accurate"
+   * (whisper-small, slower, a download of its own on first use). Read at Record for live
+   * transcription and again at Stop; a change in between makes Stop transcribe everything again
+   * with the new choice, like a language change. Fast by default (D1 note 2026-09-29).
+   */
+  quality: TranscriptionQuality;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -37,6 +45,7 @@ export const DEFAULT_SETTINGS: Settings = {
   handoff: true,
   inputMode: "voice",
   captureErrors: true,
+  quality: "fast",
 };
 
 /** chrome.storage.local key. */
@@ -64,6 +73,9 @@ export function parseSettings(value: unknown): Settings {
     handoff: typeof v.handoff === "boolean" ? v.handoff : DEFAULT_SETTINGS.handoff,
     inputMode: v.inputMode === "typed" || v.inputMode === "voice" ? v.inputMode : DEFAULT_SETTINGS.inputMode,
     captureErrors: typeof v.captureErrors === "boolean" ? v.captureErrors : DEFAULT_SETTINGS.captureErrors,
+    quality: (TRANSCRIPTION_QUALITIES as readonly unknown[]).includes(v.quality)
+      ? (v.quality as TranscriptionQuality)
+      : DEFAULT_SETTINGS.quality,
   };
 }
 

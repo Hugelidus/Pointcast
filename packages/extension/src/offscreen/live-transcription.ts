@@ -5,6 +5,7 @@ import type { TranscriptionProgress } from "@pointcast/transcribe";
 import { findCut, joinSegments, joinUnreliable, MIN_SEGMENT_S } from "@pointcast/transcribe/segments";
 import { beforeDeadline, type TranscriptionWorker } from "../transcriber/client";
 import type { TranscribeDone } from "../transcriber/protocol";
+import type { TranscriptionQuality } from "../processing/speech-model";
 import { AUDIO_FILE } from "./session-file";
 
 /** How often the recording is checked for a place to cut. */
@@ -32,6 +33,8 @@ export interface FinishOptions {
   language?: string;
   /** The previous session's language, for a recording short enough to be a single piece. */
   fallbackLanguage?: string;
+  /** Settings.quality at Stop: another model than the one loaded at Record means starting over. */
+  quality: TranscriptionQuality;
   /** Epoch ms after which transcription is abandoned. */
   deadline: number;
   /** From now on, the worker's progress goes here: the user is waiting. */
@@ -45,7 +48,7 @@ export interface FinishOptions {
  * last piece is left.
  *
  * Any problem (a decode that fails, a worker error, a language the engine is not sure about, a
- * language changed in the popup during the recording) makes finish() throw, and the caller
+ * language or transcription quality changed in the popup during the recording) makes finish() throw, and the caller
  * transcribes the whole recording in one go as before: a problem here costs time, never the
  * transcript.
  */
@@ -70,6 +73,8 @@ export class LiveTranscription {
     private readonly deps: LiveDeps,
     /** The language chosen in the popup at Record; undefined means detect it. */
     private readonly startLanguage: string | undefined,
+    /** The transcription quality at Record: the model the worker loads. */
+    private readonly startQuality: TranscriptionQuality = "fast",
   ) {
     this.#language = startLanguage;
     this.#queue = deps.worker.preload().then(
@@ -108,6 +113,7 @@ export class LiveTranscription {
       await this.#polling;
       if (this.#failure !== undefined) throw this.#failure;
       if (options.language !== this.startLanguage) throw new Error("the language was changed during the recording");
+      if (options.quality !== this.startQuality) throw new Error("the transcription quality was changed during the recording");
       if (samples.length <= this.#from) throw new Error("the recording is shorter than what was transcribed");
       this.deps.worker.onProgress = options.onProgress;
       const tail = samples.slice(this.#from);

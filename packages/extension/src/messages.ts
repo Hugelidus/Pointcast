@@ -28,6 +28,7 @@ import type { CapturedErrorDraft, CapturedEventDraft, InputMode } from "@pointca
 import type { TranscriptionProgress } from "@pointcast/transcribe";
 import type { E2eRecord } from "./e2e-record";
 import type { RecorderState } from "./recorder-state";
+import type { TranscriptionQuality } from "./processing/speech-model";
 
 /** Answer to a user command (popup buttons). */
 export type CommandResult = { ok: true } | { ok: false; error: string };
@@ -69,6 +70,8 @@ export interface ProcessingOptions {
   deadline: number;
   /** Settings.handoff: try a running pointcast MCP server before chrome.downloads (D11). */
   handoff: boolean;
+  /** Settings.quality at Stop: which Whisper model transcribes (processing/speech-model.ts). */
+  quality: TranscriptionQuality;
 }
 
 /**
@@ -126,8 +129,9 @@ export type OffscreenMessage =
   /**
    * `language`: the popup's choice at Record, for live transcription; undefined means detect it.
    * `inputMode` "typed" (D12): no microphone, no transcription; absent means voice.
+   * `quality`: the model live transcription loads; absent means fast.
    */
-  | { to: "offscreen"; type: "recorder-start"; language?: string; inputMode?: InputMode }
+  | { to: "offscreen"; type: "recorder-start"; language?: string; quality?: TranscriptionQuality; inputMode?: InputMode }
   /**
    * extensionVersion travels with the message: offscreen documents cannot read the manifest.
    * sessionId is chosen by the service worker, which can check the downloads history for a

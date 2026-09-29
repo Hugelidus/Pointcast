@@ -10,7 +10,14 @@ export type {
   TranscriptionProgress,
   TranscriptionProgressListener,
 } from "./types";
-export { LocalTranscriptionEngine, DEFAULT_MODEL, DEFAULT_DTYPE, type LocalEngineOptions } from "./local";
+export {
+  LocalTranscriptionEngine,
+  DEFAULT_MODEL,
+  DEFAULT_DTYPE,
+  defaultDtype,
+  type LocalEngineOptions,
+  type WeightsDtype,
+} from "./local";
 export { TranscriptionError, type TranscriptionErrorCode } from "./errors";
 export {
   MIN_LANGUAGE_PROBABILITY,

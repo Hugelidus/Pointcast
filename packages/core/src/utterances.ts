@@ -38,6 +38,11 @@ export const LEAD_IN_GAP_MS = 4000;
 export const LEAD_IN_MAX_WORDS = 6;
 /** (a), (b) A longer utterance is a request of its own: it says more than a follow-up does. */
 export const ATTACH_MAX_WORDS = 20;
+/**
+ * (d) A pointing without speaking that starts at most this long before the next request's first
+ * word belongs to that request: people point as they start talking.
+ */
+export const GESTURE_LEAD_IN_MS = 1000;
 
 /**
  * Joins each utterance said without pointing (a sentence with no gestures) to the adjacent
@@ -53,6 +58,14 @@ export const ATTACH_MAX_WORDS = 20;
  * (b) the request before it has gestures and ends at most CONTINUATION_GAP_MS before the utterance
  *     starts: appended to that request's quote ("… chips de aquí [e]. no me gustan …").
  *
+ * Gestures move too, the other way round (D4 note 2026-09-29):
+ * (d) gesture just before speech: a pointing without speaking whose gestures all start at most
+ *     GESTURE_LEAD_IN_MS before the first word of the next request, said while pointing, joins
+ *     that request, marked before its first word ("[a] y la tarjeta de pedidos [b] hay que …").
+ *     People point as they start talking, and the gesture fell in the silence only by a few
+ *     hundred milliseconds. An utterance said without pointing after it takes the pointing by (a)
+ *     already. (d) moves gestures, not words: the request can still take an utterance.
+ *
  * (a) and (b) take utterances of at most ATTACH_MAX_WORDS words, and a request takes at most one
  * utterance, so a monologue never snowballs into one request. Units are adjacent in time (a
  * gesture between two sentences is a unit of its own between them), so "adjacent" already means
@@ -65,13 +78,24 @@ export function mergeUtterances(units: readonly Unit[], words: readonly Word[]):
   const joined = new Set<Unit>();
   for (let i = 0; i < pending.length; i++) {
     const unit = pending[i];
+    const next = pending[i + 1];
+    if (
+      isSilentPointing(unit) &&
+      next !== undefined &&
+      isSaid(next) &&
+      start(next.sentence, words) - firstGestureStart(unit) <= GESTURE_LEAD_IN_MS
+    ) {
+      const merged: Unit = { ...next, pointed: [...unit.pointed, ...next.pointed] };
+      if (joined.has(next)) joined.add(merged);
+      pending[i + 1] = merged;
+      continue;
+    }
     if (!isBare(unit)) {
       out.push(unit);
       continue;
     }
     const sentence = unit.sentence;
     const count = sentence.to - sentence.from;
-    const next = pending[i + 1];
     if (
       next !== undefined &&
       isSaid(next) &&
@@ -91,12 +115,7 @@ export function mergeUtterances(units: readonly Unit[], words: readonly Word[]):
     }
     const previous = out.at(-1);
     if (previous !== undefined && !joined.has(previous) && count <= ATTACH_MAX_WORDS) {
-      if (
-        previous.sentence === undefined &&
-        previous.note === undefined &&
-        previous.pointed.length > 0 &&
-        start(sentence, words) - lastGestureEnd(previous) <= SILENT_POINTING_GAP_MS
-      ) {
+      if (isSilentPointing(previous) && start(sentence, words) - lastGestureEnd(previous) <= SILENT_POINTING_GAP_MS) {
         const merged: Unit = { sentence, parts: [sentence], pointed: previous.pointed };
         joined.add(merged);
         out[out.length - 1] = merged;
@@ -134,6 +153,11 @@ function isBare(unit: Unit): unit is Spoken {
   return unit.sentence !== undefined && unit.note === undefined && unit.pointed.length === 0;
 }
 
+/** Pointed at without speaking (and without a note): gestures, no sentence. */
+function isSilentPointing(unit: Unit): boolean {
+  return unit.sentence === undefined && unit.note === undefined && unit.pointed.length > 0;
+}
+
 /** Said while pointing: a sentence with gestures. */
 function isSaid(unit: Unit): unit is Spoken {
   return unit.sentence !== undefined && unit.note === undefined && unit.pointed.length > 0;
@@ -145,6 +169,10 @@ function start(sentence: Sentence, words: readonly Word[]): number {
 
 function end(sentence: Sentence, words: readonly Word[]): number {
   return words[sentence.to - 1].end;
+}
+
+function firstGestureStart(unit: Unit): number {
+  return Math.min(...unit.pointed.map(({ event }) => event.tStart));
 }
 
 function lastGestureEnd(unit: Unit): number {

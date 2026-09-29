@@ -403,6 +403,85 @@ describe("resolveElement: the files that define the chain's components (rule 4)"
     ]);
   });
 
+  describe("an element whose text comes from several children (D9 note 2026-09-29)", () => {
+    // The shape of a real section header: its title prop, a tooltip and tabs whose labels are data
+    // entries, all in one file, and the title quoted again in comments.
+    const PANEL = [
+      "// Pending", // 1
+      'import { Panel, Tabs, Tooltip } from "../../ui";', // 2
+      "", // 3
+      "/** Pending", // 4
+      " * the items still to do, by priority. */", // 5
+      "export function PendingPanel({ counts }) {", // 6
+      "  return (", // 7
+      "    <Panel", // 8
+      "      card", // 9
+      '      aria-label="Pending items"', // 10
+      '      title="Pending"', // 11
+      "      action={", // 12
+      '        <div className="pending-act">', // 13
+      "          {/* Pending */}", // 14
+      '          <Tooltip content="Order: due date × impact × age">', // 15
+      '            <button type="button" aria-label="How the list is ordered" />', // 16
+      "          </Tooltip>", // 17
+      "          <Tabs", // 18
+      "            items={[", // 19
+      '              { id: "all", label: "All", count: counts.all },', // 20
+      '              { id: "overdue", label: "Overdue", count: counts.overdue },', // 21
+      '              { id: "later", label: "Later", count: counts.later },', // 22
+      "            ]}", // 23
+      "          />", // 24
+      "        </div>", // 25
+      "      }", // 26
+      "    />", // 27
+      "  );", // 28
+      "}", // 29
+    ].join("\n");
+    const FILE = "src/features/inbox/PendingPanel.tsx";
+    const header = (html: string) =>
+      el("header", "Pending Order: due date × impact × age All149 Overdue23 Later126", [
+        { component: "Panel", file: FILE },
+        { component: "PendingPanel", file: "src/features/inbox/index.tsx" },
+      ], { html, component: { framework: "react", name: "Panel" } });
+    const TITLED =
+      '<header class="ui-panel-head"><div class="ui-panel-titles">Pending</div><div class="ui-panel-action">Order: due date × impact × age…</div></header>';
+
+    it("points at its leading text, the title, not at a tab label deep inside; comments quoting the title do not count", async () => {
+      // Before: "Overdue", a word run of the whole text, was written once, at the tab's data entry (:21).
+      expect(await resolveElement(header(TITLED), memoryReader({ [FILE]: PANEL }), "repo")).toEqual([
+        { kind: "text", file: FILE, line: 11, via: "repo", snippet: 'aria-label="Pending items" title="Pending" action={' },
+      ]);
+    });
+
+    it("stays silent when its leading text is written twice, rather than fall back to a descendant's text", async () => {
+      const twice = PANEL.replace('aria-label="Pending items"', 'aria-label="Pending"');
+      expect(await resolveElement(header(TITLED), memoryReader({ [FILE]: twice }), "repo")).toEqual([]);
+    });
+
+    it("takes no leading piece cut by the capture's trim, nor a descendant's word run", async () => {
+      const cut = '<header class="ui-panel-head"><div class="ui-panel-titles">Pend…</div></header><div>Overdue</div>';
+      expect(await resolveElement(header(cut), memoryReader({ [FILE]: PANEL }), "repo")).toEqual([]);
+    });
+
+    it("adds no leading piece for text with inline markup: only the whole text, as before", async () => {
+      const file = "src/Note.tsx";
+      const note = el("p", "Hello world again", [{ component: "Note", file }], { html: "<p>Hello <b>world</b> again</p>" });
+      const source = ['export const Note = () => <p>Hello <b>world</b> again</p>;', 'const greeting = "Hello";'].join("\n");
+      expect(await resolveElement(note, memoryReader({ [file]: source }), "repo")).toEqual([]);
+    });
+
+    it("keeps an element with one text piece as it was: every word run between numbers", async () => {
+      const file = "src/Stats.tsx";
+      const card = el("div", "Active Now +573 +201 since last hour", [{ component: "Stats", file }], {
+        html: "<div>Active Now +573 +201 since last hour</div>",
+      });
+      const source = ["export const Stats = () => (", "  <div>{n} since last hour</div>", ");"].join("\n");
+      expect(await resolveElement(card, memoryReader({ [file]: source }), "repo")).toEqual([
+        { kind: "text", file, line: 2, via: "repo", snippet: "<div>{n} since last hour</div>" },
+      ]);
+    });
+  });
+
   it("keeps what the chain's files already give: definitions are read only when they gave nothing", async () => {
     const viewReport = el(
       "a",

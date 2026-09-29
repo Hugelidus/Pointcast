@@ -187,3 +187,46 @@ describe("an utterance said without pointing joins its request (mergeUtterances)
     expect(md).not.toContain("said «tabla»");
   });
 });
+
+describe("a gesture just before speech joins the request said after it (mergeUtterances, d)", () => {
+  // A real 40 s recording (D4 note 2026-09-29): 5.4 s of silence after a sentence, a pointing
+  // 155 ms before the next one, "y la tarjeta de pedidos [b] hay que …", and a second pointing in it.
+  const card = el("h3", "Pedidos");
+  const total = el("span", "+12");
+  const words = [...said("esto me gustaría que fuera más claro.", 24600), ...said("y la tarjeta de pedidos hay que cambiarla", 36100)];
+  const events = (before: number) => [
+    point("e1", 24900, el("div", "Resumen")),
+    point("e2", 36100 - before, card),
+    point("e3", 37450, total), // on "pedidos"
+  ];
+
+  it("marks it before the first word of that request, with the gesture made while speaking", () => {
+    expect(requests(render(events(155), words))).toEqual([
+      ["> esto [a] me gustaría que fuera más claro.", "- [a] div «Resumen» on `/`"],
+      ["> [a] y la tarjeta de pedidos [b] hay que cambiarla", "- [a] h3 «Pedidos» on `/`", "- [b] span «+12» on `/`"],
+    ]);
+  });
+
+  it("joins up to GESTURE_LEAD_IN_MS before the first word, and not a moment more", () => {
+    expect(requests(render(events(1000), words))).toHaveLength(2);
+    expect(requests(render(events(1001), words))).toEqual([
+      ["> esto [a] me gustaría que fuera más claro.", "- [a] div «Resumen» on `/`"],
+      ["_Pointed at without speaking._", "- [a] h3 «Pedidos» on `/`"],
+      ["> y la tarjeta de pedidos [a] hay que cambiarla", "- [a] span «+12» on `/`"],
+    ]);
+  });
+
+  it("keeps a pointing alone when one of its gestures came earlier in the silence", () => {
+    const md = render([...events(155), point("e4", 33000, el("button", "Abrir"))], words);
+    expect(requests(md).map((lines) => lines[0])).toEqual([
+      "> esto [a] me gustaría que fuera más claro.",
+      "_Pointed at without speaking._",
+      "> y la tarjeta de pedidos [a] hay que cambiarla",
+    ]);
+  });
+
+  it("still lets the request take a follow-up utterance, by (b)", () => {
+    const more = [...words, ...said("no me convence.", 39000)];
+    expect(requests(render(events(155), more))[1][0]).toBe("> [a] y la tarjeta de pedidos [b] hay que cambiarla no me convence.");
+  });
+});

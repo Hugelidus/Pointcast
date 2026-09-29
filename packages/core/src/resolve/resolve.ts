@@ -1,5 +1,6 @@
 import { isShortValue } from "../describe";
 import { rootAttributes } from "../element-hints";
+import { HTML_TOKEN } from "../html-trim";
 import { oneLine, truncate } from "../markdown";
 import { isUtilityClass } from "../utility-classes";
 import type { CapturedEvent, CodeFrame, ElementInfo, ResolvedLocation, SessionFile, ShownByLocation } from "../schema";
@@ -34,7 +35,8 @@ export type SourceVia = ResolvedLocation["via"];
 /**
  * Code locations for one element, [] or exactly one, from its chain (`renderedBy`):
  * 1. its literal, the selected text or else its visible text (then the word runs between numbers,
- *    "Active Now" in "Active Now +573"), written as a code literal exactly once in exactly one
+ *    "Active Now" in "Active Now +573"; for a text joined from several children, only the
+ *    leading child's: phrases), written as a code literal exactly once in exactly one
  *    chain file -> "text". Found more than once: nothing, and no further step. Skipped for a short
  *    value that capture tied to its item (itemOf): 3b looks it up through the item instead;
  * 2. else its label, once in the chain files -> "text";
@@ -252,7 +254,7 @@ async function textInData(element: ElementInfo, text: string, files: Sources, re
   const data = await importedData(files, reader);
   if (data.size === 0) return undefined;
   const code = codeOf(data);
-  for (const phrase of phrases(text)) {
+  for (const phrase of phrasesOf(element, text)) {
     const hits = hitsIn(code, literalPattern(phrase));
     if (hits.length > 1) return undefined;
     if (hits.length === 1) {
@@ -285,7 +287,7 @@ async function shownByOf(
 ): Promise<ShownByLocation | undefined> {
   const source = files.get(location.file) ?? (await reader.read(location.file).then((read) => (read === undefined ? undefined : splitLines(read))));
   if (source === undefined) return undefined;
-  const key = propertyKey(codeLines(location.file, source)[location.line - 1] ?? "", text);
+  const key = propertyKey(codeLines(location.file, source)[location.line - 1] ?? "", text, htmlOfText(element, text));
   if (key === undefined) return undefined;
   for (const [file, lines] of files) {
     const found = renderingsOf(key, file, lines);
@@ -307,8 +309,8 @@ const PROPERTY =
   /(?:^|[{,])\s*(?:(["'])([A-Za-z_$][\w$-]*)\1|([A-Za-z_$][\w$]*))\s*:\s*(?:"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'|`((?:\\.|[^`\\])*)`|([^\s,}\]"'`]+))/g;
 
 /** The key of the one property on `line` whose value is the element's text or one of its phrases. */
-export function propertyKey(line: string, text: string): string | undefined {
-  const values = new Set(phrases(text));
+export function propertyKey(line: string, text: string, html?: string): string | undefined {
+  const values = new Set(phrases(text, html));
   const keys: string[] = [];
   for (const match of line.matchAll(PROPERTY)) {
     const value = (match[4] ?? match[5] ?? match[6] ?? match[7] ?? "").replace(/\s+/g, " ").trim();
@@ -392,7 +394,7 @@ async function lookup(
   const innermost = codeChain(element)[0];
   const first = innermost?.template && onScreen.has(innermost.file) ? new Map([[innermost.file, onScreen.get(innermost.file)!]]) : undefined;
 
-  for (const phrase of item === undefined ? phrases(text) : []) {
+  for (const phrase of item === undefined ? phrasesOf(element, text) : []) {
     const pattern = literalPattern(phrase);
     let hits = first === undefined ? [] : hitsIn(first, pattern);
     if (hits.length === 0) hits = hitsIn(onScreen, pattern);
@@ -987,16 +989,83 @@ function hitsIn(files: Sources, pattern: RegExp): Hit[] {
 /**
  * The literal and its word runs between numbers and signs: "Active Now +573 +201 since last hour"
  * -> itself, "Active Now", "since last hour". The whole text is tried first.
+ *
+ * With the element's `html` (only for its own text, never a selection), an element whose text
+ * comes from several text pieces (ownPieces: a section header's title, a tooltip, tab labels)
+ * keeps only its own, leading text (D9 note 2026-09-29): the whole text; its first piece when that
+ * is a child's whole text (`<div>Pending</div>`, closed by a tag, not cut by the capture's
+ * trim) and has words (a lone "30" is no literal to look for); and only the word runs inside
+ * that first piece. A run from a later piece ("Overdue" in
+ * "Pending … All149 Overdue23 Later126") is a descendant's text, often written in its own
+ * component or a data entry, and was taken as the element's `text at:`. Silence beats that.
  */
-function phrases(text: string): string[] {
+function phrases(text: string, html?: string): string[] {
   const whole = text.replace(/\s+/g, " ").trim();
   if (whole === "") return [];
   const out = [whole];
+  const runs: string[] = [];
   for (const run of whole.split(/\s*[+$€%]?[\d.,]+[%kKM]?\s*/)) {
     const phrase = run.trim();
-    if (phrase.length >= 2 && phrase !== whole) out.push(phrase);
+    if (phrase.length >= 2 && phrase !== whole) runs.push(phrase);
+  }
+  const own = html === undefined ? undefined : ownPieces(html);
+  if (own === undefined || own.pieces.length < 2) out.push(...runs);
+  else {
+    const lead = own.pieces[0];
+    if (own.leadIsChild && !lead.endsWith(ELLIPSIS) && /\p{L}{2}/u.test(lead) && whole.startsWith(lead)) out.push(lead);
+    out.push(...runs.filter((run) => lead.includes(run)));
   }
   return [...new Set(out)].filter((phrase) => phrase.length <= 80);
+}
+
+/** phrases of the text looked up, with the element's HTML when that text is the element's own. */
+function phrasesOf(element: ElementInfo, text: string): string[] {
+  return phrases(text, htmlOfText(element, text));
+}
+
+/** The element's captured HTML when `text` is its own visible text (not a selection), else undefined. */
+function htmlOfText(element: ElementInfo, text: string): string | undefined {
+  return text === element.text && typeof element.html === "string" && element.html !== "" ? element.html : undefined;
+}
+
+/** What html-trim appends where the capture cut a text. */
+const ELLIPSIS = "…";
+
+/**
+ * The element's text pieces in its captured HTML: its non-blank text runs in order, whitespace
+ * collapsed, entities decoded. `leadIsChild`: the first piece is followed by a closing tag, so it
+ * is a child's whole text (`<div class="title">Pending</div>`), not the start of a sentence
+ * with inline markup (`Hello <b>world</b>`).
+ */
+function ownPieces(html: string): { pieces: string[]; leadIsChild: boolean } {
+  const pieces: string[] = [];
+  let leadIsChild = false;
+  let afterLead = false;
+  for (const token of html.match(HTML_TOKEN) ?? []) {
+    if (token.startsWith("<!--")) continue;
+    if (token.startsWith("<") && token.length > 1) {
+      if (afterLead) {
+        leadIsChild = token.startsWith("</");
+        afterLead = false;
+      }
+      continue;
+    }
+    const piece = decodeText(token).replace(/\s+/g, " ").trim();
+    if (piece === "") continue;
+    afterLead = pieces.length === 0;
+    pieces.push(piece);
+  }
+  return { pieces, leadIsChild };
+}
+
+function decodeText(text: string): string {
+  return text
+    .replace(/&nbsp;/g, " ")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
 }
 
 /**

@@ -9,6 +9,11 @@
 - New e2e test against the real `dev/examples/react-dashboard` dev server (`dev/e2e/vite-react19.spec.ts`).
 - Fixed: a dev page left open across an extension update or reload kept answering with the older build's code, so its gestures got files without lines (and no component file) until the page was reloaded. The newest build's page script now takes over when the tab is attached again; pages still running a script from 0.7.0 or earlier stop being asked.
 
+**Fixes from a first real test** ([D4](docs/decisions.md#d4-fusion--monotonic-alignment-of-events-to-deictic-words), [D9](docs/decisions.md#d9-source-mapping) and [D14](docs/decisions.md#d14-one-setup-command) notes 2026-09-29)
+- Fixed: an element whose text is joined from several children (a section header with its title, a help tooltip and filter tabs with counts) got `text at:` one of the tabs' labels, a descendant's line. Only its own leading text is looked up now: the header gets its `title="…"` line, or no line when that text is written twice. An element with one piece of text is looked up as before.
+- Fixed: a gesture made just before speaking, in a long silence, was a "_Pointed at without speaking._" request of its own, followed by the request it was about. A pointing whose gestures all come at most 1 s before the first word of a request said while pointing now joins it, marked before its first word: "[a] y la tarjeta de pedidos [b] hay que…". `requests` format only; the classic format is unchanged.
+- Fixed: `pointcast setup` run at the root of a repository whose app is in a subfolder (`web/package.json`, nothing at the root) said no project was found. It now looks one folder down when the folder it runs in has no `package.json` or `manage.py`: "Frontend (react, vite) in web/: nothing to add in development." With several such subfolders it picks none and lists them.
+
 ## 0.7.0 (2026-09-28)
 
 Extension, CLI and integrations at 0.7.0.

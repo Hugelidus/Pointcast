@@ -24,9 +24,11 @@ const VOID_ELEMENTS = new Set([
 
 /**
  * Tokenizer: comments, tags (quoted attribute values may contain ">"), text runs, and a lone
- * "<" that does not start a tag (kept as text).
+ * "<" that does not start a tag (kept as text). Linear on any input (the resolver reads HTML from
+ * session files): no alternative can scan past the next "<", except an unclosed comment, which
+ * runs to the end once.
  */
-const TOKEN = /<!--[\s\S]*?-->|<(?:[^>"']|"[^"]*"|'[^']*')*>|[^<]+|</g;
+export const HTML_TOKEN = /<!--[\s\S]*?(?:-->|$)|<[^<>"']*(?:(?:"[^"<]*"|'[^'<]*')[^<>"']*)*>|[^<]+|</g;
 
 const ELLIPSIS = "…";
 
@@ -45,7 +47,7 @@ export function trimHtml(html: string, budget: number): string {
   const closersLength = (stack: readonly string[]) =>
     stack.reduce((total, tag) => total + tag.length + 3, 0);
 
-  for (const token of html.match(TOKEN) ?? []) {
+  for (const token of html.match(HTML_TOKEN) ?? []) {
     if (token.startsWith("<") && token.length > 1) {
       const next = applyTag(open, token);
       if (out.length + token.length + ELLIPSIS.length + closersLength(next) > budget) break;

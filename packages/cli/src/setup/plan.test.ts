@@ -213,6 +213,53 @@ describe("planSetup: stack", () => {
     expect((await planSetup(env())).stack.map((h) => h.id)).toEqual(["none"]);
   });
 
+  describe("an app one folder down, when this folder is no project", () => {
+    const REACT_VITE = JSON.stringify({ dependencies: { react: "^19.0.0" }, devDependencies: { vite: "^7.0.0" } });
+
+    it("finds a React + Vite app in a subfolder and says where it is", async () => {
+      write(path.join(repo, "web", "package.json"), REACT_VITE);
+      write(path.join(repo, "README.md"), "# notes\n");
+      const stack = (await planSetup(env())).stack;
+      expect(stack).toEqual([expect.objectContaining({ id: "frontend", summary: "Frontend (react, vite) in web/: nothing to add in development." })]);
+    });
+
+    it("finds a Django project in a subfolder, with its settings shown from here", async () => {
+      write(path.join(repo, "api", "manage.py"), "#!/usr/bin/env python\n");
+      write(path.join(repo, "api", "shop", "settings.py"), "INSTALLED_APPS = []\n");
+      const [hint] = (await planSetup(env())).stack;
+      expect(hint).toMatchObject({ id: "django" });
+      expect(hint?.summary).toMatch(/^Django in api\/: add pointcast-django/);
+      expect(hint?.steps.join("\n")).toContain("At the end of api/shop/settings.py:");
+    });
+
+    it("picks none when several subfolders qualify, and lists them", async () => {
+      write(path.join(repo, "web", "package.json"), REACT_VITE);
+      write(path.join(repo, "admin", "package.json"), JSON.stringify({ dependencies: { vue: "^3.5.0" } }));
+      write(path.join(repo, "docs", "package.json"), JSON.stringify({ dependencies: { express: "5" } }));
+      const stack = (await planSetup(env())).stack;
+      expect(stack).toEqual([
+        {
+          id: "several",
+          summary:
+            "Several projects one folder down, none picked: admin/ Frontend (vue); web/ Frontend (react, vite). Run pointcast setup in the app's own folder for its steps.",
+          steps: [],
+        },
+      ]);
+    });
+
+    it("does not look down when this folder is a project, nor into hidden or dependency folders", async () => {
+      write(path.join(repo, "package.json"), JSON.stringify({ dependencies: { express: "5" } }));
+      write(path.join(repo, "web", "package.json"), REACT_VITE);
+      expect((await planSetup(env())).stack.map((h) => h.id)).toEqual(["none"]);
+
+      rmSync(path.join(repo, "package.json"));
+      rmSync(path.join(repo, "web"), { recursive: true });
+      write(path.join(repo, "node_modules", "package.json"), REACT_VITE);
+      write(path.join(repo, ".cache", "package.json"), REACT_VITE);
+      expect((await planSetup(env())).stack.map((h) => h.id)).toEqual(["none"]);
+    });
+  });
+
   it("always lists the browser extension steps, without opening anything", async () => {
     const plan = await planSetup(env());
     expect(plan.extension.join("\n")).toContain("https://github.com/Hugelidus/pointcast/releases");

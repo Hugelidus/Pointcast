@@ -1,0 +1,16 @@
+const StrictMode = __vite__cjsImport0_react["StrictMode"];const createRoot = __vite__cjsImport1_reactDom_client["createRoot"];const _jsxDEV = __vite__cjsImport3_react_jsxDevRuntime["jsxDEV"];import __vite__cjsImport0_react from "/node_modules/.vite/deps/react.js?v=fba890eb";
+import __vite__cjsImport1_reactDom_client from "/node_modules/.vite/deps/react-dom_client.js?v=72e49a0d";
+import { App } from "/src/App.tsx";
+var _jsxFileName = "/home/me/react-dashboard/src/main.tsx";
+import __vite__cjsImport3_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=fba890eb";
+createRoot(document.getElementById("root")).render(/* @__PURE__ */ _jsxDEV(StrictMode, { children: /* @__PURE__ */ _jsxDEV(App, {}, void 0, false, {
+	fileName: _jsxFileName,
+	lineNumber: 7,
+	columnNumber: 5
+}, this) }, void 0, false, {
+	fileName: _jsxFileName,
+	lineNumber: 6,
+	columnNumber: 3
+}, this));
+
+//# sourceMappingURL=data:application/json;base64,eyJtYXBwaW5ncyI6IkFBQUEsU0FBUyxrQkFBa0I7QUFDM0IsU0FBUyxrQkFBa0I7QUFDM0IsU0FBUyxXQUFXOzs7QUFFcEIsV0FBVyxTQUFTLGVBQWUsTUFBTSxDQUFFLENBQUMsQ0FBQyxPQUMzQyx3QkFBQyxZQUFELFlBQ0Usd0JBQUMsS0FBRCxDQUFNOzs7O1NBQ0k7Ozs7UUFDZCIsIm5hbWVzIjpbXSwic291cmNlcyI6WyJtYWluLnRzeCJdLCJ2ZXJzaW9uIjozLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBTdHJpY3RNb2RlIH0gZnJvbSBcInJlYWN0XCI7XG5pbXBvcnQgeyBjcmVhdGVSb290IH0gZnJvbSBcInJlYWN0LWRvbS9jbGllbnRcIjtcbmltcG9ydCB7IEFwcCB9IGZyb20gXCIuL0FwcFwiO1xuXG5jcmVhdGVSb290KGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKFwicm9vdFwiKSEpLnJlbmRlcihcbiAgPFN0cmljdE1vZGU+XG4gICAgPEFwcCAvPlxuICA8L1N0cmljdE1vZGU+LFxuKTtcbiJdfQ==

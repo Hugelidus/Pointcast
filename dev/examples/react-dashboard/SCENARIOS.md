@@ -10,8 +10,11 @@ el mismo resolver, leyendo el código del servidor de Vite. Las comprueba
 escribe la spec por defecto (formato `requests`, disposición *code-first*, en inglés), sin las
 líneas `find:` e `in:` que siguen. Nota sobre React 19: su chain de componentes (`renderedBy`) da el
 **archivo** donde se creó cada instancia, pero no la **línea** (React 19 dejó de exponerla en
-desarrollo; Vue 3 tampoco la da; Svelte sí). Por eso `used at` nunca lleva número de línea aquí —
-pero `text at` / `data at` sí, porque esos salen de leer el código fuente, no del framework.
+desarrollo; Vue 3 tampoco la da; Svelte sí). Por eso `used at` no lleva número de línea en los
+bloques de abajo — pero `text at` / `data at` sí, porque esos salen de leer el código fuente, no del
+framework. Desde la versión siguiente a 0.7.0 la extensión añade esa línea tras el gesto, leyendo los
+source maps que Vite sirve con cada módulo (`used at: src/App.tsx:12` para la insignia del escenario
+2); los bloques muestran la spec sin ella, como la da el resolver sobre una cadena sin líneas.
 
 ## Escenario 1 — la misma tarjeta usada dos veces
 

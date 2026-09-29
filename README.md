@@ -96,6 +96,8 @@ When something is broken ("this button does nothing"), the element also lists wh
 
 Your agent fetches the spec through its plugin, or you paste it. On React 19, Vue 3 and Svelte 5 dev builds, and Django templates with [pointcast-django](integrations/django/README.md), each element leads with its code: where that instance is used, which component defines it (marked when it is shared) and the line where its text or data lives. Other pages get the DOM description: selector, path, HTML and text.
 
+**React 19 on Vite**: `used at:` gives the file and line of each instance, mapped through the source maps Vite serves with each module, read from your dev server right after you point.
+
 **Next.js App Router** (`next dev`, Turbopack): Client and Server Components both get their chain (`used at:` the file and line, up to the page or layout), mapped through Next's own dev source maps. Through the MCP server or the CLI, which read your repo, text written in a component or in a data module it imports gets its `text at:`/`data at:` line; text computed at runtime gets none. The pasted spec has the chain without those lines, and `next dev --webpack` gets no chain ([what was measured](docs/eval/nextjs-2026-09-28.md)).
 
 <details>

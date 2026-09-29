@@ -115,6 +115,39 @@ export function parseRenderedBy(raw: unknown): CodeFrame[] | undefined {
   return frames.length > 0 ? frames : undefined;
 }
 
+/**
+ * Whether a React element's code lacks lines the refinement may add: no chain yet (Next.js), or a
+ * chain or own file without its line (React 19 on Vite, D9 note 2026-09-29).
+ */
+export function lacksLines(element: { component?: ComponentInfo; renderedBy?: readonly CodeFrame[] }): boolean {
+  if (element.renderedBy === undefined) return true;
+  if (element.component?.file !== undefined && element.component.line === undefined) return true;
+  return element.renderedBy.some((frame) => frame.line === undefined);
+}
+
+type Positioned = { framework?: string; name?: string; component?: string; file?: string; line?: number; column?: number };
+
+/**
+ * Whether `after` is `before` with lines added and nothing else (D9 note 2026-09-29): the same
+ * frames, files and names in the same order, no line or column changed, and at least one line
+ * more. The only way a chain read at the gesture is ever changed afterwards.
+ */
+export function onlyAddsLines(before: readonly Positioned[], after: readonly Positioned[]): boolean {
+  if (before.length !== after.length) return false;
+  let added = false;
+  for (let i = 0; i < before.length; i++) {
+    const a = before[i] as Positioned;
+    const b = after[i] as Positioned;
+    if (a.file !== b.file || a.component !== b.component || a.name !== b.name || a.framework !== b.framework) return false;
+    if (a.line !== undefined) {
+      if (b.line !== a.line || b.column !== a.column) return false;
+    } else if (b.line !== undefined) {
+      added = true;
+    }
+  }
+  return added;
+}
+
 /** Parses the attribute's JSON; anything malformed is dropped, field by field. */
 export function parseFrameworkInfo(json: string): FrameworkInfo {
   let raw: unknown;

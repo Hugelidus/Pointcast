@@ -6,14 +6,19 @@ import {
   COMPONENT_REQUEST_EVENT,
   type FrameworkInfo,
 } from "./component-bridge";
+import { isLocalDevUrl } from "../hosts";
 import { composedParent } from "./dom";
 import {
+  isJsxCallAt,
+  isModuleSource,
+  isViteDevPage,
   mappedKind,
   nextBasePath,
   projectRootOf,
   reactCallSite,
   serverFile,
   sourceFile,
+  sourceMapReference,
   sourceMapUrl,
   stackUrls,
   type MappedKind,
@@ -132,7 +137,8 @@ function reactName(type: unknown, depth = 0): string | undefined {
  * React keeps a fiber on every element it renders, in production too, where component names
  * are minified. `_debugOwner` exists on fibers of development builds only, so it tells a real
  * name ("OrdersTable") from a minified one ("t"). File and line come from `_debugSource`, which
- * React up to 18 fills from the JSX dev transform; React 19 dropped it, so only the name remains.
+ * React up to 18 fills from the JSX dev transform. React 19 dropped it: its file and line come
+ * from `_debugStack`, mapped (Next.js) or read as served files (Vite, lines once refined).
  */
 function readReact(el: Element, mapping: Mapping): ComponentInfo | undefined {
   const hostFiber = fiberOf(el);
@@ -143,9 +149,11 @@ function readReact(el: Element, mapping: Mapping): ComponentInfo | undefined {
     if (mapped !== undefined) return mapped;
     // React 19 on Vite (D9 note 2026-09-28, pass 2): the element's own JSX call site names the
     // app file it is written in, and its owner the component that wrote it.
-    const own = ownJsxFile(hostFiber);
+    const own = ownJsxSite(hostFiber);
     const owner = ownerName(asObject(hostFiber._debugOwner));
-    if (own !== undefined && owner !== undefined) return { framework: "react", name: owner, file: own };
+    if (own !== undefined && owner !== undefined) {
+      return withoutUndefined<ComponentInfo>({ framework: "react", name: owner, file: own.file, ...viteLine(own.site, mapping) });
+    }
   }
   let fiber: Loose = asObject(hostFiber.return);
   for (let depth = 0; fiber !== undefined && depth < 50; depth++) {
@@ -179,6 +187,13 @@ interface Mapping {
   basePath: string | undefined;
   /** Source maps by URL: undefined = not fetched yet, null = none (404, not a map). */
   maps?: (url: string) => SourceMap | null | undefined;
+  /**
+   * Vite (D9 note 2026-09-29): the page is served by a Vite dev server on a local dev host
+   * (isViteDevPage), so its app frames are served modules with inline source maps.
+   */
+  vite: boolean;
+  /** Served Vite modules by URL, as `maps`; defined together with it. */
+  modules?: (url: string) => ServedModule | null | undefined;
   /** The project root (react-stack.ts projectRootOf), found once per request when first needed. */
   root: () => string | undefined;
   /**
@@ -188,9 +203,21 @@ interface Mapping {
   state?: { stopped: boolean; libraryPlaced?: boolean };
 }
 
-/** Thrown while reading a chain that needs a source map not fetched yet (`url`). */
+/**
+ * Thrown while reading a chain that needs a source map not fetched yet (`url`): a map itself, or
+ * a served Vite module whose map is inline (`module`).
+ */
 class NeedMap {
-  constructor(readonly url: string | undefined) {}
+  constructor(
+    readonly url: string | undefined,
+    readonly module = false,
+  ) {}
+}
+
+/** A module a Vite dev server served, with its source map: in memory for one request only. */
+interface ServedModule {
+  text: string;
+  map: SourceMap;
 }
 
 type Located = { kind: "app"; file: string; line: number; column: number } | { kind: "library"; file: string } | { kind: "unmapped" };
@@ -399,8 +426,8 @@ function fileOfUrl(url: string): string | undefined {
 
 /**
  * React 19: `_debugStack` is the stack captured where the element was created. Its first app
- * module is the file that wrote the JSX. The line there is the transformed module's, and mapping
- * it back is not worth it (files alone served the agent as well, eval Stage 0), so none is kept.
+ * module is the file that wrote the JSX. The line there is the transformed module's: it is not
+ * kept here; when that frame is the owner's call site, viteLine maps it (reactFrames).
  */
 function stackFile(debugStack: unknown): string | undefined {
   const stack = str(asObject(debugStack)?.stack);
@@ -418,15 +445,41 @@ function stackFile(debugStack: unknown): string | undefined {
  * written in, from its `_debugStack` by React's own call-site rule (reactCallSite: the frame right
  * after the JSX runtime's). Undefined when that frame is library code (an element a library
  * component creates, Radix's Slot cloning a child) or not a served file. No line: the stack's
- * line is the transformed module's, not the source's.
+ * line is the transformed module's, not the source's (viteLine maps it, ownJsxSite).
  */
 function ownJsxFile(fiber: NonNullable<Loose>): string | undefined {
+  return ownJsxSite(fiber)?.file;
+}
+
+/** ownJsxFile, with the stack frame it was read from (for its line, viteLine). */
+function ownJsxSite(fiber: NonNullable<Loose>): { file: string; site: StackFrame } | undefined {
   const stack = stackOf(fiber);
   const site = stack === undefined ? undefined : reactCallSite(stack);
   const file = site === undefined ? undefined : fileOfUrl(site.url);
-  if (!isAppFile(file)) return undefined;
+  if (site === undefined || !isAppFile(file)) return undefined;
   const relative = normalizeFile(file);
-  return relative === undefined || relative === "" ? undefined : relative;
+  return relative === undefined || relative === "" ? undefined : { file: relative, site };
+}
+
+/**
+ * React 19 on Vite (D9 note 2026-09-29): the source line of a call site in a served app module,
+ * from the module's inline source map, when the refinement fetches modules (`modules`); nothing
+ * at the gesture, where the file alone is given as before. Only for a module of the page's own
+ * origin on a Vite page, when the served code there is a JSX call (not a module edited since) and
+ * the map names the module's own file there. Anything else: no line, the file stays.
+ */
+function viteLine(site: StackFrame, mapping: Mapping): { line: number; column: number } | undefined {
+  if (!mapping.vite || mapping.modules === undefined) return undefined;
+  try {
+    if (new URL(site.url).origin !== mapping.origin) return undefined;
+  } catch {
+    return undefined;
+  }
+  const served = mapping.modules(site.url);
+  if (served === undefined) throw new NeedMap(site.url, true);
+  if (served === null || !isJsxCallAt(served.text, site.line, site.column)) return undefined;
+  const position = originalPosition(served.map, site.line, site.column);
+  return position === undefined || !isModuleSource(position.source, site.url) ? undefined : { line: position.line, column: position.column };
 }
 
 /**
@@ -449,6 +502,7 @@ function* reactFrames(hostFiber: NonNullable<Loose>, mapping: Mapping): Generato
     }
     const mappable = mappableSite(owner, mapping);
     if (mappable === undefined) {
+      const stack = stackOf(owner);
       const file = stackFile(owner._debugStack ?? owner.debugStack);
       // The element's own component was placed by library code (a router's `component: Dashboard`,
       // a lazy route): its instance is written nowhere in the app. Skipped, the next app frame out
@@ -458,7 +512,10 @@ function* reactFrames(hostFiber: NonNullable<Loose>, mapping: Mapping): Generato
         if (mapping.state !== undefined) mapping.state.libraryPlaced = true;
         return;
       }
-      yield { component, file };
+      // Vite: the line, when the file is the owner's own call site (React's rule). A file taken
+      // from further down the stack (the call site was library code) keeps no line.
+      const site = stack === undefined || file === undefined ? undefined : reactCallSite(stack);
+      yield { component, file, ...(site !== undefined && fileOfUrl(site.url) === file ? viteLine(site, mapping) : {}) };
       continue;
     }
     const located = locate(mappable.site, mappable.kind, mapping);
@@ -489,7 +546,8 @@ function namesOnly(el: Element): Mapping {
   const win = el.ownerDocument.defaultView;
   const origin = win?.location.origin ?? "null";
   const scripts = [...el.ownerDocument.querySelectorAll("script[src]")].map((script) => (script as HTMLScriptElement).src);
-  return { origin, basePath: nextBasePath(scripts, origin), root: () => undefined };
+  const vite = isLocalDevUrl(win?.location.href) && isViteDevPage(scripts, origin);
+  return { origin, basePath: nextBasePath(scripts, origin), vite, root: () => undefined };
 }
 
 /** The walk of readRenderedBy; NeedMap goes through, any other throw means "not this framework". */
@@ -603,7 +661,8 @@ const MAX_MAP_CHARS = 30_000_000;
 export async function refineFrameworkInfo(el: Element, fetchFn: typeof fetch, budgetMs = REFINE_BUDGET_MS): Promise<FrameworkInfo> {
   const base = namesOnly(el);
   const maps = new Map<string, SourceMap | null>();
-  const mapping: Mapping = { ...base, maps: (url) => maps.get(url) };
+  const modules = new Map<string, ServedModule | null>();
+  const mapping: Mapping = { ...base, maps: (url) => maps.get(url), modules: (url) => modules.get(url) };
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), budgetMs);
   try {
@@ -612,7 +671,9 @@ export async function refineFrameworkInfo(el: Element, fetchFn: typeof fetch, bu
         return frameworkInfo(el, mapping);
       } catch (error) {
         if (!(error instanceof NeedMap) || error.url === undefined) throw error;
-        maps.set(error.url, round === MAX_MAPS || controller.signal.aborted ? null : await fetchMap(error.url, fetchFn, controller.signal));
+        const skip = round === MAX_MAPS || controller.signal.aborted;
+        if (error.module) modules.set(error.url, skip ? null : await fetchModule(error.url, fetchFn, controller.signal));
+        else maps.set(error.url, skip ? null : await fetchMap(error.url, fetchFn, controller.signal));
       }
     }
     return readFrameworkInfo(el);
@@ -624,6 +685,25 @@ export async function refineFrameworkInfo(el: Element, fetchFn: typeof fetch, bu
 }
 
 async function fetchMap(url: string, fetchFn: typeof fetch, signal: AbortSignal): Promise<SourceMap | null> {
+  const text = await fetchText(url, fetchFn, signal);
+  return text === null ? null : (parseSourceMap(text) ?? null);
+}
+
+/**
+ * A Vite module as its dev server serves it, with its source map: inline at its end (what Vite
+ * serves), or at a `sourceMappingURL` of the same origin. Null when either is missing or unreadable.
+ */
+async function fetchModule(url: string, fetchFn: typeof fetch, signal: AbortSignal): Promise<ServedModule | null> {
+  const text = await fetchText(url, fetchFn, signal);
+  const reference = text === null ? undefined : sourceMapReference(text, url);
+  if (text === null || reference === undefined) return null;
+  const json = reference.kind === "inline" ? reference.json : await fetchText(reference.url, fetchFn, signal);
+  const map = json === null || json.length > MAX_MAP_CHARS ? undefined : parseSourceMap(json);
+  return map === undefined ? null : { text, map };
+}
+
+/** The text at `url` (the page's own origin); null on any failure or past MAX_MAP_CHARS. */
+async function fetchText(url: string, fetchFn: typeof fetch, signal: AbortSignal): Promise<string | null> {
   try {
     const response = await fetchFn(url, { signal, cache: "no-store", credentials: "same-origin" });
     if (!response.ok) {
@@ -631,7 +711,7 @@ async function fetchMap(url: string, fetchFn: typeof fetch, signal: AbortSignal)
       return null;
     }
     const text = await response.text();
-    return text.length > MAX_MAP_CHARS ? null : (parseSourceMap(text) ?? null);
+    return text.length > MAX_MAP_CHARS ? null : text;
   } catch {
     return null;
   }

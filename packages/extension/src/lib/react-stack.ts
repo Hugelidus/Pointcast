@@ -167,3 +167,122 @@ function classify(relative: string): SourceFile | undefined {
   if (clean === "" || clean.split("/").includes("..")) return undefined;
   return /(^|\/)node_modules\//.test(clean) ? { kind: "library", file: clean.slice(clean.indexOf("node_modules/")) } : { kind: "app", file: clean };
 }
+
+// ------------------------------------------------------- React 19 on Vite (D9 note 2026-09-29)
+
+/*
+ * On Vite, React 19's frames name the modules the dev server serves
+ * (`http://localhost:5173/src/components/Sidebar.tsx?t=1716:29:59`), which are the app's files, but
+ * their positions are in the transformed module. Vite serves each module with its source map
+ * inline, at its end (`//# sourceMappingURL=data:application/json;base64,…`), whose `sources` name
+ * the module's own file relative to it (`["Sidebar.tsx"]`). These are the pure parts of reading it;
+ * the fetching is framework-main.ts's.
+ */
+
+/**
+ * Whether the page is served by a Vite dev server: it loads `/@vite/client` from its own origin
+ * (Vite injects that script into every page it serves, SvelteKit's included).
+ */
+export function isViteDevPage(scriptUrls: Iterable<string>, origin: string): boolean {
+  for (const src of scriptUrls) {
+    try {
+      const url = new URL(src);
+      if (url.origin === origin && url.pathname.endsWith("/@vite/client")) return true;
+    } catch {
+      // not a URL
+    }
+  }
+  return false;
+}
+
+/** Where a module's source map is: its JSON text (an inline data URL), or another URL of the same origin. */
+export type MapReference = { kind: "inline"; json: string } | { kind: "url"; url: string };
+
+/**
+ * The source map a served module declares with its last `//# sourceMappingURL=` comment, which must
+ * end the module (only whitespace after it). A data URL is decoded (base64 or percent-encoded); a
+ * URL is resolved against the module's and kept only on the module's origin. Undefined when there
+ * is none, or it cannot be read.
+ */
+export function sourceMapReference(moduleText: string, moduleUrl: string): MapReference | undefined {
+  const key = "sourceMappingURL=";
+  const at = moduleText.lastIndexOf(key);
+  if (at < 0 || !/\/\/[#@][ \t]*$/.test(moduleText.slice(Math.max(0, at - 8), at))) return undefined;
+  const value = /^([^\s'"]+)\s*$/.exec(moduleText.slice(at + key.length))?.[1];
+  if (value === undefined) return undefined;
+  if (value.startsWith("data:")) {
+    const data = /^data:application\/json(?:;[\w.+-]+=[\w.+-]+)*(;base64)?,(.*)$/i.exec(value);
+    if (data === null) return undefined;
+    const json = data[1] !== undefined ? decodeBase64Utf8(data[2]) : decodePercent(data[2]);
+    return json === undefined ? undefined : { kind: "inline", json };
+  }
+  try {
+    const url = new URL(value, moduleUrl);
+    return url.origin === new URL(moduleUrl).origin ? { kind: "url", url: url.href } : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function decodeBase64Utf8(text: string): string | undefined {
+  try {
+    const binary = atob(text);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return undefined;
+  }
+}
+
+function decodePercent(text: string): string | undefined {
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Whether a map's `source` is the served module's own file: resolved against the module's URL, the
+ * same path (Vite writes `"Sidebar.tsx"` for `/src/components/Sidebar.tsx`), or an absolute file
+ * path that ends with the module's path. Anything else (another file, a virtual module) is not
+ * taken: the line would be another file's.
+ */
+export function isModuleSource(source: string, moduleUrl: string): boolean {
+  let modulePath: string;
+  try {
+    modulePath = decodeURIComponent(new URL(moduleUrl).pathname);
+  } catch {
+    return false;
+  }
+  const file = source.replace(/\\/g, "/");
+  // An absolute file path: "C:/me/app/src/App.tsx" or "/home/me/app/src/App.tsx" ends with
+  // "/src/App.tsx"; a module outside the root ("/@fs/C:/me/lib/x.tsx") is compared without "/@fs".
+  const absolute = /^[a-zA-Z]:\//.test(file) ? `/${file}` : /^\/(?!\/)/.test(file) ? file : undefined;
+  const served = modulePath.replace(/^\/@fs(?=\/)/, "");
+  if (absolute !== undefined && served.length > 1 && absolute.endsWith(served)) return true;
+  try {
+    return decodeURIComponent(new URL(file, moduleUrl).pathname) === modulePath;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Whether the served code at a frame's position is a JSX runtime call (`_jsxDEV(`, `jsx(`,
+ * `React.createElement(`), where V8 puts a call site created by JSX. A module edited since the
+ * element was created is served in its new version: its positions would then land elsewhere, and
+ * the line is not taken.
+ */
+export function isJsxCallAt(moduleText: string, line: number, column: number): boolean {
+  let start = 0;
+  for (let n = 1; n < line; n++) {
+    start = moduleText.indexOf("\n", start) + 1;
+    if (start === 0) return false;
+  }
+  const at = start + column - 1;
+  const end = moduleText.indexOf("\n", at);
+  const text = moduleText.slice(at, end < 0 ? undefined : Math.min(end, at + 200));
+  return /^[\w$.]*(?:jsx[\w$]*|createElement)\s*\(/.test(text);
+}

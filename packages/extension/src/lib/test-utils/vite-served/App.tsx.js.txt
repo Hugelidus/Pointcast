@@ -1,0 +1,69 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/App.tsx");const useState = __vite__cjsImport0_react["useState"];const _jsxDEV = __vite__cjsImport4_react_jsxDevRuntime["jsxDEV"];import __vite__cjsImport0_react from "/node_modules/.vite/deps/react.js?v=fba890eb";
+import { Sidebar } from "/src/components/Sidebar.tsx";
+import { Dashboard } from "/src/pages/Dashboard.tsx";
+import { Settings } from "/src/pages/Settings.tsx";
+var _jsxFileName = "/home/me/react-dashboard/src/App.tsx";
+import __vite__cjsImport4_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=fba890eb";
+var _s = $RefreshSig$();
+export function App() {
+	_s();
+	const [page, setPage] = useState("dashboard");
+	return /* @__PURE__ */ _jsxDEV("div", {
+		className: "app-shell",
+		children: [/* @__PURE__ */ _jsxDEV(Sidebar, {
+			page,
+			onNavigate: setPage
+		}, void 0, false, {
+			fileName: _jsxFileName,
+			lineNumber: 12,
+			columnNumber: 7
+		}, this), /* @__PURE__ */ _jsxDEV("main", {
+			className: "content",
+			children: page === "dashboard" ? /* @__PURE__ */ _jsxDEV(Dashboard, {}, void 0, false, {
+				fileName: _jsxFileName,
+				lineNumber: 13,
+				columnNumber: 57
+			}, this) : /* @__PURE__ */ _jsxDEV(Settings, {}, void 0, false, {
+				fileName: _jsxFileName,
+				lineNumber: 13,
+				columnNumber: 73
+			}, this)
+		}, void 0, false, {
+			fileName: _jsxFileName,
+			lineNumber: 13,
+			columnNumber: 7
+		}, this)]
+	}, void 0, true, {
+		fileName: _jsxFileName,
+		lineNumber: 11,
+		columnNumber: 5
+	}, this);
+}
+_s(App, "S0nQESItONHgrPOmlUir2EMsWOw=");
+_c = App;
+var _c;
+$RefreshReg$(_c, "App");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+import * as __vite_react_currentExports from "/src/App.tsx";
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+
+  const currentExports = __vite_react_currentExports;
+  queueMicrotask(() => {
+    RefreshRuntime.registerExportsForReactRefresh("/home/me/react-dashboard/src/App.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("/home/me/react-dashboard/src/App.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) { return RefreshRuntime.register(type, "/home/me/react-dashboard/src/App.tsx" + ' ' + id); }
+function $RefreshSig$() { return RefreshRuntime.createSignatureFunctionForTransform(); }
+
+//# sourceMappingURL=data:application/json;base64,eyJtYXBwaW5ncyI6IkFBQUEsU0FBUyxnQkFBZ0I7QUFDekIsU0FBUyxlQUFlO0FBQ3hCLFNBQVMsaUJBQWlCO0FBQzFCLFNBQVMsZ0JBQWdCOzs7O0FBSXpCLE9BQU8sU0FBUyxNQUFNOztDQUNwQixNQUFNLENBQUMsTUFBTSxXQUFXLFNBQWUsV0FBVztDQUNsRCxPQUNFLHdCQUFDLE9BQUQ7RUFBSyxXQUFVO1lBQWYsQ0FDRSx3QkFBQyxTQUFEO0dBQWU7R0FBTSxZQUFZO0VBQVU7Ozs7WUFDM0Msd0JBQUMsUUFBRDtHQUFNLFdBQVU7YUFBVyxTQUFTLGNBQWMsd0JBQUMsV0FBRCxDQUFZOzs7O2NBQUksd0JBQUMsVUFBRCxDQUFXOzs7OztFQUFROzs7O1VBQ2xGOzs7Ozs7QUFFVCIsIm5hbWVzIjpbXSwic291cmNlcyI6WyJBcHAudHN4Il0sInZlcnNpb24iOjMsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IHVzZVN0YXRlIH0gZnJvbSBcInJlYWN0XCI7XG5pbXBvcnQgeyBTaWRlYmFyIH0gZnJvbSBcIi4vY29tcG9uZW50cy9TaWRlYmFyXCI7XG5pbXBvcnQgeyBEYXNoYm9hcmQgfSBmcm9tIFwiLi9wYWdlcy9EYXNoYm9hcmRcIjtcbmltcG9ydCB7IFNldHRpbmdzIH0gZnJvbSBcIi4vcGFnZXMvU2V0dGluZ3NcIjtcblxuZXhwb3J0IHR5cGUgUGFnZSA9IFwiZGFzaGJvYXJkXCIgfCBcInNldHRpbmdzXCI7XG5cbmV4cG9ydCBmdW5jdGlvbiBBcHAoKSB7XG4gIGNvbnN0IFtwYWdlLCBzZXRQYWdlXSA9IHVzZVN0YXRlPFBhZ2U+KFwiZGFzaGJvYXJkXCIpO1xuICByZXR1cm4gKFxuICAgIDxkaXYgY2xhc3NOYW1lPVwiYXBwLXNoZWxsXCI+XG4gICAgICA8U2lkZWJhciBwYWdlPXtwYWdlfSBvbk5hdmlnYXRlPXtzZXRQYWdlfSAvPlxuICAgICAgPG1haW4gY2xhc3NOYW1lPVwiY29udGVudFwiPntwYWdlID09PSBcImRhc2hib2FyZFwiID8gPERhc2hib2FyZCAvPiA6IDxTZXR0aW5ncyAvPn08L21haW4+XG4gICAgPC9kaXY+XG4gICk7XG59XG4iXX0=

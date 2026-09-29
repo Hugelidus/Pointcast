@@ -26,6 +26,7 @@
 - Fixed: two different elements with the same selector on the same page (two charts in two tab panels) were rendered as one, "(same element as in request 1)", and the second lost its code lines. They must now also share their path, their card and their code to count as the same element; otherwise each is described in full. The classic format's appendix had the same bug and is fixed too.
 - Fixed: an element's card (`in «…»`) could be the title of a closed dialog kept in the page (a command palette's «Command Palette · Search for a command to run...»). Headings the user cannot see (closed `<dialog>`, `hidden`, `inert`, `aria-hidden`, not rendered, screen-reader-only) are skipped.
 - Fixed: fields of a shadcn form (react-hook-form) got ``used at: `src/components/ui/form.tsx:37` — `<Controller {...props} />` ``, the same wrapper line for every field. A line that only hands its props on is no longer `used at`: the field's own line in the form, or the form's `<FormField …>` line, is.
+- Fixed: after pointing at an element, a longer explanation of it with no new gesture became several requests with no element. The sentences said right after a request (each within 4 s of the previous one, up to 4 sentences and 80 words, until the next gesture) are now quoted inside it, one line each, marked `(continues, no pointing)`; a preamble line explains the marker when a spec has one. The quote and its markers are unchanged.
 
 ## 0.7.0 (2026-09-28)
 

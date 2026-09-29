@@ -1,3 +1,5 @@
+> Archived: measured with Pointcast 0.4 on 2026-09-28. Current results: [docs/eval](../README.md).
+
 # Batching: one recording with six changes vs one or two at a time (2026-09-28)
 
 A follow-up to [the typed-mode evaluation of the same day](results-2026-09-28.md), in the same harness, apps, agent settings and grading.

@@ -6,9 +6,9 @@
 
 **Talk and Alt+click on your web app. Your coding agent gets the exact elements, and the lines of code behind them.**
 
-One recording covers a whole list of UI changes: say what you want while you point, press Stop, and Claude Code, Codex, Gemini CLI or Cursor get a spec that leads with `src/…:line`. In [an evaluation on three real admin dashboards](docs/eval/results-2026-09-27.md), pointing raised the agent's accuracy from 78 % to 89 % over the same words without pointing; in a follow-up, adding the code lines [cut the tokens it spent finding the elements by more than half](docs/eval/stage0-code-pointer-2026-09-27.md). Your voice is transcribed locally, in the browser.
+One recording covers a whole list of UI changes: say what you want while you point, press Stop, and Claude Code, Codex, Gemini CLI or Cursor get a spec that leads with `src/…:line`. In [an evaluation on three real admin dashboards](docs/eval/archive/results-2026-09-27.md), pointing raised the agent's accuracy from 78 % to 89 % over the same words without pointing; in a follow-up, adding the code lines [cut the tokens it spent finding the elements by more than half](docs/eval/archive/stage0-code-pointer-2026-09-27.md). Your voice is transcribed locally, in the browser.
 
-In a [typed-mode evaluation on four apps](docs/eval/results-2026-09-28-batching.md) (React, Vue, Svelte, Django), an agent reading one Pointcast recording with six changes found the right code 96 % of the time, against 85 % for a quick hand-typed request with the same six changes, with 24 % fewer tokens and 75 % fewer searches. One change per request is more accurate but [not cheaper](docs/eval/results-2026-09-28.md): the saving comes from batching.
+In the [latest evaluation](docs/eval/results-2026-09-29-instruction-style.md), ten UI changes on a real React app took 1.5 min as one voice recording against 15–20 min to write by hand, and a blind review scored the result 192/200, against 174 for the hand-written prompt (146 with the older, stricter instruction). One run each, reviewed by an AI model; the methods are in the repo ([all evaluations](docs/eval/README.md)).
 
 <img src="docs/launch/video/out/pointcast-batch.gif" alt="Three Alt+clicks in one recording become one spec with three requests" width="640">
 
@@ -17,7 +17,7 @@ In a [typed-mode evaluation on four apps](docs/eval/results-2026-09-28-batching.
 [![npm](https://img.shields.io/npm/v/pointcast?label=npm)](https://www.npmjs.com/package/pointcast)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**[Quick start](#quick-start) · [How it works](#how-it-works) · [Eval](docs/eval/results-2026-09-27.md) · [Discussions](https://github.com/Hugelidus/pointcast/discussions) · [Changelog](CHANGELOG.md)**
+**[Quick start](#quick-start) · [How it works](#how-it-works) · [Eval](docs/eval/README.md) · [Discussions](https://github.com/Hugelidus/pointcast/discussions) · [Changelog](CHANGELOG.md)**
 
 > **Public beta (0.6).** Chrome and Edge on desktop. CI-tested on Windows, macOS and Linux (Chrome); Edge developed and tested on Windows. Feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
 
@@ -117,7 +117,7 @@ Nothing is added when the text is written more than once: no line beats a wrong 
 
 ## Why it helps
 
-A coding agent can't see what "this" is in "make *this* sortable and move *this* next to *that*", and a screen recording doesn't give it the DOM element or the file behind it. In the [evaluation](docs/eval/results-2026-09-27.md), pointing helped exactly where narration alone is ambiguous: two "Export" buttons, two identical cards, a shared `Button` component. A careful, deliberately written request is still more accurate (96 %): Pointcast doesn't replace precise writing, it replaces having to write precisely while you'd rather point and talk.
+A coding agent can't see what "this" is in "make *this* sortable and move *this* next to *that*", and a screen recording doesn't give it the DOM element or the file behind it. In the [evaluation](docs/eval/archive/results-2026-09-27.md), pointing helped exactly where narration alone is ambiguous: two "Export" buttons, two identical cards, a shared `Button` component. A careful, deliberately written request is still more accurate (96 %): Pointcast doesn't replace precise writing, it replaces having to write precisely while you'd rather point and talk.
 
 ## How it compares
 

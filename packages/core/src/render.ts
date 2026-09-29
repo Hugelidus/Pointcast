@@ -11,7 +11,7 @@ import { renderTranscript } from "./transcript";
 
 /**
  * - requests: numbered change requests, one per sentence, with search hints per element. The
- *   default: in the 2026-09-27 evaluation (docs/eval/results-2026-09-27.md) agents were at least
+ *   default: in the 2026-09-27 evaluation (docs/eval/archive/results-2026-09-27.md) agents were at least
  *   as accurate with it as with classic, with ~27 % fewer tokens, fewer turns and less time.
  * - classic:  header, transcript with inline markers, appendix per element (the Phase 1 spec);
  *   kept for auditing a recording against its timeline.

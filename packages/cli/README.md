@@ -108,7 +108,7 @@ and adds the line that holds it to the spec:
 ```
 
 In a small evaluation this more than halved the tokens a coding agent spent finding the elements
-([docs/eval](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/stage0-code-pointer-2026-09-27.md)). The lookup needs your source, so
+([docs/eval](https://github.com/Hugelidus/pointcast/blob/main/docs/eval/archive/stage0-code-pointer-2026-09-27.md)). The lookup needs your source, so
 it runs where the source is:
 
 - **`pointcast process`** uses the current directory, when the recording's files are in it, or

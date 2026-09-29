@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
-import { COMPONENT_ATTRIBUTE, parseComponentInfo, parseFrameworkInfo, parseRenderedBy, requestFrameworkInfo } from "./component-bridge";
+import { COMPONENT_ATTRIBUTE, COMPONENT_REQUEST_EVENT, parseComponentInfo, parseFrameworkInfo, parseRenderedBy, requestFrameworkInfo } from "./component-bridge";
 import { describeElement } from "./describe";
 import { installComponentBridge, readComponent, readFrameworkInfo, readRenderedBy } from "./framework-main";
 
@@ -548,7 +548,7 @@ describe("the bridge", () => {
   it("does not bubble to app listeners", () => {
     const doc = page('<div id="app"><p>hi</p></div>');
     let seen = 0;
-    el(doc, "#app").addEventListener("pointcast:component-request", () => seen++);
+    el(doc, "#app").addEventListener(COMPONENT_REQUEST_EVENT, () => seen++);
     requestComponent(el(doc, "p"));
     expect(seen).toBe(0);
   });

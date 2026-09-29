@@ -4,8 +4,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
-import { lacksLines } from "./component-bridge";
-import { readFrameworkInfo, refineFrameworkInfo } from "./framework-main";
+import { COMPONENT_REFINED_EVENT, lacksLines, requestFrameworkInfo, requestRefinedFrameworkInfo } from "./component-bridge";
+import { installComponentBridge, readFrameworkInfo, refineFrameworkInfo } from "./framework-main";
 import { isJsxCallAt, isModuleSource, isViteDevPage, sourceMapReference } from "./react-stack";
 
 /**
@@ -165,6 +165,10 @@ describe("react-stack.ts: Vite's served modules", () => {
     expect(isModuleSource("Sidebar.tsx", `${ORIGIN}/src/components/Sidebar.tsx?t=1`)).toBe(true);
     expect(isModuleSource("C:\\Users\\me\\app\\src\\components\\Sidebar.tsx", `${ORIGIN}/src/components/Sidebar.tsx`)).toBe(true);
     expect(isModuleSource("/home/me/app/src/components/Sidebar.tsx", `${ORIGIN}/src/components/Sidebar.tsx`)).toBe(true);
+    // A project folder with a space: in the map's absolute path as is, in the URL as %20.
+    expect(isModuleSource("C:/Users/me/My App/src/components/Sidebar.tsx", `${ORIGIN}/src/components/Sidebar.tsx`)).toBe(true);
+    expect(isModuleSource("C:/me/My Lib/y.tsx", `${ORIGIN}/@fs/C:/me/My%20Lib/y.tsx`)).toBe(true);
+    expect(isModuleSource("y.tsx", `${ORIGIN}/@fs/C:/me/My%20Lib/y.tsx`)).toBe(true);
     expect(isModuleSource("y.tsx", `${ORIGIN}/@fs/C:/me/lib/y.tsx`)).toBe(true);
     expect(isModuleSource("C:/me/lib/y.tsx", `${ORIGIN}/@fs/C:/me/lib/y.tsx`)).toBe(true);
     expect(isModuleSource("NavList.tsx", `${ORIGIN}/src/components/Sidebar.tsx`)).toBe(false);
@@ -189,5 +193,60 @@ describe("lacksLines: which React gestures ask the page again", () => {
     expect(lacksLines({ component: WITH_LINES.component, renderedBy: [{ file: "src/App.tsx" }] })).toBe(true);
     expect(lacksLines(WITH_LINES)).toBe(false);
     expect(lacksLines({ component: { framework: "react", name: "Row" }, renderedBy: [] })).toBe(false);
+  });
+});
+
+/*
+ * A stale bridge (D9 note 2026-09-29). A page keeps the MAIN-world script it loaded with:
+ * a dev page open since before the extension was updated or reloaded still had an older build's
+ * bridge, which answered every request by its own rules (on a real app: no component file, no
+ * lines, the shape of the chain before 0.7.0), and the new build's, injected when the tab was
+ * attached again, was a no-op ("installing twice is a no-op").
+ */
+describe("the bridge installed last is the one that answers", () => {
+  /** A bridge as builds up to 0.7.0 left it: a flag, and listeners under the older event names. */
+  function installOldBridge(win: Window): { asked: number } {
+    const old = { asked: 0 };
+    (win as unknown as Record<symbol, unknown>)[Symbol.for("pointcast.componentBridge")] = true;
+    for (const name of ["pointcast:component-request", "pointcast:component-refine"]) {
+      win.addEventListener(name, (event) => {
+        old.asked++;
+        const el = event.composedPath()[0] as Element;
+        el.setAttribute("data-pointcast-component", JSON.stringify({ component: { framework: "react", name: "Sidebar" } }));
+      }, true);
+    }
+    return old;
+  }
+
+  function pageWindow(span: Element): Window & { fetch: typeof fetch } {
+    return span.ownerDocument.defaultView as unknown as Window & { fetch: typeof fetch };
+  }
+
+  it("answers on a page where an older build's bridge is still installed, which is never asked", async () => {
+    const span = badgePage();
+    const win = pageWindow(span);
+    win.fetch = devServer().fetch;
+    const old = installOldBridge(win);
+    installComponentBridge(win);
+    expect(requestFrameworkInfo(span)).toEqual(FILES_ONLY);
+    expect(await requestRefinedFrameworkInfo(span, 2_000)).toEqual(WITH_LINES);
+    expect(old.asked).toBe(0);
+  });
+
+  it("replaces the bridge installed before it: one answer per request, with the page's first fetch", async () => {
+    const span = badgePage();
+    const win = pageWindow(span);
+    const server = devServer();
+    win.fetch = server.fetch;
+    installComponentBridge(win);
+    // Wrapped later (by the app, or debug capture): a bridge injected again keeps the first one.
+    win.fetch = (async () => new Response("wrapped", { status: 500 })) as typeof fetch;
+    installComponentBridge(win);
+    let answers = 0;
+    win.addEventListener(COMPONENT_REFINED_EVENT, () => answers++, true);
+    expect(await requestRefinedFrameworkInfo(span, 2_000)).toEqual(WITH_LINES);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(answers).toBe(1);
+    expect(server.requests.length).toBe(3);
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { cleanNote, isTypedSession } from "./notes";
 import { renderMarkdown } from "./render";
+import { INSTRUCTION_LINES } from "./requests";
 import { NOTE_MAX_CHARS, type CapturedEvent, type ElementInfo, type SessionFile, type WordsFile } from "./schema";
 
 function el(tag: string, text: string, extra: Partial<ElementInfo> = {}): ElementInfo {
@@ -75,6 +76,14 @@ describe("renderMarkdown of a typed session (D12)", () => {
     expect(second).toContain("> Make this column sortable [a]");
     expect(second).toContain("- [a] th «Quantity» on `/orders`");
     expect(md).toContain("## Appendix");
+  });
+
+  it("carries the instruction style's line, as a voice session does", () => {
+    const events = [point("e1", 1000, EXPORT, "Export only the filtered orders.")];
+    const lines = (md: string) => md.split("\n\n")[1]!.split("\n");
+    expect(lines(renderMarkdown(typed(events), undefined))[1]).toBe(INSTRUCTION_LINES.intent);
+    expect(lines(renderMarkdown({ ...typed(events), instructionStyle: "precise" }, undefined))[1]).toBe(INSTRUCTION_LINES.precise);
+    expect(lines(renderMarkdown(typed(events), undefined, { style: "precise" }))[1]).toBe(INSTRUCTION_LINES.precise);
   });
 
   it("ignores words, even when there are some, and orders the requests by time", () => {

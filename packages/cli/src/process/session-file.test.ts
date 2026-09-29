@@ -39,6 +39,13 @@ describe("validateSessionFile", () => {
     expect(() => validateSessionFile(value, "session.json")).toThrow(/events\[0\]\.note/);
   });
 
+  it("keeps the instruction style, leaves it out when absent, and drops an unknown one rather than the session", () => {
+    expect(validateSessionFile({ ...validSession(), instructionStyle: "precise" }, "session.json").instructionStyle).toBe("precise");
+    expect(validateSessionFile({ ...validSession(), instructionStyle: "intent" }, "session.json").instructionStyle).toBe("intent");
+    expect("instructionStyle" in validateSessionFile(validSession(), "session.json")).toBe(false);
+    expect("instructionStyle" in validateSessionFile({ ...validSession(), instructionStyle: "loose" }, "session.json")).toBe(false);
+  });
+
   it("accepts a well-formed session.json", () => {
     const session = validateSessionFile(validSession(), "session.json");
     expect(session.id).toBe("2026-01-01_00-00-00");

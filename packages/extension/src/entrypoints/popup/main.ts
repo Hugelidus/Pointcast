@@ -94,6 +94,7 @@ const liveEl = byId("live");
 const liveAlertEl = byId("live-alert");
 const languageEl = byId<HTMLSelectElement>("language");
 const qualityEl = byId<HTMLSelectElement>("quality");
+const instructionStyleEl = byId<HTMLSelectElement>("instruction-style");
 const keepAudioEl = byId<HTMLInputElement>("keep-audio");
 const notifyEl = byId<HTMLInputElement>("notify");
 const handoffEl = byId<HTMLInputElement>("handoff");
@@ -534,6 +535,7 @@ function renderSettings(settings: Settings): void {
   languageEl.value = settings.language;
   qualityEl.value = settings.quality;
   quality = settings.quality;
+  instructionStyleEl.value = settings.instructionStyle;
   keepAudioEl.checked = settings.keepAudio;
   notifyEl.checked = settings.notify;
   handoffEl.checked = settings.handoff;
@@ -550,9 +552,12 @@ function saveSettings(): void {
     inputMode,
     captureErrors: captureErrorsEl.checked,
     quality,
+    instructionStyle: instructionStyleEl.value === "precise" ? "precise" : "intent",
   });
 }
-for (const element of [languageEl, keepAudioEl, notifyEl, handoffEl, captureErrorsEl]) element.addEventListener("change", saveSettings);
+for (const element of [languageEl, instructionStyleEl, keepAudioEl, notifyEl, handoffEl, captureErrorsEl]) {
+  element.addEventListener("change", saveSettings);
+}
 qualityEl.addEventListener("change", () => {
   quality = qualityEl.value === "accurate" ? "accurate" : "fast";
   saveSettings();

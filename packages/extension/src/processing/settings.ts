@@ -2,7 +2,7 @@
  * The popup's settings, kept in chrome.storage.local so they survive browser restarts.
  * Read by the service worker when a recording stops, never cached in a variable (D6).
  */
-import type { InputMode } from "@pointcast/core";
+import { DEFAULT_INSTRUCTION_STYLE, parseInstructionStyle, type InputMode, type InstructionStyle } from "@pointcast/core";
 import { TRANSCRIPTION_QUALITIES, type TranscriptionQuality } from "./speech-model";
 
 export interface Settings {
@@ -36,6 +36,12 @@ export interface Settings {
    * with the new choice, like a language change. Fast by default (D1 note 2026-09-29).
    */
   quality: TranscriptionQuality;
+  /**
+   * "How your agent applies requests": the spec's instruction line (InstructionStyle). Read at
+   * Stop and recorded in session.json, so every renderer of the recording words it the same.
+   * Intent by default (D5 note 2026-09-29).
+   */
+  instructionStyle: InstructionStyle;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -46,6 +52,7 @@ export const DEFAULT_SETTINGS: Settings = {
   inputMode: "voice",
   captureErrors: true,
   quality: "fast",
+  instructionStyle: DEFAULT_INSTRUCTION_STYLE,
 };
 
 /** chrome.storage.local key. */
@@ -76,6 +83,7 @@ export function parseSettings(value: unknown): Settings {
     quality: (TRANSCRIPTION_QUALITIES as readonly unknown[]).includes(v.quality)
       ? (v.quality as TranscriptionQuality)
       : DEFAULT_SETTINGS.quality,
+    instructionStyle: parseInstructionStyle(v.instructionStyle) ?? DEFAULT_SETTINGS.instructionStyle,
   };
 }
 

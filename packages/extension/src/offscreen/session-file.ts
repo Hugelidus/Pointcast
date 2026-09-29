@@ -1,4 +1,4 @@
-import { SCHEMA_VERSION, type CapturedError, type CapturedEvent, type InputMode, type SessionFile } from "@pointcast/core";
+import { SCHEMA_VERSION, type CapturedError, type CapturedEvent, type InputMode, type InstructionStyle, type SessionFile } from "@pointcast/core";
 
 /** Format of audio.wav: what Whisper expects, so the CLI never needs ffmpeg (D6). */
 export const AUDIO_FILE = { file: "audio.wav", format: "wav", sampleRate: 16000, channels: 1 } as const;
@@ -23,6 +23,8 @@ export interface SessionFileInput {
   inputMode?: InputMode;
   /** Debug capture (D13): written only when something failed while recording. */
   errors?: readonly CapturedError[];
+  /** The popup's choice at Stop; always written, so a later change of default does not change it. */
+  instructionStyle: InstructionStyle;
 }
 
 export function buildSessionFile(input: SessionFileInput): SessionFile {
@@ -38,6 +40,7 @@ export function buildSessionFile(input: SessionFileInput): SessionFile {
     recorder: { extensionVersion: input.extensionVersion, userAgent: input.userAgent },
     events: [...input.events],
     ...(input.inputMode === "typed" ? { inputMode: "typed" as const } : {}),
+    instructionStyle: input.instructionStyle,
     ...(input.errors && input.errors.length > 0 ? { errors: [...input.errors] } : {}),
   };
 }

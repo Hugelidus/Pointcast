@@ -84,6 +84,7 @@ export async function processSession(job: ProcessingJob, deps: ProcessorDeps): P
       extensionVersion: job.extensionVersion,
       userAgent: job.userAgent,
       withAudio,
+      instructionStyle: job.options.instructionStyle,
     });
 
   if (!job.audio.decoded && job.audio.typed) {
@@ -196,6 +197,7 @@ async function processTyped(
       userAgent: job.userAgent,
       withAudio: false,
       inputMode: "typed",
+      instructionStyle: job.options.instructionStyle,
     });
   const code = await resolveCode(deps, session(job.events));
   const sessionFile = session(code.session.events);

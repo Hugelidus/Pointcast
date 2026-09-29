@@ -6,7 +6,7 @@ import { escapeMarkdown, inlineText } from "./markdown";
 import { isTypedSession, TYPED_SESSION_WORDS } from "./notes";
 import { OTHER_ERRORS_HEADING, otherErrorLines } from "./page-errors";
 import { renderRequests, renderTypedRequests, type RequestsLayout } from "./requests";
-import type { CapturedEvent, SessionFile, WordsFile } from "./schema";
+import { DEFAULT_INSTRUCTION_STYLE, parseInstructionStyle, type CapturedEvent, type InstructionStyle, type SessionFile, type WordsFile } from "./schema";
 import { renderTranscript } from "./transcript";
 
 /**
@@ -29,6 +29,12 @@ export type RenderLayout = RequestsLayout;
 export interface RenderOptions {
   format: RenderFormat;
   layout: RenderLayout;
+  /**
+   * The `requests` preamble's instruction line (InstructionStyle). Undefined: the session's own
+   * `instructionStyle`, else DEFAULT_INSTRUCTION_STYLE ("intent"). Set it to override the session
+   * (`pointcast process --style`, the MCP tools' `style`). The classic format ignores it.
+   */
+  style?: InstructionStyle;
   /**
    * Passed to fuse(); missing fields use DEFAULT_FUSE_OPTIONS, except `deictics`, which
    * defaults to the transcript language's list (deicticsForLanguage).
@@ -67,7 +73,12 @@ export function renderMarkdown(
   words: WordsFile | undefined,
   options: Partial<RenderOptions> = {},
 ): string {
-  const opts: RenderOptions = { ...DEFAULT_RENDER_OPTIONS, ...options };
+  const opts = {
+    ...DEFAULT_RENDER_OPTIONS,
+    ...options,
+    // A hand-edited session.json may hold anything: an unknown value reads as absent.
+    style: options.style ?? parseInstructionStyle(session.instructionStyle) ?? DEFAULT_INSTRUCTION_STYLE,
+  } satisfies RenderOptions;
   if (isTypedSession(session)) return finish(renderTypedRequests(session.events, opts), session);
   words ??= TYPED_SESSION_WORDS;
   const fuseOptions = { deictics: deicticsForLanguage(words.language), ...opts.fuse };

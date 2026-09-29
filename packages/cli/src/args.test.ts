@@ -82,6 +82,13 @@ describe("parseCommandLine", () => {
     expect(() => parseCommandLine(["process", "--layout", "sideways"])).toThrow(/Unknown --layout "sideways"/);
   });
 
+  it("parses process --style and rejects an unknown one", () => {
+    expect(parseCommandLine(["process", "--style", "precise"])).toMatchObject({ style: "precise" });
+    expect(parseCommandLine(["process", "--style", "intent"])).toMatchObject({ style: "intent" });
+    expect(parseCommandLine(["process"])).not.toHaveProperty("style");
+    expect(() => parseCommandLine(["process", "--style", "loose"])).toThrow(/Unknown --style "loose": expected "intent" or "precise"/);
+  });
+
   it("parses mcp, with and without --dir and --no-handoff", () => {
     expect(parseCommandLine(["mcp"])).toEqual({ command: "mcp" });
     expect(parseCommandLine(["mcp", "--no-handoff"])).toEqual({ command: "mcp", noHandoff: true });

@@ -68,6 +68,15 @@ const repoArgument = z
       "Default: the project this server was started for.",
   );
 
+const styleArgument = z
+  .enum(["intent", "precise"])
+  .optional()
+  .describe(
+    'How the spec tells you to apply the requests. "intent": build what a request for something new means, in the ' +
+      "app's style; \"precise\": change only the elements pointed at, and only as asked. Default: what the user chose " +
+      'when recording (intent unless they changed it). Pass "precise" only when the user asks for it (/pointcast precise).',
+  );
+
 const sessionIdArgument = z
   .string()
   .describe('Session id (the folder name), "latest-here" (newest recording made on this project) or "latest" (newest of all).');
@@ -123,19 +132,19 @@ export function createServer(options: ServerOptions): McpServer {
         'is not on disk yet. Pass "latest-here" for the most recent recording made on this project, or "latest" ' +
         "for the most recent one of any project. Code locations are resolved against the project's source when " +
         "the recording has them.",
-      inputSchema: { id: sessionIdArgument, repo: repoArgument },
+      inputSchema: { id: sessionIdArgument, repo: repoArgument, style: styleArgument },
       annotations: { readOnlyHint: true },
     },
-    async ({ id, repo }) => {
+    async ({ id, repo, style }) => {
       try {
         const { dir, skippedNewer, note } = await resolveSessionDirById(options, id, repoFor(repo));
-        const result = await getSession(dir, { repo: repoFor(repo) });
+        const result = await getSession(dir, { repo: repoFor(repo), ...(style ? { style } : {}) });
         // The watch keys recordings by folder name, the id an agent passes.
         watch.markDelivered(path.basename(dir));
         // One-liners above the spec: a folder "latest" had to skip (no session.json, usually
         // Chrome's save dialog), what "latest-here" passed over, then the project mismatch
         // getSession itself found.
-        return text(specText([skippedNewerSessionsNote(skippedNewer), note, result.warning], result));
+        return text(specText([skippedNewerSessionsNote(skippedNewer), note, result.warning, result.note], result));
       } catch (error) {
         return toolError(error);
       }
@@ -196,10 +205,11 @@ export function createServer(options: ServerOptions): McpServer {
               "project are skipped (and left for an agent session on the right project); ones that name no files are kept.",
           ),
         repo: repoArgument,
+        style: styleArgument,
       },
       annotations: { readOnlyHint: true },
     },
-    async ({ timeoutSeconds, anyProject, repo }, extra) => {
+    async ({ timeoutSeconds, anyProject, repo, style }, extra) => {
       const seconds = timeoutSeconds ?? defaultWaitSeconds(server.server.getClientVersion()?.name);
       let accept: ((dir: string) => Promise<boolean>) | undefined;
       try {
@@ -222,12 +232,12 @@ export function createServer(options: ServerOptions): McpServer {
         return text(`No new recording yet (waited ${formatWait(seconds)}). Call wait_for_recording again to keep listening.`);
       }
       try {
-        const result = await getSession(found.dir, { repo: repoFor(repo) });
+        const result = await getSession(found.dir, { repo: repoFor(repo), ...(style ? { style } : {}) });
         const more =
           found.waiting === 0
             ? undefined
             : `${found.waiting} more new ${found.waiting === 1 ? "recording is" : "recordings are"} waiting: call wait_for_recording again after this one.`;
-        return text(specText([`New recording ${found.id}.`, more, result.warning], result));
+        return text(specText([`New recording ${found.id}.`, more, result.warning, result.note], result));
       } catch (error) {
         if (error instanceof CliError) return toolError(new CliError(`New recording ${found.id}, but it cannot be read: ${error.message}`));
         throw error;

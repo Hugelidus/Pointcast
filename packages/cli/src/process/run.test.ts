@@ -1,7 +1,8 @@
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { INSTRUCTION_LINES } from "@pointcast/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { CliError } from "../errors";
 import { runProcess } from "./run";
@@ -44,6 +45,21 @@ describe("runProcess against dev/fixtures/sessions/e2e-es (no model loaded)", ()
     const result = await runProcess({ sessionDir, engine: "local", force: false, toStdout: true });
 
     expect(result.markdown.startsWith("# UI change requests\n")).toBe(true);
+  });
+
+  it("words the preamble in the recording's instruction style, intent when it has none, and --style overrides it", async () => {
+    const line = (markdown: string) => markdown.split("\n")[3];
+    const byDefault = await runProcess({ sessionDir, engine: "local", force: false, toStdout: true });
+    expect(line(byDefault.markdown)).toBe(INSTRUCTION_LINES.intent);
+    const forced = await runProcess({ sessionDir, engine: "local", force: false, toStdout: true, style: "precise" });
+    expect(line(forced.markdown)).toBe(INSTRUCTION_LINES.precise);
+
+    const file = join(sessionDir, "session.json");
+    writeFileSync(file, JSON.stringify({ ...JSON.parse(readFileSync(file, "utf8")), instructionStyle: "precise" }));
+    const recorded = await runProcess({ sessionDir, engine: "local", force: false, toStdout: true });
+    expect(line(recorded.markdown)).toBe(INSTRUCTION_LINES.precise);
+    const overridden = await runProcess({ sessionDir, engine: "local", force: false, toStdout: true, style: "intent" });
+    expect(line(overridden.markdown)).toBe(INSTRUCTION_LINES.intent);
   });
 
   it("anchors both 'esto' markers to the right events", async () => {
@@ -108,7 +124,7 @@ describe("runProcess against dev/fixtures/sessions/e2e-es (no model loaded)", ()
 
     // e1..e6 via the two deictics; e7..e10 (other pages, no burst to join) by time.
     expect(result.summary).toEqual({ total: 10, deictic: 6, time: 4, standalone: 0 });
-    expect(result.header).toBe("2 requests · 10 elements · ~470 tokens");
+    expect(result.header).toBe("2 requests · 10 elements · ~560 tokens");
     expect(result.chars).toBe(result.markdown.length);
     expect(result.chars).toBeGreaterThan(0);
     expect(result.tokens).toBe(Math.ceil(result.chars / 4));

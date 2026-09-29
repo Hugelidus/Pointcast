@@ -3,11 +3,13 @@ import path from "node:path";
 import {
   EVENT_ERRORS_MAX,
   parseCapturedErrors,
+  parseInstructionStyle,
   SCHEMA_VERSION,
   SESSION_ERRORS_MAX,
   type CapturedError,
   type CapturedEvent,
   type ElementInfo,
+  type InstructionStyle,
   type SessionFile,
 } from "@pointcast/core";
 import { CliError } from "../errors";
@@ -83,8 +85,19 @@ export function validateSessionFile(value: unknown, sourceLabel: string): Sessio
     recorder: recorder as SessionFile["recorder"],
     events,
     ...(obj.inputMode === undefined ? {} : { inputMode: obj.inputMode as SessionFile["inputMode"] }),
+    ...optionalInstructionStyle(obj.instructionStyle),
     ...optionalErrors(obj.errors, SESSION_ERRORS_MAX),
   };
+}
+
+/**
+ * The popup's instruction style, when the recording has one. Lenient like `errors`: it only words
+ * one preamble line, so an unknown value (a newer recorder's style, a hand edit) is dropped and
+ * renders as a session without it ("intent"), rather than making the whole session unreadable.
+ */
+function optionalInstructionStyle(value: unknown): { instructionStyle?: InstructionStyle } {
+  const instructionStyle = parseInstructionStyle(value);
+  return instructionStyle === undefined ? {} : { instructionStyle };
 }
 
 /**

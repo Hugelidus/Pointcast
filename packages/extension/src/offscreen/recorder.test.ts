@@ -41,7 +41,7 @@ const draft: CapturedEventDraft = {
   element: { tag: "button", text: "Export", selector: "#export", selectorUnique: true, path: "button", html: "<button>Export</button>" },
 };
 
-const OPTIONS: ProcessingOptions = { keepAudio: false, deadline: T0 + 600_000, handoff: true, quality: "fast" };
+const OPTIONS: ProcessingOptions = { keepAudio: false, deadline: T0 + 600_000, handoff: true, quality: "fast", instructionStyle: "intent" };
 
 function newRecorder() {
   const jobs: ProcessingJob[] = [];

@@ -1,6 +1,7 @@
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { INSTRUCTION_LINES } from "@pointcast/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getSession, listSessions, resolveSessionDirById } from "./sessions";
 
@@ -116,6 +117,27 @@ describe("mcp sessions tools", () => {
       const second = await getSession(dir);
       expect(second.rendered).toBe(false);
       expect(second.markdown).toBe(first.markdown);
+    });
+
+    it("renders a style asked for over the recording's, without caching it as session.md", async () => {
+      const dir = join(base, "2026-01-02_09-00-00");
+      const saved = await getSession(dir);
+      expect(saved.markdown).toContain(INSTRUCTION_LINES.intent);
+      const precise = await getSession(dir, { style: "precise" });
+      expect(precise.rendered).toBe(true);
+      expect(precise.markdown).toContain(INSTRUCTION_LINES.precise);
+      expect(precise.markdown).not.toContain(INSTRUCTION_LINES.intent);
+      expect(precise.note).toBeUndefined();
+      expect(readFileSync(join(dir, "session.md"), "utf8")).toBe(saved.markdown);
+    });
+
+    it("says so when a style cannot be applied: session.md on disk and no words.json", async () => {
+      const dir = join(base, "2026-01-02_09-00-00");
+      await getSession(dir);
+      rmSync(join(dir, "words.json"));
+      const result = await getSession(dir, { style: "precise" });
+      expect(result.markdown).toContain(INSTRUCTION_LINES.intent);
+      expect(result.note).toMatch(/no words\.json to render it in the "precise" style/);
     });
 
     it("fails with a clear message when there is neither session.md nor words.json", async () => {

@@ -163,6 +163,8 @@ Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that ver
 
 **Can I use it without a microphone?** Yes: choose **⌨️ Typed** in the popup and type a note for each element instead of speaking. The app you are testing never receives the keys you type into the note box.
 
+**Will the agent only change what I pointed at?** For a tweak (a text, a size, a colour), yes. For something new (a behaviour, a component, an animation), it builds what you mean where you pointed, in your app's style, and may touch other files: that scored higher in a [blind review](docs/eval/results-2026-09-29-instruction-style.md). To keep it to the elements you pointed at, choose *How your agent applies requests: Change only what I point at* in the popup's Settings, or type `/pointcast precise`.
+
 **How accurate is the transcription?** ~93 % word accuracy on Spanish test recordings ([D1](docs/decisions.md#d1-transcription--whisper-via-transformersjs-locally)).
 
 **How do I turn it off for a project or a session?** In Claude Code:

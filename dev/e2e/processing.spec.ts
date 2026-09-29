@@ -194,3 +194,21 @@ test("the transcription quality is Fast by default, and Accurate announces its o
   await expect(popup.locator("#quality")).toHaveValue("accurate");
   await expect(popup.locator("#first-run-text")).toContainText("accurate speech model");
 });
+
+test("the instruction style is Build what I mean by default, and Change only what I point at is remembered", async ({
+  extensionPage: popup,
+}) => {
+  // D5 note 2026-09-29. The recorded session and its spec follow it: typed-mode.spec.ts.
+  const stored = async () =>
+    ((await popup.evaluate(() => chrome.storage.local.get("settings")))["settings"] as { instructionStyle?: string } | undefined)?.instructionStyle;
+  await popup.locator("details.settings > summary").click();
+  const select = popup.locator("#instruction-style");
+  await expect(select).toHaveValue("intent");
+  await expect(select.locator("option:checked")).toHaveText("Build what I mean (default)");
+
+  await select.selectOption("precise");
+  await expect.poll(stored).toBe("precise");
+  await popup.reload();
+  await expect(popup.locator("#instruction-style")).toHaveValue("precise");
+  await expect(popup.locator("#instruction-style option:checked")).toHaveText("Change only what I point at");
+});

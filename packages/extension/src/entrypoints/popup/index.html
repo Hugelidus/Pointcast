@@ -66,6 +66,12 @@
           <option value="accurate">Accurate (slower)</option>
         </select>
       </label>
+      <label title="Build what I mean: your agent builds what a request for something new asks for, in your app's style, and may touch other files. Change only what I point at: it changes only the elements you pointed at, and only as asked. Applies to the next recording.">How your agent applies requests
+        <select id="instruction-style">
+          <option value="intent">Build what I mean (default)</option>
+          <option value="precise">Change only what I point at</option>
+        </select>
+      </label>
       <label class="check"><input id="keep-audio" type="checkbox"> Keep audio (saves audio.wav)</label>
       <label class="check"><input id="notify" type="checkbox"> Notify when done</label>
       <label class="check"><input id="handoff" type="checkbox"> Send to your agent's Pointcast MCP server (no downloads)</label>

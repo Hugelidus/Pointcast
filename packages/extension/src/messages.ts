@@ -24,7 +24,7 @@
  * "Receiving end does not exist": that is how the service worker detects one (D6).
  */
 import { browser } from "wxt/browser";
-import type { CapturedErrorDraft, CapturedEventDraft, InputMode } from "@pointcast/core";
+import type { CapturedErrorDraft, CapturedEventDraft, InputMode, InstructionStyle } from "@pointcast/core";
 import type { TranscriptionProgress } from "@pointcast/transcribe";
 import type { E2eRecord } from "./e2e-record";
 import type { RecorderState } from "./recorder-state";
@@ -72,6 +72,8 @@ export interface ProcessingOptions {
   handoff: boolean;
   /** Settings.quality at Stop: which Whisper model transcribes (processing/speech-model.ts). */
   quality: TranscriptionQuality;
+  /** Settings.instructionStyle at Stop, recorded in session.json (SessionFile.instructionStyle). */
+  instructionStyle: InstructionStyle;
 }
 
 /**

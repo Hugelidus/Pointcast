@@ -35,6 +35,25 @@ export type Gesture = "point" | "click" | "select";
 export type InputMode = "voice" | "typed";
 
 /**
+ * How the agent is told to apply the requests: the instruction line of the `requests` spec's
+ * preamble (D5 note 2026-09-29, docs/eval/results-2026-09-29-instruction-style.md).
+ * - intent: the elements say where; a request about an existing element changes exactly that, a
+ *   request for something new is built well, in the app's own style. The default.
+ * - precise: change only the referenced elements, and only as asked (the only line up to 0.8).
+ */
+export type InstructionStyle = "intent" | "precise";
+
+export const INSTRUCTION_STYLES: readonly InstructionStyle[] = ["intent", "precise"];
+
+/** What a session without `instructionStyle` renders, and the popup's default. */
+export const DEFAULT_INSTRUCTION_STYLE: InstructionStyle = "intent";
+
+/** `value` when it names an instruction style, else undefined. */
+export function parseInstructionStyle(value: unknown): InstructionStyle | undefined {
+  return (INSTRUCTION_STYLES as readonly unknown[]).includes(value) ? (value as InstructionStyle) : undefined;
+}
+
+/**
  * Longest note kept, in characters (UTF-16 code units, like .length). A note is a sentence or
  * a paragraph about one element; a cap keeps a pasted log from bloating the spec.
  */
@@ -321,6 +340,13 @@ export interface SessionFile {
    * before typed mode existed. A typed session has no audio and no words.json.
    */
   inputMode?: InputMode;
+  /**
+   * The popup's "How your agent applies requests" setting when the recording stopped (added
+   * after 0.8.0): which instruction line the `requests` spec's preamble carries, so the
+   * clipboard, the MCP server and the CLI render the same one. Absent means "intent"
+   * (DEFAULT_INSTRUCTION_STYLE); `pointcast process --style` and the MCP tools' `style` override it.
+   */
+  instructionStyle?: InstructionStyle;
   /**
    * Debug capture (D13, since extension 0.5.0): every page error captured while recording, in time
    * order, at most SESSION_ERRORS_MAX (the most recent). Each event's own `errors` are picked from

@@ -1,5 +1,7 @@
 import { expect, test } from "./support/fixtures";
 import { PORT_A } from "./support/paths";
+// Relative import: the repo root does not depend on the workspace packages (session-schema.ts).
+import { INSTRUCTION_LINES } from "../../packages/core/src/requests";
 import { readE2eRecords, readRecorder, readSavedSession, setSettings, startFromPopup, stopFromPopup } from "./support/recorder";
 
 /**
@@ -106,6 +108,9 @@ test("typed mode: two notes, one cancelled with Esc, the app never sees the typi
   expect(saved.markdown).toContain("> This button should export only the filtered orders. [a]\n\n- [a] button «Export»");
   expect(saved.markdown).toContain("> Make this column sortable\n> / like the others [a]\n\n- [a] th «Quantity»");
   expect(saved.markdown).not.toContain("never mind");
+  // The instruction style is the popup's default, recorded so every renderer words it the same.
+  expect(saved.session.instructionStyle).toBe("intent");
+  expect(saved.markdown).toContain(INSTRUCTION_LINES.intent);
   expect(saved.markdown).not.toContain("Print");
 
   // Same result path as a voice session: the Markdown went to the (recorded) clipboard.
@@ -129,7 +134,8 @@ test("typed mode: the note box inside dialogs, focus traps and a watching page",
   extensionPage: popup,
   downloadsDir,
 }) => {
-  await setSettings(popup, { inputMode: "typed" });
+  // With the other instruction style: the saved session and its spec follow the popup.
+  await setSettings(popup, { inputMode: "typed", instructionStyle: "precise" });
   await popup.reload();
   const app = await context.newPage();
   await app.goto(`http://127.0.0.1:${PORT_A}/index.html`);
@@ -247,5 +253,8 @@ test("typed mode: the note box inside dialogs, focus traps and a watching page",
   ]);
   expect(saved.session.events.map((e) => e.element.text)).toEqual(["Export", "Refresh", expect.any(String), "Save draft", "Confirm", "Print"]);
   expect(saved.markdown).not.toContain("Pointcast note");
+  expect(saved.session.instructionStyle).toBe("precise");
+  expect(saved.markdown).toContain(INSTRUCTION_LINES.precise);
+  expect(saved.markdown).not.toContain(INSTRUCTION_LINES.intent);
   expect(saved.markdown).not.toContain("not this one");
 });

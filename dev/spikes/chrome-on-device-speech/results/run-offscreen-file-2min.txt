@@ -1,0 +1,122 @@
+{
+ "where": "offscreen",
+ "source": "file:es-2min.wav",
+ "wav": "es-2min.wav",
+ "local": true,
+ "chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+ "headed": false,
+ "availableBefore": "available",
+ "offscreenApi": {
+  "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+  "hasSpeechRecognition": "function",
+  "hasWebkit": "function",
+  "staticKeys": [
+   "length",
+   "name",
+   "prototype",
+   "available",
+   "install"
+  ],
+  "protoKeys": [
+   "grammars",
+   "lang",
+   "continuous",
+   "interimResults",
+   "maxAlternatives",
+   "onaudiostart",
+   "onsoundstart",
+   "onspeechstart",
+   "onspeechend",
+   "onsoundend",
+   "onaudioend",
+   "onresult",
+   "onnomatch",
+   "onerror",
+   "onstart",
+   "onend",
+   "abort",
+   "start",
+   "stop",
+   "unspokenPunctuation",
+   "quality",
+   "processLocally",
+   "phrases",
+   "constructor"
+  ],
+  "startLength": 0,
+  "userActivation": true,
+  "available es-ES local": "available",
+  "available es local": "available",
+  "available en-US local": "downloadable",
+  "available es-ES cloud": "available",
+  "activation": true
+ },
+ "offscreenInstall": {
+  "result": true,
+  "ms": 0
+ },
+ "install": {
+  "result": true,
+  "ms": 1
+ },
+ "availableAfter": "available",
+ "offscreenApiAfter": {
+  "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+  "hasSpeechRecognition": "function",
+  "hasWebkit": "function",
+  "staticKeys": [
+   "length",
+   "name",
+   "prototype",
+   "available",
+   "install"
+  ],
+  "protoKeys": [
+   "grammars",
+   "lang",
+   "continuous",
+   "interimResults",
+   "maxAlternatives",
+   "onaudiostart",
+   "onsoundstart",
+   "onspeechstart",
+   "onspeechend",
+   "onsoundend",
+   "onaudioend",
+   "onresult",
+   "onnomatch",
+   "onerror",
+   "onstart",
+   "onend",
+   "abort",
+   "start",
+   "stop",
+   "unspokenPunctuation",
+   "quality",
+   "processLocally",
+   "phrases",
+   "constructor"
+  ],
+  "startLength": 0,
+  "userActivation": true,
+  "available es-ES local": "available",
+  "available es local": "available",
+  "available en-US local": "downloadable",
+  "available es-ES cloud": "available",
+  "activation": true
+ },
+ "wallMs": 165253,
+ "cpu": {
+  "browser": 1.6,
+  "crashpad-handler": 0,
+  "gpu-process": 0,
+  "utility:network.mojom.NetworkService": 0.1,
+  "utility:storage.mojom.StorageService": 0,
+  "renderer": 2.8,
+  "utility:audio.mojom.AudioService": 0.5,
+  "utility:media.mojom.SpeechRecognitionService": 55.9
+ }
+}
+sessions: 1 errors: []
+finals: vale empecemos por la tabla de pedidos | esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic en la cabecera | y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo para cancelado | ahora fíjate en el votown de exportar el que está arriba a la derecha | ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtradas en ese momento | es decir si aplico este filtro de aqui por ejemplo por cliente | y después pulso este bowtone el export debería respetar el filtro y no traerse todo | vamos con el formulario de arriba | este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300 milisegundos | y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que arreglarlo también | bajemos ahora al pie de la tabla | abajo falta la páginación | ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado un buen rato | me gustaría que esto paginara de 50 en 50 con estos botones de siguiente y anterior a q y al lado | una cosa más sobre esta fila de aqui la primera | cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la columna de Estado | y por último este icono de aqui el de los tres puntos al final de cada fila | debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido en ese orden | creo que con esto ya tenemos suficiente para esta primera vuelta de cambios | gracias
+-> <scratch-or-repo>\dev\spikes\chrome-on-device-speech\results\offscreen-file-es-2min.json

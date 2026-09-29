@@ -1,0 +1,7 @@
+{
+  "manifest_version": 3,
+  "name": "pointcast speech spike",
+  "version": "0.0.1",
+  "description": "Throwaway: on-device SpeechRecognition inside an offscreen document.",
+  "permissions": ["offscreen"]
+}

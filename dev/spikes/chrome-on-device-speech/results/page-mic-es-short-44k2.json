@@ -1,0 +1,211 @@
+{
+ "meta": {
+  "where": "page",
+  "source": "mic",
+  "wav": "C:/Users/<user>/AppData/Local/Temp/claude/C--Users-<user>-Desktop-Pointcast-Dev/8430b795-bd27-4480-aa36-12c68ad4e93d/scratchpad/es-short-44k2.wav",
+  "local": true,
+  "chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+  "headed": false,
+  "availableBefore": "available",
+  "install": {
+   "result": true,
+   "ms": 17
+  },
+  "availableAfter": "available",
+  "wallMs": 16107,
+  "cpu": {
+   "browser": 1.2,
+   "crashpad-handler": 0,
+   "gpu-process": 0,
+   "utility:network.mojom.NetworkService": 0,
+   "utility:storage.mojom.StorageService": 0,
+   "renderer": 0,
+   "utility:audio.mojom.AudioService": 0.1,
+   "utility:media.mojom.SpeechRecognitionService": 7.6
+  }
+ },
+ "net": null,
+ "log": [
+  {
+   "t": 0,
+   "type": "started",
+   "session": 1
+  },
+  {
+   "t": 1,
+   "ts": 1,
+   "type": "start",
+   "session": 1
+  },
+  {
+   "t": 182,
+   "ts": 182,
+   "type": "audiostart",
+   "session": 1
+  },
+  {
+   "t": 1082,
+   "ts": 1082,
+   "type": "soundstart",
+   "session": 1
+  },
+  {
+   "t": 1082,
+   "ts": 1082,
+   "type": "speechstart",
+   "session": 1
+  },
+  {
+   "t": 8582,
+   "ts": 8582,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "en definitiva os habéis disparo la sacada de mi prima Edgar Álvaro el pase",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8882,
+   "ts": 8882,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "en definitiva os habéis disparo la sacada de mi prima Edgar Álvaro el pase es",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8882,
+   "ts": 8882,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "en definitiva os habéis disparo la sacada de mi prima Edgar Álvaro el pase es gana",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 9082,
+   "ts": 9082,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "en definitiva os habéis disparo la sacada de mi prima Edgar Álvaro el pase es ganador",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 9482,
+   "ts": 9482,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "en definitiva os habéis disparo la sacada de mi prima Edgar Álvaro el pase es ganador",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 9482,
+   "ts": 9482,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "en definitiva os habéis disparo la sacada de mi prima Edgar Álvaro el pase es ganador",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 9682,
+   "ts": 9682,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "en definitiva os habéis disparo la sacada de mi prima Edgar Álvaro el pase es ganador",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11388,
+   "ts": 11388,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": true,
+     "text": "en definitiva os habéis disparo la sacada de mi prima Edgar Álvaro el pase es ganador",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 16012,
+   "ts": 16012,
+   "type": "speechend",
+   "session": 1
+  },
+  {
+   "t": 16012,
+   "ts": 16012,
+   "type": "soundend",
+   "session": 1
+  },
+  {
+   "t": 16012,
+   "ts": 16012,
+   "type": "audioend",
+   "session": 1
+  },
+  {
+   "t": 16098,
+   "type": "end",
+   "session": 1
+  }
+ ],
+ "sessions": 1
+}

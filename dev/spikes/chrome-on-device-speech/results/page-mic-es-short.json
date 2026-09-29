@@ -1,0 +1,115 @@
+{
+ "meta": {
+  "where": "page",
+  "source": "mic",
+  "wav": "es-short.wav",
+  "local": true,
+  "chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+  "headed": false,
+  "availableBefore": "available",
+  "install": {
+   "result": true,
+   "ms": 0
+  },
+  "availableAfter": "available",
+  "wallMs": 16023,
+  "cpu": {
+   "browser": 2.6,
+   "crashpad-handler": 0,
+   "gpu-process": 0,
+   "utility:network.mojom.NetworkService": 0.2,
+   "utility:storage.mojom.StorageService": 0,
+   "renderer": 0.6,
+   "utility:media.mojom.SpeechRecognitionService": 5.1,
+   "utility:audio.mojom.AudioService": 0.1
+  }
+ },
+ "net": null,
+ "log": [
+  {
+   "t": 0,
+   "type": "started",
+   "session": 1
+  },
+  {
+   "t": 2,
+   "ts": 1,
+   "type": "start",
+   "session": 1
+  },
+  {
+   "t": 214,
+   "ts": 214,
+   "type": "audiostart",
+   "session": 1
+  },
+  {
+   "t": 1514,
+   "ts": 1514,
+   "type": "soundstart",
+   "session": 1
+  },
+  {
+   "t": 1514,
+   "ts": 1514,
+   "type": "speechstart",
+   "session": 1
+  },
+  {
+   "t": 5715,
+   "ts": 5715,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "seguro que has visto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 6521,
+   "ts": 6521,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": true,
+     "text": "seguro que has visto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 16013,
+   "ts": 16013,
+   "type": "speechend",
+   "session": 1
+  },
+  {
+   "t": 16013,
+   "ts": 16013,
+   "type": "soundend",
+   "session": 1
+  },
+  {
+   "t": 16013,
+   "ts": 16013,
+   "type": "audioend",
+   "session": 1
+  },
+  {
+   "t": 16018,
+   "type": "end",
+   "session": 1
+  }
+ ],
+ "sessions": 1
+}

@@ -1,0 +1,711 @@
+{
+ "meta": {
+  "where": "page",
+  "source": "file:es-short.wav",
+  "wav": "es-short.wav",
+  "local": true,
+  "chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+  "headed": false,
+  "availableBefore": "available",
+  "install": {
+   "result": true,
+   "ms": 0
+  },
+  "availableAfter": "available",
+  "wallMs": 14095,
+  "cpu": {
+   "browser": 1.2,
+   "crashpad-handler": 0,
+   "gpu-process": 0,
+   "utility:network.mojom.NetworkService": 0,
+   "utility:storage.mojom.StorageService": 0,
+   "renderer": 0.1,
+   "utility:audio.mojom.AudioService": 0,
+   "utility:media.mojom.SpeechRecognitionService": 4.3
+  }
+ },
+ "net": null,
+ "log": [
+  {
+   "t": 436,
+   "type": "track",
+   "label": "MediaStreamAudioDestinationNode",
+   "settings": {
+    "channelCount": 2,
+    "deviceId": "WebAudio-59c2e371-a260-43a4-899a-3bb3b02d47c5",
+    "latency": 0.01,
+    "sampleRate": 48000,
+    "sampleSize": 16
+   }
+  },
+  {
+   "t": 436,
+   "type": "started",
+   "session": 1
+  },
+  {
+   "t": 476,
+   "ts": 476,
+   "type": "start",
+   "session": 1
+  },
+  {
+   "t": 603,
+   "ts": 603,
+   "type": "audiostart",
+   "session": 1
+  },
+  {
+   "t": 2776,
+   "type": "onset"
+  },
+  {
+   "t": 3430,
+   "ts": 3429,
+   "type": "soundstart",
+   "session": 1
+  },
+  {
+   "t": 3430,
+   "ts": 3430,
+   "type": "speechstart",
+   "session": 1
+  },
+  {
+   "t": 3430,
+   "ts": 3430,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 3529,
+   "ts": 3529,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 3769,
+   "ts": 3769,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 4009,
+   "ts": 4009,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 4129,
+   "ts": 4129,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 4370,
+   "ts": 4369,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 4609,
+   "ts": 4609,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuvi",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 4730,
+   "ts": 4730,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuvi",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 4849,
+   "ts": 4849,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 5209,
+   "ts": 5209,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera FIL",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 5209,
+   "ts": 5209,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera filtra",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 5330,
+   "ts": 5329,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera filtrado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 5449,
+   "ts": 5449,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera filtrado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 5570,
+   "ts": 5570,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera filtrado por",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 5809,
+   "ts": 5809,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera filtrado por",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 5809,
+   "ts": 5809,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera filtrado por",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 5929,
+   "ts": 5929,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera filtrado por",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 6169,
+   "ts": 6169,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera filtrado por cantidad",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 6169,
+   "ts": 6169,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera filtrado por cantidad",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 7055,
+   "ts": 7055,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "esto me gustaría que estuviera filtrado por cantidad",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 7055,
+   "ts": 7055,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": true,
+     "text": "esto me gustaría que estuviera filtrado por cantidad",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8230,
+   "ts": 8230,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8350,
+   "ts": 8349,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "y además",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8830,
+   "ts": 8830,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "y además esto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8830,
+   "ts": 8830,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "y además esto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8950,
+   "ts": 8950,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "y además esto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 9455,
+   "ts": 9455,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": true,
+     "text": "y además esto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 10330,
+   "ts": 10330,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 10571,
+   "ts": 10571,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "que ex",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 10590,
+   "ts": 10590,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "que exporte",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 10931,
+   "ts": 10931,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "que exporte solo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11170,
+   "ts": 11170,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "que exporte solo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11170,
+   "ts": 11170,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "que exporte solo lo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11411,
+   "ts": 11411,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "que exporte solo lo FIL",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11530,
+   "ts": 11530,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "que exporte solo lo filtra",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11550,
+   "ts": 11550,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "que exporte solo lo filtrado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11790,
+   "ts": 11790,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "que exporte solo lo filtrado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 12138,
+   "ts": 12138,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": true,
+     "text": "que exporte solo lo filtrado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 14441,
+   "type": "stopCalled"
+  },
+  {
+   "t": 14442,
+   "ts": 14442,
+   "type": "speechend",
+   "session": 1
+  },
+  {
+   "t": 14442,
+   "ts": 14442,
+   "type": "soundend",
+   "session": 1
+  },
+  {
+   "t": 14442,
+   "ts": 14442,
+   "type": "audioend",
+   "session": 1
+  },
+  {
+   "t": 14442,
+   "type": "end",
+   "session": 1
+  }
+ ],
+ "sessions": 1
+}

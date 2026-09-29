@@ -1,0 +1,83 @@
+{
+ "meta": {
+  "where": "page",
+  "source": "mic",
+  "wav": "C:/Users/<user>/AppData/Local/Temp/claude/C--Users-<user>-Desktop-Pointcast-Dev/8430b795-bd27-4480-aa36-12c68ad4e93d/scratchpad/es-short-48k.wav",
+  "local": true,
+  "chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+  "headed": false,
+  "availableBefore": "available",
+  "install": {
+   "result": true,
+   "ms": 0
+  },
+  "availableAfter": "available",
+  "wallMs": 16015,
+  "cpu": {
+   "browser": 1.1,
+   "crashpad-handler": 0,
+   "gpu-process": 0,
+   "utility:network.mojom.NetworkService": 0,
+   "utility:storage.mojom.StorageService": 0,
+   "renderer": 0,
+   "utility:media.mojom.SpeechRecognitionService": 6.6,
+   "utility:audio.mojom.AudioService": 0
+  }
+ },
+ "net": null,
+ "log": [
+  {
+   "t": 0,
+   "type": "started",
+   "session": 1
+  },
+  {
+   "t": 1,
+   "ts": 1,
+   "type": "start",
+   "session": 1
+  },
+  {
+   "t": 190,
+   "ts": 190,
+   "type": "audiostart",
+   "session": 1
+  },
+  {
+   "t": 1090,
+   "ts": 1090,
+   "type": "soundstart",
+   "session": 1
+  },
+  {
+   "t": 1090,
+   "ts": 1090,
+   "type": "speechstart",
+   "session": 1
+  },
+  {
+   "t": 16004,
+   "ts": 16004,
+   "type": "speechend",
+   "session": 1
+  },
+  {
+   "t": 16004,
+   "ts": 16004,
+   "type": "soundend",
+   "session": 1
+  },
+  {
+   "t": 16005,
+   "ts": 16005,
+   "type": "audioend",
+   "session": 1
+  },
+  {
+   "t": 16010,
+   "type": "end",
+   "session": 1
+  }
+ ],
+ "sessions": 1
+}

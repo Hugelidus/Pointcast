@@ -1,0 +1,10545 @@
+{
+ "meta": {
+  "where": "offscreen",
+  "source": "file:es-2min.wav",
+  "wav": "es-2min.wav",
+  "local": true,
+  "chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+  "headed": false,
+  "availableBefore": "available",
+  "offscreenApi": {
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+   "hasSpeechRecognition": "function",
+   "hasWebkit": "function",
+   "staticKeys": [
+    "length",
+    "name",
+    "prototype",
+    "available",
+    "install"
+   ],
+   "protoKeys": [
+    "grammars",
+    "lang",
+    "continuous",
+    "interimResults",
+    "maxAlternatives",
+    "onaudiostart",
+    "onsoundstart",
+    "onspeechstart",
+    "onspeechend",
+    "onsoundend",
+    "onaudioend",
+    "onresult",
+    "onnomatch",
+    "onerror",
+    "onstart",
+    "onend",
+    "abort",
+    "start",
+    "stop",
+    "unspokenPunctuation",
+    "quality",
+    "processLocally",
+    "phrases",
+    "constructor"
+   ],
+   "startLength": 0,
+   "userActivation": true,
+   "available es-ES local": "available",
+   "available es local": "available",
+   "available en-US local": "downloadable",
+   "available es-ES cloud": "available",
+   "activation": true
+  },
+  "offscreenInstall": {
+   "result": true,
+   "ms": 0
+  },
+  "install": {
+   "result": true,
+   "ms": 1
+  },
+  "availableAfter": "available",
+  "offscreenApiAfter": {
+   "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+   "hasSpeechRecognition": "function",
+   "hasWebkit": "function",
+   "staticKeys": [
+    "length",
+    "name",
+    "prototype",
+    "available",
+    "install"
+   ],
+   "protoKeys": [
+    "grammars",
+    "lang",
+    "continuous",
+    "interimResults",
+    "maxAlternatives",
+    "onaudiostart",
+    "onsoundstart",
+    "onspeechstart",
+    "onspeechend",
+    "onsoundend",
+    "onaudioend",
+    "onresult",
+    "onnomatch",
+    "onerror",
+    "onstart",
+    "onend",
+    "abort",
+    "start",
+    "stop",
+    "unspokenPunctuation",
+    "quality",
+    "processLocally",
+    "phrases",
+    "constructor"
+   ],
+   "startLength": 0,
+   "userActivation": true,
+   "available es-ES local": "available",
+   "available es local": "available",
+   "available en-US local": "downloadable",
+   "available es-ES cloud": "available",
+   "activation": true
+  },
+  "wallMs": 165253,
+  "cpu": {
+   "browser": 1.6,
+   "crashpad-handler": 0,
+   "gpu-process": 0,
+   "utility:network.mojom.NetworkService": 0.1,
+   "utility:storage.mojom.StorageService": 0,
+   "renderer": 2.8,
+   "utility:audio.mojom.AudioService": 0.5,
+   "utility:media.mojom.SpeechRecognitionService": 55.9
+  }
+ },
+ "net": null,
+ "log": [
+  {
+   "t": -347,
+   "type": "track",
+   "label": "MediaStreamAudioDestinationNode",
+   "settings": {
+    "channelCount": 2,
+    "deviceId": "WebAudio-2aa5881e-18f2-4f4c-8a71-01a763a8f687",
+    "latency": 0.01,
+    "sampleRate": 48000,
+    "sampleSize": 16
+   }
+  },
+  {
+   "t": -347,
+   "type": "started",
+   "session": 1
+  },
+  {
+   "t": -309,
+   "ts": -310,
+   "type": "start",
+   "session": 1
+  },
+  {
+   "t": -194,
+   "ts": -194,
+   "type": "audiostart",
+   "session": 1
+  },
+  {
+   "t": 1604,
+   "type": "onset"
+  },
+  {
+   "t": 2328,
+   "ts": 2328,
+   "type": "soundstart",
+   "session": 1
+  },
+  {
+   "t": 2328,
+   "ts": 2328,
+   "type": "speechstart",
+   "session": 1
+  },
+  {
+   "t": 2329,
+   "ts": 2328,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 2887,
+   "ts": 2887,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 2998,
+   "ts": 2998,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale empe",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 3128,
+   "ts": 3127,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale empecemos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 3238,
+   "ts": 3238,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale empecemos por",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 3488,
+   "ts": 3488,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale empecemos por la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 3607,
+   "ts": 3607,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale empecemos por la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 3719,
+   "ts": 3718,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale empecemos por la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 3838,
+   "ts": 3837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale empecemos por la tabla de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 4078,
+   "ts": 4078,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale empecemos por la tabla de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 4198,
+   "ts": 4198,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale empecemos por la tabla de pedidos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 4208,
+   "ts": 4208,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale empecemos por la tabla de pedidos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 4438,
+   "ts": 4438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": false,
+     "text": "vale empecemos por la tabla de pedidos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 4885,
+   "ts": 4885,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 0,
+   "length": 1,
+   "results": [
+    {
+     "i": 0,
+     "final": true,
+     "text": "vale empecemos por la tabla de pedidos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8008,
+   "ts": 8008,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8008,
+   "ts": 8008,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8128,
+   "ts": 8128,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de a",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8248,
+   "ts": 8248,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8597,
+   "ts": 8597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8597,
+   "ts": 8597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8717,
+   "ts": 8717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8717,
+   "ts": 8717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8837,
+   "ts": 8837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8957,
+   "ts": 8957,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la colum",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 8957,
+   "ts": 8957,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 9197,
+   "ts": 9197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 9318,
+   "ts": 9317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 9557,
+   "ts": 9557,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 9557,
+   "ts": 9557,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 9808,
+   "ts": 9808,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 10158,
+   "ts": 10158,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 10278,
+   "ts": 10278,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 10518,
+   "ts": 10518,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 10878,
+   "ts": 10878,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11118,
+   "ts": 11118,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11118,
+   "ts": 11118,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11478,
+   "ts": 11478,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11488,
+   "ts": 11488,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11717,
+   "ts": 11717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11838,
+   "ts": 11838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11838,
+   "ts": 11838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a ba",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 11957,
+   "ts": 11957,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 12077,
+   "ts": 12077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 12077,
+   "ts": 12077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 12439,
+   "ts": 12438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 12439,
+   "ts": 12439,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 12568,
+   "ts": 12568,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic en",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 12598,
+   "ts": 12598,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic en la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 12678,
+   "ts": 12678,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic en la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 12808,
+   "ts": 12808,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic en la cabe",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 12928,
+   "ts": 12928,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic en la cabecera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 13038,
+   "ts": 13038,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic en la cabecera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 13158,
+   "ts": 13158,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic en la cabecera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 13158,
+   "ts": 13158,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": false,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic en la cabecera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 13524,
+   "ts": 13524,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 1,
+   "length": 2,
+   "results": [
+    {
+     "i": 1,
+     "final": true,
+     "text": "esto de aqui la columna de cantidad me gustaría que fuera orden a bala haciendo clic en la cabecera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 16798,
+   "ts": 16798,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 16918,
+   "ts": 16918,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 17157,
+   "ts": 17157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 17278,
+   "ts": 17278,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra colum",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 17398,
+   "ts": 17398,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 17398,
+   "ts": 17398,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 17528,
+   "ts": 17528,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 17758,
+   "ts": 17758,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 17878,
+   "ts": 17878,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 17998,
+   "ts": 17998,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 17998,
+   "ts": 17998,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 18358,
+   "ts": 18358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 18478,
+   "ts": 18478,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 18598,
+   "ts": 18597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 18957,
+   "ts": 18957,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 19078,
+   "ts": 19078,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 19318,
+   "ts": 19318,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 19678,
+   "ts": 19678,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 19918,
+   "ts": 19918,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 19918,
+   "ts": 19918,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 20048,
+   "ts": 20048,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 20278,
+   "ts": 20278,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 20518,
+   "ts": 20518,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 20638,
+   "ts": 20638,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 20758,
+   "ts": 20758,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color disti",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 20888,
+   "ts": 20888,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 20998,
+   "ts": 20998,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 21118,
+   "ts": 21118,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 21238,
+   "ts": 21238,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 21358,
+   "ts": 21358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 21478,
+   "ts": 21478,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 21598,
+   "ts": 21598,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 21717,
+   "ts": 21717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 21838,
+   "ts": 21838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 22077,
+   "ts": 22077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 22317,
+   "ts": 22317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 22678,
+   "ts": 22678,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 22808,
+   "ts": 22808,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completa",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 22918,
+   "ts": 22918,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 23398,
+   "ts": 23398,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 23518,
+   "ts": 23518,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 23639,
+   "ts": 23639,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 23998,
+   "ts": 23998,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 24238,
+   "ts": 24238,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 24368,
+   "ts": 24368,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendi",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 24488,
+   "ts": 24488,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 24608,
+   "ts": 24608,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 24717,
+   "ts": 24717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 24838,
+   "ts": 24838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 24958,
+   "ts": 24958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 25078,
+   "ts": 25078,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo para",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 25078,
+   "ts": 25078,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo para",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 25317,
+   "ts": 25317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo para",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 25437,
+   "ts": 25437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo para can",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 25437,
+   "ts": 25437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo para can",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 25558,
+   "ts": 25557,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo para cance",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 25558,
+   "ts": 25558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo para cancelado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 25677,
+   "ts": 25677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": false,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo para cancelado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 26172,
+   "ts": 26172,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 2,
+   "length": 3,
+   "results": [
+    {
+     "i": 2,
+     "final": true,
+     "text": "y esta otra columna la de Estado debería mostrar un color distinto según el valor verde para completado amarillo para pendiente y rojo para cancelado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 30077,
+   "ts": 30077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 30317,
+   "ts": 30317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fí",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 30437,
+   "ts": 30437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 30557,
+   "ts": 30557,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 30677,
+   "ts": 30677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 30677,
+   "ts": 30677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 30917,
+   "ts": 30917,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el vo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 31037,
+   "ts": 31037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el voto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 31157,
+   "ts": 31157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el voto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 31277,
+   "ts": 31277,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el voto un",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 31397,
+   "ts": 31397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 31517,
+   "ts": 31517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 31517,
+   "ts": 31517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 31637,
+   "ts": 31637,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de ex",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 31637,
+   "ts": 31637,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 31997,
+   "ts": 31997,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 32117,
+   "ts": 32117,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 32237,
+   "ts": 32237,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 32237,
+   "ts": 32237,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar el",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 32477,
+   "ts": 32477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar el que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 32717,
+   "ts": 32717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar el que está",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 32837,
+   "ts": 32837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar el que está",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 32957,
+   "ts": 32957,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar el que está arriba",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 33078,
+   "ts": 33078,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar el que está arriba",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 33197,
+   "ts": 33197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar el que está arriba a la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 33317,
+   "ts": 33317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar el que está arriba a la derecha",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 33557,
+   "ts": 33557,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar el que está arriba a la derecha",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 34007,
+   "ts": 34007,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": false,
+     "text": "ahora fíjate en el votown de exportar el que está arriba a la derecha",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 34042,
+   "ts": 34042,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 3,
+   "length": 4,
+   "results": [
+    {
+     "i": 3,
+     "final": true,
+     "text": "ahora fíjate en el votown de exportar el que está arriba a la derecha",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 36647,
+   "ts": 36647,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 36887,
+   "ts": 36887,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 37247,
+   "ts": 37247,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 37367,
+   "ts": 37367,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo ex",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 37487,
+   "ts": 37487,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 37757,
+   "ts": 37757,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 37847,
+   "ts": 37847,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 37967,
+   "ts": 37967,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 37967,
+   "ts": 37967,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 38087,
+   "ts": 38087,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 38357,
+   "ts": 38357,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 38447,
+   "ts": 38447,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 38567,
+   "ts": 38567,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 38927,
+   "ts": 38927,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 39048,
+   "ts": 39047,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 39167,
+   "ts": 39167,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 39197,
+   "ts": 39197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 39558,
+   "ts": 39558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 39678,
+   "ts": 39678,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 39797,
+   "ts": 39797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 40158,
+   "ts": 40157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo ex",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 40277,
+   "ts": 40277,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 40397,
+   "ts": 40397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 40517,
+   "ts": 40517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 40637,
+   "ts": 40637,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 40727,
+   "ts": 40727,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 40878,
+   "ts": 40877,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 41087,
+   "ts": 41087,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 41208,
+   "ts": 41208,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 41357,
+   "ts": 41357,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 41478,
+   "ts": 41478,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están FIL",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 41478,
+   "ts": 41478,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtra",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 41597,
+   "ts": 41597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtradas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 41717,
+   "ts": 41717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtradas en",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 41957,
+   "ts": 41957,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtradas en ese",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 42048,
+   "ts": 42048,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtradas en ese",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 42077,
+   "ts": 42077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtradas en ese momento",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 42197,
+   "ts": 42197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtradas en ese momento",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 42317,
+   "ts": 42317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtradas en ese momento",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 42527,
+   "ts": 42527,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtradas en ese momento",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 42922,
+   "ts": 42922,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": false,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtradas en ese momento",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 42922,
+   "ts": 42922,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 4,
+   "length": 5,
+   "results": [
+    {
+     "i": 4,
+     "final": true,
+     "text": "ahora mismo exporta toda la tabla pero yo quiero que esto solo exporte las filas que están filtradas en ese momento",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 46397,
+   "ts": 46397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 46517,
+   "ts": 46517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 46997,
+   "ts": 46997,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 47117,
+   "ts": 47117,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 47358,
+   "ts": 47357,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 47478,
+   "ts": 47477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si apli",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 47597,
+   "ts": 47597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 47838,
+   "ts": 47838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 47958,
+   "ts": 47958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este FIL",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 48077,
+   "ts": 48077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 48077,
+   "ts": 48077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 48197,
+   "ts": 48197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 48438,
+   "ts": 48438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 48558,
+   "ts": 48558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de a",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 48558,
+   "ts": 48558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 48678,
+   "ts": 48677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 48808,
+   "ts": 48808,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 49167,
+   "ts": 49167,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de aqui por",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 49167,
+   "ts": 49167,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de aqui por",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 49288,
+   "ts": 49288,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de aqui por ejemplo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 49757,
+   "ts": 49757,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de aqui por ejemplo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 49878,
+   "ts": 49878,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de aqui por ejemplo por",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 49878,
+   "ts": 49878,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de aqui por ejemplo por",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 50117,
+   "ts": 50117,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de aqui por ejemplo por cliente",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 50762,
+   "ts": 50762,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": false,
+     "text": "es decir si aplico este filtro de aqui por ejemplo por cliente",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 50762,
+   "ts": 50762,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 5,
+   "length": 6,
+   "results": [
+    {
+     "i": 5,
+     "final": true,
+     "text": "es decir si aplico este filtro de aqui por ejemplo por cliente",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 52758,
+   "ts": 52758,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 52758,
+   "ts": 52758,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 53237,
+   "ts": 53237,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pul",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 53357,
+   "ts": 53357,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 53357,
+   "ts": 53357,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 53478,
+   "ts": 53478,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 53717,
+   "ts": 53717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 53838,
+   "ts": 53838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 53848,
+   "ts": 53848,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bow",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 53958,
+   "ts": 53958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 54078,
+   "ts": 54078,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 54118,
+   "ts": 54117,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 54318,
+   "ts": 54318,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 54438,
+   "ts": 54438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 54558,
+   "ts": 54558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 54677,
+   "ts": 54677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 54677,
+   "ts": 54677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 54917,
+   "ts": 54917,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el ex",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 55048,
+   "ts": 55048,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el expor",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 55158,
+   "ts": 55158,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 55278,
+   "ts": 55278,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 55398,
+   "ts": 55398,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 55517,
+   "ts": 55517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 55638,
+   "ts": 55638,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 55757,
+   "ts": 55757,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respe",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 55767,
+   "ts": 55767,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 55998,
+   "ts": 55997,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 56248,
+   "ts": 56248,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 56358,
+   "ts": 56358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 56358,
+   "ts": 56358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 56597,
+   "ts": 56597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 56608,
+   "ts": 56607,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 56718,
+   "ts": 56718,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro y no",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 56838,
+   "ts": 56838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro y no",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 56848,
+   "ts": 56848,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro y no tra",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 56958,
+   "ts": 56958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro y no traer",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 57078,
+   "ts": 57078,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro y no traerse",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 57198,
+   "ts": 57198,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro y no traerse todo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 57198,
+   "ts": 57198,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro y no traerse todo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 57318,
+   "ts": 57318,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro y no traerse todo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 57438,
+   "ts": 57438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": false,
+     "text": "y después pulso este bowtone el export debería respetar el filtro y no traerse todo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 57694,
+   "ts": 57694,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 6,
+   "length": 7,
+   "results": [
+    {
+     "i": 6,
+     "final": true,
+     "text": "y después pulso este bowtone el export debería respetar el filtro y no traerse todo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 61838,
+   "ts": 61838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 62078,
+   "ts": 62078,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 62197,
+   "ts": 62197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 62438,
+   "ts": 62438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el for",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 62558,
+   "ts": 62558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el formula",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 62558,
+   "ts": 62558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el formulario",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 62678,
+   "ts": 62678,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el formulario",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 62798,
+   "ts": 62798,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el formulario",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 62798,
+   "ts": 62798,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el formulario de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 63037,
+   "ts": 63037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el formulario de arriba",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 63037,
+   "ts": 63037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el formulario de arriba",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 63127,
+   "ts": 63127,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el formulario de arriba",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 63127,
+   "ts": 63127,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el formulario de arriba",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 63397,
+   "ts": 63397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": false,
+     "text": "vamos con el formulario de arriba",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 63722,
+   "ts": 63722,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 7,
+   "length": 8,
+   "results": [
+    {
+     "i": 7,
+     "final": true,
+     "text": "vamos con el formulario de arriba",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 66517,
+   "ts": 66517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 66638,
+   "ts": 66638,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 66758,
+   "ts": 66758,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 67117,
+   "ts": 67117,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsque",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 67238,
+   "ts": 67238,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 67358,
+   "ts": 67358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 67478,
+   "ts": 67478,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 67718,
+   "ts": 67717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 67837,
+   "ts": 67837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 67838,
+   "ts": 67837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 68078,
+   "ts": 68078,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 68198,
+   "ts": 68198,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 68438,
+   "ts": 68438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 68438,
+   "ts": 68438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 68797,
+   "ts": 68797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 69038,
+   "ts": 69037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 69398,
+   "ts": 69397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder debería",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 69517,
+   "ts": 69517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 69878,
+   "ts": 69878,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 69998,
+   "ts": 69998,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 70118,
+   "ts": 70118,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 70358,
+   "ts": 70358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 70478,
+   "ts": 70478,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 70597,
+   "ts": 70597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devou",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 70608,
+   "ts": 70607,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 70718,
+   "ts": 70718,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 70958,
+   "ts": 70958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 71077,
+   "ts": 71077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 71077,
+   "ts": 71077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 71167,
+   "ts": 71167,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 71167,
+   "ts": 71167,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 71317,
+   "ts": 71317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 71437,
+   "ts": 71437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 3",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 71558,
+   "ts": 71557,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 71677,
+   "ts": 71677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 71797,
+   "ts": 71797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300 mi",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 71917,
+   "ts": 71917,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300 mili",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 72037,
+   "ts": 72037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300 milisegu",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 72037,
+   "ts": 72037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300 milisegu",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 72157,
+   "ts": 72157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300 milisegundo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 72157,
+   "ts": 72157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300 milisegundos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 72397,
+   "ts": 72397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300 milisegundos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 72717,
+   "ts": 72717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": false,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300 milisegundos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 72732,
+   "ts": 72732,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 8,
+   "length": 9,
+   "results": [
+    {
+     "i": 8,
+     "final": true,
+     "text": "este campo de búsqueda tarda demasiado en responder deberíamos añadir un devounce de unos 300 milisegundos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 75838,
+   "ts": 75838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 75957,
+   "ts": 75957,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 76438,
+   "ts": 76438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 76438,
+   "ts": 76438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 76558,
+   "ts": 76558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro sele",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 76558,
+   "ts": 76558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 77037,
+   "ts": 77037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 77157,
+   "ts": 77157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 77157,
+   "ts": 77157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 77397,
+   "ts": 77397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 77517,
+   "ts": 77517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de ran",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 77638,
+   "ts": 77638,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 77757,
+   "ts": 77757,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 77997,
+   "ts": 77997,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fecha",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 78117,
+   "ts": 78117,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 78117,
+   "ts": 78117,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 78238,
+   "ts": 78238,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 78358,
+   "ts": 78358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 78597,
+   "ts": 78597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 78717,
+   "ts": 78717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 78717,
+   "ts": 78717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 78958,
+   "ts": 78957,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 79317,
+   "ts": 79317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja es",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 79317,
+   "ts": 79317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 79558,
+   "ts": 79558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 79558,
+   "ts": 79558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 79678,
+   "ts": 79677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un ra",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 79797,
+   "ts": 79797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 79917,
+   "ts": 79917,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 79917,
+   "ts": 79917,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80158,
+   "ts": 80158,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80288,
+   "ts": 80287,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que Cru",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80288,
+   "ts": 80288,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80398,
+   "ts": 80398,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80398,
+   "ts": 80398,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80518,
+   "ts": 80518,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80638,
+   "ts": 80638,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80758,
+   "ts": 80758,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80877,
+   "ts": 80877,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80877,
+   "ts": 80877,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80998,
+   "ts": 80998,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 80998,
+   "ts": 80998,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 81238,
+   "ts": 81238,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 81358,
+   "ts": 81358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 81478,
+   "ts": 81478,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 81598,
+   "ts": 81598,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 81718,
+   "ts": 81718,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 81958,
+   "ts": 81958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 82078,
+   "ts": 82078,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 82197,
+   "ts": 82197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que arreg",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 82318,
+   "ts": 82318,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que arreglar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 82318,
+   "ts": 82318,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que arreglar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 82557,
+   "ts": 82557,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que arreglarlo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 82678,
+   "ts": 82678,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que arreglarlo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 82678,
+   "ts": 82678,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que arreglarlo también",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 82798,
+   "ts": 82797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que arreglarlo también",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 82918,
+   "ts": 82918,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que arreglarlo también",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 83158,
+   "ts": 83158,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": false,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que arreglarlo también",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 83483,
+   "ts": 83483,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 9,
+   "length": 10,
+   "results": [
+    {
+     "i": 9,
+     "final": true,
+     "text": "y este otro selector el de rango de fechas no deja escoger un rango que cruce de un mes a otro eso hay que arreglarlo también",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 87077,
+   "ts": 87077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "ba",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 87197,
+   "ts": 87197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "baje",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 87318,
+   "ts": 87318,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 87437,
+   "ts": 87437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos ahora",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 87677,
+   "ts": 87677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos ahora al",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 87677,
+   "ts": 87677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos ahora al",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 87797,
+   "ts": 87797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos ahora al pie",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 87917,
+   "ts": 87917,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos ahora al pie",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 88038,
+   "ts": 88037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos ahora al pie",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 88038,
+   "ts": 88038,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos ahora al pie de la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 88157,
+   "ts": 88157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos ahora al pie de la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 88278,
+   "ts": 88278,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos ahora al pie de la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 88397,
+   "ts": 88397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos ahora al pie de la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 88923,
+   "ts": 88923,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": false,
+     "text": "bajemos ahora al pie de la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 88923,
+   "ts": 88923,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 10,
+   "length": 11,
+   "results": [
+    {
+     "i": 10,
+     "final": true,
+     "text": "bajemos ahora al pie de la tabla",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 92117,
+   "ts": 92117,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 11,
+   "length": 12,
+   "results": [
+    {
+     "i": 11,
+     "final": false,
+     "text": "abajo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 92238,
+   "ts": 92238,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 11,
+   "length": 12,
+   "results": [
+    {
+     "i": 11,
+     "final": false,
+     "text": "abajo falta",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 92477,
+   "ts": 92477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 11,
+   "length": 12,
+   "results": [
+    {
+     "i": 11,
+     "final": false,
+     "text": "abajo falta la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 92597,
+   "ts": 92597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 11,
+   "length": 12,
+   "results": [
+    {
+     "i": 11,
+     "final": false,
+     "text": "abajo falta la página",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 92717,
+   "ts": 92717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 11,
+   "length": 12,
+   "results": [
+    {
+     "i": 11,
+     "final": false,
+     "text": "abajo falta la página",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 92838,
+   "ts": 92837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 11,
+   "length": 12,
+   "results": [
+    {
+     "i": 11,
+     "final": false,
+     "text": "abajo falta la página",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 93077,
+   "ts": 93077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 11,
+   "length": 12,
+   "results": [
+    {
+     "i": 11,
+     "final": false,
+     "text": "abajo falta la páginación",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 93077,
+   "ts": 93077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 11,
+   "length": 12,
+   "results": [
+    {
+     "i": 11,
+     "final": false,
+     "text": "abajo falta la páginación",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 93197,
+   "ts": 93197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 11,
+   "length": 12,
+   "results": [
+    {
+     "i": 11,
+     "final": false,
+     "text": "abajo falta la páginación",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 93683,
+   "ts": 93683,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 11,
+   "length": 12,
+   "results": [
+    {
+     "i": 11,
+     "final": true,
+     "text": "abajo falta la páginación",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 94208,
+   "ts": 94208,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 94558,
+   "ts": 94558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 94798,
+   "ts": 94798,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 95038,
+   "ts": 95038,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se car",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 95158,
+   "ts": 95158,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 95398,
+   "ts": 95398,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 95398,
+   "ts": 95398,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 95518,
+   "ts": 95518,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 95638,
+   "ts": 95638,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 95758,
+   "ts": 95758,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pe",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 95758,
+   "ts": 95758,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 95998,
+   "ts": 95998,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 95998,
+   "ts": 95998,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 96118,
+   "ts": 96117,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 96238,
+   "ts": 96238,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 96358,
+   "ts": 96358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 96358,
+   "ts": 96358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 96477,
+   "ts": 96477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 96597,
+   "ts": 96597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 96718,
+   "ts": 96718,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 96838,
+   "ts": 96838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 96958,
+   "ts": 96958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 97078,
+   "ts": 97078,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil fi",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 97197,
+   "ts": 97197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 97318,
+   "ts": 97318,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 97558,
+   "ts": 97558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 97558,
+   "ts": 97558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 97678,
+   "ts": 97677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 97797,
+   "ts": 97797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 98037,
+   "ts": 98037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pe",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 98157,
+   "ts": 98157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 98157,
+   "ts": 98157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 98277,
+   "ts": 98277,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado un",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 98397,
+   "ts": 98397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado un",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 98517,
+   "ts": 98517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado un buen",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 98637,
+   "ts": 98637,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado un buen rato",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 98757,
+   "ts": 98757,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado un buen rato",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 98877,
+   "ts": 98877,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado un buen rato",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 99327,
+   "ts": 99327,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": false,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado un buen rato",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 99362,
+   "ts": 99362,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 12,
+   "length": 13,
+   "results": [
+    {
+     "i": 12,
+     "final": true,
+     "text": "ahora mismo se cargan todos los pedidos de golpe y con mil filas esto se queda pegado un buen rato",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 102638,
+   "ts": 102637,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 102758,
+   "ts": 102758,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 102998,
+   "ts": 102997,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 103207,
+   "ts": 103207,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 103327,
+   "ts": 103327,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 103477,
+   "ts": 103477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 103597,
+   "ts": 103597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que estopa",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 103717,
+   "ts": 103717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que estopa GI",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 103838,
+   "ts": 103838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que estopa gira",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 103838,
+   "ts": 103838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 103957,
+   "ts": 103957,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 104077,
+   "ts": 104077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 104438,
+   "ts": 104438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 104558,
+   "ts": 104557,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 104677,
+   "ts": 104677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 104917,
+   "ts": 104917,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 105038,
+   "ts": 105038,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 105277,
+   "ts": 105277,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 105517,
+   "ts": 105517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 105638,
+   "ts": 105637,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 105877,
+   "ts": 105877,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 106118,
+   "ts": 106118,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos bo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 106238,
+   "ts": 106238,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 106477,
+   "ts": 106477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 106718,
+   "ts": 106718,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 106837,
+   "ts": 106837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 106837,
+   "ts": 106837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de siguiente",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 107197,
+   "ts": 107197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de siguiente y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 107438,
+   "ts": 107438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de siguiente y anterior",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 107438,
+   "ts": 107438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de siguiente y anterior",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 107797,
+   "ts": 107797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de siguiente y anterior",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 107797,
+   "ts": 107797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de siguiente y anterior a",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 107918,
+   "ts": 107918,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de siguiente y anterior a q",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 107928,
+   "ts": 107928,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de siguiente y anterior a q y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 108038,
+   "ts": 108037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de siguiente y anterior a q y al",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 108158,
+   "ts": 108157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": false,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de siguiente y anterior a q y al lado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 108603,
+   "ts": 108603,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 13,
+   "length": 14,
+   "results": [
+    {
+     "i": 13,
+     "final": true,
+     "text": "me gustaría que esto paginara de 50 en 50 con estos botones de siguiente y anterior a q y al lado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 112877,
+   "ts": 112877,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 112997,
+   "ts": 112997,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 113237,
+   "ts": 113237,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 113477,
+   "ts": 113477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 113477,
+   "ts": 113477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 113597,
+   "ts": 113597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 113837,
+   "ts": 113837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 113958,
+   "ts": 113958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta fila",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 114077,
+   "ts": 114077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta fila",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 114077,
+   "ts": 114077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta fila de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 114317,
+   "ts": 114317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta fila de a",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 114438,
+   "ts": 114438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta fila de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 114558,
+   "ts": 114558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta fila de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 114677,
+   "ts": 114677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta fila de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 114928,
+   "ts": 114928,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta fila de aqui la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 115038,
+   "ts": 115038,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta fila de aqui la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 115277,
+   "ts": 115277,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta fila de aqui la primera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 115517,
+   "ts": 115517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": false,
+     "text": "una cosa más sobre esta fila de aqui la primera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 115883,
+   "ts": 115882,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 14,
+   "length": 15,
+   "results": [
+    {
+     "i": 14,
+     "final": true,
+     "text": "una cosa más sobre esta fila de aqui la primera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 118437,
+   "ts": 118437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 118557,
+   "ts": 118557,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 118677,
+   "ts": 118677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pe",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 118797,
+   "ts": 118797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 119037,
+   "ts": 119037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 119158,
+   "ts": 119158,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 119277,
+   "ts": 119277,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 119277,
+   "ts": 119277,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 119397,
+   "ts": 119397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está can",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 119397,
+   "ts": 119397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 119877,
+   "ts": 119877,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 119997,
+   "ts": 119997,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 119997,
+   "ts": 119997,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 120358,
+   "ts": 120357,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 120597,
+   "ts": 120597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 120838,
+   "ts": 120838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila en",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 120838,
+   "ts": 120838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 120958,
+   "ts": 120958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 121198,
+   "ts": 121198,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 121438,
+   "ts": 121437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 121438,
+   "ts": 121438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 121677,
+   "ts": 121677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 121798,
+   "ts": 121798,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 122038,
+   "ts": 122038,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer ta",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 122038,
+   "ts": 122038,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tacha",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 122158,
+   "ts": 122158,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 122278,
+   "ts": 122278,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 122637,
+   "ts": 122637,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 122637,
+   "ts": 122637,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 122758,
+   "ts": 122758,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 122997,
+   "ts": 122997,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 123238,
+   "ts": 123237,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 123358,
+   "ts": 123358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 123358,
+   "ts": 123358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 123598,
+   "ts": 123597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 123838,
+   "ts": 123837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra can",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 123958,
+   "ts": 123958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cance",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 123958,
+   "ts": 123958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 124198,
+   "ts": 124198,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 124317,
+   "ts": 124317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 124437,
+   "ts": 124437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 124437,
+   "ts": 124437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la columna",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 124557,
+   "ts": 124557,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la columna",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 124557,
+   "ts": 124557,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la columna",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 124797,
+   "ts": 124797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la columna",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 124797,
+   "ts": 124797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la columna de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 124917,
+   "ts": 124917,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la columna de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 125037,
+   "ts": 125037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la columna de Estado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 125037,
+   "ts": 125037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": false,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la columna de Estado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 125602,
+   "ts": 125602,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 15,
+   "length": 16,
+   "results": [
+    {
+     "i": 15,
+     "final": true,
+     "text": "cuando el pedido está cancelado esta fila entera debería aparecer tachada no solo la palabra cancelado en la columna de Estado",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 128718,
+   "ts": 128718,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 128838,
+   "ts": 128838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 128958,
+   "ts": 128958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 129318,
+   "ts": 129318,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 129407,
+   "ts": 129407,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 129527,
+   "ts": 129527,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 129917,
+   "ts": 129917,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 130038,
+   "ts": 130038,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 130367,
+   "ts": 130367,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 130517,
+   "ts": 130517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 130517,
+   "ts": 130517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de a",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 130638,
+   "ts": 130638,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 130638,
+   "ts": 130638,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 130967,
+   "ts": 130967,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 131117,
+   "ts": 131117,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 131237,
+   "ts": 131237,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 131357,
+   "ts": 131357,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 131477,
+   "ts": 131477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 131717,
+   "ts": 131717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 131838,
+   "ts": 131838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 131838,
+   "ts": 131838,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 131957,
+   "ts": 131957,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 132077,
+   "ts": 132077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 132197,
+   "ts": 132197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos al",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 132317,
+   "ts": 132317,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos al final",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 132438,
+   "ts": 132437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos al final",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 132438,
+   "ts": 132438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos al final",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 132558,
+   "ts": 132558,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos al final de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 132797,
+   "ts": 132797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos al final de cada",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 132918,
+   "ts": 132918,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos al final de cada",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 133038,
+   "ts": 133038,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos al final de cada fila",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 133158,
+   "ts": 133158,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos al final de cada fila",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 133568,
+   "ts": 133567,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": false,
+     "text": "y por último este icono de aqui el de los tres puntos al final de cada fila",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 133605,
+   "ts": 133605,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 16,
+   "length": 17,
+   "results": [
+    {
+     "i": 16,
+     "final": true,
+     "text": "y por último este icono de aqui el de los tres puntos al final de cada fila",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 135877,
+   "ts": 135877,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 136118,
+   "ts": 136118,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 136358,
+   "ts": 136358,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 136478,
+   "ts": 136478,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un men",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 136597,
+   "ts": 136597,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 136717,
+   "ts": 136717,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 136837,
+   "ts": 136837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 136958,
+   "ts": 136958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 137077,
+   "ts": 137077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 137198,
+   "ts": 137198,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 137318,
+   "ts": 137318,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 137438,
+   "ts": 137438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 137647,
+   "ts": 137647,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 137647,
+   "ts": 137647,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 137767,
+   "ts": 137767,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 137917,
+   "ts": 137917,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detal",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 138007,
+   "ts": 138007,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 138247,
+   "ts": 138247,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 138367,
+   "ts": 138367,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 138487,
+   "ts": 138487,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 138607,
+   "ts": 138607,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 138727,
+   "ts": 138727,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle re",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 138847,
+   "ts": 138847,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reen",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 138847,
+   "ts": 138847,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 139207,
+   "ts": 139207,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar fa",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 139327,
+   "ts": 139327,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 139327,
+   "ts": 139327,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 139477,
+   "ts": 139477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 139477,
+   "ts": 139477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 139687,
+   "ts": 139687,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y can",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 139837,
+   "ts": 139837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cance",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 139837,
+   "ts": 139837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 139958,
+   "ts": 139958,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 140047,
+   "ts": 140047,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 140197,
+   "ts": 140197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pe",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 140197,
+   "ts": 140197,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 140287,
+   "ts": 140287,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 140437,
+   "ts": 140437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 140437,
+   "ts": 140437,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 140797,
+   "ts": 140797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido en",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 140797,
+   "ts": 140797,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido en",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 141037,
+   "ts": 141037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido en ese",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 141277,
+   "ts": 141277,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido en ese orden",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 141397,
+   "ts": 141397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido en ese orden",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 141637,
+   "ts": 141637,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": false,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido en ese orden",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 141882,
+   "ts": 141882,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 17,
+   "length": 18,
+   "results": [
+    {
+     "i": 17,
+     "final": true,
+     "text": "debería abrir un menú con las opciones de ver detalle reenviar factura y cancelar pedido en ese orden",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 145398,
+   "ts": 145397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 145398,
+   "ts": 145398,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 145637,
+   "ts": 145637,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 145877,
+   "ts": 145877,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 145997,
+   "ts": 145997,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 145997,
+   "ts": 145997,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 146117,
+   "ts": 146117,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 146237,
+   "ts": 146237,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 146477,
+   "ts": 146477,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 146598,
+   "ts": 146598,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 146718,
+   "ts": 146718,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 146838,
+   "ts": 146837,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos suficiente",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 147077,
+   "ts": 147077,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos suficiente para",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 147438,
+   "ts": 147438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos suficiente para esta",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 147438,
+   "ts": 147438,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos suficiente para esta",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 147677,
+   "ts": 147677,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos suficiente para esta primera",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 147917,
+   "ts": 147917,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos suficiente para esta primera vuelta",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 148037,
+   "ts": 148037,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos suficiente para esta primera vuelta",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 148157,
+   "ts": 148157,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos suficiente para esta primera vuelta de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 148277,
+   "ts": 148277,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos suficiente para esta primera vuelta de",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 148517,
+   "ts": 148517,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos suficiente para esta primera vuelta de cambios",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 148758,
+   "ts": 148758,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": false,
+     "text": "creo que con esto ya tenemos suficiente para esta primera vuelta de cambios",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 149132,
+   "ts": 149132,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 18,
+   "length": 19,
+   "results": [
+    {
+     "i": 18,
+     "final": true,
+     "text": "creo que con esto ya tenemos suficiente para esta primera vuelta de cambios",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 151397,
+   "ts": 151397,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 19,
+   "length": 20,
+   "results": [
+    {
+     "i": 19,
+     "final": false,
+     "text": "gracias",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 164656,
+   "ts": 164656,
+   "type": "speechend",
+   "session": 1
+  },
+  {
+   "t": 164656,
+   "ts": 164656,
+   "type": "soundend",
+   "session": 1
+  },
+  {
+   "t": 164656,
+   "ts": 164656,
+   "type": "audioend",
+   "session": 1
+  },
+  {
+   "t": 164700,
+   "ts": 164700,
+   "type": "result",
+   "session": 1,
+   "resultIndex": 19,
+   "length": 20,
+   "results": [
+    {
+     "i": 19,
+     "final": true,
+     "text": "gracias",
+     "conf": 1
+    }
+   ]
+  },
+  {
+   "t": 164700,
+   "type": "end",
+   "session": 1
+  }
+ ],
+ "sessions": 1
+}

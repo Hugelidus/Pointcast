@@ -1,0 +1,28 @@
+{
+ "where": "page",
+ "source": "file:es-short.wav",
+ "wav": "es-short.wav",
+ "local": true,
+ "chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+ "headed": false,
+ "availableBefore": "available",
+ "install": {
+  "result": true,
+  "ms": 1
+ },
+ "availableAfter": "available",
+ "wallMs": 120116,
+ "cpu": {
+  "browser": 1.9,
+  "crashpad-handler": 0,
+  "gpu-process": 0,
+  "utility:network.mojom.NetworkService": 0.1,
+  "utility:storage.mojom.StorageService": 0,
+  "renderer": 0.4,
+  "utility:audio.mojom.AudioService": 0.5,
+  "utility:media.mojom.SpeechRecognitionService": 5.1
+ }
+}
+sessions: 1 errors: []
+finals: esto me gustaría que estuviera filtrado por cantidad | y además esto | que exporte solo lo filtrado
+-> <scratch-or-repo>\dev\spikes\chrome-on-device-speech\results\page-file-es-short.json

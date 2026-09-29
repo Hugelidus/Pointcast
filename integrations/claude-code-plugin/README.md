@@ -3,7 +3,8 @@
 Record yourself talking through changes while you point at your web app, then type `/pointcast`
 in Claude Code (or `$pointcast:pointcast` in Codex): it fetches the latest recording made on this
 project and applies it. Or type `/pointcast watch` first: the agent listens, and applies each
-recording as you press Stop, until you tell it to stop.
+recording as you press Stop, until you tell it to stop. Add `precise` (`/pointcast precise`) to have
+it change only the elements you pointed at, and only as asked, whatever the recording chose.
 
 The plugin contains:
 

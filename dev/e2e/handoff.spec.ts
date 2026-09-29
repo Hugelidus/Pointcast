@@ -157,6 +157,7 @@ test("fallbacks: setting off makes no request; a refusing server gets a warning;
       inputMode: "voice",
       captureErrors: true,
       quality: "fast",
+      instructionStyle: "intent",
     });
     await startFromPopup(popup);
     await popup.waitForTimeout(3_000);

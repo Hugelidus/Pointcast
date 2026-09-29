@@ -157,7 +157,7 @@ describe("wait_for_recording", () => {
     const result = await waiting;
     const body = (result.content as Array<{ text: string }>)[0]!.text;
     // The folder is NEW; the fixture's session.json keeps its own id, which the title shows.
-    expect(body.split("\n").slice(0, 5)).toEqual([`New recording ${NEW}.`, "", "# 2026-09-26_20-29-01", "", "2 requests · 10 elements · ~470 tokens"]);
+    expect(body.split("\n").slice(0, 5)).toEqual([`New recording ${NEW}.`, "", "# 2026-09-26_20-29-01", "", "2 requests · 10 elements · ~560 tokens"]);
     // Seconds waited, strictly increasing as MCP requires.
     expect(progress.length).toBeGreaterThan(0);
     expect(progress.every((seconds, i) => seconds > 0 && seconds < 60 && (i === 0 || seconds > progress[i - 1]!))).toBe(true);

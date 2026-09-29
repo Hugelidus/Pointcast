@@ -1,5 +1,5 @@
 import { parseArgs } from "node:util";
-import type { RenderFormat, RenderLayout } from "@pointcast/core";
+import { parseInstructionStyle, type InstructionStyle, type RenderFormat, type RenderLayout } from "@pointcast/core";
 import { CliError } from "./errors";
 import type { EngineName } from "./transcribe";
 
@@ -26,6 +26,8 @@ export type CliCommand =
       format?: RenderFormat;
       /** --layout: code-first (default) or dom-first; kept so evaluations can compare both. */
       layout?: RenderLayout;
+      /** --style: the preamble's instruction line, over the one the recording chose (InstructionStyle). */
+      style?: InstructionStyle;
       /** --repo: project folder to resolve code pointers in (default: the current directory). */
       repo?: string;
     } & EngineChoice)
@@ -90,6 +92,7 @@ export function parseCommandLine(argv: readonly string[], env: Record<string, st
         "no-handoff": { type: "boolean", default: false },
         format: { type: "string" },
         layout: { type: "string" },
+        style: { type: "string" },
         repo: { type: "string" },
         ref: { type: "string" },
         "dry-run": { type: "boolean", default: false },
@@ -141,6 +144,11 @@ export function parseCommandLine(argv: readonly string[], env: Record<string, st
     throw new CliError(`Unknown --layout "${values.layout}": expected "code-first" or "dom-first".`);
   }
 
+  const style = values.style === undefined ? undefined : parseInstructionStyle(values.style);
+  if (values.style !== undefined && style === undefined) {
+    throw new CliError(`Unknown --style "${values.style}": expected "intent" or "precise".`);
+  }
+
   const [command, target, ...extra] = positionals;
   if (extra.length > 0) throw new CliError(`Unexpected extra arguments: ${extra.join(" ")}`);
   switch (command) {
@@ -158,6 +166,7 @@ export function parseCommandLine(argv: readonly string[], env: Record<string, st
         ...(values["no-copy"] ? { noCopy: true } : {}),
         ...(values.format !== undefined ? { format: values.format } : {}),
         ...(values.layout !== undefined ? { layout: values.layout } : {}),
+        ...(style !== undefined ? { style } : {}),
         ...(values.repo !== undefined ? { repo: values.repo } : {}),
         ...choice,
       };
@@ -253,6 +262,10 @@ export const USAGE = [
   "  --format <classic|requests>  process/issue: Markdown style passed to the renderer (default: requests)",
   "  --layout <code-first|dom-first>  process: where an element's code is known, lead with it",
   "                           (code-first, default) or with the on-screen element (dom-first)",
+  "  --style <intent|precise>  process: how the spec tells the agent to apply the requests:",
+  "                           intent builds what a request for something new means, in the",
+  "                           app's style; precise changes only what was pointed at, as asked",
+  "                           (default: what the recording chose in the popup, else intent)",
   "  --repo <path>            process/mcp: project folder to resolve code locations in;",
   "                           setup: the project to set up",
   "                           (default: the current directory, when the recording's files are there)",

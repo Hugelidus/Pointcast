@@ -258,6 +258,7 @@ async function processingOptions(deadline: number, quality: TranscriptionQuality
     handoff: settings.handoff,
     // The one stopRecording chose, so the estimate and the model shown match the one used.
     quality: quality ?? settings.quality,
+    instructionStyle: settings.instructionStyle,
   };
 }
 

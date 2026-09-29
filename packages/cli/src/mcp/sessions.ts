@@ -7,6 +7,7 @@ import {
   projectMatch,
   renderMarkdown,
   TYPED_SESSION_WORDS,
+  type InstructionStyle,
   type SessionFile,
   type SourceReader,
   type WordsFile,
@@ -252,11 +253,21 @@ export interface GetSessionResult {
   header: string;
   /** One line to show above the spec: the recording looks like it is from another project. */
   warning?: string;
+  /** One line to show above the spec: the `style` asked for could not be applied. */
+  note?: string;
 }
 
 /** The project folder to resolve code pointers in (route 1); `explicit` when the caller named it. */
 export interface RepoOption {
   repo?: { root: string; explicit: boolean };
+}
+
+export interface GetSessionOptions extends RepoOption {
+  /**
+   * The preamble's instruction line, over the one the recording chose (the tools' `style`).
+   * Always rendered fresh, and never cached as session.md: session.md keeps the recording's own.
+   */
+  style?: InstructionStyle;
 }
 
 /**
@@ -269,17 +280,27 @@ export interface RepoOption {
  * With `repo`, a recording whose code chain is found in that project is re-rendered with its
  * resolved code locations (not cached: they depend on the project, session.md does not), and one
  * whose chain files are all missing there gets a warning instead.
+ *
+ * With `style`, the spec is rendered in that instruction style whatever the recording chose, and
+ * not cached (session.md keeps the recording's own).
  */
-export async function getSession(sessionDir: string, options: RepoOption = {}): Promise<GetSessionResult> {
+export async function getSession(sessionDir: string, options: GetSessionOptions = {}): Promise<GetSessionResult> {
   const session = await readSessionFile(sessionDir);
   const local = options.repo ? await resolveWithRepo(session, options.repo.root, options.repo) : undefined;
   const warning = local?.status === "mismatch" ? mismatchWarning(local) : undefined;
   // A typed session (D12) renders from its notes: it never has a words.json, and needs none.
   const words = isTypedSession(session) ? TYPED_SESSION_WORDS : await readWordsFileIfPresent(sessionDir);
+  const style = options.style ? { style: options.style } : {};
   if (local?.status === "resolved" && words !== undefined) {
-    return specResult(local.session, renderMarkdown(local.session, words), true);
+    return specResult(local.session, renderMarkdown(local.session, words, style), true);
   }
-  return { ...(await getStoredSession(sessionDir, session, words)), ...(warning ? { warning } : {}) };
+  if (options.style !== undefined && words !== undefined) {
+    return { ...specResult(session, renderMarkdown(session, words, style), true), ...(warning ? { warning } : {}) };
+  }
+  const stored = await getStoredSession(sessionDir, session, words);
+  // Only session.md, with no words.json to render another style from: say so rather than ignore it.
+  const unstyled = options.style === undefined ? {} : { note: `This is session.md as saved: there is no words.json to render it in the "${options.style}" style.` };
+  return { ...stored, ...unstyled, ...(warning ? { warning } : {}) };
 }
 
 async function getStoredSession(sessionDir: string, session: SessionFile, words: WordsFile | undefined): Promise<GetSessionResult> {

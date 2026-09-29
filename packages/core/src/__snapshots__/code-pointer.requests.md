@@ -1,7 +1,7 @@
 # UI change requests
 
 Each request below quotes what the user said (speech-to-text, so words may be misheard) and lists the page elements they pointed at while saying it; [a], [b]… in the quote mark the moment they pointed.
-Change only the referenced elements, and only as asked. If something is ambiguous, ask before editing.
+The elements say WHERE. For a request about an existing element (its text, size, colour, position), change exactly that. For a request that asks for something new (a behaviour, a component, content, an animation), work out what the user wants and build it well, in the style and conventions of the rest of the app, as a good developer on this team would; you may touch other files it needs. If a request is ambiguous, ask before editing.
 
 ## Request 1
 

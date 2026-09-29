@@ -1,6 +1,7 @@
 import { cpSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { INSTRUCTION_LINES } from "@pointcast/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createServer } from "./server";
 import { connectClient } from "./test-transport";
@@ -38,13 +39,29 @@ describe("pointcast mcp server (smoke test)", () => {
     expect(JSON.stringify(session.content)).toContain("Quantity");
     // The header says what the spec holds, in the user's terms: no fusion jargon, no characters.
     const [title, , header] = (session.content as Array<{ text: string }>)[0]!.text.split("\n");
-    expect([title, header]).toEqual(["# 2026-09-26_20-29-01", "2 requests · 10 elements · ~470 tokens"]);
+    expect([title, header]).toEqual(["# 2026-09-26_20-29-01", "2 requests · 10 elements · ~560 tokens"]);
 
     const element = await client.callTool({ name: "get_element", arguments: { id: "latest", eventId: "e1" } });
     expect(JSON.stringify(element.content)).toContain("Quantity");
 
     const missing = await client.callTool({ name: "get_element", arguments: { id: "latest", eventId: "nope" } });
     expect(missing.isError).toBe(true);
+
+    await client.close();
+    await server.close();
+  });
+
+  it("takes a style on get_session and rejects an unknown one", async () => {
+    const server = createServer({ dirFlag: base, repoRoot: base });
+    const client = await connectClient(server);
+    const textOf = (result: Awaited<ReturnType<typeof client.callTool>>) => (result.content as Array<{ text: string }>)[0]!.text;
+
+    expect(textOf(await client.callTool({ name: "get_session", arguments: { id: "latest" } }))).toContain(INSTRUCTION_LINES.intent);
+    const precise = textOf(await client.callTool({ name: "get_session", arguments: { id: "latest", style: "precise" } }));
+    expect(precise).toContain(INSTRUCTION_LINES.precise);
+    expect(precise).not.toContain(INSTRUCTION_LINES.intent);
+    const bad = await client.callTool({ name: "get_session", arguments: { id: "latest", style: "loose" } });
+    expect(bad.isError).toBe(true);
 
     await client.close();
     await server.close();

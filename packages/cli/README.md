@@ -52,7 +52,10 @@ pointcast doctor                   Check this machine's setup, with a fix for ea
 
 `process` writes `session.md` next to the recording and copies it to the clipboard, ready to
 paste into a coding agent. Run `pointcast --help` for every flag (`--engine`, `--format`,
-`--stdout`, …).
+`--stdout`, …). `--style precise` words the spec's instruction as "change only the referenced
+elements, and only as asked", `--style intent` as "build what a request for something new means,
+in the app's style"; without it, the spec uses what the recording chose in the popup (intent for
+recordings made before the setting existed).
 
 ## Setting up
 
@@ -174,6 +177,10 @@ in the project the server was started for: `--repo`, else `CLAUDE_PROJECT_DIR` (
 it), else the server's working directory. They and `list_sessions` also take an optional `repo`
 argument. When none of the recording's files is in that project, the result starts with a
 one-line warning that the recording is probably from another project.
+
+`get_session` and `wait_for_recording` also take an optional `style` (`"intent"` or `"precise"`),
+like `pointcast process --style`: the spec is then rendered in that style, whatever the recording
+chose, and not cached as `session.md`. `/pointcast precise` passes `"precise"`.
 
 ### Listening: `wait_for_recording`
 

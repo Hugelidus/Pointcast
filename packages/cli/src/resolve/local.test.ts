@@ -28,11 +28,11 @@ describe("route 1: resolving against a local project", () => {
 
   it("shows every path from the repository root when the app is one subfolder of it (pass 2)", async () => {
     const session = await readSessionFile(keep(sessionWithChain()));
-    const root = keep(projectWith({ ...SOURCES, "README.md": "repo" }, "atlas/"));
+    const root = keep(projectWith({ ...SOURCES, "README.md": "repo" }, "web/"));
     const result = await resolveWithRepo(session, root, { explicit: true });
     const e2 = result.session.events.find((e) => e.id === "e2")!;
-    expect(e2.element.renderedBy?.map((frame) => frame.file)).toEqual([`atlas/${TOOLBAR}`, `atlas/${APP}`]);
-    expect(e2.element.resolved?.[0]?.file).toBe(`atlas/${TOOLBAR}`);
+    expect(e2.element.renderedBy?.map((frame) => frame.file)).toEqual([`web/${TOOLBAR}`, `web/${APP}`]);
+    expect(e2.element.resolved?.[0]?.file).toBe(`web/${TOOLBAR}`);
     // The recording itself is not changed.
     expect(session.events.find((e) => e.id === "e2")!.element.renderedBy?.[0]?.file).toBe(TOOLBAR);
   });

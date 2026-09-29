@@ -1,11 +1,13 @@
 ---
 name: pointcast
 description: Apply a pointcast recording (what the user said while pointing at elements of their web app) as code changes in this project. Use when the user asks to apply, implement or read a pointcast recording or session, or to listen or watch for their recordings.
-argument-hint: "[session-id | watch]"
+argument-hint: "[session-id | watch] [precise]"
 allowed-tools: mcp__plugin_pointcast_recordings__list_sessions mcp__plugin_pointcast_recordings__get_session mcp__plugin_pointcast_recordings__get_element mcp__plugin_pointcast_recordings__wait_for_recording
 ---
 
 Apply a pointcast recording to this project.
+
+If the user wrote `precise` after the command (`/pointcast precise`, also with a session id or `watch`), pass `style: "precise"` to every `get_session` and `wait_for_recording` call: the spec then tells you to change only the elements pointed at, and only as asked. Otherwise pass no `style`, and the spec says what the user chose when recording.
 
 If the user wrote `watch` after the command, or asks you to listen or watch for recordings, use watch mode below. Otherwise:
 
@@ -18,7 +20,7 @@ If the user wrote `watch` after the command, or asks you to listen or watch for 
    - `shown by:` is the line that displays that value (`<td>{order.customer}</td>`): change it instead when the request is about how the value is shown, not what it is.
    - `code:` is where that instance is written, innermost first. The first frame may be a shared component that renders every instance; change the instance, not the shared component, unless the request is about all of them.
    - Search the codebase only when the spec gives no pointer, and then use its `find:` hints.
-5. If a request is ambiguous, ask before editing it. Change only what was asked.
+5. If a request is ambiguous, ask before editing it. Apply each request as the spec's rules at its top say, and do nothing the user did not ask for.
 6. When you are done, list each request with the `file:line` you changed, and any request you skipped and why.
 
 Watch mode: keep applying the user's recordings as they make them, until they tell you to stop.

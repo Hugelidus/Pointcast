@@ -6,6 +6,7 @@ import {
   isTypedSession,
   renderMarkdown,
   TYPED_SESSION_WORDS,
+  type InstructionStyle,
   type RenderFormat,
   type RenderLayout,
   type SessionFile,
@@ -35,6 +36,8 @@ export interface ProcessOptions {
   format?: RenderFormat;
   /** `--layout`: passed straight through to renderMarkdown (RenderLayout; default "code-first"). */
   layout?: RenderLayout;
+  /** `--style`: passed straight through to renderMarkdown, over the session's own instructionStyle. */
+  style?: InstructionStyle;
   /**
    * Project folder to resolve the recording's code pointers in before rendering (route 1):
    * `--repo`, explicit, or the user's current directory, a guess. Omitted: no resolution.
@@ -86,6 +89,7 @@ export async function runProcess(options: ProcessOptions): Promise<ProcessResult
   const markdown = renderMarkdown(resolution?.session ?? session, words, {
     ...(options.format ? { format: options.format } : {}),
     ...(options.layout ? { layout: options.layout } : {}),
+    ...(options.style ? { style: options.style } : {}),
   });
   // renderMarkdown runs fuse() internally (with the same defaults) to place events in the
   // transcript; it has no way to hand those placements back out, so this recomputes them —

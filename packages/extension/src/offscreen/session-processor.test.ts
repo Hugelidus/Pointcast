@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { CapturedEvent, SessionFile, WordsFile } from "@pointcast/core";
+import { INSTRUCTION_LINES, type CapturedEvent, type SessionFile, type WordsFile } from "@pointcast/core";
 import type { TranscribeDone } from "../transcriber/protocol";
 import { processSession, type ProcessingJob, type ProcessorDeps, type SessionFileBlob } from "./session-processor";
 
@@ -41,7 +41,7 @@ function job(extra: Partial<ProcessingJob> = {}): ProcessingJob {
     // 3 s of 16 kHz audio.
     audio: { decoded: true, samples: new Float32Array(48_000) },
     warnings: [],
-    options: { keepAudio: false, deadline: T0 + 600_000, handoff: true, quality: "fast" },
+    options: { keepAudio: false, deadline: T0 + 600_000, handoff: true, quality: "fast", instructionStyle: "intent" },
     ...extra,
   };
 }
@@ -77,6 +77,23 @@ describe("processSession", () => {
     expect(session).toMatchObject({ schemaVersion: 2, id: "2026-09-27_12-00-00", durationMs: 3_000, events: [event] });
     expect(session).not.toHaveProperty("audio");
     expect(await json<WordsFile>(result.files, "words.json")).toEqual(WORDS);
+  });
+
+  it("records the popup's instruction style in session.json and words the spec with it", async () => {
+    const intent = await processSession(job(), deps());
+    expect((await json<SessionFile>(intent.files, "session.json")).instructionStyle).toBe("intent");
+    expect(intent.markdown).toContain(INSTRUCTION_LINES.intent);
+
+    const options = { keepAudio: false, deadline: T0 + 600_000, handoff: true, quality: "fast", instructionStyle: "precise" } as const;
+    const precise = await processSession(job({ options }), deps());
+    expect((await json<SessionFile>(precise.files, "session.json")).instructionStyle).toBe("precise");
+    expect(precise.markdown).toContain(INSTRUCTION_LINES.precise);
+    expect(precise.markdown).not.toContain(INSTRUCTION_LINES.intent);
+
+    const typedJob = job({ events: [{ ...event, note: "Sort by this column" }], audio: { decoded: false, typed: true, durationMs: 8_000 }, options });
+    const typed = await processSession(typedJob, deps());
+    expect((await json<SessionFile>(typed.files, "session.json")).instructionStyle).toBe("precise");
+    expect(typed.markdown).toContain(INSTRUCTION_LINES.precise);
   });
 
   it("resolves the code pointers while transcribing: `text at:` in the spec and session.json, one line for the popup", async () => {
@@ -119,7 +136,7 @@ describe("processSession", () => {
   });
 
   it("adds audio.wav when the user keeps the audio", async () => {
-    const result = await processSession(job({ options: { keepAudio: true, deadline: 0, handoff: true, quality: "fast" } }), deps());
+    const result = await processSession(job({ options: { keepAudio: true, deadline: 0, handoff: true, quality: "fast", instructionStyle: "intent" } }), deps());
     expect(names(result.files)).toEqual(["session.md", "words.json", "session.json", "audio.wav"]);
     expect((await json<SessionFile>(result.files, "session.json")).audio).toEqual({
       file: "audio.wav",

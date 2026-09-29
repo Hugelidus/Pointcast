@@ -37,6 +37,7 @@ export async function setSettings(extensionPage: Page, settings: Partial<Setting
     inputMode: "voice",
     captureErrors: true,
     quality: "fast",
+    instructionStyle: "intent",
     ...settings,
   };
   await extensionPage.evaluate((value) => chrome.storage.local.set({ settings: value }), full);

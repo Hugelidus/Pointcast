@@ -83,8 +83,8 @@ export function createRepoReader(root: string, options: { maxFiles?: number } = 
 /**
  * The folder, relative to `root` and ending in "/", that a session's paths are relative to when
  * that is not `root` itself (D9 note 2026-09-28, pass 2): the dev server served an app in a
- * subfolder of the repository the agent works in ("atlas/" in a repo whose Vite app is
- * `atlas/`), so `src/…` in the spec does not exist from the agent's folder. Found by matching
+ * subfolder of the repository the agent works in ("web/" in a repo whose Vite app is
+ * `web/`), so `src/…` in the spec does not exist from the agent's folder. Found by matching
  * all the session's paths at once: the one folder under which every path that exists anywhere
  * exists. "" when they all exist at `root` (or none exists anywhere), and undefined when no
  * single folder holds them all, or several do (two apps with the same files): then the paths

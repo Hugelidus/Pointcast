@@ -174,6 +174,7 @@ async function runProcessCommand(command: Extract<CliCommand, { command: "proces
     toStdout: command.toStdout,
     format: command.format,
     layout: command.layout,
+    style: command.style,
     // Route 1: --repo, else the current directory, used only if the recording's files are there.
     repo: { root: fromUserCwd(command.repo ?? "."), explicit: command.repo !== undefined },
   });

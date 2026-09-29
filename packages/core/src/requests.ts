@@ -7,7 +7,7 @@ import { findMisheard } from "./misheard";
 import { cleanNote } from "./notes";
 import { EVENT_ERRORS_HEADING, groupErrorLines } from "./page-errors";
 import { nounTarget, spokenNoun } from "./nouns";
-import type { CapturedEvent, ElementInfo, Word } from "./schema";
+import type { CapturedEvent, ElementInfo, InstructionStyle, Word } from "./schema";
 import { splitSentences } from "./sentences";
 import { renderWord } from "./transcript";
 import { attachContinuations, mergeUtterances, partOf, type Pointed, type Unit } from "./utterances";
@@ -36,6 +36,8 @@ export interface RequestsOptions {
   /** Maximum length of a quoted selection. */
   selectionBudget: number;
   layout: RequestsLayout;
+  /** The preamble's instruction line (INSTRUCTION_LINES). */
+  style: InstructionStyle;
 }
 
 /** Element text in a descriptor: a label to recognize it, not the full content. */
@@ -43,10 +45,22 @@ const DESCRIPTOR_TEXT_BUDGET = 60;
 /** Inline HTML snippet: one short line, only when it adds information. */
 const SNIPPET_BUDGET = 160;
 
-const PREAMBLE = [
-  "Each request below quotes what the user said (speech-to-text, so words may be misheard) and lists the page elements they pointed at while saying it; [a], [b]… in the quote mark the moment they pointed.",
-  "Change only the referenced elements, and only as asked. If something is ambiguous, ask before editing.",
-];
+const VOICE_INTRO =
+  "Each request below quotes what the user said (speech-to-text, so words may be misheard) and lists the page elements they pointed at while saying it; [a], [b]… in the quote mark the moment they pointed.";
+
+/**
+ * The preamble's second line: how to apply the requests (InstructionStyle). "precise" is the line
+ * every spec had up to 0.8; with it, agents did the literal minimum on requests for something new,
+ * so "intent" is the default (D5 note 2026-09-29, docs/eval/results-2026-09-29-instruction-style.md).
+ */
+export const INSTRUCTION_LINES: Readonly<Record<InstructionStyle, string>> = {
+  intent:
+    "The elements say WHERE. For a request about an existing element (its text, size, colour, position), change exactly that. " +
+    "For a request that asks for something new (a behaviour, a component, content, an animation), work out what the user wants " +
+    "and build it well, in the style and conventions of the rest of the app, as a good developer on this team would; you may " +
+    "touch other files it needs. If a request is ambiguous, ask before editing.",
+  precise: "Change only the referenced elements, and only as asked. If something is ambiguous, ask before editing.",
+};
 
 /** Added to the preamble when at least one element is laid out code-first. */
 const CODE_FIRST_PREAMBLE =
@@ -74,17 +88,15 @@ export function renderRequests(
 ): string[] {
   const units = buildUnits(events, words, placements, options.paragraphPauseMs);
   return renderUnits(units, events, words, options, {
-    preamble: PREAMBLE,
+    preamble: [VOICE_INTRO, INSTRUCTION_LINES[options.style]],
     empty: "_Nothing was said or pointed at._",
     unquoted: "_Pointed at without speaking._",
   });
 }
 
 /** Typed sessions (D12): the notes stand in for the transcript. */
-const TYPED_PREAMBLE = [
-  "Each request below quotes the note the user typed about a page element they pointed at; the [a] after the note refers to that element.",
-  PREAMBLE[1],
-];
+const TYPED_INTRO =
+  "Each request below quotes the note the user typed about a page element they pointed at; the [a] after the note refers to that element.";
 
 /**
  * The requests format for a typed session (D12): every noted event is a request of its own, the
@@ -104,7 +116,7 @@ export function renderTypedRequests(events: readonly CapturedEvent[], options: R
     else units.push({ pointed: [pointed] });
   }
   return renderUnits(units, events, [], options, {
-    preamble: TYPED_PREAMBLE,
+    preamble: [TYPED_INTRO, INSTRUCTION_LINES[options.style]],
     empty: "_Nothing was pointed at._",
     unquoted: "_Pointed at without a note._",
   });

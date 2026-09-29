@@ -36,6 +36,11 @@ export function assertSessionFile(value: unknown): asserts value is SessionFile 
     equal(s["audio"], undefined, "audio (a typed session records none)");
   }
 
+  // Written by every recording since the setting existed (SessionFile.instructionStyle).
+  if (s["instructionStyle"] !== "intent" && s["instructionStyle"] !== "precise") {
+    throw new Error(`instructionStyle: expected "intent" or "precise", got ${JSON.stringify(s["instructionStyle"])}`);
+  }
+
   const events = s["events"];
   if (!Array.isArray(events)) throw new Error("events: expected an array");
   events.forEach((event, i) => assertEvent(event, i));

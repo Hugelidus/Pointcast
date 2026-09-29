@@ -28,6 +28,7 @@ describe("buildSessionFile", () => {
     extensionVersion: "0.1.0",
     userAgent: "UA",
     withAudio: true,
+    instructionStyle: "precise",
   });
 
   it("fills every field of the session contract", () => {
@@ -40,6 +41,7 @@ describe("buildSessionFile", () => {
       audio: { file: "audio.wav", format: "wav", sampleRate: 16000, channels: 1 },
       recorder: { extensionVersion: "0.1.0", userAgent: "UA" },
       events: [event],
+      instructionStyle: "precise",
     });
   });
 
@@ -52,13 +54,14 @@ describe("buildSessionFile", () => {
       extensionVersion: "0.1.0",
       userAgent: "UA",
       withAudio: false,
+      instructionStyle: "intent",
     });
     expect(withoutAudio).not.toHaveProperty("audio");
     expect(withoutAudio.schemaVersion).toBe(2);
   });
 
   it("writes the session's page errors only when there were some (D13)", () => {
-    const base = { id: "x", t0, durationMs: 1, events: [], extensionVersion: "0.5.0", userAgent: "UA", withAudio: false };
+    const base = { id: "x", t0, durationMs: 1, events: [], extensionVersion: "0.5.0", userAgent: "UA", withAudio: false, instructionStyle: "intent" as const };
     const error = { kind: "error" as const, t: 5, message: "boom" };
     expect(buildSessionFile({ ...base, errors: [error] }).errors).toEqual([error]);
     expect(buildSessionFile({ ...base, errors: [] })).not.toHaveProperty("errors");

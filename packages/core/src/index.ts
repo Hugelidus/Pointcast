@@ -49,3 +49,4 @@ export {
   type RenderLayout,
   type RenderOptions,
 } from "./render";
+export { INSTRUCTION_LINES } from "./requests";

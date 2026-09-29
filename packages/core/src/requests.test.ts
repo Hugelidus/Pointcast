@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import fixtureSession from "../../../dev/fixtures/sessions/e2e-es/session.json";
 import fixtureWords from "../../../dev/fixtures/sessions/e2e-es/words.json";
 import { renderMarkdown } from "./render";
+import { INSTRUCTION_LINES } from "./requests";
 import type { CapturedEvent, ElementInfo, SessionFile, Word, WordsFile } from "./schema";
 
 /** The real e2e session (recorded by the extension, transcribed by Whisper base). */
@@ -59,6 +60,40 @@ describe('renderMarkdown format "requests"', () => {
     expect(renderMarkdown(s, words)).toBe(requests(s, words));
   });
 
+  it("words the preamble's instruction line by the instruction style: intent by default, precise on request", () => {
+    const intentLine =
+      "The elements say WHERE. For a request about an existing element (its text, size, colour, position), change exactly that. " +
+      "For a request that asks for something new (a behaviour, a component, content, an animation), work out what the user wants " +
+      "and build it well, in the style and conventions of the rest of the app, as a good developer on this team would; you may " +
+      "touch other files it needs. If a request is ambiguous, ask before editing.";
+    const preciseLine = "Change only the referenced elements, and only as asked. If something is ambiguous, ask before editing.";
+    expect(INSTRUCTION_LINES).toEqual({ intent: intentLine, precise: preciseLine });
+
+    const preamble = (md: string) => md.split("\n\n")[1]!.split("\n");
+    // A session without the field (every one recorded before it existed) renders intent.
+    const intent = preamble(requests(E2E_SESSION, E2E_WORDS));
+    expect(intent[1]).toBe(intentLine);
+    expect(intent[0]).toMatch(/^Each request below quotes what the user said/);
+
+    // The session's own choice, then the render option over it.
+    const precise = { ...E2E_SESSION, instructionStyle: "precise" as const };
+    expect(preamble(requests(precise, E2E_WORDS))).toEqual([intent[0], preciseLine, ...intent.slice(2)]);
+    expect(preamble(renderMarkdown(precise, E2E_WORDS, { style: "intent" }))[1]).toBe(intentLine);
+    expect(preamble(renderMarkdown(E2E_SESSION, E2E_WORDS, { style: "precise" }))[1]).toBe(preciseLine);
+
+    // Only the instruction line differs.
+    expect(renderMarkdown(E2E_SESSION, E2E_WORDS, { style: "precise" }).replace(preciseLine, intentLine)).toBe(requests(E2E_SESSION, E2E_WORDS));
+
+    // A hand-edited session.json with an unknown value reads as absent.
+    const bogus = { ...E2E_SESSION, instructionStyle: "loose" } as unknown as SessionFile;
+    expect(preamble(requests(bogus, E2E_WORDS))[1]).toBe(intentLine);
+
+    // The classic format has no such preamble.
+    const classic = renderMarkdown(precise, E2E_WORDS, { format: "classic" });
+    expect(classic).not.toContain(preciseLine);
+    expect(classic).toBe(renderMarkdown(E2E_SESSION, E2E_WORDS, { format: "classic" }));
+  });
+
   it("splits sentences and adds noun ancestors, misheard names, styles and components", () => {
     const CELL = el("td", "42", {
       path: "main › section#orders › table#orders › tbody › tr[2] › td[3]",
@@ -105,7 +140,7 @@ describe('renderMarkdown format "requests"', () => {
     expect(requests(session(events), transcript(words))).toBe(`# UI change requests
 
 Each request below quotes what the user said (speech-to-text, so words may be misheard) and lists the page elements they pointed at while saying it; [a], [b]… in the quote mark the moment they pointed.
-Change only the referenced elements, and only as asked. If something is ambiguous, ask before editing.
+${INSTRUCTION_LINES.intent}
 
 ## Request 1
 

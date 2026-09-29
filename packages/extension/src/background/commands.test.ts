@@ -146,12 +146,12 @@ afterEach(() => {
 
 describe("stopRecording", () => {
   it("goes to processing once the recorder has decoded the audio, with the popup's settings", async () => {
-    fake.local.set("settings", { language: "es", keepAudio: true, notify: true });
+    fake.local.set("settings", { language: "es", keepAudio: true, notify: true, instructionStyle: "precise" });
     await stopped();
 
     expect(stopMessage()).toMatchObject({
       sessionId: BASE_ID,
-      options: { language: "es", keepAudio: true, deadline: expect.any(Number) },
+      options: { language: "es", keepAudio: true, deadline: expect.any(Number), instructionStyle: "precise" },
     });
     expect(state()).toMatchObject({
       status: "processing",
@@ -175,6 +175,7 @@ describe("stopRecording", () => {
       deadline: expect.any(Number),
       handoff: true,
       quality: "fast",
+      instructionStyle: "intent",
     });
     // The estimate comes from this device's speed: 1 s fixed + 1 s load + 0.5 s + 200 ms × 12 s.
     const { processing } = state();

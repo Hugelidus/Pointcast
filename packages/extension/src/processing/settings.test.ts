@@ -11,6 +11,7 @@ describe("settings", () => {
       inputMode: "voice",
       captureErrors: true,
       quality: "fast",
+      instructionStyle: "intent",
     });
     expect(chosenLanguage(DEFAULT_SETTINGS)).toBeUndefined();
   });
@@ -24,6 +25,7 @@ describe("settings", () => {
       inputMode: "voice",
       captureErrors: true,
       quality: "fast",
+      instructionStyle: "intent",
     });
     expect(parseSettings({ language: "klingon" }).language).toBe("auto");
     expect(chosenLanguage({ ...DEFAULT_SETTINGS, language: "es" })).toBe("es");
@@ -52,6 +54,13 @@ describe("settings", () => {
     expect(parseSettings({ quality: "fast" }).quality).toBe("fast");
     expect(parseSettings({ language: "es", keepAudio: true }).quality).toBe("fast");
     expect(parseSettings({ quality: "best" }).quality).toBe("fast");
+  });
+
+  it("builds what the user means unless they chose precise: settings saved before it existed have no such field", () => {
+    expect(parseSettings({ instructionStyle: "precise" }).instructionStyle).toBe("precise");
+    expect(parseSettings({ instructionStyle: "intent" }).instructionStyle).toBe("intent");
+    expect(parseSettings({ language: "es", quality: "accurate" }).instructionStyle).toBe("intent");
+    expect(parseSettings({ instructionStyle: "loose" }).instructionStyle).toBe("intent");
   });
 
   it("names the languages for the picker", () => {

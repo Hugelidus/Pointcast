@@ -173,3 +173,18 @@ describe("htmlAddsInformation for SVG elements", () => {
     expect(svg('<g class="bars"><rect class="bar"/></g>')).toBe(true);
   });
 });
+
+describe("searchHints for an SVG item's identifier", () => {
+  it("gives data-id as a grep key, and does not count it as extra html", () => {
+    const element = {
+      tag: "g",
+      text: "",
+      selector: 'g[data-id="limites"]',
+      selectorUnique: true,
+      path: "main › svg«Mapa» › g[data-id=limites]",
+      html: '<g data-id="limites" class="concept"/>',
+    };
+    expect(searchHints(element)).toEqual(["data-id `limites`", "class `concept`"]);
+    expect(htmlAddsInformation(element)).toBe(false);
+  });
+});

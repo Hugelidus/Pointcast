@@ -2,7 +2,7 @@ import { UI_ATTRIBUTE } from "@pointcast/core";
 import { cssModulePrefix, isSemanticClass } from "./noise";
 import { isSensitive, isSensitiveSelf, type SensitivityOptions } from "./sensitive";
 import { collapseWhitespace, isEditingHost, isInsideFormValue, truncate, visibleText } from "./text";
-import { isSvgElement, svgTitle } from "./svg";
+import { isSvgElement, SVG_ID_ATTRIBUTES, svgTitle } from "./svg";
 import { redactUrl } from "./url";
 
 export { isSensitive } from "./sensitive";
@@ -46,8 +46,10 @@ const ALLOWED_ATTRIBUTES = new Set([
 /** aria-* is allowed except the attributes that mirror a control's current value or state. */
 const ARIA_VALUE_ATTRIBUTE = /^aria-(value|checked|selected)/;
 
-function isAllowedAttribute(name: string, options: SanitizeOptions): boolean {
+function isAllowedAttribute(el: Element, name: string, options: SanitizeOptions): boolean {
   if (ALLOWED_ATTRIBUTES.has(name) || options.sourceAttributes.includes(name)) return true;
+  // An SVG item's identifier (`<g data-id="limites">`, svg.ts): the grep key of a star or a node.
+  if (SVG_ID_ATTRIBUTES.includes(name) && isSvgElement(el)) return true;
   return name.startsWith("aria-") && !ARIA_VALUE_ATTRIBUTE.test(name);
 }
 
@@ -87,9 +89,9 @@ function openTag(el: Element, options: SanitizeOptions): string {
     if (attribute.name === "class") {
       value = cleanClass(value);
       if (value === "") continue;
-    } else if (!isAllowedAttribute(attribute.name, options)) {
+    } else if (!isAllowedAttribute(el, attribute.name, options)) {
       continue;
-    } else if (sensitive && SENSITIVE_TEXT_ATTRIBUTES.has(attribute.name)) {
+    } else if (sensitive && (SENSITIVE_TEXT_ATTRIBUTES.has(attribute.name) || SVG_ID_ATTRIBUTES.includes(attribute.name))) {
       continue;
     }
     if (attribute.name === "href") value = redactUrl(value);

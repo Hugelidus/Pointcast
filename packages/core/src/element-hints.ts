@@ -59,6 +59,10 @@ export function searchHints(element: ElementInfo): string[] {
   if (testId) hints.push(`data-testid ${codeSpan(testId)}`);
   const name = attributes.get("name");
   if (name) hints.push(`name ${codeSpan(name)}`);
+  for (const attribute of ID_DATA_ATTRIBUTES) {
+    const value = attributes.get(attribute);
+    if (value) hints.push(`${attribute} ${codeSpan(value)}`);
+  }
   const label = oneLine(element.label ?? "");
   // The descriptor quotes elementText, which falls back to the label: do not say it twice.
   if (label !== "" && label !== oneLine(elementText(element)) && label.length <= LABEL_BUDGET) {
@@ -143,6 +147,13 @@ export function roundPixels(value: string): string {
 
 /** Attributes whose information searchHints already gives (or that carry none). */
 const SHOWN_ATTRIBUTES = new Set(["id", "data-testid", "name", "href", "class", "type", "aria-label"]);
+
+/**
+ * Identifier data attributes the extension keeps on an SVG item (`<g data-id="limites">`, D7 note
+ * 2026-09-29); the only elements whose html carries them, so HTML elements' hints are unchanged.
+ */
+const ID_DATA_ATTRIBUTES = ["data-id", "data-key", "data-node", "data-node-id", "data-name", "data-slug"];
+for (const name of ID_DATA_ATTRIBUTES) SHOWN_ATTRIBUTES.add(name);
 
 /**
  * True when the HTML tells the agent something the hints do not: an attribute we do not list

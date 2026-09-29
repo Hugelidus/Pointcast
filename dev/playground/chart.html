@@ -21,7 +21,9 @@
     - a map whose stars are grouped in a <g aria-label> (a named star, and a nameless dot that
       points at its group);
     - a trend line with no name (drawing: points at the element around the chart, as before);
-    - an aria-hidden icon in a button (decorative: points at the button, as before).
+    - an aria-hidden icon in a button (decorative: points at the button, as before);
+    - a concept map in an <svg role="application" aria-label> whose items are <g data-id> with a
+      nameless circle inside (the circle points at its <g>, not at the whole svg).
 -->
 <main>
   <h1>Informes</h1>
@@ -58,6 +60,16 @@
           <circle class="star" cx="200" cy="140" r="24"><title>Derivadas</title></circle>
           <circle class="dust" cx="160" cy="220" r="24"></circle>
         </g>
+      </svg>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Mapa de conceptos</h2>
+    <div class="map-layer">
+      <svg viewBox="0 0 600 200" width="600" height="200" role="application" aria-label="Mapa de conceptos">
+        <g data-id="limites" class="concept"><circle class="star" cx="100" cy="100" r="24"></circle></g>
+        <g data-id="derivadas" class="concept"><circle class="star" cx="220" cy="100" r="24"></circle></g>
       </svg>
     </div>
   </section>

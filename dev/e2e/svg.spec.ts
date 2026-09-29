@@ -59,7 +59,8 @@ test("Alt+click on SVG content points at that shape; drawing and icons point at 
   // The trend line has no fill: it is hit on its stroke only, here at (540, 68.5) in the drawing,
   // where the viewBox is the svg's own size.
   const trend = app.locator("#sales-chart");
-  const targets = [bar, star, app.locator(".map-layer .dust"), trend, app.locator("#download-chart svg path")];
+  const concept = app.locator('[data-id="limites"] circle');
+  const targets = [bar, star, app.locator(".map-layer .dust"), trend, app.locator("#download-chart svg path"), concept];
   for (const [i, target] of targets.entries()) {
     if (target === trend) {
       await trend.scrollIntoViewIfNeeded();
@@ -94,8 +95,12 @@ test("Alt+click on SVG content points at that shape; drawing and icons point at 
     "g «Álgebra» main › section[2] › svg«Mapa» › g«Álgebra»",
     "div «» main › section[1] › div",
     "button «Descargar» main › section[1] › button#download-chart",
+    // A nameless circle in a <g data-id> of an <svg role="application" aria-label>: the item, not the svg.
+    "g «» main › section[3] › svg«Mapa de conceptos» › g[data-id=limites]",
   ]);
   const [barInfo, starInfo] = elements;
+  expect(elements[5]?.html).toBe('<g data-id="limites" class="concept"><circle class="star"/></g>');
+  expect(elements[5]?.selector).toBe('g[data-id="limites"]');
   expect(barInfo?.html).toBe('<rect class="bar"><title>Febrero: 90</title></rect>');
   expect(barInfo?.styles).toMatchObject({ fill: "rgb(124, 58, 237)" });
   expect(starInfo?.component).toEqual({ framework: "vue", name: "StarMap", file: "src/components/StarMap.vue" });

@@ -37,6 +37,26 @@ export function svgTitle(el: Element, options: SensitivityOptions): string {
   return collapseWhitespace(title.textContent ?? "");
 }
 
+/**
+ * Data attributes that hold an identifier by convention: what an app puts on each item of a
+ * drawing (a star, a node, a bar) to find it again, `closest("[data-id]")` on a click. An SVG
+ * element with one is an item of the drawing, so it is content, and the value is a grep key
+ * (D7 note 2026-09-29). A small set of names that mean "which one", never a free-text one:
+ * `data-value`, `data-label` or `data-title` may hold what the drawing shows or a figure, so they
+ * stay out, as every attribute outside an allowlist does (D8).
+ */
+export const SVG_ID_ATTRIBUTES: readonly string[] = ["data-id", "data-key", "data-node", "data-node-id", "data-name", "data-slug"];
+
+/** The first identifier data attribute of an SVG element, with its value ("" values ignored). */
+export function svgIdAttribute(el: Element): { name: string; value: string } | undefined {
+  if (!isSvgElement(el)) return undefined;
+  for (const name of SVG_ID_ATTRIBUTES) {
+    const value = el.getAttribute(name)?.trim();
+    if (value) return { name, value };
+  }
+  return undefined;
+}
+
 /** Attributes written so that tests find the element (D3), the same allowlist as sanitize.ts. */
 const TEST_ATTRIBUTES = ["data-testid", "data-test", "data-cy"];
 
@@ -80,7 +100,8 @@ function ownPointerCursor(el: Element): boolean {
 
 /**
  * An SVG element the author gave something of its own that makes it content: an accessible name
- * (aria-label, aria-labelledby, a <title> child), a role, a test attribute, a stable id, a way to
+ * (aria-label, aria-labelledby, a <title> child), a role, a test attribute, an identifier data
+ * attribute (`data-id`…, SVG_ID_ATTRIBUTES), a stable id, a way to
  * interact with it (a link, tabindex, an onclick attribute, its own pointer cursor), or visible
  * text (a <text> label). A shape with none of these is drawing, not content.
  */
@@ -90,7 +111,7 @@ function isSvgContent(el: Element): boolean {
   if (el.hasAttribute("aria-labelledby") || hasSvgTitle(el)) return true;
   const role = el.getAttribute("role");
   if (role !== null && role !== "" && !NO_ROLE.has(role)) return true;
-  if (TEST_ATTRIBUTES.some((name) => el.hasAttribute(name))) return true;
+  if (TEST_ATTRIBUTES.some((name) => el.hasAttribute(name)) || svgIdAttribute(el) !== undefined) return true;
   const id = el.getAttribute("id");
   if (id !== null && id !== "" && !isGeneratedId(id)) return true;
   if (el.hasAttribute("tabindex") || el.hasAttribute("onclick")) return true;

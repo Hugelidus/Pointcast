@@ -99,6 +99,22 @@ describe("Alt+click inside SVG", () => {
     );
   });
 
+  it("points at the <g data-id> item of a role=application map, not at the named svg around it", () => {
+    const { drafts, targets, q, altClick } = setup();
+    const item = q('[data-id="derivadas"]');
+    altClick(q('[data-id="derivadas"] circle'));
+    expect(targets[0]).toBe(item);
+    expect(drafts[0]?.element).toMatchObject({
+      tag: "g",
+      text: "",
+      context: "Mapa de conceptos",
+      path: "main › section[3] › svg«Mapa de conceptos» › g[data-id=derivadas]",
+      html: '<g data-id="derivadas" class="concept"><circle class="star"/></g>',
+      selector: 'g[data-id="derivadas"]',
+      selectorUnique: true,
+    });
+  });
+
   it("points at an axis label, which is visible text", () => {
     const { drafts, altClick, q } = setup();
     altClick(q("#sales-chart .axis text:nth-of-type(3)"));
@@ -172,6 +188,20 @@ describe("privacy inside SVG (D8)", () => {
     document.body.innerHTML = '<main><svg><circle id="t"><title data-sensitive>secreto</title></circle></svg></main>';
     const info = describeElement(document.getElementById("t")!);
     expect(JSON.stringify(info)).not.toContain("secreto");
+  });
+
+  it("keeps an SVG item's identifier out of a sensitive subtree, and out of HTML elements", () => {
+    document.body.innerHTML =
+      '<main><div data-sensitive><svg><g id="x" data-id="cliente-ana-perez"><circle/></g></svg></div>' +
+      '<div id="h" data-id="html-row">Fila</div></main>';
+    expect(JSON.stringify(describeElement(document.getElementById("x")!))).not.toContain("ana-perez");
+    expect(describeElement(document.getElementById("h")!).html).toBe('<div id="h">Fila</div>');
+  });
+
+  it("redacts personal data in an SVG item's identifier on enabled sites", () => {
+    document.body.innerHTML = '<main><svg><g data-id="ana@example.com"><circle/></g></svg></main>';
+    const info = describeElement(document.querySelector("g")!, { redactPersonalData: true });
+    expect(JSON.stringify(info)).not.toContain("ana@example.com");
   });
 
   it("keeps only allowlisted attributes: no geometry, styles or handlers", () => {

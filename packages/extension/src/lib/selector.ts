@@ -2,6 +2,7 @@ import { DEFAULT_SENSITIVE_ATTRIBUTE, DEFAULT_SOURCE_ATTRIBUTES } from "@pointca
 import { isShadowRoot } from "./dom";
 import { cssModulePrefix, isGeneratedId, isSemanticClass } from "./noise";
 import { isSensitive, type SensitivityOptions } from "./sensitive";
+import { svgIdAttribute } from "./svg";
 import { redactUrl } from "./url";
 
 /** Attributes teams add precisely so that tests can find elements: the most stable anchors. */
@@ -83,6 +84,9 @@ function candidateTokens(el: Element, options: SelectorOptions): string[] {
     ["for", el.getAttribute("for")],
     ["href", el.localName === "a" ? el.getAttribute("href") : null],
   ];
+  // An SVG item's identifier (svg.ts), the way the app itself finds it: `g[data-id="limites"]`.
+  const item = sensitiveAriaLabel ? undefined : svgIdAttribute(el);
+  if (item !== undefined) semantic.push([item.name, item.value]);
   for (const [name, value] of semantic) {
     if (!value || value.length > MAX_ATTRIBUTE_VALUE) continue;
     if ((name === "name" || name === "for") && isGeneratedId(value)) continue;

@@ -2,7 +2,7 @@
 name: pointcast
 description: Apply a pointcast recording (what the user said while pointing at elements of their web app) as code changes in this project. Use when the user asks to apply, implement or read a pointcast recording or session, or to listen or watch for their recordings.
 argument-hint: "[session-id | watch]"
-allowed-tools: mcp__plugin_pointcast_pointcast__list_sessions mcp__plugin_pointcast_pointcast__get_session mcp__plugin_pointcast_pointcast__get_element mcp__plugin_pointcast_pointcast__wait_for_recording
+allowed-tools: mcp__plugin_pointcast_recordings__list_sessions mcp__plugin_pointcast_recordings__get_session mcp__plugin_pointcast_recordings__get_element mcp__plugin_pointcast_recordings__wait_for_recording
 ---
 
 Apply a pointcast recording to this project.
@@ -26,7 +26,7 @@ Watch mode: keep applying the user's recordings as they make them, until they te
 1. Tell the user in one line that you are listening, and that they can record in the browser now.
 2. Call `wait_for_recording`. It only returns recordings made on this project: one whose source files are all missing here is left for an agent working on that project. If it answers "No new recording yet", call it again right away, without writing anything to the user. Pass `anyProject: true` only when the user asks for recordings from any project.
 3. When it returns a recording, apply it with steps 2 to 5 above. The same rules hold: if it starts with the other-project **Warning** (only possible with `anyProject`), do not edit; tell the user and ask whether to apply it here or keep listening. A recording that names no source files cannot be checked against the project: if its pages do not look like this project's app, ask before editing. If a request is ambiguous, ask, and wait for the answer before going on.
-4. Report briefly: one line per request with the `file:line` you changed, or why you skipped it.
+4. Before listening again, always report to the user: one line per request with the `file:line` you changed, or why you skipped it. Never go back to waiting without this report.
 5. Go back to step 2. Stop when the user says so.
 
 `get_element` returns everything recorded about one pointed element (HTML, styles, selector, component chain). Event ids are `e1`, `e2`… in the order the user pointed.

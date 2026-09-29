@@ -41,7 +41,7 @@ describe("Gemini CLI extension", () => {
     expect(manifest.mcpServers).toEqual({
       pointcast: { command: "npx", args: ["-y", `pointcast@${VERSION}`, "mcp", "--repo", "${workspacePath}"] },
     });
-    expect(manifest.mcpServers.pointcast.args[1]).toBe(readJson(join(PLUGIN, ".mcp.json")).mcpServers.pointcast.args[1]);
+    expect(manifest.mcpServers.pointcast.args[1]).toBe(readJson(join(PLUGIN, ".mcp.json")).mcpServers.recordings.args[1]);
   });
 
   it("loads no context file into every Gemini session", () => {

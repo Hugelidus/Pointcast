@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "pointcast": {
+    "recordings": {
       "command": "npx",
       "args": ["-y", "pointcast@0.8.0", "mcp"]
     }

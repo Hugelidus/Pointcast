@@ -10,7 +10,7 @@ Para Hugo. Los textos están en esta carpeta; aquí va solo qué hacer, en qué 
 - [ ] **Segunda prueba del compañero** con 0.5 y `pointcast-django` en su app real: que grabe 3–5 peticiones, aplique con su agente y te diga qué señaló mal. Si sale algo grave, arreglarlo antes; si no, sus palabras (con su permiso) valen más que cualquier número. Nunca nombrar su app en público.
 - [ ] **Social preview.** GitHub ya tiene una imagen personalizada (`docs/launch/store/social-preview.png`). Dice "Chrome extension": valorar regenerarla con "Chrome & Edge" (`node docs/launch/store/render.mjs`) y volver a subirla en *Settings → Social preview*. Comprobar cómo se ve pegando el enlace del repo en X y LinkedIn (vista previa).
 - [ ] **Pins.** Fijar el repo en tu perfil de GitHub; abrir una Discussion "Launch feedback" (Announcements) y fijarla; el día del lanzamiento, fijar el hilo de X/Bluesky en tu perfil.
-- [ ] **README al día.** Revisar que el Quick start apunta a la versión publicada (`npx -y pointcast@0.5 mcp` o la que esté en npm ese día) y que los enlaces de los informes funcionan desde `main`.
+- [ ] **README al día.** Revisar que el Quick start apunta a la versión publicada (`npx -y pointcast@0.8 mcp` o la que esté en npm ese día) y que los enlaces de los informes funcionan desde `main`.
 - [ ] **Temas del repo.** Añadir `django` y `htmx` a los topics (ahora no están).
 - [ ] **Issues para recién llegados.** Ya hay `good first issue`/`help wanted` (#3–#9); revisar que siguen vigentes y cerrar o agrupar los PR de dependabot (#11, #12, #17) para que el repo se vea cuidado.
 - [ ] **Cuentas listas:** HN (una cuenta con algo de historial ayuda), Reddit (karma mínimo en algunos subs), X, Bluesky, LinkedIn, dev.to.

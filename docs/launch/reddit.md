@@ -73,7 +73,7 @@ It works with whatever agent you use:
 - Codex CLI: `codex plugin marketplace add Hugelidus/pointcast && codex plugin add pointcast@pointcast`
 - Gemini CLI: `gemini extensions install https://github.com/Hugelidus/pointcast`
 - Claude Code: plugin, `/pointcast`
-- Cursor / Windsurf / any MCP client: `npx -y pointcast@0.5 mcp`
+- Cursor / Windsurf / any MCP client: `npx -y pointcast@0.8 mcp`
 - Anything else: paste the spec from the clipboard
 
 What I measured (three open-source dashboards, 45 changes, same agent and prompt, only the request differs):

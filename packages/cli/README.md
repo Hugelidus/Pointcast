@@ -165,7 +165,7 @@ gets the valid range (`e1…e17`).
 It looks for sessions the same way `pointcast process` does: `--dir` / `POINTCAST_DIR` /
 `<Downloads>/pointcast`.
 
-Pin the version in MCP configs (`pointcast@0.7`, as below): `npx` keeps using a cached copy for
+Pin the version in MCP configs (`pointcast@0.8`, as below): `npx` keeps using a cached copy for
 an unversioned `pointcast`, which may be an older one. The plugins pin the exact version and
 update it with each release.
 
@@ -276,13 +276,13 @@ claude plugin install pointcast@pointcast
 ### Claude Code: MCP server only
 
 ```sh
-claude mcp add pointcast -- npx -y pointcast@0.7 mcp
+claude mcp add pointcast -- npx -y pointcast@0.8 mcp
 ```
 
 Or, pointed at a specific sessions folder:
 
 ```sh
-claude mcp add pointcast -- npx -y pointcast@0.7 mcp --dir /path/to/pointcast-sessions
+claude mcp add pointcast -- npx -y pointcast@0.8 mcp --dir /path/to/pointcast-sessions
 ```
 
 ### Codex CLI
@@ -304,7 +304,7 @@ sent right at launch may not see the tools: send it again.
 
 ### Gemini CLI
 
-The extension adds the MCP server (`npx -y pointcast@0.7 mcp --repo <the folder you run gemini
+The extension adds the MCP server (`npx -y pointcast@0.8 mcp --repo <the folder you run gemini
 in>`) and a `/pointcast [session-id | watch]` command:
 
 ```sh
@@ -324,7 +324,7 @@ tells the server which project to resolve code locations in:
   "mcpServers": {
     "pointcast": {
       "command": "npx",
-      "args": ["-y", "pointcast@0.7", "mcp", "--repo", "${workspaceFolder}"]
+      "args": ["-y", "pointcast@0.8", "mcp", "--repo", "${workspaceFolder}"]
     }
   }
 }
@@ -341,7 +341,7 @@ project:
   "mcpServers": {
     "pointcast": {
       "command": "npx",
-      "args": ["-y", "pointcast@0.7", "mcp"]
+      "args": ["-y", "pointcast@0.8", "mcp"]
     }
   }
 }

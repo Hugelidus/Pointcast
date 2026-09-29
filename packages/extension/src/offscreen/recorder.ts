@@ -15,6 +15,7 @@ import { EventLog } from "./event-log";
 import { summarizeEvent } from "./event-summary";
 import { MicrophoneDeniedError, MicrophoneRecording } from "./microphone-recording";
 import type { LiveTranscription } from "./live-transcription";
+import type { TranscriptionQuality } from "../processing/speech-model";
 import type { ProcessingJob } from "./session-processor";
 
 interface ActiveSession {
@@ -26,7 +27,11 @@ interface ActiveSession {
 }
 
 /** Starts transcribing a recording while it is made (offscreen/live-transcription.ts). */
-export type StartLive = (recording: MicrophoneRecording, language: string | undefined) => LiveTranscription;
+export type StartLive = (
+  recording: MicrophoneRecording,
+  language: string | undefined,
+  quality: TranscriptionQuality,
+) => LiveTranscription;
 
 /**
  * The recorder that lives in the offscreen document. Unlike the service worker, this document
@@ -56,7 +61,7 @@ export class Recorder {
   ): Promise<RecorderStartResult | RecorderStopResult | CaptureEventResult | CaptureChangeResult | RecorderUndoResult> {
     switch (message.type) {
       case "recorder-start":
-        return this.#start(message.language, message.inputMode ?? "voice");
+        return this.#start(message.language, message.quality ?? "fast", message.inputMode ?? "voice");
       case "recorder-stop":
         return this.#stop(message.extensionVersion, message.sessionId, message.options);
       case "capture-event":
@@ -74,7 +79,7 @@ export class Recorder {
     }
   }
 
-  async #start(language: string | undefined, inputMode: InputMode): Promise<RecorderStartResult> {
+  async #start(language: string | undefined, quality: TranscriptionQuality, inputMode: InputMode): Promise<RecorderStartResult> {
     if (this.#active) return { ok: false, reason: "error", error: "Already recording." };
     if (inputMode === "typed") {
       // D12: no microphone (so no permission prompt), no audio, no speech model. t0 is only the
@@ -90,7 +95,7 @@ export class Recorder {
         recording,
         t0: recording.t0,
         log: new EventLog(recording.t0),
-        live: this.#startLive(recording, language),
+        live: this.#startLive(recording, language, quality),
       };
       this.#lastStop = null;
       return { ok: true, t0: recording.t0 };
@@ -185,9 +190,13 @@ export class Recorder {
   }
 
   /** Live transcription is only a speed-up: if it cannot start, Stop transcribes everything. */
-  #startLive(recording: MicrophoneRecording, language: string | undefined): LiveTranscription | undefined {
+  #startLive(
+    recording: MicrophoneRecording,
+    language: string | undefined,
+    quality: TranscriptionQuality,
+  ): LiveTranscription | undefined {
     try {
-      return this.startLive?.(recording, language);
+      return this.startLive?.(recording, language, quality);
     } catch (error) {
       console.warn("[pointcast] live transcription could not start", error);
       return undefined;

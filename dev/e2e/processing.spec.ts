@@ -136,7 +136,7 @@ test("Stop turns the narration into Markdown on the clipboard, and shows the pro
   await expect.poll(() => badge(popup), { timeout: 10_000 }).toBe("");
 
   const stats = (await popup.evaluate(() => chrome.storage.local.get("processingStats")))["processingStats"];
-  expect(stats).toMatchObject({ modelReady: true, lastLanguage: "es" });
+  expect(stats).toMatchObject({ models: { "Xenova/whisper-base:fp32": { modelReady: true } }, lastLanguage: "es" });
   console.log(
     `es-short (${(saved.session.durationMs / 1000).toFixed(1)} s of audio): Stop → Markdown saved in ${stopToSavedMs} ms ` +
       `(extension measured ${state.lastResult?.processingMs} ms, first run: model loaded from the local server into the Cache API). ` +
@@ -175,4 +175,22 @@ test("the permission page and the popup still work in a cross-origin isolated ex
   // The settings are in the popup, with Auto-detect as the default language.
   await expect(popup.locator("#language")).toHaveValue("auto");
   await expect(popup.locator("#language option")).toHaveCount(100);
+});
+
+test("the transcription quality is Fast by default, and Accurate announces its own download", async ({ extensionPage: popup }) => {
+  // D1 note 2026-09-29. Only the setting and the notice: transcribing with whisper-small here would
+  // add a 250 MB model to the e2e model server.
+  await popup.locator("details.settings > summary").click();
+  await expect(popup.locator("#quality")).toHaveValue("fast");
+  await expect(popup.locator("#first-run-text")).toContainText("downloads the speech model (294 MB, once)");
+
+  await popup.locator("#quality").selectOption("accurate");
+  await expect.poll(async () => ((await popup.evaluate(() => chrome.storage.local.get("settings")))["settings"] as { quality?: string } | undefined)?.quality).toBe("accurate");
+  await expect(popup.locator("#first-run-title")).toHaveText("Before the next recording");
+  await expect(popup.locator("#first-run-text")).toContainText("downloads the accurate speech model");
+
+  // Kept when the popup opens again.
+  await popup.reload();
+  await expect(popup.locator("#quality")).toHaveValue("accurate");
+  await expect(popup.locator("#first-run-text")).toContainText("accurate speech model");
 });

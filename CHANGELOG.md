@@ -28,6 +28,11 @@
 - Fixed: fields of a shadcn form (react-hook-form) got ``used at: `src/components/ui/form.tsx:37` — `<Controller {...props} />` ``, the same wrapper line for every field. A line that only hands its props on is no longer `used at`: the field's own line in the form, or the form's `<FormField …>` line, is.
 - Fixed: after pointing at an element, a longer explanation of it with no new gesture became several requests with no element. The sentences said right after a request (each within 4 s of the previous one, up to 4 sentences and 80 words, until the next gesture) are now quoted inside it, one line each, marked `(continues, no pointing)`; a preamble line explains the marker when a spec has one. The quote and its markers are unchanged.
 
+**Transcription quality: Fast / Accurate** ([D1 note 2026-09-29](docs/decisions.md#d1-transcription--whisper-via-transformersjs-locally))
+- New popup setting. **Fast** is the model used so far (`Xenova/whisper-base`, the default). **Accurate** uses `Xenova/whisper-small`: fewer misheard words (96 % of the Spanish test recording's words instead of 93 %), about twice as slow, and a 512 MB download the first time it is used, shown in the popup like the first download. Still transcribed on your computer, from the same host; no new permission.
+- The time estimate and the first-download notice are kept per model, so switching does not reuse the other model's numbers. `words.json` names the model used.
+- CLI: `--model Xenova/whisper-small` is the same Accurate model, at the same precision (fp32 encoder, q8 decoder); `pointcast --help` lists both.
+
 ## 0.7.0 (2026-09-28)
 
 Extension, CLI and integrations at 0.7.0.

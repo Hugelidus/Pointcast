@@ -41,7 +41,7 @@ function job(extra: Partial<ProcessingJob> = {}): ProcessingJob {
     // 3 s of 16 kHz audio.
     audio: { decoded: true, samples: new Float32Array(48_000) },
     warnings: [],
-    options: { keepAudio: false, deadline: T0 + 600_000, handoff: true },
+    options: { keepAudio: false, deadline: T0 + 600_000, handoff: true, quality: "fast" },
     ...extra,
   };
 }
@@ -119,7 +119,7 @@ describe("processSession", () => {
   });
 
   it("adds audio.wav when the user keeps the audio", async () => {
-    const result = await processSession(job({ options: { keepAudio: true, deadline: 0, handoff: true } }), deps());
+    const result = await processSession(job({ options: { keepAudio: true, deadline: 0, handoff: true, quality: "fast" } }), deps());
     expect(names(result.files)).toEqual(["session.md", "words.json", "session.json", "audio.wav"]);
     expect((await json<SessionFile>(result.files, "session.json")).audio).toEqual({
       file: "audio.wav",

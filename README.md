@@ -153,7 +153,7 @@ Privacy policy: [PRIVACY.md](PRIVACY.md). Rationale and the canary test that ver
 
 ## FAQ
 
-**Does this send my voice anywhere?** No, by default. A local Whisper model (`Xenova/whisper-base`, 294 MB, downloaded once, so the first recording takes longer) runs in the browser. The CLI's optional `--engine openai` sends audio to an OpenAI-compatible endpoint only if you choose it.
+**Does this send my voice anywhere?** No, by default. A local Whisper model (`Xenova/whisper-base`, 294 MB, downloaded once, so the first recording takes longer) runs in the browser. *Transcription quality: Accurate* in the popup's Settings uses `Xenova/whisper-small` instead (512 MB, about twice as slow, fewer misheard words), also locally. The CLI's optional `--engine openai` sends audio to an OpenAI-compatible endpoint only if you choose it.
 
 **What if I point at the wrong element?** Popup → **Undo last gesture**, or **Alt+Shift+U**. In Typed mode, Esc in the note box drops that gesture.
 

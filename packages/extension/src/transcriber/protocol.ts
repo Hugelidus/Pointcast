@@ -1,5 +1,5 @@
 import type { WordsFile } from "@pointcast/core";
-import type { TranscriptionErrorCode, TranscriptionProgress } from "@pointcast/transcribe";
+import type { TranscriptionErrorCode, TranscriptionProgress, WeightsDtype } from "@pointcast/transcribe";
 
 /**
  * Messages between the offscreen document and a transcription worker (client.ts). A worker
@@ -11,6 +11,9 @@ import type { TranscriptionErrorCode, TranscriptionProgress } from "@pointcast/t
 
 /** How to set up the engine; it has no extension APIs, so the offscreen document fills this in. */
 export interface EngineConfig {
+  /** Whisper repo id and weights precision (processing/speech-model.ts, Settings.quality). */
+  model: string;
+  dtype: WeightsDtype;
   threads: number;
   /** URL prefix of the ONNX Runtime files the extension ships (public/ort/). */
   wasmPaths: string;

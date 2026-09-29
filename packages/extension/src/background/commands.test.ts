@@ -169,11 +169,26 @@ describe("stopRecording", () => {
     fake.local.set("processingStats", { speed: { loadMs: 1000, msPerAudioSecond: 200 }, modelReady: true, lastLanguage: "en" });
     await stopped();
 
-    expect(stopMessage().options).toEqual({ fallbackLanguage: "en", keepAudio: false, deadline: expect.any(Number), handoff: true });
+    expect(stopMessage().options).toEqual({
+      fallbackLanguage: "en",
+      keepAudio: false,
+      deadline: expect.any(Number),
+      handoff: true,
+      quality: "fast",
+    });
     // The estimate comes from this device's speed: 1 s fixed + 1 s load + 0.5 s + 200 ms × 12 s.
     const { processing } = state();
     expect(processing?.stage).toBe("transcribing");
     expect((processing?.estimatedEnd ?? 0) - (processing?.startedAt ?? 0)).toBe(1_000 + 1_000 + 500 + 2_400);
+  });
+
+  it("uses the Accurate model when chosen: its own first download, its own estimate", async () => {
+    // whisper-base is ready (stats saved before the setting existed), whisper-small is not.
+    fake.local.set("processingStats", { speed: { loadMs: 1000, msPerAudioSecond: 200 }, modelReady: true, lastLanguage: "es" });
+    fake.local.set("settings", { language: "es", keepAudio: false, notify: true, quality: "accurate" });
+    await stopped();
+    expect(stopMessage().options.quality).toBe("accurate");
+    expect(state().processing).toMatchObject({ quality: "accurate", firstRun: true, stage: "downloading-model" });
   });
 
   it("passes the popup's handoff setting: try a running pointcast MCP server, unless it is off", async () => {
@@ -287,8 +302,7 @@ describe("finishProcessing", () => {
     expect([...fake.storage.values()]).not.toContain(DONE.markdown);
     // First run: the load time included the download, so only the transcription speed is learned.
     expect(fake.local.get("processingStats")).toEqual({
-      speed: { loadMs: 2_000, msPerAudioSecond: 275 },
-      modelReady: true,
+      models: { "Xenova/whisper-base:fp32": { speed: { loadMs: 2_000, msPerAudioSecond: 275 }, modelReady: true } },
       lastLanguage: "es",
     });
     expect(fake.offscreenOpen).toBe(false);
@@ -522,7 +536,10 @@ describe("finishProcessing, handed off to a pointcast MCP server (D11)", () => {
     expect(state().error).toBeUndefined();
     expect(state().warning).toBeUndefined();
     expect(await readLastMarkdown()).toBe(DONE.markdown);
-    expect(fake.local.get("processingStats")).toMatchObject({ modelReady: true, lastLanguage: "es" });
+    expect(fake.local.get("processingStats")).toMatchObject({
+      models: { "Xenova/whisper-base:fp32": { modelReady: true } },
+      lastLanguage: "es",
+    });
     expect(fake.outcomeBadge).toHaveBeenCalledWith(true);
     expect(fake.notify).toHaveBeenCalledWith("Pointcast", expect.stringMatching(/^Copied\. Paste it into your agent\. Saved by .* to /));
     expect(fake.notify.mock.calls[0]?.[1]).toContain(DIR);
@@ -620,7 +637,7 @@ describe("startRecording", () => {
     fake.local.set("settings", { language: "es", keepAudio: false, notify: true });
     fake.sendMessage.mockResolvedValue({ ok: true, t0: T0 });
     expect(await commands.startRecording()).toEqual({ ok: true });
-    expect(fake.sendMessage).toHaveBeenCalledWith({ to: "offscreen", type: "recorder-start", language: "es" });
+    expect(fake.sendMessage).toHaveBeenCalledWith({ to: "offscreen", type: "recorder-start", language: "es", quality: "fast" });
   });
 
   it("reports recording only after every local tab was attached", async () => {
@@ -630,7 +647,7 @@ describe("startRecording", () => {
     );
 
     const result = commands.startRecording();
-    await vi.waitFor(() => expect(fake.sendMessage).toHaveBeenCalledWith({ to: "offscreen", type: "recorder-start" }));
+    await vi.waitFor(() => expect(fake.sendMessage).toHaveBeenCalledWith({ to: "offscreen", type: "recorder-start", quality: "fast" }));
     // Attaching started with the recorder, not after it, and the recorder is already running.
     expect(fake.attachToOpenTabs).toHaveBeenCalledTimes(1);
     await new Promise((resolve) => setTimeout(resolve, 10));

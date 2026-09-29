@@ -29,6 +29,8 @@ import {
   type SiteStatus,
 } from "../../popup/view";
 import { languageName, WHISPER_LANGUAGES, type Settings } from "../../processing/settings";
+import { speechModel, type TranscriptionQuality } from "../../processing/speech-model";
+import { statsFor } from "../../processing/stats";
 import { IDLE_STATE, type RecorderState } from "../../recorder-state";
 import { TOGGLE_RECORDING_COMMAND, UNDO_EVENT_COMMAND } from "../../shortcut";
 import { enabledSiteFor, enabledSitePatterns, patternHost, sitePattern } from "../../sites";
@@ -91,6 +93,7 @@ const copyPathEl = byId<HTMLButtonElement>("copy-path");
 const liveEl = byId("live");
 const liveAlertEl = byId("live-alert");
 const languageEl = byId<HTMLSelectElement>("language");
+const qualityEl = byId<HTMLSelectElement>("quality");
 const keepAudioEl = byId<HTMLInputElement>("keep-audio");
 const notifyEl = byId<HTMLInputElement>("notify");
 const handoffEl = byId<HTMLInputElement>("handoff");
@@ -120,8 +123,13 @@ let undoPending = false;
 let site: (SiteStatus & { pattern: string }) | undefined;
 /** The extension's microphone permission, followed live: granting it in the permission page flips the button. */
 let microphone: MicrophonePermission;
-/** Whether the speech model was ever loaded here (processing/stats.ts), for the first-run notice. */
+/**
+ * Whether the model of the chosen quality was ever loaded here (processing/stats.ts), for the
+ * first-run notice.
+ */
 let modelReady: boolean | undefined;
+/** Settings.quality: the model the next recording uses. */
+let quality: TranscriptionQuality = "fast";
 /** Settings.inputMode: what the next Record starts (D12). */
 let inputMode: InputMode = "voice";
 
@@ -261,7 +269,7 @@ function render(): void {
   statusEl.textContent = view.statusText;
   statusEl.dataset["status"] = state.status;
 
-  const notice = firstRunNotice(state, microphone, modelReady, inputMode);
+  const notice = firstRunNotice(state, microphone, modelReady, inputMode, quality);
   firstRunEl.hidden = notice === null;
   firstRunTitleEl.textContent = notice?.title ?? "";
   firstRunTextEl.textContent = notice?.text ?? "";
@@ -524,6 +532,8 @@ function renderSettings(settings: Settings): void {
     .sort((a, b) => a.name.localeCompare(b.name, "en"));
   languageEl.replaceChildren(auto, ...languages.map(({ code, name }) => new Option(name, code)));
   languageEl.value = settings.language;
+  qualityEl.value = settings.quality;
+  quality = settings.quality;
   keepAudioEl.checked = settings.keepAudio;
   notifyEl.checked = settings.notify;
   handoffEl.checked = settings.handoff;
@@ -539,9 +549,16 @@ function saveSettings(): void {
     handoff: handoffEl.checked,
     inputMode,
     captureErrors: captureErrorsEl.checked,
+    quality,
   });
 }
 for (const element of [languageEl, keepAudioEl, notifyEl, handoffEl, captureErrorsEl]) element.addEventListener("change", saveSettings);
+qualityEl.addEventListener("change", () => {
+  quality = qualityEl.value === "accurate" ? "accurate" : "fast";
+  saveSettings();
+  // Accurate is a download of its own: the notice says so before the next recording.
+  void refreshModelReady().then(render);
+});
 for (const input of modeInputs) {
   input.addEventListener("change", () => {
     if (!input.checked) return;
@@ -554,7 +571,7 @@ for (const input of modeInputs) {
 /** The model may have been downloaded by the run that just ended: the first-run notice then goes. */
 async function refreshModelReady(): Promise<void> {
   try {
-    modelReady = (await readStats()).modelReady;
+    modelReady = statsFor(await readStats(), speechModel(quality)).modelReady;
   } catch {
     modelReady = undefined;
   }
@@ -596,6 +613,8 @@ lastMarkdown = initialMarkdown;
 eventCount = initialCount;
 eventsEl.textContent = String(initialCount);
 renderSettings(settings);
+// Read above for the default quality, in parallel with the settings: read again for another one.
+if (quality !== "fast") await refreshModelReady();
 render();
 announcing = true;
 void checkTab();

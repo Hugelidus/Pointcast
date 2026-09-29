@@ -3011,6 +3011,381 @@
           "textStart": " Vale, empecemos por la tabla de pedidos. Esto de AQUI, la columna de cantidad, me gustaría que fuera urdena balaciendo "
         }
       ]
+    },
+    {
+      "at": "2026-09-29T07:52:54.890Z",
+      "case": "base-wasm4-fp32",
+      "storage": "incognito (in-memory caches)",
+      "freeDiskMB": {
+        "before": 12650,
+        "after": 12694
+      },
+      "isolatedServer": true,
+      "wallSeconds": 54.495,
+      "env": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "crossOriginIsolated": true,
+        "sharedArrayBuffer": true,
+        "hardwareConcurrency": 24,
+        "deviceMemoryGB": 32,
+        "webgpu": {
+          "vendor": "nvidia",
+          "architecture": "ampere",
+          "device": "",
+          "description": "",
+          "isFallbackAdapter": false,
+          "shaderF16": true,
+          "maxBufferSizeMB": 2048
+        }
+      },
+      "memory": {
+        "rendererPeakWorkingSetMB": 3789,
+        "rendererPeakCommitMB": 5044,
+        "gpuProcessPeakWorkingSetMB": 140,
+        "browserPeakWorkingSetMB": 682,
+        "sumOfPeaksMB": 4842,
+        "basePriorities": [
+          6
+        ],
+        "e2eChromiumProcesses": 0
+      },
+      "hosts": {
+        "localhost:5531": 19,
+        "huggingface.co": 22,
+        "us.aws.cdn.hf.co": 4
+      },
+      "rows": [
+        {
+          "model": "Xenova/whisper-base",
+          "device": "wasm",
+          "dtype": "fp32",
+          "threads": 4,
+          "requestedThreads": 4,
+          "crossOriginIsolated": true,
+          "audio": "es-2min",
+          "audioSeconds": 152.195,
+          "run": 1,
+          "loadSeconds": 6.489849999994039,
+          "loadFilesSeconds": 5.7527349999994035,
+          "loadSessionSeconds": 0.7371549999937416,
+          "retries429": 0,
+          "cache": "cold (download)",
+          "modelMB": 291.035846,
+          "transcribeSeconds": 45.28934000000358,
+          "secondsPerAudioMinute": 17.85446565261812,
+          "words": 291,
+          "timestamps": "word",
+          "wordAccuracy": 0.9275862068965517,
+          "medianStartErrorMs": 165,
+          "p90StartErrorMs": 265,
+          "hypWords": 291,
+          "refWords": 290,
+          "firstWords": "Vale,@1880 empecemos@2540 por@3040 la@3200 tabla@3360 de@3620 pedidos.@3800 Esto@7440",
+          "cachedLoadSeconds": 1.2872749999985098,
+          "cachedLoadSessionSeconds": 1.040039999999106,
+          "textStart": " Vale, empecemos por la tabla de pedidos. Esto de AQUI, la columna de cantidad, me gustaría que fuera ordenabal haciendo"
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T07:55:02.946Z",
+      "case": "small-wasm4-fp32",
+      "storage": "incognito (in-memory caches)",
+      "freeDiskMB": {
+        "before": 12694,
+        "after": 12590
+      },
+      "isolatedServer": true,
+      "wallSeconds": 127.743,
+      "env": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "crossOriginIsolated": true,
+        "sharedArrayBuffer": true,
+        "hardwareConcurrency": 24,
+        "deviceMemoryGB": 32,
+        "webgpu": {
+          "vendor": "nvidia",
+          "architecture": "ampere",
+          "device": "",
+          "description": "",
+          "isFallbackAdapter": false,
+          "shaderF16": true,
+          "maxBufferSizeMB": 2048
+        }
+      },
+      "memory": {
+        "rendererPeakWorkingSetMB": 6705,
+        "rendererPeakCommitMB": 8041,
+        "gpuProcessPeakWorkingSetMB": 141,
+        "browserPeakWorkingSetMB": 1121,
+        "sumOfPeaksMB": 8201,
+        "basePriorities": [
+          6
+        ],
+        "e2eChromiumProcesses": 0
+      },
+      "hosts": {
+        "localhost:5531": 19,
+        "huggingface.co": 26,
+        "us.aws.cdn.hf.co": 8
+      },
+      "rows": [
+        {
+          "model": "Xenova/whisper-small",
+          "device": "wasm",
+          "dtype": "fp32",
+          "threads": 4,
+          "requestedThreads": 4,
+          "crossOriginIsolated": true,
+          "audio": "es-2min",
+          "audioSeconds": 152.195,
+          "run": 1,
+          "loadSeconds": 14.494385000005364,
+          "loadFilesSeconds": 12.900020000003279,
+          "loadSessionSeconds": 1.594390000000596,
+          "retries429": 0,
+          "cache": "cold (download)",
+          "modelMB": 968.244601,
+          "transcribeSeconds": 97.26595499999821,
+          "secondsPerAudioMinute": 38.34526298498566,
+          "words": 294,
+          "timestamps": "word",
+          "wordAccuracy": 0.9551724137931035,
+          "medianStartErrorMs": 160,
+          "p90StartErrorMs": 245,
+          "hypWords": 294,
+          "refWords": 290,
+          "firstWords": "Vale,@1840 empecemos@2540 por@3060 la@3200 tabla@3380 de@3620 pedidos.@3780 Esto@7440",
+          "cachedLoadSeconds": 14.764690000005066,
+          "cachedLoadSessionSeconds": 1.7171900000050664,
+          "textStart": " Vale, empecemos por la tabla de pedidos. Esto de AQUI, la columna de cantidad, me gustaría que fuera urdena balaciendo "
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T07:58:05.242Z",
+      "case": "small-wasm4-fp16",
+      "storage": "incognito (in-memory caches)",
+      "freeDiskMB": {
+        "before": 12590,
+        "after": 12589
+      },
+      "isolatedServer": true,
+      "wallSeconds": 182.047,
+      "env": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "crossOriginIsolated": true,
+        "sharedArrayBuffer": true,
+        "hardwareConcurrency": 24,
+        "deviceMemoryGB": 32,
+        "webgpu": {
+          "vendor": "nvidia",
+          "architecture": "ampere",
+          "device": "",
+          "description": "",
+          "isFallbackAdapter": false,
+          "shaderF16": true,
+          "maxBufferSizeMB": 2048
+        }
+      },
+      "memory": {
+        "rendererPeakWorkingSetMB": 5830,
+        "rendererPeakCommitMB": 6091,
+        "gpuProcessPeakWorkingSetMB": 140,
+        "browserPeakWorkingSetMB": 1030,
+        "sumOfPeaksMB": 7222,
+        "basePriorities": [
+          6
+        ],
+        "e2eChromiumProcesses": 0
+      },
+      "hosts": {
+        "localhost:5531": 19,
+        "huggingface.co": 24,
+        "us.aws.cdn.hf.co": 6
+      },
+      "rows": [
+        {
+          "model": "Xenova/whisper-small",
+          "device": "wasm",
+          "dtype": "fp16",
+          "threads": 4,
+          "requestedThreads": 4,
+          "crossOriginIsolated": true,
+          "audio": "es-2min",
+          "audioSeconds": 152.195,
+          "run": 1,
+          "loadSeconds": 10.513969999998809,
+          "loadFilesSeconds": 9.652439999997616,
+          "loadSessionSeconds": 0.8615600000023842,
+          "retries429": 0,
+          "cache": "cold (download)",
+          "modelMB": 485.223415,
+          "transcribeSeconds": 156.02979000000656,
+          "secondsPerAudioMinute": 61.51179342291398,
+          "words": 294,
+          "timestamps": "word",
+          "wordAccuracy": 0.9551724137931035,
+          "medianStartErrorMs": 160,
+          "p90StartErrorMs": 245,
+          "hypWords": 294,
+          "refWords": 290,
+          "firstWords": "Vale,@1840 empecemos@2540 por@3060 la@3200 tabla@3380 de@3620 pedidos.@3780 Esto@7440",
+          "cachedLoadSeconds": 14.298224999994039,
+          "cachedLoadSessionSeconds": 0.8311299999952316,
+          "textStart": " Vale, empecemos por la tabla de pedidos. Esto de AQUI, la columna de cantidad, me gustaría que fuera urdena balaciendo "
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T07:59:43.187Z",
+      "case": "small-wasm4-q8",
+      "storage": "incognito (in-memory caches)",
+      "freeDiskMB": {
+        "before": 12590,
+        "after": 12538
+      },
+      "isolatedServer": true,
+      "wallSeconds": 97.649,
+      "env": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "crossOriginIsolated": true,
+        "sharedArrayBuffer": true,
+        "hardwareConcurrency": 24,
+        "deviceMemoryGB": 32,
+        "webgpu": {
+          "vendor": "nvidia",
+          "architecture": "ampere",
+          "device": "",
+          "description": "",
+          "isFallbackAdapter": false,
+          "shaderF16": true,
+          "maxBufferSizeMB": 2048
+        }
+      },
+      "memory": {
+        "rendererPeakWorkingSetMB": 5160,
+        "rendererPeakCommitMB": 5243,
+        "gpuProcessPeakWorkingSetMB": 143,
+        "browserPeakWorkingSetMB": 643,
+        "sumOfPeaksMB": 6175,
+        "basePriorities": [
+          6
+        ],
+        "e2eChromiumProcesses": 0
+      },
+      "hosts": {
+        "localhost:5531": 19,
+        "huggingface.co": 22,
+        "us.aws.cdn.hf.co": 4
+      },
+      "rows": [
+        {
+          "model": "Xenova/whisper-small",
+          "device": "wasm",
+          "dtype": "q8",
+          "threads": 4,
+          "requestedThreads": 4,
+          "crossOriginIsolated": true,
+          "audio": "es-2min",
+          "audioSeconds": 152.195,
+          "run": 1,
+          "loadSeconds": 6.1681049999967215,
+          "loadFilesSeconds": 5.51604999999702,
+          "loadSessionSeconds": 0.6521450000032782,
+          "retries429": 0,
+          "cache": "cold (download)",
+          "modelMB": 249.105759,
+          "transcribeSeconds": 89.45422999999673,
+          "secondsPerAudioMinute": 35.26563816156775,
+          "words": 294,
+          "timestamps": "word",
+          "wordAccuracy": 0.9517241379310345,
+          "medianStartErrorMs": 160,
+          "p90StartErrorMs": 250,
+          "hypWords": 293,
+          "refWords": 290,
+          "firstWords": "Vale,@1820 empecemos@2540 por@3040 la@3200 tabla@3380 de@3640 pedidos.@3780 Esto@7440",
+          "cachedLoadSeconds": 1.0819399999976158,
+          "cachedLoadSessionSeconds": 0.8599050000011921,
+          "textStart": " Vale, empecemos por la tabla de pedidos. Esto de AQUI, la columna de cantidad, me gustaría que fuera urdena balaciendo "
+        }
+      ]
+    },
+    {
+      "at": "2026-09-29T08:10:33.145Z",
+      "case": "small-wasm4-e32d8",
+      "storage": "incognito (in-memory caches)",
+      "freeDiskMB": {
+        "before": 11635,
+        "after": 11573
+      },
+      "isolatedServer": true,
+      "wallSeconds": 115.009,
+      "env": {
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "crossOriginIsolated": true,
+        "sharedArrayBuffer": true,
+        "hardwareConcurrency": 24,
+        "deviceMemoryGB": 32,
+        "webgpu": {
+          "vendor": "nvidia",
+          "architecture": "ampere",
+          "device": "",
+          "description": "",
+          "isFallbackAdapter": false,
+          "shaderF16": true,
+          "maxBufferSizeMB": 2048
+        }
+      },
+      "memory": {
+        "rendererPeakWorkingSetMB": 5628,
+        "rendererPeakCommitMB": 6753,
+        "gpuProcessPeakWorkingSetMB": 140,
+        "browserPeakWorkingSetMB": 988,
+        "sumOfPeaksMB": 6977,
+        "basePriorities": [
+          6
+        ],
+        "e2eChromiumProcesses": 0
+      },
+      "hosts": {
+        "localhost:5531": 19,
+        "huggingface.co": 24,
+        "us.aws.cdn.hf.co": 6
+      },
+      "rows": [
+        {
+          "model": "Xenova/whisper-small",
+          "device": "wasm",
+          "dtype": "enc fp32 + dec q4",
+          "threads": 4,
+          "requestedThreads": 4,
+          "crossOriginIsolated": true,
+          "audio": "es-2min",
+          "audioSeconds": 152.195,
+          "run": 1,
+          "loadSeconds": 9.565405000001192,
+          "loadFilesSeconds": 9.065570000000298,
+          "loadSessionSeconds": 0.49986500000208617,
+          "retries429": 0,
+          "cache": "cold (download)",
+          "modelMB": 509.620339,
+          "transcribeSeconds": 98.64041000000387,
+          "secondsPerAudioMinute": 38.887115871087964,
+          "words": 293,
+          "timestamps": "word",
+          "wordAccuracy": 0.9517241379310345,
+          "medianStartErrorMs": 160,
+          "p90StartErrorMs": 240,
+          "hypWords": 293,
+          "refWords": 290,
+          "firstWords": "Vale,@1840 empecemos@2540 por@3060 la@3200 tabla@3380 de@3620 pedidos.@3780 Esto@7440",
+          "cachedLoadSeconds": 5.531219999998808,
+          "cachedLoadSessionSeconds": 0.4237250000014901,
+          "textStart": " Vale, empecemos por la tabla de pedidos. Esto de AQUI, la columna de cantidad, me gustaría que fuera urdena balaciendo "
+        }
+      ]
     }
   ]
 }

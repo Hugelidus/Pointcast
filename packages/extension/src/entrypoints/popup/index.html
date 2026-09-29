@@ -60,6 +60,12 @@
       <label>Language
         <select id="language"></select>
       </label>
+      <label title="Accurate uses a larger speech model (whisper-small): fewer misheard words, about twice as slow, and a 512 MB download of its own the first time.">Transcription quality
+        <select id="quality">
+          <option value="fast">Fast</option>
+          <option value="accurate">Accurate (slower)</option>
+        </select>
+      </label>
       <label class="check"><input id="keep-audio" type="checkbox"> Keep audio (saves audio.wav)</label>
       <label class="check"><input id="notify" type="checkbox"> Notify when done</label>
       <label class="check"><input id="handoff" type="checkbox"> Send to your agent's Pointcast MCP server (no downloads)</label>

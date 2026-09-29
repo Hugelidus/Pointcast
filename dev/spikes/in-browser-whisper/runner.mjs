@@ -72,6 +72,10 @@ const CASES = {
   "tiny-webgpu-fp32": { model: TINY, device: "webgpu", dtype: "fp32" },
   // whisper-small (if time allows)
   "small-wasm4-q8": { model: SMALL, device: "wasm", dtype: "q8", threads: 4 },
+  "small-wasm4-fp32": { model: SMALL, device: "wasm", dtype: "fp32", threads: 4 },
+  "small-wasm4-fp16": { model: SMALL, device: "wasm", dtype: "fp16", threads: 4 },
+  // The extension's "Accurate" (D1 note 2026-09-29): full q8 lost word times on es-2min in Node.
+  "small-wasm4-e32d8": { model: SMALL, device: "wasm", dtype: { encoder_model: "fp32", decoder_model_merged: "q8" }, threads: 4 },
   "small-webgpu-fp16": { model: SMALL, device: "webgpu", dtype: "fp16" },
   "small-webgpu-fp32": { model: SMALL, device: "webgpu", dtype: "fp32" },
 };
@@ -84,6 +88,8 @@ const PLANS = {
     "tiny-wasm4-q8", "tiny-wasm4-fp32", "tiny-wasm1-q8", "tiny-webgpu-fp32",
   ],
   small: ["small-wasm4-q8", "small-webgpu-fp16", "small-webgpu-fp32"],
+  // D1 note 2026-09-29: the "Accurate" setting, against the "Fast" default, as the extension runs them.
+  quality: ["base-wasm4-fp32", "small-wasm4-fp32", "small-wasm4-fp16", "small-wasm4-q8", "small-wasm4-e32d8"],
 };
 
 function chromiumArgs() {

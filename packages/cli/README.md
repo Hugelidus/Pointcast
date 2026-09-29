@@ -29,6 +29,9 @@ npx -p pointcast -p @huggingface/transformers pointcast process --force
 
 `--engine openai` needs neither.
 
+The local model is `Xenova/whisper-base` (the extension's *Fast*). `--model Xenova/whisper-small` is
+its *Accurate*: fewer misheard words, about twice as slow, a 512 MB download the first time.
+
 ## Commands
 
 ```

@@ -10,6 +10,7 @@ describe("settings", () => {
       handoff: true,
       inputMode: "voice",
       captureErrors: true,
+      quality: "fast",
     });
     expect(chosenLanguage(DEFAULT_SETTINGS)).toBeUndefined();
   });
@@ -22,6 +23,7 @@ describe("settings", () => {
       handoff: false,
       inputMode: "voice",
       captureErrors: true,
+      quality: "fast",
     });
     expect(parseSettings({ language: "klingon" }).language).toBe("auto");
     expect(chosenLanguage({ ...DEFAULT_SETTINGS, language: "es" })).toBe("es");
@@ -43,6 +45,13 @@ describe("settings", () => {
     expect(parseSettings({ captureErrors: false }).captureErrors).toBe(false);
     expect(parseSettings({ language: "es", keepAudio: true, notify: false, handoff: false }).captureErrors).toBe(true);
     expect(parseSettings({ captureErrors: "no" }).captureErrors).toBe(true);
+  });
+
+  it("transcribes fast unless Accurate was chosen: settings saved before it existed have no such field", () => {
+    expect(parseSettings({ quality: "accurate" }).quality).toBe("accurate");
+    expect(parseSettings({ quality: "fast" }).quality).toBe("fast");
+    expect(parseSettings({ language: "es", keepAudio: true }).quality).toBe("fast");
+    expect(parseSettings({ quality: "best" }).quality).toBe("fast");
   });
 
   it("names the languages for the picker", () => {

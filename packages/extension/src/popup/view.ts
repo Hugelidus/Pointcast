@@ -3,7 +3,8 @@ import { readableEvent } from "../event-words";
 import { LOCAL_HOSTS } from "../hosts";
 import type { TabCapture } from "../messages";
 import { errorDetailOf } from "../processing/failure";
-import { processingView, SPEECH_MODEL_MB } from "../processing/progress";
+import { processingView } from "../processing/progress";
+import { speechModel, type TranscriptionQuality } from "../processing/speech-model";
 import { pointGestureName } from "../platform";
 import { isTyped, type RecorderState } from "../recorder-state";
 
@@ -133,14 +134,17 @@ export interface FirstRunNotice {
 }
 
 /**
- * `modelReady` is ProcessingStats.modelReady (undefined until read). Shown only while idle: it
- * explains the first run before it starts, so the download is not a surprise after Stop.
+ * `modelReady` is whether the model of `quality` (Settings.quality) was loaded here before
+ * (processing/stats.ts; undefined until read). Shown only while idle: it explains the first run
+ * before it starts, so the download is not a surprise after Stop. Accurate is a download of its
+ * own, so choosing it shows the notice again.
  */
 export function firstRunNotice(
   state: RecorderState,
   microphone: MicrophonePermission,
   modelReady: boolean | undefined,
   inputMode: InputMode = "voice",
+  quality: TranscriptionQuality = "fast",
 ): FirstRunNotice | null {
   // An error already says what to do (a failed download, a denied microphone): a second box
   // above it about the same step only pushed the error down. Typed mode (D12) needs neither the
@@ -148,21 +152,24 @@ export function firstRunNotice(
   if (state.status !== "idle" || state.error || inputMode === "typed") return null;
   const needsMicrophone = microphone === "prompt" || microphone === "denied";
   const needsModel = modelReady === false;
-  // SPEECH_MODEL_MB is megabytes() of what the download reports, so the notice and the progress
-  // after Stop give the same size.
-  const model = `downloads the speech model (${SPEECH_MODEL_MB} MB, once); transcription then runs on this computer.`;
+  // downloadMB is megabytes() of what the download reports, so the notice and the progress after
+  // Stop give the same size.
+  const accurate = quality === "accurate";
+  const model = `downloads the ${accurate ? "accurate " : ""}speech model (${speechModel(quality).downloadMB} MB, once); transcription then runs on this computer.`;
+  const title = accurate ? "Before the next recording" : "Before your first recording";
+  const firstStop = accurate ? "The next Stop" : "The first Stop";
   const microphoneText =
     microphone === "denied"
       ? "The microphone is blocked for Pointcast. Allow microphone opens a page that shows how to unblock it."
       : "Pointcast needs the microphone once. Chrome asks for it in a page of its own.";
   if (needsMicrophone && needsModel) {
     return {
-      title: "Before your first recording",
-      text: `${microphone === "denied" ? microphoneText : "Pointcast needs the microphone once."} The first Stop also ${model}`,
+      title,
+      text: `${microphone === "denied" ? microphoneText : "Pointcast needs the microphone once."} ${firstStop} also ${model}`,
     };
   }
   if (needsMicrophone) return { title: "Microphone needed", text: microphoneText };
-  if (needsModel) return { title: "Before your first recording", text: `The first Stop ${model}` };
+  if (needsModel) return { title, text: `${firstStop} ${model}` };
   return null;
 }
 

@@ -81,7 +81,9 @@ npx pointcast doctor
 prints one line per check, with a fix under each problem: the Node.js version (22.12 or newer),
 the sessions folder it reads (`--dir` / `POINTCAST_DIR` / `<Downloads>/pointcast`) with how many
 recordings it holds and the newest one, whether a pointcast MCP server is receiving recordings
-from the extension on 127.0.0.1:20547 (and which version), whether `@huggingface/transformers`
+from the extension on 127.0.0.1:20547 (and which version: with several agent sessions open, one
+of their servers receives and all of them read the same folder; one older than the CLI is
+usually a session started before an update, worth restarting), whether `@huggingface/transformers`
 is installed for local transcription, and, on Linux, whether a clipboard tool (`wl-copy`, `xclip`
 or `xsel`) is there. It only reads: it says hello to the MCP server but never sends it a
 recording, and uses no network unless you add `--online`, which compares your version with the

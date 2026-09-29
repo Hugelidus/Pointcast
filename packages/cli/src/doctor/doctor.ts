@@ -27,6 +27,8 @@ export interface DoctorCheck {
   summary: string;
   /** What to do about it; present for warn and fail. */
   fix?: string;
+  /** Something worth knowing about a check that passed. */
+  note?: string;
 }
 
 export interface DoctorReport {
@@ -167,11 +169,19 @@ async function checkReceiver(deps: DoctorDependencies): Promise<DoctorCheck> {
           fix: "Update pointcast and the extension to the same version, then restart your coding agent.",
         };
       }
-      const same = compareVersions(probe.version, deps.version) === 0;
+      const order = compareVersions(probe.version, deps.version);
+      const shared =
+        "Each agent session starts its own pointcast MCP server: one receives, the others wait for the port, " +
+        "and all of them read the same sessions folder, so every session gets the recordings.";
       return {
         id: "receiver",
         status: "ok",
-        summary: `MCP server: pointcast ${probe.version} is receiving recordings on ${at}${same ? "" : ` (this CLI is ${deps.version})`}`,
+        summary: `MCP server: pointcast ${probe.version} is receiving recordings on ${at}${order === 0 ? "" : ` (this CLI is ${deps.version})`}`,
+        note:
+          order < 0
+            ? `${shared} That one is older: probably an agent session started before you updated. It still works; ` +
+              `close the agent sessions started before the update (or restart them) so ${deps.version} receives.`
+            : shared,
       };
     }
     case "other":
@@ -262,6 +272,7 @@ export function formatDoctorReport(report: DoctorReport): string {
   for (const check of report.checks) {
     lines.push(`${LABELS[check.status]}  ${check.summary}`);
     if (check.fix) lines.push(`      fix: ${check.fix}`);
+    if (check.note) lines.push(`      note: ${check.note}`);
   }
   const failed = report.checks.filter((check) => check.status === "fail").length;
   const warned = report.checks.filter((check) => check.status === "warn").length;

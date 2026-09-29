@@ -132,6 +132,13 @@ describe("runDoctor", () => {
 
     const older = await runDoctor(OFFLINE, deps({ probeReceiver: async () => ({ kind: "pointcast", version: "0.2.0", protocol: 1 }) }));
     expect(check(older, "receiver")).toMatchObject({ status: "ok", summary: expect.stringContaining("pointcast 0.2.0 is receiving recordings on 127.0.0.1:20547 (this CLI is 0.2.1)") });
+    // Several agent sessions share the folder, so it works; an older one is a session from before the update.
+    expect(check(older, "receiver").note).toMatch(/same sessions folder.*older.*before you updated.*close the agent sessions started before the update/s);
+    expect(formatDoctorReport(older)).toContain("\n      note: Each agent session starts its own pointcast MCP server");
+
+    const same = await runDoctor(OFFLINE, deps());
+    expect(check(same, "receiver").note).toMatch(/same sessions folder/);
+    expect(check(same, "receiver").note).not.toContain("That one is older");
 
     const newProtocol = await runDoctor(OFFLINE, deps({ probeReceiver: async () => ({ kind: "pointcast", version: "0.9.0", protocol: 2 }) }));
     expect(check(newProtocol, "receiver")).toMatchObject({ status: "warn", summary: expect.stringContaining("protocol 2") });

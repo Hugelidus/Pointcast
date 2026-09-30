@@ -15,6 +15,14 @@ function el(extra: Partial<ElementInfo>): ElementInfo {
 }
 
 describe("rootAttributes", () => {
+  it("stays linear on an unclosed tag whose name runs into hyphens (ReDoS)", () => {
+    // The old pattern let the tag name and the attributes split the hyphens between them:
+    // quadratic, about 6 s for this input. The session file is input the resolver does not control.
+    const started = Date.now();
+    expect(rootAttributes(`<A${"-".repeat(100_000)}`).size).toBe(0);
+    expect(Date.now() - started).toBeLessThan(500);
+  });
+
   it("reads the first tag only, with quoted, unquoted and bare attributes", () => {
     const attributes = rootAttributes(
       `<input id=q data-testid="search" disabled title='a > b'><span id="inner">`,

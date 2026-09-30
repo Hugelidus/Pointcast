@@ -143,7 +143,8 @@ describe("Recorder undo", () => {
       type: "capture-event",
       draft: { ...draft, atStart: draft.atStart + 500, atEnd: draft.atEnd + 500 },
     });
-    expect(repeated).toMatchObject({ accepted: true, id: "e1" });
+    // Ids are never reused (event-log.ts), so the new gesture is e2.
+    expect(repeated).toMatchObject({ accepted: true, id: "e2" });
   });
 });
 
@@ -256,6 +257,19 @@ describe("Recorder in typed mode (D12)", () => {
     expect(vi.mocked(sendMessage)).toHaveBeenCalledTimes(1);
   });
 
+  it("accepts the same element again right after its note box was cancelled", async () => {
+    const { recorder } = await typedRecorder();
+    const first = await recorder.handle({ to: "offscreen", type: "capture-event", draft });
+    expect(first).toMatchObject({ accepted: true, id: "e1" });
+    expect(await recorder.handle({ to: "offscreen", type: "capture-discard", id: "e1" })).toEqual({ ok: true });
+    const again = await recorder.handle({
+      to: "offscreen",
+      type: "capture-event",
+      draft: { ...draft, atStart: draft.atStart + 800, atEnd: draft.atEnd + 800 },
+    });
+    expect(again).toMatchObject({ accepted: true });
+  });
+
   it("starts without the microphone and hands over a job with no audio at Stop", async () => {
     const start = vi.spyOn(await import("./microphone-recording").then((m) => m.MicrophoneRecording), "start");
     const { recorder, jobs, started } = await typedRecorder();
@@ -276,7 +290,13 @@ describe("Recorder in typed mode (D12)", () => {
   it("removes a note left blank, and the gesture of a cancelled note box", async () => {
     vi.mocked(sendMessage).mockClear();
     const { recorder, jobs } = await typedRecorder();
-    for (let i = 0; i < 2; i++) await recorder.handle({ to: "offscreen", type: "capture-event", draft });
+    // Two gestures on two elements: the same element twice at once would be a repeat (ignored).
+    await recorder.handle({ to: "offscreen", type: "capture-event", draft });
+    await recorder.handle({
+      to: "offscreen",
+      type: "capture-event",
+      draft: { ...draft, element: { ...draft.element, selector: "#save", path: "button#save" } },
+    });
     await recorder.handle({ to: "offscreen", type: "capture-note", id: "e1", note: "first" });
     await recorder.handle({ to: "offscreen", type: "capture-note", id: "e1", note: "   " });
     expect(await recorder.handle({ to: "offscreen", type: "capture-discard", id: "e2" })).toEqual({ ok: true });

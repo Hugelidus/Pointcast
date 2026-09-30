@@ -228,8 +228,12 @@ export class Recorder {
 
   /** Typed mode (D12): the note box was cancelled, so its gesture goes, as with Undo. */
   #discard(id: string): CaptureChangeResult {
-    const log = this.#active?.log;
-    if (!log?.remove(id)) return { ok: false };
+    const active = this.#active;
+    const log = active?.log;
+    if (!active || !log?.remove(id)) return { ok: false };
+    // A cancelled note box took its gesture back, like Undo: pointing at the same element again
+    // right after is a new gesture, not a repeat.
+    active.lastPointByElement.clear();
     this.#reportCount(log.events, log.events.at(-1));
     return { ok: true };
   }

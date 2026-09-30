@@ -90,13 +90,13 @@ test("Alt+click on SVG content points at that shape; drawing and icons point at 
   const { session } = await readSavedSession(popup, downloadsDir, sessionId);
   const elements = session.events.map((event) => event.element);
   expect(elements.map((e) => `${e.tag} «${e.text || e.label || ""}» ${e.path}`)).toEqual([
-    "rect «Febrero: 90» main › section[1] › svg#sales-chart › rect«Febrero: 90»",
-    "circle «Límite de una función» main › section[2] › svg«Mapa» › g«Álgebra» › circle«Límite de una función»",
-    "g «Álgebra» main › section[2] › svg«Mapa» › g«Álgebra»",
+    "rect «Febrero: 90» main › section[1] › … › svg#sales-chart › … › rect«Febrero: 90»",
+    "circle «Límite de una función» main › section[2] › … › svg«Mapa» › g«Álgebra» › circle«Límite de una función»",
+    "g «Álgebra» main › section[2] › … › svg«Mapa» › g«Álgebra»",
     "div «» main › section[1] › div",
     "button «Descargar» main › section[1] › button#download-chart",
     // A nameless circle in a <g data-id> of an <svg role="application" aria-label>: the item, not the svg.
-    "g «» main › section[3] › svg«Mapa de conceptos» › g[data-id=limites]",
+    "g «» main › section[3] › … › svg«Mapa de conceptos» › g[data-id=limites]",
   ]);
   const [barInfo, starInfo] = elements;
   expect(elements[5]?.html).toBe('<g data-id="limites" class="concept"><circle class="star"/></g>');

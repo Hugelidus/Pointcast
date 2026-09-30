@@ -75,6 +75,36 @@ describe("Recorder capture", () => {
       { to: "background", type: "event-count", count: 2, lastEvent: "button «Export» · click" },
     ]);
   });
+
+  it("ignores a repeated Alt+click on the same element within two seconds", async () => {
+    vi.mocked(sendMessage).mockClear();
+    const { recorder } = await recordOneEvent();
+    const result = await recorder.handle({
+      to: "offscreen",
+      type: "capture-event",
+      draft: { ...draft, atStart: draft.atStart + 1_500, atEnd: draft.atEnd + 1_500 },
+    });
+
+    expect(result).toEqual({ accepted: false });
+    expect(vi.mocked(sendMessage)).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts a point on another element and a later point after the duplicate window", async () => {
+    const { recorder } = await recordOneEvent();
+    const other = await recorder.handle({
+      to: "offscreen",
+      type: "capture-event",
+      draft: { ...draft, atStart: draft.atStart + 500, atEnd: draft.atEnd + 500, element: { ...draft.element, selector: "#save", path: "button#save" } },
+    });
+    const later = await recorder.handle({
+      to: "offscreen",
+      type: "capture-event",
+      draft: { ...draft, atStart: draft.atStart + 2_001, atEnd: draft.atEnd + 2_001 },
+    });
+
+    expect(other).toMatchObject({ accepted: true });
+    expect(later).toMatchObject({ accepted: true });
+  });
 });
 
 describe("Recorder undo", () => {
@@ -102,6 +132,19 @@ describe("Recorder undo", () => {
   it("has nothing to undo when not recording", async () => {
     const { recorder } = newRecorder();
     expect(await undo(recorder)).toEqual({ undone: null });
+  });
+
+  it("allows the same point again after it was undone", async () => {
+    const { recorder } = await recordOneEvent();
+    expect(await undo(recorder)).toMatchObject({ undone: { id: "e1" } });
+
+    const repeated = await recorder.handle({
+      to: "offscreen",
+      type: "capture-event",
+      draft: { ...draft, atStart: draft.atStart + 500, atEnd: draft.atEnd + 500 },
+    });
+    // Ids are never reused (event-log.ts), so the new gesture is e2.
+    expect(repeated).toMatchObject({ accepted: true, id: "e2" });
   });
 });
 
@@ -199,6 +242,34 @@ describe("Recorder in typed mode (D12)", () => {
     return { recorder, jobs, started };
   }
 
+  it("rejects a repeated point so typed mode can skip opening its note box", async () => {
+    vi.mocked(sendMessage).mockClear();
+    const { recorder } = await typedRecorder();
+    const accepted = await recorder.handle({ to: "offscreen", type: "capture-event", draft });
+    const duplicate = await recorder.handle({
+      to: "offscreen",
+      type: "capture-event",
+      draft: { ...draft, atStart: draft.atStart + 1_500, atEnd: draft.atEnd + 1_500 },
+    });
+
+    expect(accepted).toMatchObject({ accepted: true });
+    expect(duplicate).toEqual({ accepted: false });
+    expect(vi.mocked(sendMessage)).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts the same element again right after its note box was cancelled", async () => {
+    const { recorder } = await typedRecorder();
+    const first = await recorder.handle({ to: "offscreen", type: "capture-event", draft });
+    expect(first).toMatchObject({ accepted: true, id: "e1" });
+    expect(await recorder.handle({ to: "offscreen", type: "capture-discard", id: "e1" })).toEqual({ ok: true });
+    const again = await recorder.handle({
+      to: "offscreen",
+      type: "capture-event",
+      draft: { ...draft, atStart: draft.atStart + 800, atEnd: draft.atEnd + 800 },
+    });
+    expect(again).toMatchObject({ accepted: true });
+  });
+
   it("starts without the microphone and hands over a job with no audio at Stop", async () => {
     const start = vi.spyOn(await import("./microphone-recording").then((m) => m.MicrophoneRecording), "start");
     const { recorder, jobs, started } = await typedRecorder();
@@ -219,7 +290,13 @@ describe("Recorder in typed mode (D12)", () => {
   it("removes a note left blank, and the gesture of a cancelled note box", async () => {
     vi.mocked(sendMessage).mockClear();
     const { recorder, jobs } = await typedRecorder();
-    for (let i = 0; i < 2; i++) await recorder.handle({ to: "offscreen", type: "capture-event", draft });
+    // Two gestures on two elements: the same element twice at once would be a repeat (ignored).
+    await recorder.handle({ to: "offscreen", type: "capture-event", draft });
+    await recorder.handle({
+      to: "offscreen",
+      type: "capture-event",
+      draft: { ...draft, element: { ...draft.element, selector: "#save", path: "button#save" } },
+    });
     await recorder.handle({ to: "offscreen", type: "capture-note", id: "e1", note: "first" });
     await recorder.handle({ to: "offscreen", type: "capture-note", id: "e1", note: "   " });
     expect(await recorder.handle({ to: "offscreen", type: "capture-discard", id: "e2" })).toEqual({ ok: true });

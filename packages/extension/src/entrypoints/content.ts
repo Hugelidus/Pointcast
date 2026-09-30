@@ -2,7 +2,7 @@ import { defineContentScript } from "wxt/utils/define-content-script";
 import { createCaptureController } from "../content/capture-controller";
 import { flashElement } from "../content/flash";
 import { createIndicator, followWithPill } from "../content/indicator";
-import { createNoteBox } from "../content/note-box";
+import { createNoteBox, openAfterAcceptance } from "../content/note-box";
 import { createPageErrors } from "../content/page-errors";
 import { discardEvent, followState, sendCode, sendDraft, sendError, sendNote } from "../content/recorder-link";
 import { lacksLines, requestRefinedFrameworkInfo } from "../lib/component-bridge";
@@ -55,7 +55,7 @@ export default defineContentScript({
           undo.remember(result.id, target);
           return result.id;
         });
-        if (typed) notes.open(accepted, target);
+        if (typed) openAfterAcceptance(notes, accepted, target);
         // Next.js (D9 note 2026-09-28): a React chain that needs the dev server's source maps is
         // read by the MAIN world after the gesture, and sent when it comes (before Stop, or never).
         // Vite (note 2026-09-29): a React 19 chain read without lines gets them the same way.

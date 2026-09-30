@@ -129,6 +129,13 @@ export interface NoteBox {
   dispose(): void;
 }
 
+/** Open a typed note only after the recorder has accepted the gesture. */
+export function openAfterAcceptance(box: Pick<NoteBox, "open">, eventId: Promise<string | undefined>, target: Element): void {
+  void eventId.then((id) => {
+    if (id !== undefined) box.open(Promise.resolve(id), target);
+  });
+}
+
 interface OpenBox {
   host: HTMLElement;
   box: HTMLElement;

@@ -65,7 +65,7 @@ describe("Alt+click inside SVG", () => {
       text: "",
       label: "Febrero: 90",
       context: "Ventas por mes",
-      path: "main › section[1] › svg#sales-chart › rect«Febrero: 90»",
+      path: "main › section[1] › … › svg#sales-chart › … › rect«Febrero: 90»",
       html: '<rect class="bar"><title>Febrero: 90</title></rect>',
       selectorUnique: true,
     });
@@ -81,7 +81,7 @@ describe("Alt+click inside SVG", () => {
       tag: "circle",
       label: "Límite de una función",
       context: "Álgebra",
-      path: "main › section[2] › svg«Mapa» › g«Álgebra» › circle«Límite de una función»",
+      path: "main › section[2] › … › svg«Mapa» › g«Álgebra» › circle«Límite de una función»",
       html: '<circle class="star"><title>Límite de una función</title></circle>',
     });
   });
@@ -91,7 +91,7 @@ describe("Alt+click inside SVG", () => {
     altClick(q(".map-layer .dust"));
     expect(targets[0]).toBe(q(".map-layer g"));
     const element = drafts[0]!.element;
-    expect(element).toMatchObject({ tag: "g", label: "Álgebra", path: "main › section[2] › svg«Mapa» › g«Álgebra»" });
+    expect(element).toMatchObject({ tag: "g", label: "Álgebra", path: "main › section[2] › … › svg«Mapa» › g«Álgebra»" });
     // Direct children only, with their titles; no geometry (cx, cy, r) in the html.
     expect(element.html).toBe(
       '<g aria-label="Álgebra" class="cluster"><circle class="star"><title>Límite de una función</title></circle>' +
@@ -108,7 +108,7 @@ describe("Alt+click inside SVG", () => {
       tag: "g",
       text: "",
       context: "Mapa de conceptos",
-      path: "main › section[3] › svg«Mapa de conceptos» › g[data-id=derivadas]",
+      path: "main › section[3] › … › svg«Mapa de conceptos» › g[data-id=derivadas]",
       html: '<g data-id="derivadas" class="concept"><circle class="star"/></g>',
       selector: 'g[data-id="derivadas"]',
       selectorUnique: true,

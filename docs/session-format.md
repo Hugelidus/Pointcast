@@ -97,6 +97,8 @@ Two audiences, see [D3](decisions.md#d3-identifying-elements-grep-keys-first-uni
 - `html` is sanitized and structurally trimmed at capture time; the renderer trims further.
 - **SVG elements** (since 2026-09-29, [D7 note](decisions.md#d7-pointing-gesture)). A point inside a chart or map drawn in inline SVG can be the SVG element itself, when it is content (named, with a role, a test attribute, a stable id, interactive, or a `<text>` label): `tag` is then an SVG tag (`rect`, `circle`, `g`, `path`, `text`…), `label` can come from the element's `<title>` child (after `aria-label` and `aria-labelledby`), `text` holds only its `<text>` content (a `<title>` is never text), `path` names the `<svg>`, the SVG elements named by a `<title>` and those marked by an identifier data attribute (`g[data-id=limites]`; `html` keeps `data-id`, `data-key`, `data-node`, `data-node-id`, `data-name` and `data-slug` on SVG elements only) (`main › section › svg«Mapa» › g«Álgebra» › circle«Límite de una función»`), `context` can be a named `<g>` or `<svg>`, and `html` is the allowlisted markup with `<title>`/`<desc>` children and no geometry (`<circle class="star"><title>Límite de una función</title></circle>`). Icons and nameless drawing still give the HTML element around the `<svg>`, as before.
 
+`path` keeps landmarks and list/table levels; `…` marks one or more omitted ancestors between them.
+
 Optional fields that later versions of the extension fill (absent in older sessions; readers must not require them):
 
 | Field | Meaning |

@@ -64,7 +64,7 @@ describe("gestures inside an open shadow root", () => {
     expect(element).toMatchObject({
       tag: "button",
       text: "Buy",
-      path: "main › section#shop › x-card › … › #shadow-root › button",
+      path: "main › section#shop › x-card › #shadow-root › … › button",
       selector: "x-card >>> button.buy",
       selectorUnique: false,
       // The source attribute sits outside the component and still counts, across the boundary.
@@ -113,6 +113,13 @@ describe("gestures inside an open shadow root", () => {
 });
 
 describe("describing shadow-DOM elements", () => {
+  it("places an omitted-path marker after the shadow-root boundary", () => {
+    const { shadow } = setup();
+    expect(readablePath(query(shadow, "button.buy"))).toBe(
+      "main › section#shop › x-card › #shadow-root › … › button",
+    );
+  });
+
   it("keeps sensitivity from a marker outside the component", () => {
     const dom = new JSDOM(`<body><div data-sensitive><x-field></x-field></div></body>`);
     const shadow = (dom.window.document.querySelector("x-field") as Element).attachShadow({ mode: "open" });

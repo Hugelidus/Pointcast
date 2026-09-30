@@ -341,7 +341,12 @@ export function readablePath(el: Element, options: DescribeOptions = DEFAULT_DES
   for (let current: Element | null = el; current !== null; ) {
     if (current !== el && (current.localName === "body" || current.localName === "html")) break;
     if (current === el || isHost || isPathLandmark(current)) {
-      if (previousIncluded !== null && composedParent(previousIncluded) !== current) segments.unshift("…");
+      if (previousIncluded !== null && composedParent(previousIncluded) !== current) {
+        // A shadow boundary was added while walking out of the shadow tree. Keep the gap
+        // marker on the inner side of that boundary: host › #shadow-root › … › target.
+        if (isHost && segments[0] === SHADOW_BOUNDARY) segments.splice(1, 0, "…");
+        else segments.unshift("…");
+      }
       segments.unshift(pathSegment(current, options));
       previousIncluded = current;
     }

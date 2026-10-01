@@ -6,7 +6,7 @@ One section per place: its status, the exact text, and the steps. Everything her
 |---|---|---|
 | [Claude plugin directory](#claude-plugin-directory) | submitted, in review | check status |
 | [Claude community marketplace](#claude-community-marketplace) | probably the same review as above | only if it turns out to be separate |
-| [Chrome Web Store](#chrome-web-store) | 0.1.2 approved (unlisted); 0.8.1 update submitted 2026-09-29, in review | switch to Public at launch |
+| [Chrome Web Store](#chrome-web-store) | 0.8.1 live (unlisted), approved 2026-10-01 | switch to Public at launch |
 | [Microsoft Edge Add-ons](#microsoft-edge-add-ons) | not submitted | before launch |
 | [Gemini CLI extensions gallery](#gemini-cli-extensions-gallery) | automatic | verify before launch |
 | [MCP Registry](#mcp-registry) | needs a CLI release with `mcpName` | with CLI 0.6.0 |

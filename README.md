@@ -19,7 +19,7 @@ In the [latest evaluation](docs/eval/results-2026-09-29-instruction-style.md), t
 
 **[Quick start](#quick-start) · [How it works](#how-it-works) · [Eval](docs/eval/README.md) · [Discussions](https://github.com/Hugelidus/pointcast/discussions) · [Changelog](CHANGELOG.md)**
 
-> **Public beta (0.6).** Chrome and Edge on desktop. CI-tested on Windows, macOS and Linux (Chrome); Edge developed and tested on Windows. Feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
+> **Public beta (0.8).** Chrome and Edge on desktop. CI-tested on Windows, macOS and Linux (Chrome); Edge developed and tested on Windows. Feedback: [issues](https://github.com/Hugelidus/pointcast/issues).
 
 ## Quick start
 
@@ -33,7 +33,7 @@ It finds your coding agents (Claude Code, Codex, Gemini CLI, Cursor) and, after 
 
 **Or by hand:**
 
-**1. Add the extension.** The Chrome Web Store listing is in review; meanwhile, [load the release zip](#manual-install).
+**1. Add the extension** from the [Chrome Web Store](https://chromewebstore.google.com/detail/pointcast/hliijcklkpbddgjhkifjeggidghbbboa) (also installs in Edge: allow extensions from other stores), or [load the release zip](#manual-install).
 
 **2. Connect your agent.** This is the main path: at Stop the recording goes straight to your agent's Pointcast MCP server, and the agent fetches it itself, with each element resolved to its line in your repository.
 
@@ -189,7 +189,7 @@ Other agents: disable the `pointcast` server in their MCP settings. Codex: `enab
 
 ## Roadmap
 
-Now 0.3: Django templates, `pointcast doctor`; 0.2 sent recordings straight to a running MCP server and added Claude Code, Codex and Gemini CLI integrations and Edge. Next: code lines from more dev servers (webpack, Next.js), frameworks (Angular) and server templates (Jinja, Rails, Laravel), readable GitHub issues from a recording, store listings, Firefox. Pick one up: [help wanted](https://github.com/Hugelidus/pointcast/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22). Considered and why: [docs/ideas.md](docs/ideas.md); design decisions: [docs/decisions.md](docs/decisions.md).
+Now 0.8: the agent picks up each recording by itself (`/pointcast watch`), specs tell it to build what you mean, code lines on Vite and Next.js, pointing inside SVG, and the extension is on the Chrome Web Store. Next: code lines on webpack and when Vite runs on another origin (Laravel, Rails), Angular and more server templates (Jinja, Rails, Laravel), Firefox. Pick one up: [help wanted](https://github.com/Hugelidus/pointcast/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22). Considered and why: [docs/ideas.md](docs/ideas.md); design decisions: [docs/decisions.md](docs/decisions.md).
 
 ## Contributing
 

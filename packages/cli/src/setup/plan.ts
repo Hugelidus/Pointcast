@@ -347,9 +347,8 @@ async function frontend(repo: string): Promise<StackHint | undefined> {
 }
 
 export const EXTENSION_STEPS = [
-  "The Chrome Web Store listing is in review. Meanwhile, download the newest pointcast-<version>-chrome.zip from " +
-    `${RELEASES_URL} and unzip it.`,
-  "Open chrome://extensions (edge://extensions in Edge), turn on Developer mode, choose Load unpacked and pick the unzipped folder.",
+  "Install it from the Chrome Web Store: https://chromewebstore.google.com/detail/pointcast/hliijcklkpbddgjhkifjeggidghbbboa (in Edge, allow extensions from other stores first).",
+  `Or load it unpacked: download the newest pointcast-<version>-chrome.zip from ${RELEASES_URL}, unzip it, open chrome://extensions, turn on Developer mode and choose Load unpacked.`,
   "Then record on your app on localhost: press Record, talk (or pick Typed) while you Alt+click things (Option+click on macOS), press Stop.",
 ];
 

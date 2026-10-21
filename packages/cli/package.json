@@ -43,7 +43,7 @@
     "shrinkwrap": "node scripts/shrinkwrap.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.1",
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "zod": "^4.6.5"
   },
   "peerDependencies": {
